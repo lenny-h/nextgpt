@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { chats } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { chats } from "@workspace/server/drizzle/schema.js";
 import { and, desc, eq, lt } from "drizzle-orm";
 
 export async function getChatById({ id }: { id: string }) {

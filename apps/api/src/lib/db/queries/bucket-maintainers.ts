@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { bucketMaintainers } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { bucketMaintainers } from "@workspace/server/drizzle/schema.js";
 import { and, count, eq, inArray } from "drizzle-orm";
 
 export async function isBucketMaintainer({

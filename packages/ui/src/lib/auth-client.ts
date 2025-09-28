@@ -1,4 +1,7 @@
-import { oneTapClient } from "better-auth/client/plugins";
+import {
+  inferAdditionalFields,
+  oneTapClient,
+} from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { toast } from "sonner";
 
@@ -9,6 +12,18 @@ export const client = createAuthClient({
       clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
       promptOptions: {
         maxAttempts: 1,
+      },
+    }),
+    inferAdditionalFields({
+      user: {
+        username: {
+          type: "string",
+          required: true,
+        },
+        isPublic: {
+          type: "boolean",
+          required: true,
+        },
       },
     }),
   ],

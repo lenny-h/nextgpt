@@ -1,4 +1,4 @@
-import { db } from "@/drizzle/db.js";
+import { db } from "@workspace/server/drizzle/db.js";
 import {
   bucketMaintainerInvitations,
   bucketMaintainers,
@@ -7,7 +7,7 @@ import {
   courseMaintainerInvitations,
   courseMaintainers,
   userInvitations,
-} from "@/drizzle/schema.js";
+} from "@workspace/server/drizzle/schema.js";
 import { and, eq, sql } from "drizzle-orm";
 
 const maxUserCounts = {

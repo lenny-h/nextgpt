@@ -4,7 +4,7 @@ import { useEditor } from "@/contexts/editor-context";
 import { useGlobalTranslations } from "@/contexts/global-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { type EditorContent } from "@/contexts/text-editor-content-context";
-import { filenameSchema } from "@/types/validations";
+import { filenameSchema } from "@/schemas/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";

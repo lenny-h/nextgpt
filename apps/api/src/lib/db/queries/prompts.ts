@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { prompts } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { prompts } from "@workspace/server/drizzle/schema.js";
 import { count, eq } from "drizzle-orm";
 
 export async function getPrompt(promptId: string) {

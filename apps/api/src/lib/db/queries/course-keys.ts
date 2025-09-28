@@ -1,6 +1,6 @@
-import { db } from "@/drizzle/db.js";
-import { courseKeys } from "@/drizzle/schema.js";
 import { decryptApiKey } from "@/src/utils/encryption.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { courseKeys } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 

@@ -64,6 +64,10 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
     );
 
     checkResponse(response, globalT.globalErrors);
+
+    onClose();
+
+    queryClient.invalidateQueries({ queryKey: ["prompts"] });
   }
 
   return (
@@ -72,14 +76,8 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
         onSubmit={form.handleSubmit((values) => {
           toast.promise(onSubmit(values), {
             loading: globalT.components.addPromptForm.creating,
-            success: () => {
-              onClose();
-
-              queryClient.invalidateQueries({ queryKey: ["prompts"] });
-
-              return globalT.components.addPromptForm.success;
-            },
-            error: () => globalT.components.addPromptForm.errorSaving,
+            success: globalT.components.addPromptForm.success,
+            error: globalT.components.addPromptForm.errorSaving,
           });
         })}
       >
@@ -91,7 +89,10 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
               <FormItem>
                 <FormLabel>{globalT.components.addPromptForm.name}</FormLabel>
                 <FormControl>
-                  <Input placeholder={globalT.components.addPromptForm.promptName} {...field} />
+                  <Input
+                    placeholder={globalT.components.addPromptForm.promptName}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -102,10 +103,14 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{globalT.components.addPromptForm.content}</FormLabel>
+                <FormLabel>
+                  {globalT.components.addPromptForm.content}
+                </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={globalT.components.addPromptForm.contentPlaceholder}
+                    placeholder={
+                      globalT.components.addPromptForm.contentPlaceholder
+                    }
                     className="min-h-32"
                     {...field}
                   />

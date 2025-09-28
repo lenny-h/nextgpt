@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../../../apps/api/drizzle/db.js";
+import { db } from "./drizzle/db.js";
 
 // const redis = createClient();
 // await redis.connect();
@@ -16,7 +16,7 @@ export const auth = betterAuth({
         type: "string",
         required: true,
       },
-      public: {
+      isPublic: {
         type: "boolean",
         required: true,
         default: true,

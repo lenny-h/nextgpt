@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { models } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { models } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 
 export async function getModelById({

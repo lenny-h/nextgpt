@@ -1,6 +1,6 @@
-import { db } from "@/drizzle/db.js";
-import { documents } from "@/drizzle/schema.js";
 import { type ArtifactKind } from "@/src/types/artifact-kind.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { documents } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 
 export async function getDocument({ id }: { id: string }) {

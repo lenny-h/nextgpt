@@ -6,13 +6,36 @@ import {
   GoogleIcon,
 } from "@workspace/ui/components/icons";
 import { Key } from "lucide-react";
-import { memo } from "react";
+import { memo, useState } from "react";
+import { toast } from "sonner";
 import { useSharedTranslations } from "../contexts/shared-translations-context.js";
 import { client } from "../lib/auth-client";
 import { SubmitButton } from "./submit-button.js";
 
 export const SocialLogins = memo(() => {
   const { sharedT } = useSharedTranslations();
+
+  const [isPending, setIsPending] = useState(false);
+
+  const handleGoogleLogin = () => {
+    const googleLoginPromise = async () => {
+      setIsPending(true);
+
+      const response = await client.signIn.social({
+        provider: "google",
+      });
+
+      setIsPending(false);
+
+      return response;
+    };
+
+    toast.promise(googleLoginPromise, {
+      loading: "Redirecting to Google...",
+      success: "Redirecting to Google",
+      error: "Failed to redirect to Google",
+    });
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,12 +53,8 @@ export const SocialLogins = memo(() => {
         <SubmitButton
           variant="outline"
           className="border-primary w-full"
-          onClick={() =>
-            client.signIn.social({
-              provider: "google",
-            })
-          }
-          isPending={false}
+          onClick={handleGoogleLogin}
+          isPending={isPending}
           pendingText="Redirecting..."
         >
           <GoogleIcon />

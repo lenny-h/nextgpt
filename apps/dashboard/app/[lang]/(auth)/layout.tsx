@@ -1,5 +1,5 @@
-import { type Locale } from "@/i18n.config";
-import { createClient } from "@/lib/supabase/server";
+import { client } from "@workspace/ui/lib/auth-client";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import { redirect } from "next/navigation";
 
 export default async function Layout({
@@ -11,18 +11,14 @@ export default async function Layout({
 }) {
   const lang = (await params).lang;
 
-  const supabase = await createClient();
+  const { data } = await client.getSession();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
+  if (data?.user) {
     return redirect(`/${lang}/buckets`);
   }
 
   return (
-    <div className="min-h-svh flex flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">{children}</div>
     </div>
   );

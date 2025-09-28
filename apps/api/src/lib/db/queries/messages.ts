@@ -1,6 +1,6 @@
-import { db } from "@/drizzle/db.js";
-import { chats, messages } from "@/drizzle/schema.js";
 import { type MyUIMessage } from "@/src/types/custom-ui-message.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { chats, messages } from "@workspace/server/drizzle/schema.js";
 import { and, desc, eq, gte } from "drizzle-orm";
 
 export async function getMessageById({ messageId }: { messageId: string }) {

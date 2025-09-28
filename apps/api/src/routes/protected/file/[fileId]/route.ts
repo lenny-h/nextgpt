@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { pages } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { pages } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";

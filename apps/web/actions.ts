@@ -11,7 +11,7 @@ import {
   signInFormSchema,
   type SignUpFormData,
   signUpFormSchema,
-} from "./types/validations";
+} from "./schemas/validations";
 
 export const signUpAction = async (values: SignUpFormData) => {
   if (!signUpFormSchema.safeParse(values)) {

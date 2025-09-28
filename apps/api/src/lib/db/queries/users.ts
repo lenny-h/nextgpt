@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { user } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { user } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
 
 export async function getUserIdsByUsernames(usernames: string[]) {

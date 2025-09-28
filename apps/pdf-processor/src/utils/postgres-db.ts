@@ -1,4 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@workspace/server/drizzle/db.js";
+import {
+  buckets,
+  courses,
+  files,
+  pages,
+  tasks,
+} from "@workspace/server/drizzle/schema.js";
+import { eq, sql } from "drizzle-orm";
 
 interface EmbeddedPage {
   pageId: string;
@@ -11,11 +19,6 @@ interface EmbeddedPage {
 
 const CHUNK_SIZE = 100;
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export const uploadToPostgresDb = async (
   taskId: string,
   courseId: string,
@@ -26,29 +29,24 @@ export const uploadToPostgresDb = async (
   let insertedFileId: string | null = null;
 
   try {
-    const { data: courseData, error: courseError } = await supabase
-      .from("courses")
-      .select("name")
-      .eq("id", courseId)
-      .single();
+    const courseData = await db
+      .select({ name: courses.name })
+      .from(courses)
+      .where(eq(courses.id, courseId))
+      .limit(1);
 
-    if (courseError) {
+    if (!courseData.length) {
       throw new Error("Course not found");
     }
 
-    const { error: fileError } = await supabase
-      .from("files")
-      .insert({
-        id: taskId,
-        course_id: courseId,
-        name: filename,
-        size: fileSize,
-      })
-      .single();
+    await db.insert(files).values({
+      id: taskId,
+      courseId: courseId,
+      name: filename,
+      size: fileSize,
+    });
 
-    if (fileError) {
-      throw new Error("Failed to insert file");
-    }
+    insertedFileId = taskId;
 
     // Process pages in chunks
     for (let i = 0; i < processedPages.length; i += CHUNK_SIZE) {
@@ -61,76 +59,68 @@ export const uploadToPostgresDb = async (
 
         return {
           id: pageData.pageId,
-          file_id: insertedFileId,
-          file_name: filename,
-          course_id: courseId,
-          course_name: courseData.name,
+          fileId: insertedFileId!,
+          fileName: filename,
+          courseId: courseId,
+          courseName: courseData[0].name,
           embedding: pageData.embedding,
           content: pageData.content,
-          page_index: pageData.pageIndex,
+          pageIndex: pageData.pageIndex,
           ...(pageData.pageNumber !== 0 &&
             Number.isInteger(pageData.pageNumber) && {
-              page_number: pageData.pageNumber,
+              pageNumber: pageData.pageNumber,
             }),
           ...(chapter !== 0 && { chapter }),
-          ...(subChapter !== 0 && { sub_chapter: subChapter }),
+          ...(subChapter !== 0 && { subChapter: subChapter }),
         };
       });
 
-      const { error: pagesError } = await supabase
-        .from("pages")
-        .insert(pagesToInsert);
-
-      if (pagesError) {
-        console.error("Error inserting pages:", pagesError);
-        throw new Error("Failed to insert pages");
-      }
+      await db.insert(pages).values(pagesToInsert);
     }
   } catch (error) {
     // Cleanup on failure
     if (insertedFileId) {
       // Delete all pages associated with this file
-      await supabase.from("pages").delete().eq("file_id", insertedFileId);
+      await db.delete(pages).where(eq(pages.fileId, insertedFileId));
 
       // Delete the file
-      await supabase.from("files").delete().eq("id", insertedFileId);
+      await db.delete(files).where(eq(files.id, insertedFileId));
     }
     throw error;
   }
 };
 
 export const updateStatusToProcessing = async (taskId: string) => {
-  const { error } = await supabase
-    .from("tasks")
-    .update({ status: "processing" })
-    .eq("id", taskId);
-
-  if (error) {
-    throw new Error("Failed to update task status to processing");
-  }
+  await db
+    .update(tasks)
+    .set({ status: "processing" })
+    .where(eq(tasks.id, taskId));
 };
 
 export const updateStatusToFailed = async (
   taskId: string,
   bucketId: string
 ) => {
-  const { error: error } = await supabase.rpc("update_status_to_failed", {
-    p_task_id: taskId,
-    p_bucket_id: bucketId,
-  });
+  await db.transaction(async (tx) => {
+    // Update task status to failed
+    await tx
+      .update(tasks)
+      .set({ status: "failed" })
+      .where(eq(tasks.id, taskId));
 
-  if (error) {
-    throw new Error("Failed to update bucket size");
-  }
+    // Update bucket size by subtracting the file size
+    await tx
+      .update(buckets)
+      .set({
+        size: sql`size - (SELECT file_size FROM tasks WHERE id = ${taskId})`,
+      })
+      .where(eq(buckets.id, bucketId));
+  });
 };
 
 export const updateStatusToFinished = async (taskId: string) => {
-  const { error } = await supabase
-    .from("tasks")
-    .update({ status: "finished" })
-    .eq("id", taskId);
-
-  if (error) {
-    throw new Error("Failed to update task status to finished");
-  }
+  await db
+    .update(tasks)
+    .set({ status: "finished" })
+    .where(eq(tasks.id, taskId));
 };

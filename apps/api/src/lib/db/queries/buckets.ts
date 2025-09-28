@@ -1,5 +1,9 @@
-import { db } from "@/drizzle/db.js";
-import { bucketMaintainers, buckets, bucketUsers } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import {
+  bucketMaintainers,
+  buckets,
+  bucketUsers,
+} from "@workspace/server/drizzle/schema.js";
 import { and, eq, sql } from "drizzle-orm";
 
 const maxFileSizes = {

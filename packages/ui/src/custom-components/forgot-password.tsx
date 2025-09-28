@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { memo, useState } from "react";
+import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -17,14 +17,13 @@ import { Input } from "../components/input.js";
 import { useSharedTranslations } from "../contexts/shared-translations-context.js";
 import { client } from "../lib/auth-client";
 import {
-  forgotPasswordFormSchema,
   type ForgotPasswordFormData,
-} from "../types/validations.js";
+  forgotPasswordFormSchema,
+} from "../lib/validations.js";
 import { SubmitButton } from "./submit-button.js";
 
 export const ForgotPassword = memo(() => {
   const { locale } = useSharedTranslations();
-  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordFormSchema),
@@ -34,22 +33,23 @@ export const ForgotPassword = memo(() => {
   });
 
   async function onSubmit(values: ForgotPasswordFormData) {
-    setIsPending(true);
-
-    try {
-      await client.requestPasswordReset({
+    const resetPromise = client
+      .requestPasswordReset({
         email: values.email,
         redirectTo: `/${locale}/reset-password`,
+      })
+      .then((response) => {
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
+        return response;
       });
 
-      toast.success("A password reset link has been sent to your email.");
-    } catch (error) {
-      console.error("Error sending password reset email:", error);
-
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsPending(false);
-    }
+    toast.promise(resetPromise, {
+      loading: "Sending email...",
+      success: "A password reset link has been sent to your email.",
+      error: (error) => error.message || "Failed to send reset email",
+    });
   }
 
   return (
@@ -84,7 +84,7 @@ export const ForgotPassword = memo(() => {
           />
           <SubmitButton
             className="w-full"
-            isPending={isPending}
+            isPending={form.formState.isSubmitting}
             pendingText="Sending email..."
           >
             Reset Password

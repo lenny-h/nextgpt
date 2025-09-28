@@ -1,10 +1,10 @@
-import { db } from "@/drizzle/db.js";
+import { db } from "@workspace/server/drizzle/db.js";
 import {
+  courseKeys,
+  courseMaintainers,
   courses,
   courseUsers,
-  courseMaintainers,
-  courseKeys,
-} from "@/drizzle/schema.js";
+} from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
 
 export async function getBucketIdByCourseId({

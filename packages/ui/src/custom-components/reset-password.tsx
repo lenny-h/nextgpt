@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { memo, useState } from "react";
+import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -17,14 +17,13 @@ import { client } from "../lib/auth-client";
 import {
   ResetPasswordFormData,
   resetPasswordFormSchema,
-} from "../types/validations.js";
+} from "../lib/validations.js";
 import { SubmitButton } from "./submit-button.js";
 
 export const ResetPassword = memo(() => {
   const { locale } = useSharedTranslations();
 
   const router = useRouter();
-  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordFormSchema),
@@ -40,19 +39,24 @@ export const ResetPassword = memo(() => {
       return;
     }
 
-    setIsPending(true);
+    const resetPromise = client
+      .resetPassword({
+        newPassword: values.password,
+        token: new URLSearchParams(window.location.search).get("token")!,
+      })
+      .then((response) => {
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
+        router.push(`/${locale}/sign-in`);
+        return response;
+      });
 
-    const response = await client.resetPassword({
-      newPassword: values.password,
-      token: new URLSearchParams(window.location.search).get("token")!,
+    toast.promise(resetPromise, {
+      loading: "Resetting password...",
+      success: "Password reset successfully!",
+      error: (error) => error.message || "Failed to reset password",
     });
-
-    if (response.error) {
-      toast.error(response.error.message);
-    }
-
-    setIsPending(false);
-    router.push(`/${locale}/sign-in`);
   }
 
   return (
@@ -92,7 +96,7 @@ export const ResetPassword = memo(() => {
           />
           <SubmitButton
             className="w-full"
-            isPending={isPending}
+            isPending={form.formState.isSubmitting}
             pendingText="Resetting password..."
           >
             Reset password

@@ -1,17 +1,17 @@
-import { db } from "@/drizzle/db.js";
-import { pages } from "@/drizzle/schema.js";
 import { type Filter } from "@/src/schemas/filter-schema.js";
 import { type PracticeFilter } from "@/src/schemas/practice-filter-schema.js";
 import { type DocumentSource } from "@/src/types/document-source.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { pages } from "@workspace/server/drizzle/schema.js";
 import {
-  asc,
-  eq,
-  inArray,
-  desc,
-  gt,
-  sql,
-  cosineDistance,
   and,
+  asc,
+  cosineDistance,
+  desc,
+  eq,
+  gt,
+  inArray,
+  sql,
 } from "drizzle-orm";
 
 export async function matchDocuments({

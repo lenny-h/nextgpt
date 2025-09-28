@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -17,14 +17,12 @@ import {
 import { Input } from "../components/input.js";
 import { useSharedTranslations } from "../contexts/shared-translations-context.js";
 import { client, signIn } from "../lib/auth-client";
-import { fetcher } from "../lib/fetcher";
-import { type SignInFormData, signInFormSchema } from "../types/validations.js";
+import { type SignInFormData, signInFormSchema } from "../lib/validations.js";
 import { SocialLogins } from "./social-logins.js";
 import { SubmitButton } from "./submit-button.js";
 
 export const SignIn = memo(() => {
-  const { sharedT, locale } = useSharedTranslations();
-  const [isPending, setIsPending] = useState(false);
+  const { locale } = useSharedTranslations();
 
   const router = useRouter();
 
@@ -51,45 +49,21 @@ export const SignIn = memo(() => {
   });
 
   async function onSubmit(values: SignInFormData) {
-    setIsPending(true);
-
-    try {
-      await signIn.email({
+    const signInPromise = signIn
+      .email({
         email: values.email,
         password: values.password,
         rememberMe: true,
+      })
+      .then(async () => {
+        router.push(`/${locale}`);
       });
 
-      try {
-        const profile = await fetcher(
-          "profiles",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          },
-          sharedT.apiCodes
-        );
-
-        if (!profile) {
-          router.push(`/${locale}/profile`);
-        }
-
-        router.push(`/${locale}`);
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-
-        router.push(`/${locale}`);
-      }
-    } catch (error) {
-      console.error("Error signing in:", error);
-
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsPending(false);
-    }
+    toast.promise(signInPromise, {
+      loading: "Signing in...",
+      success: "Successfully signed in",
+      error: "Something went wrong. Please try again.",
+    });
   }
 
   return (
@@ -149,7 +123,7 @@ export const SignIn = memo(() => {
               </div>
               <SubmitButton
                 className="w-full"
-                isPending={isPending}
+                isPending={form.formState.isSubmitting}
                 pendingText="Signing in..."
               >
                 Sign in

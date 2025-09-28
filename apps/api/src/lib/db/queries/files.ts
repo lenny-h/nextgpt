@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { buckets, files } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { buckets, files } from "@workspace/server/drizzle/schema.js";
 import { eq, inArray, sql } from "drizzle-orm";
 
 export async function getCourseIdByFileId({ fileId }: { fileId: string }) {

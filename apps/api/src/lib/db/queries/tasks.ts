@@ -1,5 +1,5 @@
-import { db } from "@/drizzle/db.js";
-import { tasks, courses, buckets } from "@/drizzle/schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { buckets, courses, tasks } from "@workspace/server/drizzle/schema.js";
 import { eq, sql } from "drizzle-orm";
 
 export async function getTaskDetails({ taskId }: { taskId: string }) {
