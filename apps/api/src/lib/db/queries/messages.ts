@@ -1,36 +1,24 @@
-import { type MyUIMessage } from "../../../types/custom-ui-message.js";
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { chats, messages } from "@/drizzle/schema.js";
+import { type MyUIMessage } from "@/src/types/custom-ui-message.js";
+import { and, desc, eq, gte } from "drizzle-orm";
 
-export async function getMessageById({
-  userId,
-  messageId,
-}: {
-  userId: string;
-  messageId: string;
-}) {
-  const supabase = createServiceClient();
+export async function getMessageById({ messageId }: { messageId: string }) {
+  const result = await db
+    .select({ chatId: messages.chatId, createdAt: messages.createdAt })
+    .from(messages)
+    .where(eq(messages.id, messageId));
 
-  const { data, error } = await supabase
-    .from("messages")
-    .select()
-    .eq("id", messageId)
-    .eq("user_id", userId);
-
-  if (error) throw error;
-  return data;
+  if (result.length === 0) throw new Error("Message not found");
+  return result[0];
 }
 
 export async function getMessagesByChatId({ chatId }: { chatId: string }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("messages")
+  return await db
     .select()
-    .eq("chat_id", chatId)
-    .order("created_at", { ascending: true });
-
-  if (error) throw error;
-  return data;
+    .from(messages)
+    .where(eq(messages.chatId, chatId))
+    .orderBy(messages.createdAt);
 }
 
 export async function saveMessages({
@@ -40,18 +28,19 @@ export async function saveMessages({
   chatId: string;
   newMessages: MyUIMessage[];
 }) {
-  const supabase = createServiceClient();
+  const messagesToInsert = newMessages.map((msg) => ({
+    chatId,
+    ...msg,
+  }));
 
-  const { data, error } = await supabase.from("messages").upsert(
-    // @ts-ignore
-    newMessages.map((msg) => ({
-      chat_id: chatId,
-      ...msg,
-    }))
-  );
-
-  if (error) throw error;
-  return data;
+  return await db
+    .insert(messages)
+    .values(messagesToInsert)
+    .onConflictDoUpdate({
+      target: messages.id,
+      set: messagesToInsert[0], // This will need adjustment based on your schema
+    })
+    .returning();
 }
 
 export async function deleteMessagesByChatIdAfterTimestamp({
@@ -59,17 +48,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   timestamp,
 }: {
   chatId: string;
-  timestamp: string;
+  timestamp: Date;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase
-    .from("messages")
-    .delete()
-    .eq("chat_id", chatId)
-    .gte("created_at", timestamp);
-
-  if (error) throw error;
+  await db
+    .delete(messages)
+    .where(
+      and(eq(messages.chatId, chatId), gte(messages.createdAt, timestamp))
+    );
 }
 
 export async function isChatOwner({
@@ -79,27 +64,26 @@ export async function isChatOwner({
   userId: string;
   chatId: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ userId: chats.userId })
+    .from(chats)
+    .where(eq(chats.id, chatId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("chats")
-    .select("user_id")
-    .eq("id", chatId)
-    .single();
-
-  if (error) throw error;
-
-  return data.user_id === userId;
+  if (result.length === 0) throw new Error("Chat not found");
+  return result[0].userId === userId;
 }
 
 export async function deleteLastMessage({ chatId }: { chatId: string }) {
-  const supabase = createServiceClient();
+  // Get the last message first
+  const lastMessage = await db
+    .select({ id: messages.id })
+    .from(messages)
+    .where(eq(messages.chatId, chatId))
+    .orderBy(desc(messages.createdAt))
+    .limit(1);
 
-  const { error } = await supabase
-    .from("messages")
-    .delete()
-    .eq("chat_id", chatId)
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
+  if (lastMessage.length > 0) {
+    await db.delete(messages).where(eq(messages.id, lastMessage[0].id));
+  }
 }

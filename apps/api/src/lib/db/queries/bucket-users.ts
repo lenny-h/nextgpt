@@ -1,4 +1,6 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { bucketUsers } from "@/drizzle/schema.js";
+import { and, eq, inArray } from "drizzle-orm";
 
 export async function filterNonExistingBucketUsers({
   bucketId,
@@ -7,18 +9,18 @@ export async function filterNonExistingBucketUsers({
   bucketId: string;
   userIds: string[];
 }) {
-  const supabase = createServiceClient();
-
   // Get users that ARE already in the bucket
-  const { data: existingUsers, error } = await supabase
-    .from("bucket_users")
-    .select("user_id")
-    .eq("bucket_id", bucketId)
-    .in("user_id", userIds);
+  const existingUsers = await db
+    .select({ userId: bucketUsers.userId })
+    .from(bucketUsers)
+    .where(
+      and(
+        eq(bucketUsers.bucketId, bucketId),
+        inArray(bucketUsers.userId, userIds)
+      )
+    );
 
-  if (error) throw error;
-
-  const existingUserIds = existingUsers.map((row) => row.user_id);
+  const existingUserIds = existingUsers.map((row) => row.userId);
 
   // Return only users that are NOT in the bucket
   return userIds.filter((userId) => !existingUserIds.includes(userId));

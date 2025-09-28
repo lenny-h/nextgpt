@@ -1,4 +1,6 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { and, eq, inArray } from "drizzle-orm";
+import { db } from "@/drizzle/db.js";
+import { courseMaintainers } from "@/drizzle/schema.js";
 
 export async function isCourseMaintainer({
   userId,
@@ -7,16 +9,18 @@ export async function isCourseMaintainer({
   userId: string;
   courseId: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select()
+    .from(courseMaintainers)
+    .where(
+      and(
+        eq(courseMaintainers.userId, userId),
+        eq(courseMaintainers.courseId, courseId)
+      )
+    )
+    .limit(1);
 
-  const { count, error } = await supabase
-    .from("course_maintainers")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("course_id", courseId);
-
-  if (error) throw error;
-  return count !== null && count > 0;
+  return result.length > 0;
 }
 
 export async function removeCourseMaintainer({
@@ -26,15 +30,14 @@ export async function removeCourseMaintainer({
   userId: string;
   courseId: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase
-    .from("course_maintainers")
-    .delete()
-    .eq("user_id", userId)
-    .eq("course_id", courseId);
-
-  if (error) throw error;
+  await db
+    .delete(courseMaintainers)
+    .where(
+      and(
+        eq(courseMaintainers.userId, userId),
+        eq(courseMaintainers.courseId, courseId)
+      )
+    );
 }
 
 export async function removeCourseMaintainersBatch({
@@ -44,15 +47,14 @@ export async function removeCourseMaintainersBatch({
   userIds: string[];
   courseId: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase
-    .from("course_maintainers")
-    .delete()
-    .eq("course_id", courseId)
-    .in("user_id", userIds);
-
-  if (error) throw error;
+  await db
+    .delete(courseMaintainers)
+    .where(
+      and(
+        eq(courseMaintainers.courseId, courseId),
+        inArray(courseMaintainers.userId, userIds)
+      )
+    );
 }
 
 export async function filterNonExistingCourseMaintainers({
@@ -62,19 +64,16 @@ export async function filterNonExistingCourseMaintainers({
   courseId: string;
   userIds: string[];
 }) {
-  const supabase = createServiceClient();
+  const existingMaintainers = await db
+    .select({ userId: courseMaintainers.userId })
+    .from(courseMaintainers)
+    .where(
+      and(
+        eq(courseMaintainers.courseId, courseId),
+        inArray(courseMaintainers.userId, userIds)
+      )
+    );
 
-  // Get users that ARE already maintainers of the course
-  const { data: existingMaintainers, error } = await supabase
-    .from("course_maintainers")
-    .select("user_id")
-    .eq("course_id", courseId)
-    .in("user_id", userIds);
-
-  if (error) throw error;
-
-  const existingMaintainerIds = existingMaintainers.map((row) => row.user_id);
-
-  // Return only users that are NOT maintainers of the course
+  const existingMaintainerIds = existingMaintainers.map((row) => row.userId);
   return userIds.filter((userId) => !existingMaintainerIds.includes(userId));
 }

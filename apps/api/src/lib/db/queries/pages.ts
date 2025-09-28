@@ -1,7 +1,18 @@
-import { type Filter } from "../../../schemas/filter-schema.js";
-import { type PracticeFilter } from "../../../schemas/practice-filter-schema.js";
-import { type DocumentSource } from "../../../types/document-source.js";
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { pages } from "@/drizzle/schema.js";
+import { type Filter } from "@/src/schemas/filter-schema.js";
+import { type PracticeFilter } from "@/src/schemas/practice-filter-schema.js";
+import { type DocumentSource } from "@/src/types/document-source.js";
+import {
+  asc,
+  eq,
+  inArray,
+  desc,
+  gt,
+  sql,
+  cosineDistance,
+  and,
+} from "drizzle-orm";
 
 export async function matchDocuments({
   queryEmbedding,
@@ -16,37 +27,49 @@ export async function matchDocuments({
   matchThreshold?: number;
   matchCount?: number;
 }) {
-  const supabase = createServiceClient();
+  const similarity = sql<number>`1 - (${cosineDistance(pages.embedding, queryEmbedding)})`;
 
-  const params: any = {
-    query_embedding: queryEmbedding,
-    retrieve_content: retrieveContent,
-    match_threshold: matchThreshold,
-    match_count: matchCount,
-  };
+  const baseQuery = db
+    .select({
+      id: pages.id,
+      fileId: pages.fileId,
+      fileName: pages.fileName,
+      courseId: pages.courseId,
+      courseName: pages.courseName,
+      pageIndex: pages.pageIndex,
+      ...(retrieveContent ? { content: pages.content } : {}),
+      similarity,
+    })
+    .from(pages);
+
+  const conditions = [gt(similarity, matchThreshold)];
 
   if (filter.files.length > 0) {
     if ("studyMode" in filter) {
-      params.file_ids = filter.files.map((file) => file.id);
+      const fileIds = filter.files.map((file) => file.id);
+      conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      params.file_ids = filter.files;
+      conditions.push(inArray(pages.fileId, filter.files));
     }
   } else if (filter.courses.length > 0) {
-    params.course_ids = filter.courses;
+    conditions.push(inArray(pages.courseId, filter.courses));
   }
 
-  const { data, error } = await supabase.rpc("match_documents", params);
+  const result = await baseQuery
+    .where(and(...conditions))
+    .orderBy(desc(similarity))
+    .limit(matchCount);
 
-  if (error) throw error;
-
-  return data.map((doc) => ({
+  return result.map((doc) => ({
     id: doc.id,
-    fileId: doc.file_id,
-    fileName: doc.file_name,
-    courseId: doc.course_id,
-    courseName: doc.course_name,
-    pageIndex: doc.page_index,
-    ...("content" in doc ? { pageContent: doc.content } : {}),
+    fileId: doc.fileId,
+    fileName: doc.fileName,
+    courseId: doc.courseId,
+    courseName: doc.courseName,
+    pageIndex: doc.pageIndex,
+    ...(retrieveContent && "content" in doc
+      ? { pageContent: doc.content }
+      : {}),
   }));
 }
 
@@ -61,74 +84,64 @@ export async function searchPagesByContent({
   retrieveContent?: boolean;
   limit?: number;
 }) {
-  // Format the search query for full-text search
-  // Replace spaces with & for AND search or | for OR search
   const formattedQuery = searchQuery
     .split(/\s+/)
     .filter((word) => word.length > 0)
     .join(" | ");
 
-  const supabase = createServiceClient();
+  const baseQuery = retrieveContent
+    ? db
+        .select({
+          id: pages.id,
+          fileId: pages.fileId,
+          fileName: pages.fileName,
+          courseId: pages.courseId,
+          courseName: pages.courseName,
+          pageIndex: pages.pageIndex,
+          pageNumber: pages.pageNumber,
+          content: pages.content,
+        })
+        .from(pages)
+    : db
+        .select({
+          id: pages.id,
+          fileId: pages.fileId,
+          fileName: pages.fileName,
+          courseId: pages.courseId,
+          courseName: pages.courseName,
+          pageIndex: pages.pageIndex,
+          pageNumber: pages.pageNumber,
+        })
+        .from(pages);
 
-  let query = retrieveContent
-    ? supabase.from("pages").select(
-        `
-    id,
-    file_id,
-    file_name,
-    course_id,
-    course_name,
-    page_index,
-    page_number,
-    content
-  `
-      )
-    : supabase.from("pages").select(
-        `
-    id, 
-    file_id, 
-    file_name, 
-    course_id, 
-    course_name, 
-    page_index, 
-    page_number
-  `
-      );
+  const conditions = [
+    sql`to_tsvector('english', ${pages.content}) @@ to_tsquery('english', ${formattedQuery})`,
+  ];
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
-      query = query
-        .in(
-          "file_id",
-          filter.files.map((file) => file.id)
-        )
-        .textSearch("content", formattedQuery);
+      const fileIds = filter.files.map((file) => file.id);
+      conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      query = query
-        .in("file_id", filter.files)
-        .textSearch("content", formattedQuery);
+      conditions.push(inArray(pages.fileId, filter.files));
     }
   } else if (filter.courses && filter.courses.length > 0) {
-    query = query
-      .in("course_id", filter.courses)
-      .textSearch("content", formattedQuery);
+    conditions.push(inArray(pages.courseId, filter.courses));
   }
 
-  const { data, error } = await query.limit(limit);
+  const result = await baseQuery.where(and(...conditions)).limit(limit);
 
-  if (error) {
-    throw error;
-  }
-
-  return data.map((doc) => ({
+  return result.map((doc) => ({
     id: doc.id,
-    fileId: doc.file_id,
-    fileName: doc.file_name,
-    courseId: doc.course_id,
-    courseName: doc.course_name,
-    pageIndex: doc.page_index,
-    pageNumber: doc.page_number,
-    ...("content" in doc ? { pageContent: doc.content } : {}),
+    fileId: doc.fileId,
+    fileName: doc.fileName,
+    courseId: doc.courseId,
+    courseName: doc.courseName,
+    pageIndex: doc.pageIndex,
+    pageNumber: doc.pageNumber,
+    ...(retrieveContent && "content" in doc
+      ? { pageContent: doc.content }
+      : {}),
   }));
 }
 
@@ -141,51 +154,51 @@ export async function retrievePagesByPageNumbers({
   filter: Filter | PracticeFilter;
   retrieveContent?: boolean;
 }) {
-  const supabase = createServiceClient();
+  const baseQuery = retrieveContent
+    ? db
+        .select({
+          id: pages.id,
+          fileId: pages.fileId,
+          fileName: pages.fileName,
+          courseId: pages.courseId,
+          courseName: pages.courseName,
+          pageIndex: pages.pageIndex,
+          content: pages.content,
+        })
+        .from(pages)
+    : db
+        .select({
+          id: pages.id,
+          fileId: pages.fileId,
+          fileName: pages.fileName,
+          courseId: pages.courseId,
+          courseName: pages.courseName,
+          pageIndex: pages.pageIndex,
+        })
+        .from(pages);
 
-  let query = retrieveContent
-    ? supabase
-        .from("pages")
-        .select(
-          "id, file_id, file_name, course_id, course_name, page_index, content"
-        )
-    : supabase
-        .from("pages")
-        .select("id, file_id, file_name, course_id, course_name, page_index");
+  const conditions = [inArray(pages.pageNumber, pageNumbers)];
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
-      query = query
-        .in(
-          "file_id",
-          filter.files.map((file) => file.id)
-        )
-        .in("page_number", pageNumbers)
-        .limit(4);
+      const fileIds = filter.files.map((file) => file.id);
+      conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      query = query
-        .in("file_id", filter.files)
-        .in("page_number", pageNumbers)
-        .limit(4);
+      conditions.push(inArray(pages.fileId, filter.files));
     }
   } else if (filter.courses && filter.courses.length > 0) {
-    query = query
-      .in("course_id", filter.courses)
-      .in("page_number", pageNumbers)
-      .limit(4);
+    conditions.push(inArray(pages.courseId, filter.courses));
   }
 
-  const { data, error } = await query;
-
-  if (error) throw error;
+  const data = await baseQuery.where(and(...conditions)).limit(4);
 
   return data.map((doc) => ({
     id: doc.id,
-    fileId: doc.file_id,
-    fileName: doc.file_name,
-    courseId: doc.course_id,
-    courseName: doc.course_name,
-    pageIndex: doc.page_index,
+    fileId: doc.fileId,
+    fileName: doc.fileName,
+    courseId: doc.courseId,
+    courseName: doc.courseName,
+    pageIndex: doc.pageIndex,
     ...("content" in doc && doc.content ? { pageContent: doc.content } : {}),
   }));
 }
@@ -199,54 +212,54 @@ export async function retrievePagesByChapter({
   filter: Filter | PracticeFilter;
   retrieveContent?: boolean;
 }) {
-  const supabase = createServiceClient();
+  const baseQuery = retrieveContent
+    ? db
+        .select({
+          id: pages.id,
+          fileId: pages.fileId,
+          fileName: pages.fileName,
+          courseId: pages.courseId,
+          courseName: pages.courseName,
+          pageIndex: pages.pageIndex,
+          content: pages.content,
+        })
+        .from(pages)
+    : db
+        .select({
+          id: pages.id,
+          fileId: pages.fileId,
+          fileName: pages.fileName,
+          courseId: pages.courseId,
+          courseName: pages.courseName,
+          pageIndex: pages.pageIndex,
+        })
+        .from(pages);
 
-  let query = retrieveContent
-    ? supabase
-        .from("pages")
-        .select(
-          "id, file_id, file_name, course_id, course_name, page_index, content"
-        )
-    : supabase
-        .from("pages")
-        .select("id, file_id, file_name, course_id, course_name, page_index");
+  const conditions = [eq(pages.chapter, chapter)];
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
-      query = query
-        .in(
-          "file_id",
-          filter.files.map((file) => file.id)
-        )
-        .eq("chapter", chapter)
-        .order("page_index", { ascending: true })
-        .limit(8);
+      const fileIds = filter.files.map((file) => file.id);
+      conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      query = query
-        .in("file_id", filter.files)
-        .eq("chapter", chapter)
-        .order("page_index", { ascending: true })
-        .limit(8);
+      conditions.push(inArray(pages.fileId, filter.files));
     }
   } else if (filter.courses && filter.courses.length > 0) {
-    query = query
-      .in("course_id", filter.courses)
-      .eq("chapter", chapter)
-      .order("page_index", { ascending: true })
-      .limit(8);
+    conditions.push(inArray(pages.courseId, filter.courses));
   }
 
-  const { data, error } = await query;
-
-  if (error) throw error;
+  const data = await baseQuery
+    .where(and(...conditions))
+    .orderBy(asc(pages.pageIndex))
+    .limit(8);
 
   return data.map((doc) => ({
     id: doc.id,
-    fileId: doc.file_id,
-    fileName: doc.file_name,
-    courseId: doc.course_id,
-    courseName: doc.course_name,
-    pageIndex: doc.page_index,
+    fileId: doc.fileId,
+    fileName: doc.fileName,
+    courseId: doc.courseId,
+    courseName: doc.courseName,
+    pageIndex: doc.pageIndex,
     ...("content" in doc && doc.content ? { pageContent: doc.content } : {}),
   }));
 }
@@ -263,79 +276,82 @@ export async function retrieveRandomSources({
     .map((file) => file.id);
   const fileObjects = filter.files.filter((file) => file.chapters.length !== 0);
 
-  const supabase = createServiceClient();
-
   const randomPagesPromise =
     fileIds.length > 0
-      ? supabase.rpc("get_random_pages", {
-          p_file_ids: fileIds,
-          retrieve_content: retrieveContent,
-        })
-      : Promise.resolve({ data: [], error: null });
+      ? db
+          .select({
+            id: pages.id,
+            fileId: pages.fileId,
+            fileName: pages.fileName,
+            courseId: pages.courseId,
+            courseName: pages.courseName,
+            pageIndex: pages.pageIndex,
+            ...(retrieveContent ? { content: pages.content } : {}),
+          })
+          .from(pages)
+          .where(inArray(pages.fileId, fileIds))
+          .orderBy(sql`random()`)
+          .limit(4)
+      : Promise.resolve([]);
 
   const randomChapterPagesPromises = fileObjects.map((fileObject) =>
-    supabase.rpc("get_random_chapter_pages", {
-      p_file_id: fileObject.id,
-      p_file_chapters: fileObject.chapters,
-      retrieve_content: retrieveContent,
-    })
+    db
+      .select({
+        id: pages.id,
+        fileId: pages.fileId,
+        fileName: pages.fileName,
+        courseId: pages.courseId,
+        courseName: pages.courseName,
+        pageIndex: pages.pageIndex,
+        ...(retrieveContent ? { content: pages.content } : {}),
+      })
+      .from(pages)
+      .where(
+        and(
+          eq(pages.fileId, fileObject.id),
+          inArray(pages.chapter, fileObject.chapters)
+        )
+      )
+      .orderBy(sql`random()`)
+      .limit(4)
   );
 
-  const randomChapterPagesPromise = Promise.all(
-    randomChapterPagesPromises
-  ).then((results) => {
-    return {
-      data: results.flatMap((result) => result.data || []),
-      error: results.find((result) => result.error)?.error || null,
-    };
-  });
-
-  const [randomPages, randomChapterPages] = await Promise.all([
+  const [randomPages, ...randomChapterPagesResults] = await Promise.all([
     randomPagesPromise,
-    randomChapterPagesPromise,
+    ...randomChapterPagesPromises,
   ]);
 
-  if (randomPages.error) throw randomPages.error;
-  if (randomChapterPages.error) throw randomChapterPages.error;
+  const randomChapterPages = randomChapterPagesResults.flat();
 
   return [
-    ...(randomPages.data?.map((page) => ({
+    ...randomPages.map((page) => ({
       id: page.id,
-      fileId: page.file_id,
-      fileName: page.file_name,
-      courseId: page.course_id,
-      courseName: page.course_name,
-      pageIndex: page.page_index,
-      ...(page.content && { pageContent: page.content }),
-    })) || []),
-    ...(randomChapterPages.data?.map((page) => ({
+      fileId: page.fileId,
+      fileName: page.fileName,
+      courseId: page.courseId,
+      courseName: page.courseName,
+      pageIndex: page.pageIndex,
+      ...(retrieveContent && "content" in page && page.content
+        ? { pageContent: page.content }
+        : {}),
+    })),
+    ...randomChapterPages.map((page) => ({
       id: page.id,
-      fileId: page.file_id,
-      fileName: page.file_name,
-      courseId: page.course_id,
-      courseName: page.course_name,
-      pageIndex: page.page_index,
-      ...(page.content && { pageContent: page.content }),
-    })) || []),
+      fileId: page.fileId,
+      fileName: page.fileName,
+      courseId: page.courseId,
+      courseName: page.courseName,
+      pageIndex: page.pageIndex,
+      ...(retrieveContent && "content" in page && page.content
+        ? { pageContent: page.content }
+        : {}),
+    })),
   ];
 }
 
 export async function getFilePages({ fileId }: { fileId: string }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("pages")
-    .select("id")
-    .eq("file_id", fileId);
-
-  if (error) throw error;
-  return data;
-}
-
-export async function deletePage({ pageId }: { pageId: string }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase.from("pages").delete().eq("id", pageId);
-
-  if (error) throw error;
+  return await db
+    .select({ id: pages.id })
+    .from(pages)
+    .where(eq(pages.fileId, fileId));
 }

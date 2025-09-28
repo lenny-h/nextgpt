@@ -1,4 +1,6 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { bucketMaintainers } from "@/drizzle/schema.js";
+import { and, count, eq, inArray } from "drizzle-orm";
 
 export async function isBucketMaintainer({
   userId,
@@ -7,16 +9,17 @@ export async function isBucketMaintainer({
   userId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ count: count() })
+    .from(bucketMaintainers)
+    .where(
+      and(
+        eq(bucketMaintainers.userId, userId),
+        eq(bucketMaintainers.bucketId, bucketId)
+      )
+    );
 
-  const { count, error } = await supabase
-    .from("bucket_maintainers")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("bucket_id", bucketId);
-
-  if (error) throw error;
-  return count !== null && count > 0;
+  return result[0].count > 0;
 }
 
 export async function removeBucketMaintainer({
@@ -26,15 +29,14 @@ export async function removeBucketMaintainer({
   userId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase
-    .from("bucket_maintainers")
-    .delete()
-    .eq("user_id", userId)
-    .eq("bucket_id", bucketId);
-
-  if (error) throw error;
+  await db
+    .delete(bucketMaintainers)
+    .where(
+      and(
+        eq(bucketMaintainers.userId, userId),
+        eq(bucketMaintainers.bucketId, bucketId)
+      )
+    );
 }
 
 export async function removeBucketMaintainersBatch({
@@ -44,15 +46,14 @@ export async function removeBucketMaintainersBatch({
   userIds: string[];
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase
-    .from("bucket_maintainers")
-    .delete()
-    .eq("bucket_id", bucketId)
-    .in("user_id", userIds);
-
-  if (error) throw error;
+  await db
+    .delete(bucketMaintainers)
+    .where(
+      and(
+        eq(bucketMaintainers.bucketId, bucketId),
+        inArray(bucketMaintainers.userId, userIds)
+      )
+    );
 }
 
 export async function filterNonExistingBucketMaintainers({
@@ -62,18 +63,18 @@ export async function filterNonExistingBucketMaintainers({
   bucketId: string;
   userIds: string[];
 }) {
-  const supabase = createServiceClient();
-
   // Get users that ARE already maintainers of the bucket
-  const { data: existingMaintainers, error } = await supabase
-    .from("bucket_maintainers")
-    .select("user_id")
-    .eq("bucket_id", bucketId)
-    .in("user_id", userIds);
+  const existingMaintainers = await db
+    .select({ userId: bucketMaintainers.userId })
+    .from(bucketMaintainers)
+    .where(
+      and(
+        eq(bucketMaintainers.bucketId, bucketId),
+        inArray(bucketMaintainers.userId, userIds)
+      )
+    );
 
-  if (error) throw error;
-
-  const existingMaintainerIds = existingMaintainers.map((row) => row.user_id);
+  const existingMaintainerIds = existingMaintainers.map((row) => row.userId);
 
   // Return only users that are NOT maintainers of the bucket
   return userIds.filter((userId) => !existingMaintainerIds.includes(userId));

@@ -1,3 +1,6 @@
+import { db } from "@/drizzle/db.js";
+import { pages } from "@/drizzle/schema.js";
+import { eq } from "drizzle-orm";
 import { type Context } from "hono";
 import { isCourseMaintainer } from "../../../../lib/db/queries/course-maintainers.js";
 import {
@@ -8,7 +11,7 @@ import {
   deleteFile,
   getCourseFiles,
 } from "../../../../lib/db/queries/files.js";
-import { deletePage, getFilePages } from "../../../../lib/db/queries/pages.js";
+import { getFilePages } from "../../../../lib/db/queries/pages.js";
 import { uuidSchema } from "../../../../schemas/uuid-schema.js";
 import { getPagesBucket } from "../../../../utils/access-clients/google-storage-client.js";
 import { deleteFileFromS3 } from "../../../../utils/access-clients/s3-client.js";
@@ -50,10 +53,8 @@ export async function DELETE(c: Context) {
 
     for (const filePage of filePages) {
       const pageName = filePage.id + ".pdf";
-      await pagesBucket.file(pageName).delete();
-      await deletePage({
-        pageId: filePage.id,
-      });
+      await pagesBucket.file(pageName).delete(); // Delete from GCS
+      await db.delete(pages).where(eq(pages.id, filePage.id)); // Delete from postgres
     }
 
     await deleteFileFromS3({

@@ -1,21 +1,20 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { tasks, courses, buckets } from "@/drizzle/schema.js";
+import { eq, sql } from "drizzle-orm";
 
 export async function getTaskDetails({ taskId }: { taskId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({
+      courseId: tasks.courseId,
+      name: tasks.name,
+      status: tasks.status,
+    })
+    .from(tasks)
+    .where(eq(tasks.id, taskId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("tasks")
-    .select("course_id, name, status")
-    .eq("id", taskId)
-    .single();
-
-  if (error) throw error;
-
-  return {
-    courseId: data.course_id,
-    name: data.name,
-    status: data.status,
-  };
+  if (result.length === 0) throw new Error("Task not found");
+  return result[0];
 }
 
 export async function addTask({
@@ -31,31 +30,46 @@ export async function addTask({
   fileSize: number;
   pubDate?: Date;
 }) {
-  const supabase = createServiceClient();
+  return await db.transaction(async (tx) => {
+    // Get the bucket ID for the course
+    const courseResult = await tx
+      .select({ bucketId: courses.bucketId })
+      .from(courses)
+      .where(eq(courses.id, courseId))
+      .limit(1);
 
-  // Call a stored procedure (RPC) that handles both inserting the task and updating bucket size
-  const { error } = await supabase.rpc("add_task_and_update_bucket", {
-    p_id: id,
-    p_course_id: courseId,
-    p_name: filename,
-    p_file_size: fileSize,
-    p_pub_date: pubDate ? pubDate.toISOString() : undefined,
+    if (courseResult.length === 0) {
+      throw new Error("Course not found");
+    }
+
+    const bucketId = courseResult[0].bucketId;
+
+    // Insert the task
+    await tx.insert(tasks).values({
+      id,
+      courseId,
+      fileSize,
+      name: filename,
+      pubDate,
+    });
+
+    // Update the bucket size
+    await tx
+      .update(buckets)
+      .set({
+        size: sql`${buckets.size} + ${fileSize}`,
+      })
+      .where(eq(buckets.id, bucketId));
   });
-
-  if (error) throw error;
 }
 
 export async function deleteTask({ taskId }: { taskId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .delete(tasks)
+    .where(eq(tasks.id, taskId))
+    .returning({ id: tasks.id });
 
-  const { data, error } = await supabase
-    .from("tasks")
-    .delete()
-    .eq("id", taskId)
-    .select("id");
-
-  if (error) throw error;
-  if (!data || data.length === 0) {
+  if (result.length === 0) {
     throw new Error("Task not found");
   }
 }

@@ -1,6 +1,8 @@
+import { db } from "@/drizzle/db.js";
+import { courseKeys } from "@/drizzle/schema.js";
+import { decryptApiKey } from "@/src/utils/encryption.js";
+import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { decryptApiKey } from "../../../utils/encryption.js";
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
 
 export async function validateCourseKey({
   courseId,
@@ -9,22 +11,20 @@ export async function validateCourseKey({
   courseId: string;
   key: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ key: courseKeys.key })
+    .from(courseKeys)
+    .where(eq(courseKeys.courseId, courseId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("course_keys")
-    .select("key")
-    .eq("course_id", courseId)
-    .single();
-
-  if (error) {
+  if (result.length === 0) {
     throw new HTTPException(400, {
-      message: "Course not found or key not available",
+      message: "COURSE_NOT_FOUND",
     });
   }
 
-  if (key !== decryptApiKey(data.key)) {
-    throw new HTTPException(403, { message: "Invalid course key" });
+  if (key !== decryptApiKey(result[0].key)) {
+    throw new HTTPException(403, { message: "INVALID_COURSE_KEY" });
   }
 
   return true;

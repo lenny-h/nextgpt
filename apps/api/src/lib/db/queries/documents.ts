@@ -1,17 +1,22 @@
-import { type ArtifactKind } from "../../../types/artifact-kind.js";
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { documents } from "@/drizzle/schema.js";
+import { type ArtifactKind } from "@/src/types/artifact-kind.js";
+import { and, eq } from "drizzle-orm";
 
 export async function getDocument({ id }: { id: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({
+      userId: documents.userId,
+      title: documents.title,
+      content: documents.content,
+      kind: documents.kind,
+    })
+    .from(documents)
+    .where(eq(documents.id, id))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("documents")
-    .select("user_id, title, content, kind")
-    .eq("id", id)
-    .single();
-
-  if (error) throw new Error("Not found");
-  return { id, ...data };
+  if (result.length === 0) throw new Error("Not found");
+  return { id, ...result[0] };
 }
 
 export async function insertDocument({
@@ -25,44 +30,38 @@ export async function insertDocument({
   content: string;
   kind: ArtifactKind;
 }) {
-  const supabase = createServiceClient();
+  const existingDoc = await db
+    .select({ id: documents.id })
+    .from(documents)
+    .where(and(eq(documents.userId, userId), eq(documents.title, title)))
+    .limit(1);
 
-  // Check if document already exists
-  const { data: existingDoc } = await supabase
-    .from("documents")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("title", title)
-    .maybeSingle();
-
-  if (existingDoc) {
+  if (existingDoc.length > 0) {
     // Update existing document
-    const { data, error } = await supabase
-      .from("documents")
-      .update({
+    const result = await db
+      .update(documents)
+      .set({
         content,
         kind,
-        created_at: new Date().toISOString(),
+        createdAt: new Date(),
       })
-      .eq("id", existingDoc.id)
-      .select();
+      .where(eq(documents.id, existingDoc[0].id))
+      .returning();
 
-    if (error) throw error;
-    return data;
+    return result;
   } else {
     // Insert new document
-    const { data, error } = await supabase
-      .from("documents")
-      .insert({
-        user_id: userId,
+    const result = await db
+      .insert(documents)
+      .values({
+        userId,
         title,
         content,
         kind,
       })
-      .select();
+      .returning();
 
-    if (error) throw error;
-    return data;
+    return result;
   }
 }
 
@@ -75,18 +74,14 @@ export async function saveDocument({
   id: string;
   content: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("documents")
-    .update({
+  const result = await db
+    .update(documents)
+    .set({
       content,
-      created_at: new Date().toISOString(),
+      createdAt: new Date(),
     })
-    .eq("id", id)
-    .eq("user_id", userId)
-    .select();
+    .where(and(eq(documents.id, id), eq(documents.userId, userId)))
+    .returning();
 
-  if (error) throw error;
-  return data;
+  return result;
 }

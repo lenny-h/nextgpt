@@ -1,4 +1,6 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { bucketMaintainers, buckets, bucketUsers } from "@/drizzle/schema.js";
+import { and, eq, sql } from "drizzle-orm";
 
 const maxFileSizes = {
   small: 2,
@@ -8,53 +10,36 @@ const maxFileSizes = {
 };
 
 export async function getBuckets({ userId }: { userId: string }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("buckets")
-    .select()
-    .eq("owner", userId);
-
-  if (error) throw error;
-  return data;
+  return await db.select().from(buckets).where(eq(buckets.owner, userId));
 }
 
 export async function getBucketOwner({ bucketId }: { bucketId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ owner: buckets.owner, name: buckets.name })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("buckets")
-    .select("owner, name")
-    .eq("id", bucketId)
-    .single();
-
-  if (error) throw error;
-  return data;
+  if (result.length === 0) throw new Error("Bucket not found");
+  return result[0];
 }
 
 export async function getBucketName({ bucketId }: { bucketId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ name: buckets.name })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("buckets")
-    .select("name")
-    .eq("id", bucketId)
-    .single();
-
-  if (error) throw error;
-  return data.name;
+  if (result.length === 0) throw new Error("Bucket not found");
+  return result[0].name;
 }
 
 export async function getUserBuckets({ userId }: { userId: string }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("bucket_users")
-    .select("bucket_id")
-    .eq("user_id", userId);
-
-  if (error) throw error;
-  return data;
+  return await db
+    .select({ bucketId: bucketUsers.bucketId })
+    .from(bucketUsers)
+    .where(eq(bucketUsers.userId, userId));
 }
 
 export async function isBucketUser({
@@ -64,17 +49,15 @@ export async function isBucketUser({
   userId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("bucket_users")
-    .select("bucket_id")
-    .eq("bucket_id", bucketId)
-    .eq("user_id", userId)
+  const result = await db
+    .select({ bucketId: bucketUsers.bucketId })
+    .from(bucketUsers)
+    .where(
+      and(eq(bucketUsers.bucketId, bucketId), eq(bucketUsers.userId, userId))
+    )
     .limit(1);
 
-  if (error) throw error;
-  return data.length > 0;
+  return result.length > 0;
 }
 
 export async function isBucketOwner({
@@ -84,16 +67,14 @@ export async function isBucketOwner({
   userId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ owner: buckets.owner })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("buckets")
-    .select("owner")
-    .eq("id", bucketId)
-    .single();
-
-  if (error) throw error;
-  return data.owner === userId;
+  if (result.length === 0) throw new Error("Bucket not found");
+  return result[0].owner === userId;
 }
 
 export async function createBucket({
@@ -105,48 +86,58 @@ export async function createBucket({
   name: string;
   type: "small" | "medium" | "large";
 }) {
-  const supabase = createServiceClient();
-
   const maxSize = maxFileSizes[type] * 1024 * 1024 * 1024;
 
-  const { error } = await supabase.rpc("create_bucket", {
-    // Creates bucket and adds owner as user and bucket maintainer
-    p_owner: userId,
-    p_name: name,
-    p_type: type,
-    p_max_size: maxSize,
-  });
+  return await db.transaction(async (tx) => {
+    // Insert bucket
+    const [bucket] = await tx
+      .insert(buckets)
+      .values({
+        owner: userId,
+        name,
+        type,
+        usersCount: 1,
+        maxSize,
+      })
+      .returning({ id: buckets.id });
 
-  if (error) throw error;
+    // Insert bucket maintainer
+    await tx.insert(bucketMaintainers).values({
+      bucketId: bucket.id,
+      userId,
+    });
+
+    // Insert bucket user
+    await tx.insert(bucketUsers).values({
+      bucketId: bucket.id,
+      userId,
+    });
+
+    return bucket.id;
+  });
 }
 
 export async function deleteBucket({ bucketId }: { bucketId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .delete(buckets)
+    .where(eq(buckets.id, bucketId))
+    .returning({ name: buckets.name });
 
-  const { data, error } = await supabase
-    .from("buckets")
-    .delete()
-    .eq("id", bucketId)
-    .select("name")
-    .single();
-
-  if (error) throw error;
-  return { name: data.name };
+  if (result.length === 0) throw new Error("Bucket not found");
+  return { name: result[0].name };
 }
 
 export async function getBucketSize({ bucketId }: { bucketId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ size: buckets.size, maxSize: buckets.maxSize })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("buckets")
-    .select("size, max_size")
-    .eq("id", bucketId)
-    .single();
-
-  if (error) throw error;
+  if (result.length === 0) throw new Error("Bucket not found");
   return {
-    size: data.size,
-    maxSize: data.max_size,
+    size: result[0].size,
+    maxSize: result[0].maxSize,
   };
 }
 
@@ -157,13 +148,15 @@ export async function increaseBucketSize({
   bucketId: string;
   fileSize: number;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .update(buckets)
+    .set({
+      size: sql`${buckets.size} + ${fileSize}`,
+    })
+    .where(eq(buckets.id, bucketId))
+    .returning({ id: buckets.id });
 
-  // Call the RPC function to increase bucket size in a single operation
-  const { error } = await supabase.rpc("increase_bucket_size", {
-    p_bucket_id: bucketId,
-    p_file_size: fileSize,
-  });
-
-  if (error) throw error;
+  if (result.length === 0) {
+    throw new Error(`Bucket with ID ${bucketId} not found`);
+  }
 }

@@ -1,50 +1,51 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import {
+  courses,
+  courseUsers,
+  courseMaintainers,
+  courseKeys,
+} from "@/drizzle/schema.js";
+import { and, eq, inArray } from "drizzle-orm";
 
 export async function getBucketIdByCourseId({
   courseId,
 }: {
   courseId: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ bucketId: courses.bucketId })
+    .from(courses)
+    .where(eq(courses.id, courseId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("courses")
-    .select("bucket_id")
-    .eq("id", courseId)
-    .single();
-
-  if (error) throw new Error("Not found");
-  return data.bucket_id;
+  if (result.length === 0) throw new Error("Not found");
+  return result[0].bucketId;
 }
 
 export async function getCourseDetails({ courseId }: { courseId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ bucketId: courses.bucketId, name: courses.name })
+    .from(courses)
+    .where(eq(courses.id, courseId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("courses")
-    .select("bucket_id, name")
-    .eq("id", courseId)
-    .single();
-
-  if (error) throw error;
+  if (result.length === 0) throw new Error("Not found");
 
   return {
-    bucketId: data.bucket_id,
-    name: data.name,
+    bucketId: result[0].bucketId,
+    name: result[0].name,
   };
 }
 
 export async function isPrivate({ courseId }: { courseId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ private: courses.private })
+    .from(courses)
+    .where(eq(courses.id, courseId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("courses")
-    .select("private")
-    .eq("id", courseId)
-    .single();
-
-  if (error) throw new Error("Not found");
-  return data.private;
+  if (result.length === 0) throw new Error("Not found");
+  return result[0].private;
 }
 
 export async function validateCoursesInBucket({
@@ -58,31 +59,28 @@ export async function validateCoursesInBucket({
 }) {
   if (courseIds.length === 0) return true;
 
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("courses")
-    .select("id, private")
-    .eq("bucket_id", bucketId)
-    .in("id", courseIds);
-
-  if (error) throw error;
+  const coursesData = await db
+    .select({ id: courses.id, private: courses.private })
+    .from(courses)
+    .where(and(eq(courses.bucketId, bucketId), inArray(courses.id, courseIds)));
 
   // Check if all requested courses exist
-  if (data.length !== courseIds.length) return false;
+  if (coursesData.length !== courseIds.length) return false;
 
-  const privateCourseIds = data
+  const privateCourseIds = coursesData
     .filter((course) => course.private)
     .map((course) => course.id);
 
   if (privateCourseIds.length > 0) {
-    const { data: courseUsersData, error: courseUsersError } = await supabase
-      .from("course_users")
-      .select("course_id")
-      .in("course_id", privateCourseIds)
-      .eq("user_id", userId);
-
-    if (courseUsersError) throw courseUsersError;
+    const courseUsersData = await db
+      .select({ courseId: courseUsers.courseId })
+      .from(courseUsers)
+      .where(
+        and(
+          inArray(courseUsers.courseId, privateCourseIds),
+          eq(courseUsers.userId, userId)
+        )
+      );
 
     if (courseUsersData.length < privateCourseIds.length) {
       return false;
@@ -93,15 +91,12 @@ export async function validateCoursesInBucket({
 }
 
 export async function getCourses({ bucketId }: { bucketId: string }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("courses")
+  const result = await db
     .select()
-    .eq("bucket_id", bucketId);
+    .from(courses)
+    .where(eq(courses.bucketId, bucketId));
 
-  if (error) throw error;
-  return data;
+  return result;
 }
 
 export async function createCourse({
@@ -117,30 +112,42 @@ export async function createCourse({
   userId: string;
   encryptedKey?: string;
 }) {
-  const supabase = createServiceClient();
+  return await db.transaction(async (tx) => {
+    // Insert course
+    const [course] = await tx
+      .insert(courses)
+      .values({
+        name,
+        description,
+        bucketId,
+        private: encryptedKey !== undefined,
+      })
+      .returning({ id: courses.id });
 
-  const { data, error } = await supabase.rpc("create_course", {
-    p_name: name,
-    p_description: description,
-    p_bucket_id: bucketId,
-    p_user_id: userId,
-    p_encrypted_key: encryptedKey,
+    // Insert maintainer
+    await tx.insert(courseMaintainers).values({
+      courseId: course.id,
+      userId,
+    });
+
+    // Insert encrypted key if provided
+    if (encryptedKey !== undefined) {
+      await tx.insert(courseKeys).values({
+        courseId: course.id,
+        key: encryptedKey,
+      });
+    }
+
+    return course.id;
   });
-
-  if (error) throw error;
-  return { id: data };
 }
 
 export async function deleteCourse({ courseId }: { courseId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .delete(courses)
+    .where(eq(courses.id, courseId))
+    .returning({ name: courses.name });
 
-  const { data, error } = await supabase
-    .from("courses")
-    .delete()
-    .eq("id", courseId)
-    .select("name")
-    .single();
-
-  if (error) throw error;
-  return data.name;
+  if (result.length === 0) throw new Error("Course not found");
+  return result[0].name;
 }

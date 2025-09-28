@@ -1,4 +1,6 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { models } from "@/drizzle/schema.js";
+import { and, eq } from "drizzle-orm";
 
 export async function getModelById({
   id,
@@ -7,37 +9,39 @@ export async function getModelById({
   id: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({
+      name: models.name,
+      resourceName: models.resourceName,
+      deploymentId: models.deploymentId,
+      encApiKey: models.encApiKey,
+    })
+    .from(models)
+    .where(and(eq(models.id, id), eq(models.bucketId, bucketId)))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("models")
-    .select("name, resource_name, deployment_id, enc_api_key")
-    .eq("id", id)
-    .eq("bucket_id", bucketId)
-    .single();
-
-  if (error) throw new Error("Model not found");
+  if (result.length === 0) throw new Error("Model not found");
 
   return {
-    model_name: data.name,
-    resource_name: data.resource_name,
-    deployment_id: data.deployment_id,
-    api_key: data.enc_api_key,
+    model_name: result[0].name,
+    resource_name: result[0].resourceName,
+    deployment_id: result[0].deploymentId,
+    api_key: result[0].encApiKey,
   };
 }
 
 export async function getModelDetails({ modelId }: { modelId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({
+      bucketId: models.bucketId,
+      name: models.name,
+    })
+    .from(models)
+    .where(eq(models.id, modelId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("models")
-    .select("bucket_id, name")
-    .eq("id", modelId)
-    .single();
-
-  if (error) throw error;
-
-  return { bucketId: data.bucket_id, name: data.name };
+  if (result.length === 0) throw new Error("Model not found");
+  return result[0];
 }
 
 export async function addModel({
@@ -55,28 +59,19 @@ export async function addModel({
   encApiKey: string;
   description?: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase
-    .from("models")
-    .insert({
-      bucket_id: bucketId,
+  await db
+    .insert(models)
+    .values({
+      bucketId,
       name: modelName,
-      resource_name: resourceName || null,
-      deployment_id: deploymentId || null,
-      enc_api_key: encApiKey,
+      resourceName: resourceName || null,
+      deploymentId: deploymentId || null,
+      encApiKey,
       description: description || null,
     })
-    .select("id")
-    .single();
-
-  if (error) throw error;
+    .returning({ id: models.id });
 }
 
 export async function deleteModel({ modelId }: { modelId: string }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase.from("models").delete().eq("id", modelId);
-
-  if (error) throw error;
+  await db.delete(models).where(eq(models.id, modelId));
 }

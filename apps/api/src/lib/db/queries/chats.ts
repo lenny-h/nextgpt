@@ -1,16 +1,12 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { chats } from "@/drizzle/schema.js";
+import { and, desc, eq, lt } from "drizzle-orm";
 
 export async function getChatById({ id }: { id: string }) {
-  const supabase = createServiceClient();
+  const result = await db.select().from(chats).where(eq(chats.id, id)).limit(1);
 
-  const { data, error } = await supabase
-    .from("chats")
-    .select()
-    .eq("id", id)
-    .single();
-
-  if (error) throw error;
-  return data;
+  if (result.length === 0) throw new Error("Chat not found");
+  return result[0];
 }
 
 export async function getFavouriteChatsByUserId({
@@ -20,23 +16,22 @@ export async function getFavouriteChatsByUserId({
   id: string;
   cursor: string | null;
 }) {
-  const supabase = createServiceClient();
+  const baseWhere = cursor
+    ? and(
+        eq(chats.userId, id),
+        eq(chats.isFavourite, true),
+        lt(chats.createdAt, new Date(cursor))
+      )
+    : and(eq(chats.userId, id), eq(chats.isFavourite, true));
 
-  let query = supabase
-    .from("chats")
+  const query = db
     .select()
-    .eq("user_id", id)
-    .eq("is_favourite", true)
-    .order("created_at", { ascending: false })
+    .from(chats)
+    .where(baseWhere)
+    .orderBy(desc(chats.createdAt))
     .limit(10);
 
-  if (cursor) {
-    query = query.lt("created_at", new Date(cursor).toISOString());
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
+  return await query;
 }
 
 export async function updateChatFavouriteStatus({
@@ -46,17 +41,14 @@ export async function updateChatFavouriteStatus({
   id: string;
   isFavourite: boolean;
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .update(chats)
+    .set({ isFavourite })
+    .where(eq(chats.id, id))
+    .returning();
 
-  const { data, error } = await supabase
-    .from("chats")
-    .update({ is_favourite: isFavourite })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw new Error("Not found");
-  return data;
+  if (result.length === 0) throw new Error("Not found");
+  return result[0];
 }
 
 export async function saveChat({
@@ -68,30 +60,39 @@ export async function saveChat({
   userId: string;
   title: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
-    .from("chats")
-    .insert({
+  const result = await db
+    .insert(chats)
+    .values({
       id,
-      user_id: userId,
+      userId,
       title,
     })
-    .select()
-    .single();
+    .returning();
 
-  if (error) throw error;
-
+  const data = result[0];
   return {
     ...data,
-    created_at: new Date(data.created_at).toLocaleString(),
+    created_at: new Date(data.createdAt).toLocaleString(),
   };
 }
 
 export async function deleteChatById({ id }: { id: string }) {
-  const supabase = createServiceClient();
+  await db.delete(chats).where(eq(chats.id, id));
+}
 
-  const { error } = await supabase.from("chats").delete().eq("id", id);
+export async function isChatOwner({
+  userId,
+  chatId,
+}: {
+  userId: string;
+  chatId: string;
+}) {
+  const result = await db
+    .select({ userId: chats.userId })
+    .from(chats)
+    .where(eq(chats.id, chatId))
+    .limit(1);
 
-  if (error) throw error;
+  if (result.length === 0) throw new Error("Chat not found");
+  return result[0].userId === userId;
 }

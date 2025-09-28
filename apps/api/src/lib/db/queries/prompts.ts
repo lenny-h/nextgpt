@@ -1,17 +1,16 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { prompts } from "@/drizzle/schema.js";
+import { count, eq } from "drizzle-orm";
 
 export async function getPrompt(promptId: string) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ content: prompts.content })
+    .from(prompts)
+    .where(eq(prompts.id, promptId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("prompts")
-    .select("content")
-    .eq("id", promptId)
-    .single();
-
-  if (error) throw error;
-
-  return data.content;
+  if (result.length === 0) throw new Error("Prompt not found");
+  return result[0].content;
 }
 
 export async function insertPrompt({
@@ -23,25 +22,18 @@ export async function insertPrompt({
   name: string;
   content: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase.from("prompts").insert({
-    user_id: userId,
+  await db.insert(prompts).values({
+    userId,
     name,
     content,
   });
-
-  if (error) throw error;
 }
 
 export async function getPromptsCount(userId: string) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ count: count() })
+    .from(prompts)
+    .where(eq(prompts.userId, userId));
 
-  const { count, error } = await supabase
-    .from("prompts")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
-
-  if (error) throw error;
-  return count;
+  return result[0].count;
 }

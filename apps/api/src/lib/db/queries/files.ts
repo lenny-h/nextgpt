@@ -1,16 +1,16 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import { buckets, files } from "@/drizzle/schema.js";
+import { eq, inArray, sql } from "drizzle-orm";
 
 export async function getCourseIdByFileId({ fileId }: { fileId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ courseId: files.courseId })
+    .from(files)
+    .where(eq(files.id, fileId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("files")
-    .select("course_id")
-    .eq("id", fileId)
-    .single();
-
-  if (error) throw new Error("Not found");
-  return data.course_id;
+  if (result.length === 0) throw new Error("Not found");
+  return result[0].courseId;
 }
 
 export async function getCourseIdsByFileIds({
@@ -18,43 +18,35 @@ export async function getCourseIdsByFileIds({
 }: {
   fileIds: string[];
 }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ courseId: files.courseId })
+    .from(files)
+    .where(inArray(files.id, fileIds));
 
-  const { data, error } = await supabase
-    .from("files")
-    .select("course_id")
-    .in("id", fileIds);
-
-  if (error) throw error;
-  return data.map((file) => file.course_id);
+  return result.map((file) => file.courseId);
 }
 
 export async function getFileDetails({ fileId }: { fileId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ courseId: files.courseId, name: files.name })
+    .from(files)
+    .where(eq(files.id, fileId))
+    .limit(1);
 
-  const { data, error } = await supabase
-    .from("files")
-    .select("course_id, name")
-    .eq("id", fileId)
-    .single();
-
-  if (error) throw new Error("Not found");
+  if (result.length === 0) throw new Error("Not found");
   return {
-    courseId: data.course_id,
-    name: data.name,
+    courseId: result[0].courseId,
+    name: result[0].name,
   };
 }
 
 export async function getCourseFiles({ courseId }: { courseId: string }) {
-  const supabase = createServiceClient();
+  const result = await db
+    .select({ id: files.id, name: files.name })
+    .from(files)
+    .where(eq(files.courseId, courseId));
 
-  const { data, error } = await supabase
-    .from("files")
-    .select("id, name")
-    .eq("course_id", courseId);
-
-  if (error) throw error;
-  return data;
+  return result;
 }
 
 export async function deleteFile({
@@ -64,12 +56,28 @@ export async function deleteFile({
   bucketId: string;
   fileId: string;
 }) {
-  const supabase = createServiceClient();
+  await db.transaction(async (tx) => {
+    // Delete the file and get its size
+    const deletedFile = await tx
+      .delete(files)
+      .where(eq(files.id, fileId))
+      .returning({ size: files.size });
 
-  const { error } = await supabase.rpc("delete_file_and_update_bucket_size", {
-    p_file_id: fileId,
-    p_bucket_id: bucketId,
+    if (deletedFile.length === 0) {
+      throw new Error(`File not found with ID ${fileId}`);
+    }
+
+    const deletedFileSize = deletedFile[0].size;
+
+    // Update the bucket's size by subtracting the deleted file's size
+    const updatedBucket = await tx
+      .update(buckets)
+      .set({ size: sql`${buckets.size} - ${deletedFileSize}` })
+      .where(eq(buckets.id, bucketId))
+      .returning({ id: buckets.id });
+
+    if (updatedBucket.length === 0) {
+      throw new Error(`Bucket not found with ID ${bucketId}`);
+    }
   });
-
-  if (error) throw error;
 }

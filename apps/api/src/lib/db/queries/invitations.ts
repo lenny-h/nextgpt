@@ -1,4 +1,14 @@
-import { createServiceClient } from "../../../utils/supabase/service-client.js";
+import { db } from "@/drizzle/db.js";
+import {
+  bucketMaintainerInvitations,
+  bucketMaintainers,
+  buckets,
+  bucketUsers,
+  courseMaintainerInvitations,
+  courseMaintainers,
+  userInvitations,
+} from "@/drizzle/schema.js";
+import { and, eq, sql } from "drizzle-orm";
 
 const maxUserCounts = {
   small: 5,
@@ -18,18 +28,26 @@ export async function addUserInvitationsBatch({
   bucketId: string;
   bucketName: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase.from("user_invitations").upsert(
-    invitations.map((inv) => ({
-      origin: originUserId,
-      target: inv,
-      bucket_id: bucketId,
-      bucket_name: bucketName,
-    }))
-  );
-
-  if (error) throw error;
+  await db
+    .insert(userInvitations)
+    .values(
+      invitations.map((inv) => ({
+        origin: originUserId,
+        target: inv,
+        bucketId: bucketId,
+        bucketName: bucketName,
+      }))
+    )
+    .onConflictDoUpdate({
+      target: [
+        userInvitations.origin,
+        userInvitations.target,
+        userInvitations.bucketId,
+      ],
+      set: {
+        bucketName: bucketName,
+      },
+    });
 }
 
 export async function addCourseMaintainerInvitationsBatch({
@@ -43,18 +61,26 @@ export async function addCourseMaintainerInvitationsBatch({
   courseId: string;
   courseName: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase.from("course_maintainer_invitations").upsert(
-    invitations.map((inv) => ({
-      origin: originUserId,
-      target: inv,
-      course_id: courseId,
-      course_name: courseName,
-    }))
-  );
-
-  if (error) throw error;
+  await db
+    .insert(courseMaintainerInvitations)
+    .values(
+      invitations.map((inv) => ({
+        origin: originUserId,
+        target: inv,
+        courseId: courseId,
+        courseName: courseName,
+      }))
+    )
+    .onConflictDoUpdate({
+      target: [
+        courseMaintainerInvitations.origin,
+        courseMaintainerInvitations.target,
+        courseMaintainerInvitations.courseId,
+      ],
+      set: {
+        courseName: courseName,
+      },
+    });
 }
 
 export async function addBucketMaintainerInvitationsBatch({
@@ -68,18 +94,26 @@ export async function addBucketMaintainerInvitationsBatch({
   bucketId: string;
   bucketName: string;
 }) {
-  const supabase = createServiceClient();
-
-  const { error } = await supabase.from("bucket_maintainer_invitations").upsert(
-    invitations.map((inv) => ({
-      origin: originUserId,
-      target: inv,
-      bucket_id: bucketId,
-      bucket_name: bucketName,
-    }))
-  );
-
-  if (error) throw error;
+  await db
+    .insert(bucketMaintainerInvitations)
+    .values(
+      invitations.map((inv) => ({
+        origin: originUserId,
+        target: inv,
+        bucketId: bucketId,
+        bucketName: bucketName,
+      }))
+    )
+    .onConflictDoUpdate({
+      target: [
+        bucketMaintainerInvitations.origin,
+        bucketMaintainerInvitations.target,
+        bucketMaintainerInvitations.bucketId,
+      ],
+      set: {
+        bucketName: bucketName,
+      },
+    });
 }
 
 export async function acceptUserInvitation({
@@ -91,33 +125,46 @@ export async function acceptUserInvitation({
   targetUserId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  const bucket = await db
+    .select({ type: buckets.type, usersCount: buckets.usersCount })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
 
-  const { data: bucket, error: bucketError } = await supabase
-    .from("buckets")
-    .select("type, users_count")
-    .eq("id", bucketId)
-    .single();
+  if (bucket.length === 0) throw new Error("Bucket not found");
 
-  if (bucketError) throw bucketError;
-
-  if (bucket.users_count >= maxUserCounts[bucket.type]) {
+  if (bucket[0].usersCount >= maxUserCounts[bucket[0].type]) {
     throw new Error(
       `Bucket has reached the maximum number of users (${
-        maxUserCounts[bucket.type]
+        maxUserCounts[bucket[0].type]
       })`
     );
   }
 
-  const { data, error } = await supabase.rpc("accept_invitation", {
-    p_invitation_type: "user",
-    p_origin_user_id: originUserId,
-    p_target_user_id: targetUserId,
-    p_resource_id: bucketId,
-  });
+  await db.transaction(async (tx) => {
+    // Insert the user into bucket_users if not exists
+    await tx
+      .insert(bucketUsers)
+      .values({ bucketId, userId: targetUserId })
+      .onConflictDoNothing();
 
-  if (error) throw error;
-  return data;
+    // Increase the bucket user count
+    await tx
+      .update(buckets)
+      .set({ usersCount: sql`${buckets.usersCount} + 1` })
+      .where(eq(buckets.id, bucketId));
+
+    // Delete the invitation
+    await tx
+      .delete(userInvitations)
+      .where(
+        and(
+          eq(userInvitations.origin, originUserId),
+          eq(userInvitations.target, targetUserId),
+          eq(userInvitations.bucketId, bucketId)
+        )
+      );
+  });
 }
 
 export async function acceptCourseMaintainerInvitation({
@@ -129,30 +176,35 @@ export async function acceptCourseMaintainerInvitation({
   targetUserId: string;
   courseId: string;
 }) {
-  const supabase = createServiceClient();
+  const maintainerCount = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(courseMaintainers)
+    .where(eq(courseMaintainers.courseId, courseId));
 
-  const { count, error: countError } = await supabase
-    .from("course_maintainers")
-    .select("*", { count: "exact", head: true })
-    .eq("course_id", courseId);
-
-  if (countError) throw countError;
-
-  if (count == null || count >= 20) {
+  if (maintainerCount[0].count >= 20) {
     throw new Error(
       "Course has reached the maximum number of maintainers (20)"
     );
   }
 
-  const { data, error } = await supabase.rpc("accept_invitation", {
-    p_invitation_type: "course_maintainer",
-    p_origin_user_id: originUserId,
-    p_target_user_id: targetUserId,
-    p_resource_id: courseId,
-  });
+  await db.transaction(async (tx) => {
+    // Insert the user as a course maintainer if not exists
+    await tx
+      .insert(courseMaintainers)
+      .values({ courseId, userId: targetUserId })
+      .onConflictDoNothing();
 
-  if (error) throw error;
-  return data;
+    // Delete the invitation
+    await tx
+      .delete(courseMaintainerInvitations)
+      .where(
+        and(
+          eq(courseMaintainerInvitations.origin, originUserId),
+          eq(courseMaintainerInvitations.target, targetUserId),
+          eq(courseMaintainerInvitations.courseId, courseId)
+        )
+      );
+  });
 }
 
 export async function acceptBucketMaintainerInvitation({
@@ -164,30 +216,35 @@ export async function acceptBucketMaintainerInvitation({
   targetUserId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  const maintainerCount = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(bucketMaintainers)
+    .where(eq(bucketMaintainers.bucketId, bucketId));
 
-  const { count, error: countError } = await supabase
-    .from("bucket_maintainers")
-    .select("*", { count: "exact", head: true })
-    .eq("course_id", bucketId);
-
-  if (countError) throw countError;
-
-  if (count == null || count >= 20) {
+  if (maintainerCount[0].count >= 20) {
     throw new Error(
       "Bucket has reached the maximum number of maintainers (20)"
     );
   }
 
-  const { data, error } = await supabase.rpc("accept_invitation", {
-    p_invitation_type: "bucket_maintainer",
-    p_origin_user_id: originUserId,
-    p_target_user_id: targetUserId,
-    p_resource_id: bucketId,
-  });
+  await db.transaction(async (tx) => {
+    // Insert the user as a bucket maintainer if not exists
+    await tx
+      .insert(bucketMaintainers)
+      .values({ bucketId, userId: targetUserId })
+      .onConflictDoNothing();
 
-  if (error) throw error;
-  return data;
+    // Delete the invitation
+    await tx
+      .delete(bucketMaintainerInvitations)
+      .where(
+        and(
+          eq(bucketMaintainerInvitations.origin, originUserId),
+          eq(bucketMaintainerInvitations.target, targetUserId),
+          eq(bucketMaintainerInvitations.bucketId, bucketId)
+        )
+      );
+  });
 }
 
 export async function deleteUserInvitation({
@@ -199,16 +256,16 @@ export async function deleteUserInvitation({
   targetUserId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  await db
+    .delete(userInvitations)
+    .where(
+      and(
+        eq(userInvitations.origin, originUserId),
+        eq(userInvitations.target, targetUserId),
+        eq(userInvitations.bucketId, bucketId)
+      )
+    );
 
-  const { error } = await supabase
-    .from("user_invitations")
-    .delete()
-    .eq("origin", originUserId)
-    .eq("target", targetUserId)
-    .eq("bucket_id", bucketId);
-
-  if (error) throw error;
   return { success: true };
 }
 
@@ -221,16 +278,16 @@ export async function deleteCourseMaintainerInvitation({
   targetUserId: string;
   courseId: string;
 }) {
-  const supabase = createServiceClient();
+  await db
+    .delete(courseMaintainerInvitations)
+    .where(
+      and(
+        eq(courseMaintainerInvitations.origin, originUserId),
+        eq(courseMaintainerInvitations.target, targetUserId),
+        eq(courseMaintainerInvitations.courseId, courseId)
+      )
+    );
 
-  const { error } = await supabase
-    .from("course_maintainer_invitations")
-    .delete()
-    .eq("origin", originUserId)
-    .eq("target", targetUserId)
-    .eq("course_id", courseId);
-
-  if (error) throw error;
   return { success: true };
 }
 
@@ -243,15 +300,15 @@ export async function deleteBucketMaintainerInvitation({
   targetUserId: string;
   bucketId: string;
 }) {
-  const supabase = createServiceClient();
+  await db
+    .delete(bucketMaintainerInvitations)
+    .where(
+      and(
+        eq(bucketMaintainerInvitations.origin, originUserId),
+        eq(bucketMaintainerInvitations.target, targetUserId),
+        eq(bucketMaintainerInvitations.bucketId, bucketId)
+      )
+    );
 
-  const { error } = await supabase
-    .from("bucket_maintainer_invitations")
-    .delete()
-    .eq("origin", originUserId)
-    .eq("target", targetUserId)
-    .eq("bucket_id", bucketId);
-
-  if (error) throw error;
   return { success: true };
 }
