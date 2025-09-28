@@ -21,10 +21,6 @@ export function generateUUID(): string {
   });
 }
 
-export function capitalizeFirstLetter(string: string): string {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 export function debounce<F extends (...args: any[]) => any>(
   func: F,
   waitMilliseconds: number
@@ -59,4 +55,8 @@ export function resizeEditor(
   } else if (collapse) {
     panelRef.current?.collapse();
   }
+}
+
+export function capitalizeFirstLetter(string: string): string {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }

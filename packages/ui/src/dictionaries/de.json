@@ -1,0 +1,31 @@
+{
+  "apiCodes": {
+    "BAD_REQUEST": "Der Server konnte Ihre Anfrage nicht bearbeiten",
+    "UNAUTHORIZED": "Sie müssen angemeldet sein, um diese Aktion durchzuführen",
+    "FORBIDDEN": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen",
+    "NOT_FOUND": "Die Ressource konnte nicht gefunden werden",
+    "PAGE_NOT_FOUND": "Die Seite konnte nicht gefunden werden",
+    "PAYLOAD_TOO_LARGE": "Die Nutzlast Ihrer Anfrage ist zu groß",
+    "RATE_LIMIT": "Das Ratenlimit wurde überschritten",
+    "INTERNAL_SERVER_ERROR": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut",
+    "UPSTREAM_ERROR": "Einige Upstream-Dienste reagieren nicht",
+    "FALLBACK_ERROR": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+    "LOAD_MORE_ERROR": "Fehler beim Laden weiterer Elemente",
+    "ABORT_ERROR": "Die Anfrage wurde abgebrochen",
+    "IMAGE_ERROR": "Bild nicht verfügbar",
+    "NO_RESULTS": "Keine Ergebnisse gefunden",
+    "COURSE_NOT_FOUND": "Der Kurs oder Schlüssel konnte nicht gefunden werden",
+    "INVALID_COURSE_KEY": "Ungültiger Kurs-Schlüssel",
+    "INVALID_BUCKET_ID": "Ungültige Bucket-ID",
+    "BUCKET_SIZE_EXCEEDED": "Die Bucket-Größe wurde überschritten",
+    "CANNOT_REMOVE_YOURSELF": "Sie können sich nicht selbst entfernen",
+    "INVALID_CSV_FILE": "Ungültige CSV-Datei",
+    "TOO_MANY_USERS": "Sie können nicht mehr als 600 Benutzer auf einmal einladen",
+    "PROMPT_LIMIT_REACHED": "Sie haben das Limit für benutzerdefinierte Prompts erreicht",
+    "ONLY_SCHEDULED_TASKS": "Es können nur Aufgaben, die noch nicht gestartet wurden, gelöscht werden",
+    "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten"
+  },
+  "socialLogins": {
+    "loginWithInstitution": "Mit Ihrer Institution anmelden"
+  }
+}

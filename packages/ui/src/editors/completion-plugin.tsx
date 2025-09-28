@@ -11,6 +11,7 @@ import {
   type Transaction,
 } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
+import { apiFetcher } from "../lib/fetcher";
 
 export const COMPLETION_PLUGIN_KEY = new PluginKey<CompletionState>(
   "completion"
@@ -80,8 +81,8 @@ async function fetchCompletion(
   state.requestInProgress = true;
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/completion`,
+    return await apiFetcher(
+      "completion",
       {
         method: "POST",
         headers: {
@@ -90,13 +91,9 @@ async function fetchCompletion(
         credentials: "include",
         body: JSON.stringify({ context }),
         signal: abortController.signal,
-      }
+      },
+      errorDictionary
     );
-
-    checkResponse(response, errorDictionary);
-
-    const { res } = await response.json();
-    return res;
   } catch (error) {
     console.log("Aborted request");
 

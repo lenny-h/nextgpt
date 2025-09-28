@@ -1,0 +1,31 @@
+{
+  "apiCodes": {
+    "BAD_REQUEST": "The server could not serve your request",
+    "UNAUTHORIZED": "You must be signed in to perform this action",
+    "FORBIDDEN": "You do not have permission to access this resource",
+    "NOT_FOUND": "Resource not found",
+    "PAGE_NOT_FOUND": "Page not found",
+    "PAYLOAD_TOO_LARGE": "The payload of your request is too large",
+    "RATE_LIMIT": "The rate limit has been exceeded",
+    "INTERNAL_SERVER_ERROR": "An error occurred. Please try again later",
+    "UPSTREAM_ERROR": "Some upstream services are not responding",
+    "FALLBACK_ERROR": "An error occurred. Please try again later.",
+    "LOAD_MORE_ERROR": "Failed to load more items",
+    "ABORT_ERROR": "The request was aborted",
+    "IMAGE_ERROR": "Image not available",
+    "NO_RESULTS": "No results found",
+    "COURSE_NOT_FOUND": "The course or key could not be found",
+    "INVALID_COURSE_KEY": "Invalid course key",
+    "INVALID_BUCKET_ID": "Invalid bucket ID",
+    "BUCKET_SIZE_EXCEEDED": "The bucket size has been exceeded",
+    "CANNOT_REMOVE_YOURSELF": "You cannot remove yourself as a maintainer",
+    "INVALID_CSV_FILE": "Invalid CSV file",
+    "TOO_MANY_USERS": "You cannot invite more than 600 users at once",
+    "PROMPT_LIMIT_REACHED": "You have reached the limit for custom prompts",
+    "ONLY_SCHEDULED_TASKS": "Only tasks that have not yet started can be deleted",
+    "UNKNOWN_ERROR": "An unknown error occurred"
+  },
+  "socialLogins": {
+    "loginWithInstitution": "Login With Your Institution"
+  }
+}

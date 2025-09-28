@@ -42,215 +42,14 @@ services:
       POSTGRES_DB: postgres
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXP: ${JWT_EXP}
-    command: [
-      "postgres",
-      "-c",
-      "config_file=/etc/postgresql/postgresql.conf",
-      "-c",
-      "log_min_messages=fatal"
-    ]
-    networks:
-      - supabase_network
-
-  # Analytics Service (Logflare)
-  analytics:
-    container_name: analytics
-    image: supabase/logflare:1.22.0
-    restart: unless-stopped
-    ports:
-      - "4000:4000"
-    healthcheck:
-      test: ["CMD", "curl", "http://localhost:4000/health"]
-      timeout: 5s
-      interval: 5s
-      retries: 10
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      DB_HOSTNAME: postgres
-      DB_PASSWORD: ${DB_PASSWORD}
-      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
-      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
-      POSTGRES_BACKEND_URL: postgresql://supabase_admin:${DB_PASSWORD}@postgres:5432/_supabase
-      DB_USERNAME: supabase_admin
-      DB_DATABASE: _supabase
-      DB_PORT: 5432
-      DB_SCHEMA: _analytics
-      LOGFLARE_NODE_HOST: 0.0.0.0
-      LOGFLARE_SINGLE_TENANT: true
-      LOGFLARE_SUPABASE_MODE: true
-      LOGFLARE_MIN_CLUSTER_SIZE: 1
-      POSTGRES_BACKEND_SCHEMA: _analytics
-      LOGFLARE_FEATURE_FLAG_OVERRIDE: multibackend=true
-    networks:
-      - supabase_network
-
-  # Auth Service (GoTrue)
-  auth:
-    container_name: auth
-    image: supabase/gotrue:v2.179.0
-    restart: unless-stopped
-    ports:
-      - "9999:9999"
-    healthcheck:
-      test: [
-              "CMD",
-              "wget",
-              "--no-verbose",
-              "--spider",
-              "http://localhost:9999/health"
-            ]
-      timeout: 5s
-      interval: 5s
-      retries: 3
-    depends_on:
-      postgres:
-        condition: service_healthy
-      analytics:
-        condition: service_healthy
-    environment:
-      API_EXTERNAL_URL: http://localhost:8080
-      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${DB_PASSWORD}@postgres:5432/postgres
-      GOTRUE_SITE_URL: ${SITE_URL}
-      GOTRUE_URI_ALLOW_LIST: ${DASHBOARD_URL}
-      GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
-      GOTRUE_JWT_EXP: ${JWT_EXP}
-      GOTRUE_JWT_SECRET: ${JWT_SECRET}
-      GOTRUE_EXTERNAL_EMAIL_ENABLED: ${ENABLE_EMAIL_SIGNUP}
-      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: ${ENABLE_ANONYMOUS_USERS}
-      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM}
-      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
-      GOTRUE_SMTP_HOST: ${SMTP_HOST}
-      GOTRUE_SMTP_PORT: ${SMTP_PORT}
-      GOTRUE_SMTP_USER: ${SMTP_USER}
-      GOTRUE_SMTP_PASS: ${SMTP_PASS}
-      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME}
-      GOTRUE_MAILER_URLPATHS_INVITE: ${MAILER_URLPATHS_INVITE}
-      GOTRUE_MAILER_URLPATHS_CONFIRMATION: ${MAILER_URLPATHS_CONFIRMATION}
-      GOTRUE_MAILER_URLPATHS_RECOVERY: ${MAILER_URLPATHS_RECOVERY}
-      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${MAILER_URLPATHS_EMAIL_CHANGE}
-      GOTRUE_EXTERNAL_PHONE_ENABLED: ${ENABLE_PHONE_SIGNUP}
-      GOTRUE_SMS_AUTOCONFIRM: ${ENABLE_PHONE_AUTOCONFIRM}
-      GOTRUE_API_HOST: 0.0.0.0
-      GOTRUE_API_PORT: 9999
-      GOTRUE_DB_DRIVER: postgres
-      GOTRUE_JWT_ADMIN_ROLES: service_role
-      GOTRUE_JWT_AUD: authenticated
-      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
-    networks:
-      - supabase_network
-
-  # Studio Service (Supabase Studio)
-  studio:
-    container_name: studio
-    image: supabase/studio:latest
-    restart: unless-stopped
-    ports:
-      - "3002:3000"
-    healthcheck:
-      test: [
-              "CMD",
-              "node",
-              "-e",
-              "fetch('http://localhost:3002/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})"
-            ]
-      timeout: 10s
-      interval: 5s
-      retries: 3
-    depends_on:
-      analytics:
-        condition: service_healthy
-    environment:
-      STUDIO_PG_META_URL: http://meta:8080
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      SUPABASE_URL: http://kong:8000
-      SUPABASE_PUBLIC_URL: http://localhost:8080
-      SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
-      AUTH_JWT_SECRET: ${JWT_SECRET}
-      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
-      LOGFLARE_URL: http://analytics:4000
-      NEXT_PUBLIC_ENABLE_LOGS: false
-      NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
-      DEFAULT_ORGANIZATION_NAME: "Default Organization"
-      DEFAULT_PROJECT_NAME: "Default Project"
-    networks:
-      - supabase_network
-
-  # REST Service (PostgREST)
-  rest:
-    container_name: rest
-    image: postgrest/postgrest:v13.0.7
-    restart: unless-stopped
-    ports:
-      - "3003:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      analytics:
-        condition: service_healthy
-    environment:
-      PGRST_DB_URI: postgres://authenticator:${DB_PASSWORD}@postgres:5432/postgres
-      PGRST_JWT_SECRET: ${JWT_SECRET}
-      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
-      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXP}
-      PGRST_DB_SCHEMAS: public
-      PGRST_DB_ANON_ROLE: anon
-      PGRST_DB_USE_LEGACY_GUCS: false
-    networks:
-      - supabase_network
-
-  # Meta Service (PostgreSQL Meta)
-  meta:
-    container_name: meta-test
-    image: supabase/postgres-meta:v0.91.6
-    restart: unless-stopped
-    ports:
-      - "3007:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      PG_META_DB_PASSWORD: ${DB_PASSWORD}
-      PG_META_DB_NAME: postgres
-      PG_META_DB_HOST: postgres
-      PG_META_DB_PORT: 5432
-      PG_META_PORT: 8080
-      PG_META_DB_USER: supabase_admin
-    networks:
-      - supabase_network
-
-  # Kong API Gateway
-  kong:
-    container_name: kong
-    build:
-      context: .
-      dockerfile: apps/supabase/images/kong.Dockerfile
-    restart: unless-stopped
-    ports:
-      - "8080:8000"
-      - "8443:8443"
-    depends_on:
-      analytics:
-        condition: service_healthy
-    environment:
-      KONG_DATABASE: off
-      KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
-      KONG_DNS_ORDER: LAST,A,CNAME
-      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
-      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
-      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
-      AUTH_HOST: auth
-      REST_HOST: rest
-      META_HOST: meta
-      STUDIO_HOST: studio
-      ANALYTICS_HOST: analytics
-      SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
-      DASHBOARD_USERNAME: supabase
-      DASHBOARD_PASSWORD: ${STUDIO_PASSWORD}
+    command:
+      [
+        "postgres",
+        "-c",
+        "config_file=/etc/postgresql/postgresql.conf",
+        "-c",
+        "log_min_messages=fatal",
+      ]
     networks:
       - supabase_network
 
@@ -268,13 +67,14 @@ services:
       kong:
         condition: service_healthy
     healthcheck:
-      test: [
-              "CMD",
-              "wget",
-              "--no-verbose",
-              "--spider",
-              "http://localhost:8080/capi/public/health"
-            ]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--spider",
+          "http://localhost:8080/capi/public/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -311,13 +111,14 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: [
-              "CMD",
-              "wget",
-              "--no-verbose",
-              "--spider",
-              "http://localhost:8080/pdf-exporter/public/health"
-            ]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--spider",
+          "http://localhost:8080/pdf-exporter/public/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -343,13 +144,14 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: [
-              "CMD",
-              "wget",
-              "--no-verbose",
-              "--spider",
-              "http://localhost:8080/health"
-            ]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

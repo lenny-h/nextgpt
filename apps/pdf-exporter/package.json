@@ -10,8 +10,6 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.1",
-    "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.55.0",
     "hono": "^4.9.6",
     "isomorphic-dompurify": "^2.26.0",
     "puppeteer": "^24.19.0",
