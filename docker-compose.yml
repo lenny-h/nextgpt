@@ -1,0 +1,430 @@
+# Docker Compose configuration for testing Cloud Run Supabase services locally
+# Based on cloud_run_supabase.tf configuration
+
+name: supabase
+
+services:
+  # PostgreSQL Database (replaces Cloud SQL)
+  postgres:
+    container_name: postgres
+    image: supabase/postgres:17.6.1.004
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./apps/supabase/volumes/db/init/049_remote_schema.sql:/docker-entrypoint-initdb.d/migrations/49-remote_schema.sql:Z
+      - ./apps/supabase/volumes/db/init/050_init.sql:/docker-entrypoint-initdb.d/migrations/50-init.sql:Z
+      - ./apps/supabase/volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
+      - ./apps/supabase/volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
+      - ./apps/supabase/volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      - ./apps/supabase/volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      - ./apps/supabase/volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
+      - ./apps/supabase/volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      - ./apps/supabase/volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
+      - db-config:/etc/postgresql-custom
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${DB_PASSWORD}
+      PGBOUNCER_PASSWORD: ${DB_PASSWORD}
+      SUPABASE_AUTH_ADMIN_PASSWORD: ${DB_PASSWORD}
+      SUPABASE_FUNCTIONS_ADMIN_PASSWORD: ${DB_PASSWORD}
+      SUPABASE_STORAGE_ADMIN_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXP: ${JWT_EXP}
+    command: [
+      "postgres",
+      "-c",
+      "config_file=/etc/postgresql/postgresql.conf",
+      "-c",
+      "log_min_messages=fatal"
+    ]
+    networks:
+      - supabase_network
+
+  # Analytics Service (Logflare)
+  analytics:
+    container_name: analytics
+    image: supabase/logflare:1.22.0
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:4000/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOSTNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
+      POSTGRES_BACKEND_URL: postgresql://supabase_admin:${DB_PASSWORD}@postgres:5432/_supabase
+      DB_USERNAME: supabase_admin
+      DB_DATABASE: _supabase
+      DB_PORT: 5432
+      DB_SCHEMA: _analytics
+      LOGFLARE_NODE_HOST: 0.0.0.0
+      LOGFLARE_SINGLE_TENANT: true
+      LOGFLARE_SUPABASE_MODE: true
+      LOGFLARE_MIN_CLUSTER_SIZE: 1
+      POSTGRES_BACKEND_SCHEMA: _analytics
+      LOGFLARE_FEATURE_FLAG_OVERRIDE: multibackend=true
+    networks:
+      - supabase_network
+
+  # Auth Service (GoTrue)
+  auth:
+    container_name: auth
+    image: supabase/gotrue:v2.179.0
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+    healthcheck:
+      test: [
+              "CMD",
+              "wget",
+              "--no-verbose",
+              "--spider",
+              "http://localhost:9999/health"
+            ]
+      timeout: 5s
+      interval: 5s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      analytics:
+        condition: service_healthy
+    environment:
+      API_EXTERNAL_URL: http://localhost:8080
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${DB_PASSWORD}@postgres:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${DASHBOARD_URL}
+      GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
+      GOTRUE_JWT_EXP: ${JWT_EXP}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: ${ENABLE_EMAIL_SIGNUP}
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: ${ENABLE_ANONYMOUS_USERS}
+      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
+      GOTRUE_SMTP_HOST: ${SMTP_HOST}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT}
+      GOTRUE_SMTP_USER: ${SMTP_USER}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME}
+      GOTRUE_MAILER_URLPATHS_INVITE: ${MAILER_URLPATHS_INVITE}
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: ${MAILER_URLPATHS_CONFIRMATION}
+      GOTRUE_MAILER_URLPATHS_RECOVERY: ${MAILER_URLPATHS_RECOVERY}
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${MAILER_URLPATHS_EMAIL_CHANGE}
+      GOTRUE_EXTERNAL_PHONE_ENABLED: ${ENABLE_PHONE_SIGNUP}
+      GOTRUE_SMS_AUTOCONFIRM: ${ENABLE_PHONE_AUTOCONFIRM}
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+    networks:
+      - supabase_network
+
+  # Studio Service (Supabase Studio)
+  studio:
+    container_name: studio
+    image: supabase/studio:latest
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    healthcheck:
+      test: [
+              "CMD",
+              "node",
+              "-e",
+              "fetch('http://localhost:3002/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})"
+            ]
+      timeout: 10s
+      interval: 5s
+      retries: 3
+    depends_on:
+      analytics:
+        condition: service_healthy
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: http://localhost:8080
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${JWT_SECRET}
+      LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
+      LOGFLARE_URL: http://analytics:4000
+      NEXT_PUBLIC_ENABLE_LOGS: false
+      NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
+      DEFAULT_ORGANIZATION_NAME: "Default Organization"
+      DEFAULT_PROJECT_NAME: "Default Project"
+    networks:
+      - supabase_network
+
+  # REST Service (PostgREST)
+  rest:
+    container_name: rest
+    image: postgrest/postgrest:v13.0.7
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      analytics:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${DB_PASSWORD}@postgres:5432/postgres
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXP}
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_DB_USE_LEGACY_GUCS: false
+    networks:
+      - supabase_network
+
+  # Meta Service (PostgreSQL Meta)
+  meta:
+    container_name: meta-test
+    image: supabase/postgres-meta:v0.91.6
+    restart: unless-stopped
+    ports:
+      - "3007:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_META_DB_PASSWORD: ${DB_PASSWORD}
+      PG_META_DB_NAME: postgres
+      PG_META_DB_HOST: postgres
+      PG_META_DB_PORT: 5432
+      PG_META_PORT: 8080
+      PG_META_DB_USER: supabase_admin
+    networks:
+      - supabase_network
+
+  # Kong API Gateway
+  kong:
+    container_name: kong
+    build:
+      context: .
+      dockerfile: apps/supabase/images/kong.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+      - "8443:8443"
+    depends_on:
+      analytics:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+      AUTH_HOST: auth
+      REST_HOST: rest
+      META_HOST: meta
+      STUDIO_HOST: studio
+      ANALYTICS_HOST: analytics
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      DASHBOARD_USERNAME: supabase
+      DASHBOARD_PASSWORD: ${STUDIO_PASSWORD}
+    networks:
+      - supabase_network
+
+  # The services below need not be run in Docker; it is better to run them using `pnpm run dev` due to hot-reloading
+  # Custom API Service
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3004:8080"
+    depends_on:
+      kong:
+        condition: service_healthy
+    healthcheck:
+      test: [
+              "CMD",
+              "wget",
+              "--no-verbose",
+              "--spider",
+              "http://localhost:8080/capi/public/health"
+            ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
+      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+      GOOGLE_VERTEX_LOCATION: ${REGION}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
+      TASK_QUEUE_PATH: projects/${PROJECT_ID}/locations/${REGION}/queues/pdf-processing-queue
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      PROCESSOR_URL: http://pdf-processor:8080
+    networks:
+      - supabase_network
+
+  # PDF Exporter Service
+  pdf-exporter:
+    container_name: pdf-exporter
+    build:
+      context: .
+      dockerfile: apps/pdf-exporter/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3005:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [
+              "CMD",
+              "wget",
+              "--no-verbose",
+              "--spider",
+              "http://localhost:8080/pdf-exporter/public/health"
+            ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+    networks:
+      - supabase_network
+
+  # PDF Processor Service
+  pdf-processor:
+    container_name: pdf-processor
+    build:
+      context: .
+      dockerfile: apps/pdf-processor/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3006:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [
+              "CMD",
+              "wget",
+              "--no-verbose",
+              "--spider",
+              "http://localhost:8080/health"
+            ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+      GOOGLE_VERTEX_LOCATION: ${REGION}
+      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+    networks:
+      - supabase_network
+
+  # # Web interface (Next.js)
+  # web:
+  #   container_name: web
+  #   build:
+  #     context: .
+  #     dockerfile: apps/web/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: ${SITE_URL}
+  #       NEXT_PUBLIC_DASHBOARD_URL: ${DASHBOARD_URL}
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+
+  #       NEXT_PUBLIC_SUPABASE_URL: http://${HOST_IP}:8080
+  #       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+
+  #       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+  #       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
+
+  #       NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     kong:
+  #       condition: service_healthy
+
+  # # Dashboard interface (Next.js)
+  # dashboard:
+  #   container_name: dashboard
+  #   build:
+  #     context: .
+  #     dockerfile: apps/dashboard/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: ${DASHBOARD_URL}
+  #       NEXT_PUBLIC_CHAT_URL: ${SITE_URL}
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+
+  #       NEXT_PUBLIC_SUPABASE_URL: http://${HOST_IP}:8080
+  #       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+
+  #       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+  #       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
+
+  #       NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
+  #   depends_on:
+  #     kong:
+  #       condition: service_healthy
+
+volumes:
+  db-config:
+  postgres-data:
+
+networks:
+  supabase_network:
+    driver: bridge

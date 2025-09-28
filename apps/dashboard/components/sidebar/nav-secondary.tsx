@@ -1,0 +1,33 @@
+import * as React from "react";
+
+import { useGlobalTranslations } from "@/contexts/global-translations";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@workspace/ui/components/sidebar-left";
+import { Send } from "lucide-react";
+import Link from "next/link";
+
+export const NavSecondary = React.memo(() => {
+  const { locale } = useGlobalTranslations();
+
+  return (
+    <SidebarGroup className="mt-auto">
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild size="sm">
+              <Link href={`/${locale}/feedback`}>
+                <Send />
+                <span>Feedback</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+});

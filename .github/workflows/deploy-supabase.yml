@@ -1,0 +1,270 @@
+name: Deploy Supabase Services to Cloud Run
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  # Job to detect changes in different Supabase services
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      supabase-analytics: ${{ steps.changes.outputs.supabase-analytics }}
+      supabase-auth: ${{ steps.changes.outputs.supabase-auth }}
+      supabase-kong: ${{ steps.changes.outputs.supabase-kong }}
+      supabase-meta: ${{ steps.changes.outputs.supabase-meta }}
+      supabase-rest: ${{ steps.changes.outputs.supabase-rest }}
+      supabase-studio: ${{ steps.changes.outputs.supabase-studio }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            supabase-analytics:
+              - 'apps/supabase/images/analytics.Dockerfile'
+              - 'apps/supabase/volumes/**'
+              - 'package.json'
+            supabase-auth:
+              - 'apps/supabase/images/auth.Dockerfile'
+              - 'apps/supabase/volumes/**'
+              - 'package.json'
+            supabase-kong:
+              - 'apps/supabase/images/kong.Dockerfile'
+              - 'apps/supabase/volumes/**'
+              - 'package.json'
+            supabase-meta:
+              - 'apps/supabase/images/meta.Dockerfile'
+              - 'apps/supabase/volumes/**'
+              - 'package.json'
+            supabase-rest:
+              - 'apps/supabase/images/rest.Dockerfile'
+              - 'apps/supabase/volumes/**'
+              - 'package.json'
+            supabase-studio:
+              - 'apps/supabase/images/studio.Dockerfile'
+              - 'apps/supabase/volumes/**'
+              - 'package.json'
+
+  # Deploy Supabase Analytics service
+  deploy-supabase-analytics:
+    name: Deploy Supabase Analytics Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.supabase-analytics == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-analytics:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-analytics:latest
+
+          docker build -f apps/supabase/images/analytics.Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST apps/supabase
+          docker push $IMAGE_NAME
+          docker push $IMAGE_LATEST
+
+      - name: Update Cloud Run service
+        run: |
+          gcloud run services update supabase-analytics \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-analytics:${{ github.sha }} \
+            --region=${{ vars.REGION }}
+
+  # Deploy Supabase Auth service
+  deploy-supabase-auth:
+    name: Deploy Supabase Auth Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.supabase-auth == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-auth:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-auth:latest
+
+          docker build -f apps/supabase/images/auth.Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST apps/supabase
+          docker push $IMAGE_NAME
+          docker push $IMAGE_LATEST
+
+      - name: Update Cloud Run service
+        run: |
+          gcloud run services update supabase-auth \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-auth:${{ github.sha }} \
+            --region=${{ vars.REGION }}
+
+  # Deploy Supabase Kong service
+  deploy-supabase-kong:
+    name: Deploy Supabase Kong Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.supabase-kong == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-kong:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-kong:latest
+
+          docker build -f apps/supabase/images/kong.Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST apps/supabase
+          docker push $IMAGE_NAME
+          docker push $IMAGE_LATEST
+
+      - name: Update Cloud Run service
+        run: |
+          gcloud run services update supabase-kong \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-kong:${{ github.sha }} \
+            --region=${{ vars.REGION }}
+
+  # Deploy Supabase Meta service
+  deploy-supabase-meta:
+    name: Deploy Supabase Meta Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.supabase-meta == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-meta:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-meta:latest
+
+          docker build -f apps/supabase/images/meta.Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST apps/supabase
+          docker push $IMAGE_NAME
+          docker push $IMAGE_LATEST
+
+      - name: Update Cloud Run service
+        run: |
+          gcloud run services update supabase-meta \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-meta:${{ github.sha }} \
+            --region=${{ vars.REGION }}
+
+  # Deploy Supabase REST service
+  deploy-supabase-rest:
+    name: Deploy Supabase REST Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.supabase-rest == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-rest:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-rest:latest
+
+          docker build -f apps/supabase/images/rest.Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST apps/supabase
+          docker push $IMAGE_NAME
+          docker push $IMAGE_LATEST
+
+      - name: Update Cloud Run service
+        run: |
+          gcloud run services update supabase-rest \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-rest:${{ github.sha }} \
+            --region=${{ vars.REGION }}
+
+  # Deploy Supabase Studio service
+  deploy-supabase-studio:
+    name: Deploy Supabase Studio Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.supabase-studio == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-studio:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-studio:latest
+
+          docker build -f apps/supabase/images/studio.Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST apps/supabase
+          docker push $IMAGE_NAME
+          docker push $IMAGE_LATEST
+
+      - name: Update Cloud Run service
+        run: |
+          gcloud run services update supabase-studio \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/supabase-studio:${{ github.sha }} \
+            --region=${{ vars.REGION }}

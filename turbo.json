@@ -1,0 +1,33 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalEnv": [
+    "PORT",
+    "BASE_URL",
+    "DASHBOARD_URL",
+    "API_URL",
+    "PDF_EXPORTER_URL",
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "GOOGLE_VERTEX_PROJECT",
+    "GOOGLE_STORAGE_URL",
+    "R2_ENDPOINT"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

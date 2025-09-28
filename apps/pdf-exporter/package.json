@@ -1,0 +1,27 @@
+{
+  "name": "pdf-exporter",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/dev.ts",
+    "dev:once": "tsx src/dev.ts",
+    "build": "tsc",
+    "start": "node dist/dev.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.1",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.55.0",
+    "hono": "^4.9.6",
+    "isomorphic-dompurify": "^2.26.0",
+    "puppeteer": "^24.19.0",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "dotenv": "^17.2.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

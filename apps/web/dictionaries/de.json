@@ -1,0 +1,69 @@
+{
+  "global": {
+    "globalErrors": {
+      "400": "Der Server konnte Ihre Anfrage nicht bearbeiten",
+      "401": "Sie müssen angemeldet sein, um diese Aktion durchzuführen",
+      "403": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen",
+      "404": "Nicht gefunden",
+      "client404": "Die Seite konnte nicht gefunden werden",
+      "413": "Die Nutzlast Ihrer Anfrage ist zu groß",
+      "429": "Das Ratenlimit wurde überschritten",
+      "500": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut",
+      "504": "Einige Upstream-Dienste reagieren nicht",
+      "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+      "loadMoreError": "Fehler beim Laden weiterer Elemente",
+      "abortError": "Die Anfrage wurde abgebrochen",
+      "streamError": "Der Stream konnte nicht gelesen werden",
+      "imageError": "Bild nicht verfügbar",
+      "noResults": "Keine Ergebnisse gefunden"
+    },
+    "components": {
+      "addContext": {
+        "add": "Verknüpfe",
+        "search": "Suche"
+      },
+      "chatHeader": {
+        "chatAdded": "Chat zu Favoriten hinzugefügt",
+        "chatAddedError": "Fehler beim Hinzufügen des Chats zu den Favoriten",
+        "chatRemoved": "Chat aus Favoriten entfernt",
+        "chatRemovedError": "Fehler beim Entfernen des Chats aus den Favoriten",
+        "addToFavourites": "Zu Favoriten hinzufügen",
+        "toggleSidebar": "Seitenleiste umschalten"
+      },
+      "socialLogins": {
+        "loginWithInstitution": "Mit Ihrer Institution anmelden"
+      },
+      "practiceHeader": {
+        "hidePreviousQuestions": "Vorherige Fragen ausblenden",
+        "showPreviousQuestions": "Vorherige Fragen anzeigen",
+        "hideTextArea": "Textbereich ausblenden",
+        "showTextArea": "Textbereich anzeigen",
+        "toggleSidebar": "Seitenleiste umschalten"
+      },
+      "introduction": {
+        "temporaryChatActivated": "Temporärer Chat aktiviert 💪🏽",
+        "messagesNotSaved": "Ihre Nachrichten werden nicht gespeichert!",
+        "welcomeToNextGPT": "Willkommen bei NextGPT 🚀",
+        "selectCourseResources": "Wählen Sie die Kursressourcen aus, die Sie besprechen möchten, und beginnen Sie zu chatten!"
+      },
+      "pdfViewer": {
+        "noPdfSelected": "Kein PDF ausgewählt",
+        "authenticating": "Authentifizierung...",
+        "failedToLoadPdf": "PDF konnte nicht geladen werden"
+      },
+      "chatItem": {
+        "more": "Mehr",
+        "removeFromFavorites": "Aus Favoriten entfernen",
+        "addToFavourites": "Zu Favoriten hinzufügen",
+        "rename": "Umbenennen",
+        "delete": "Löschen"
+      },
+      "loadButtonLists": {
+        "selectCourseFirst": "Bitte wählen Sie zuerst einen Kurs aus"
+      },
+      "chat": {
+        "errorOccurred": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut!"
+      }
+    }
+  }
+}

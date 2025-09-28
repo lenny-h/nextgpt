@@ -1,0 +1,67 @@
+name: Database Migrations
+
+on:
+  push:
+    branches: main
+    paths:
+      - "apps/supabase/volumes/db/migrations/**"
+
+env:
+  PROJECT_ID: ${{ vars.PROJECT_ID }}
+  DB_CONNECTION_NAME: ${{ secrets.DB_CONNECTION_NAME }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  JWT_EXP: ${{ secrets.JWT_EXP }}
+
+jobs:
+  apply-migrations:
+    name: Apply database migrations
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Check and enable public IP on Cloud SQL instance if needed
+        run: |
+          if ! gcloud sql instances describe $DB_CONNECTION_NAME --project $PROJECT_ID --format="value(ipAddresses[].type)" | grep -q "PRIMARY"; then
+            gcloud sql instances patch $DB_NAME --project $PROJECT_ID --assign-ip
+          fi
+
+      - name: Install Cloud SQL Proxy
+        run: |
+          curl -o cloud_sql_proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.18.2/cloud-sql-proxy.linux.amd64
+          chmod +x cloud_sql_proxy
+          sudo mv cloud_sql_proxy /usr/local/bin/
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run database migrations
+        run: |
+          chmod +x ./apps/infrastructure/scripts/migrate_gcloud_database.sh
+          ./apps/infrastructure/scripts/migrate_gcloud_database.sh \
+            "$DB_CONNECTION_NAME" \
+            "$DB_NAME" \
+            "$DB_USER" \
+            "$DB_PASSWORD" \
+            "$JWT_SECRET" \
+            "$JWT_EXP"
+
+      - name: Disable public IP on Cloud SQL instance
+        run: |
+          gcloud sql instances patch $DB_NAME --project $PROJECT_ID --no-assign-ip

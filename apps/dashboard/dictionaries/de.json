@@ -1,0 +1,97 @@
+{
+  "global": {
+    "globalErrors": {
+      "400": "Der Server konnte Ihre Anfrage nicht bearbeiten",
+      "401": "Sie müssen angemeldet sein, um diese Aktion durchzuführen",
+      "403": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen",
+      "404": "Nicht gefunden",
+      "client404": "Die Seite konnte nicht gefunden werden",
+      "409": "Der Name existiert bereits",
+      "413": "Die Nutzlast Ihrer Anfrage ist zu groß",
+      "429": "Das Ratenlimit wurde überschritten",
+      "500": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut",
+      "504": "Einige Upstream-Dienste reagieren nicht",
+      "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+      "loadMoreError": "Fehler beim Laden weiterer Elemente",
+      "abortError": "Die Anfrage wurde abgebrochen",
+      "streamError": "Der Stream konnte nicht gelesen werden",
+      "imageError": "Bild nicht verfügbar",
+      "noResults": "Keine Ergebnisse gefunden"
+    },
+    "components": {
+      "socialLogins": {
+        "loginWithInstitution": "Mit Ihrer Institution anmelden"
+      },
+      "deleteDialog": {
+        "delete": "Lösche",
+        "cancel": "Abbrechen",
+        "deleting": "Wird gelöscht...",
+        "deletedSuccessfully": "erfolgreich gelöscht"
+      },
+      "addMaintainers": {
+        "adding": "Maintainer werden hinzugefügt...",
+        "success": "Maintainer erfolgreich eingeladen 🎉"
+      },
+      "courses": {
+        "loading": "Kurse werden geladen...",
+        "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "noCourses": "Es scheint, als ob es noch keine Kurse gibt",
+        "createCourse": "Kurs erstellen",
+        "title": "Kurse",
+        "filterLabel": "Kursname"
+      },
+      "correction": {
+        "title": "Korrekturen",
+        "solutionSheet": "Lösungsblatt",
+        "studentHandIns": "Studenteneinreichungen",
+        "customPrompt": "Benutzerdefinierter Prompt (Optional)",
+        "customPromptDescription": "Wählen Sie einen benutzerdefinierten Prompt, um die KI anzuweisen, wie die Abgaben korrigiert werden sollen.",
+        "selectPrompt": "Prompt auswählen",
+        "searchPrompts": "Prompts suchen...",
+        "noPromptFound": "Kein Prompt gefunden",
+        "failedLoadPrompts": "Fehler beim Laden der Prompts",
+        "noPromptsFound": "Keine Prompts gefunden",
+        "addPrompt": "Prompt hinzufügen",
+        "addNewPrompt": "Neuen Prompt hinzufügen",
+        "addPromptDescription": "Geben Sie an, wie die KI die Einreichungen korrigieren soll.",
+        "startCorrection": "Korrektur starten",
+        "filesNotCorrected": "Die folgenden Dateien konnten nicht korrigiert werden:",
+        "correctionSuccess": "Korrektur erfolgreich abgeschlossen. Sie können die Ergebnisse unter 'Dokumente' abrufen",
+        "correctionFailed": "Einreichungen konnten nicht korrigiert werden"
+      },
+      "correctionDropzone": {
+        "dropFiles": "Dateien hier ablegen ...",
+        "dragDrop": "Ziehen Sie .pdf-Dateien hierher oder klicken Sie, um Dateien auszuwählen",
+        "maxFiles": "Max {maxFiles} Dateien mit je 15 MB"
+      },
+      "buckets": {
+        "loading": "Buckets werden geladen...",
+        "errorLoading": "Beim Laden der Buckets ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+        "noBuckets": "Es scheint, als ob es noch keine Buckets gibt",
+        "createBucket": "Bucket erstellen",
+        "title": "Buckets",
+        "manageUsers": "Benutzer verwalten",
+        "delete": "Löschen",
+        "addUsers": "Benutzer hinzufügen",
+        "addUsersDescription": "Benutzer können manuell hinzugefügt oder durch Hochladen einer CSV-Datei mit einer Spalte, die die Benutzernamen der hinzuzufügenden Benutzer enthält, hinzugefügt werden.",
+        "selectBucket": "Bucket auswählen",
+        "deleteConfirmation": "Sind Sie sicher, dass Sie diesen Bucket löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      },
+      "autocomplete": {
+        "searchUsers": "Benutzer suchen...",
+        "errorProfiles": "Benutzer konnten nicht abgerufen werden"
+      },
+      "addPromptForm": {
+        "creating": "Prompt wird erstellt...",
+        "success": "Prompt erstellt 🎉",
+        "errorSaving": "Fehler beim Speichern des Dokuments. Bitte versuchen Sie es später erneut.",
+        "name": "Name",
+        "promptName": "Name des Prompts",
+        "content": "Inhalt",
+        "contentPlaceholder": "Geben Sie hier Ihre Anweisungen ein...",
+        "cancel": "Abbrechen",
+        "create": "Erstellen"
+      }
+    }
+  }
+}

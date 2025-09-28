@@ -1,0 +1,23 @@
+{
+  "main": ".open-next/worker.js",
+  "name": "monorepo-web",
+  "compatibility_date": "2025-03-25",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "route": {
+    "pattern": "app.nextgpt.cloud/*",
+    "custom_domain": false,
+    "zone_name": "nextgpt.cloud"
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "sample_rate": 1.0
+    }
+  }
+}

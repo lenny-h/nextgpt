@@ -1,0 +1,36 @@
+{
+  "name": "api",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/dev.ts",
+    "dev:once": "tsx src/dev.ts",
+    "build": "tsc",
+    "start": "node dist/dev.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.12",
+    "@ai-sdk/azure": "^2.0.24",
+    "@ai-sdk/google-vertex": "^3.0.21",
+    "@ai-sdk/openai": "^2.0.24",
+    "@aws-sdk/client-s3": "^3.883.0",
+    "@aws-sdk/s3-request-presigner": "^3.883.0",
+    "@google-cloud/storage": "^7.17.0",
+    "@google-cloud/tasks": "^6.2.0",
+    "@hono/node-server": "^1.19.1",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.55.0",
+    "ai": "^5.0.34",
+    "hono": "^4.9.6",
+    "papaparse": "^5.5.3",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "@types/papaparse": "^5.3.16",
+    "dotenv": "^17.2.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
