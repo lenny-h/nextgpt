@@ -142,54 +142,6 @@ resource "google_cloud_run_v2_service_iam_member" "pdf_exporter_deployer" {
   member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
-# Allow CI/CD service account to deploy analytics
-resource "google_cloud_run_v2_service_iam_member" "analytics_deployer" {
-  name     = google_cloud_run_v2_service.analytics.name
-  location = google_cloud_run_v2_service.analytics.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy auth
-resource "google_cloud_run_v2_service_iam_member" "auth_deployer" {
-  name     = google_cloud_run_v2_service.auth.name
-  location = google_cloud_run_v2_service.auth.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy kong
-resource "google_cloud_run_v2_service_iam_member" "kong_deployer" {
-  name     = google_cloud_run_v2_service.kong.name
-  location = google_cloud_run_v2_service.kong.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy meta
-resource "google_cloud_run_v2_service_iam_member" "meta_deployer" {
-  name     = google_cloud_run_v2_service.meta.name
-  location = google_cloud_run_v2_service.meta.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy rest
-resource "google_cloud_run_v2_service_iam_member" "rest_deployer" {
-  name     = google_cloud_run_v2_service.rest.name
-  location = google_cloud_run_v2_service.rest.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy studio
-resource "google_cloud_run_v2_service_iam_member" "studio_deployer" {
-  name     = google_cloud_run_v2_service.studio.name
-  location = google_cloud_run_v2_service.studio.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
 # Allow CI/CD SA to act as Api service account
 resource "google_service_account_iam_member" "ci_cd_act_as_api_sa" {
   service_account_id = google_service_account.api_sa.name

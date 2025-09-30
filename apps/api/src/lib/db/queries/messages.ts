@@ -2,6 +2,7 @@ import { type MyUIMessage } from "@/src/types/custom-ui-message.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { chats, messages } from "@workspace/server/drizzle/schema.js";
 import { and, desc, eq, gte } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 
 export async function getMessageById({ messageId }: { messageId: string }) {
   const result = await db
@@ -86,4 +87,31 @@ export async function deleteLastMessage({ chatId }: { chatId: string }) {
   if (lastMessage.length > 0) {
     await db.delete(messages).where(eq(messages.id, lastMessage[0].id));
   }
+}
+
+export async function getMessageWithChatOwnership({
+  messageId,
+  userId,
+}: {
+  messageId: string;
+  userId: string;
+}) {
+  const result = await db
+    .select({
+      chatId: messages.chatId,
+      createdAt: messages.createdAt,
+      owner: chats.userId,
+    })
+    .from(messages)
+    .innerJoin(chats, eq(messages.chatId, chats.id))
+    .where(eq(messages.id, messageId))
+    .limit(1);
+
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
+  return {
+    chatId: result[0].chatId,
+    createdAt: result[0].createdAt,
+    owner: result[0].owner,
+  };
 }

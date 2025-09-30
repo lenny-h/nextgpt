@@ -1,0 +1,112 @@
+# Update profile
+1) profiles > route.ts > GET (DONE)
+2) profiles > route.ts > PATCH (DONE)
+
+# Delete document
+documents > [documentId] > route.ts > DELETE (DONE)
+
+# Update document content
+documents > content > [documentId] > route.ts > PATCH content (DONE)
+
+# Update document title
+documents > title > [documentId] > route.ts > PATCH title (DONE)
+
+# Insert document
+documents > route.ts > POST (DONE)
+
+# Update correction prompt
+prompts > [promptId] > route.ts > PATCH content (DONE)
+
+# Update chat title
+chats > title > [chatId] > route.ts > PATCH title (DONE)
+
+# Get chat title
+chats > title > [chatId] > route.ts > GET (DONE)
+
+# Get chats
+chats > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Update is favourite
+chats > isFavourite > [chatId] > route.ts > PATCH isFavourite (DONE)
+
+# Get isFavourite
+chats > isFavourite > [chatId] > route.ts > GET (DONE)
+
+# Get favourite user chats
+chats > isFavourite > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Get bucket users
+bucket-users > [bucketId] > route.ts > GET (DONE)
+
+# Remove bucket users
+bucket-users > [bucketId] > route.ts > DELETE (DONE)
+
+# Ilike bucket users
+bucket-users > ilike > [bucketId] > route.ts > GET ?prefix (DONE)
+
+# Insert feedback
+feedback > route.ts > POST subject, content (DONE)
+
+# Ilike documents
+ilike-documents > route.ts > GET ?prefix (DONE)
+
+# Get document
+documents > [documentId] > route.ts > GET (DONE)
+documents > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Ilike chats
+ilike-chats > route.ts > GET ?prefix (DONE)
+
+# Get chat
+chats > [chatId] > route.ts > GET (DONE)
+
+# Ilike public profiles
+profiles > ilike > route.ts > GET ?prefix (DONE)
+
+# Ilike courses files
+files > ilike > route.ts > GET ?prefix?courseIds (DONE)
+
+# Get courses files
+files > route.ts > GET ?courseIds?pageNumber?itemsPerPage (DONE)
+
+# Ilike bucket courses
+ilike-courses > [bucketId] > route.ts > GET ?prefix (DONE)
+
+# Get user prompts
+prompts > route.ts > GET (DONE)
+
+# Get user models
+models > [bucketId] > route.ts > GET (DONE)
+
+# Get maintained models
+models > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Get user buckets
+buckets > route.ts > GET (DONE)
+
+# Get maintained buckets
+buckets > maintained > route.ts > GET (DONE)
+
+# Get outgoing invitations
+invitations > outgoing > route.ts > GET ?invitationType?pageNumber?itemsPerPage (DONE)
+
+# Get incoming invitations
+invitations > incoming > route.ts > GET ?invitationType?pageNumber?itemsPerPage (DONE)
+
+# Get messages
+messages > [chatId] > route.ts > GET (DONE)
+
+# Get maintained courses
+maintainers > maintained > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Get bucket courses
+courses > [bucketId] > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Get course tasks
+tasks > [courseId] > GET ?pageNumber?itemsPerPage (DONE)
+
+# Get course maintainers
+course-maintainers > [courseId] > route.ts > GET ?pageNumber?itemsPerPage (DONE)
+
+# Get bucket maintainers
+bucket-maintainers > [bucketId] > route.ts > GET ?pageNumber?itemsPerPage (DONE)

@@ -1,5 +1,5 @@
+import { filterSchema } from "@/src/schemas/filter-schema.js";
 import * as z from "zod";
-import { filterSchema } from "../../../../schemas/filter-schema.js";
 
 export const querySchema = z
   .string()

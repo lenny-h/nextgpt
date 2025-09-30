@@ -2,7 +2,7 @@ import { vertex } from "@ai-sdk/google-vertex";
 import { generateObject } from "ai";
 import { type Context } from "hono";
 import { z } from "zod";
-import { COMPLETION_SYSTEM_PROMPT } from "../../../lib/prompts.js";
+import { COMPLETION_SYSTEM_PROMPT } from "@/src/lib/prompts.js";
 import { completionSchema } from "./schema.js";
 
 const completionResponseSchema = z.object({
@@ -22,7 +22,5 @@ export async function POST(c: Context) {
     maxOutputTokens: 60,
   });
 
-  return c.json({
-    res: object.completion,
-  });
+  return c.json(object.completion);
 }

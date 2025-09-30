@@ -1,16 +1,13 @@
+import { increaseBucketSize } from "@/src/lib/db/queries/buckets.js";
+import { isCourseMaintainer } from "@/src/lib/db/queries/course-maintainers.js";
+import { getBucketSizeByCourseId } from "@/src/lib/db/queries/courses.js";
+import { addTask } from "@/src/lib/db/queries/tasks.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { getSignedUrlForUpload } from "@/src/utils/access-clients/s3-client.js";
+import { generateUUID } from "@/src/utils/utils.js";
 import { CloudTasksClient } from "@google-cloud/tasks";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import {
-  getBucketSize,
-  increaseBucketSize,
-} from "../../../../lib/db/queries/buckets.js";
-import { isCourseMaintainer } from "../../../../lib/db/queries/course-maintainers.js";
-import { getBucketIdByCourseId } from "../../../../lib/db/queries/courses.js";
-import { addTask } from "../../../../lib/db/queries/tasks.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
-import { getSignedUrlForUpload } from "../../../../utils/access-clients/s3-client.js";
-import { generateUUID } from "../../../../utils/utils.js";
 import { getSignedUrlSchema } from "./schema.js";
 
 export async function POST(c: Context) {
@@ -24,7 +21,7 @@ export async function POST(c: Context) {
   });
 
   if (!isMaintainer) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const payload = await c.req.json();
@@ -33,19 +30,18 @@ export async function POST(c: Context) {
     getSignedUrlSchema.parse(payload);
 
   if (processingDate && !Date.parse(processingDate)) {
-    throw new HTTPException(400, { message: "Invalid processing date" });
+    throw new HTTPException(400, { message: "BAD_REQUEST" });
   }
 
-  const bucketId = await getBucketIdByCourseId({ courseId });
-  const bucketSize = await getBucketSize({ bucketId });
+  const bucketSizeInfo = await getBucketSizeByCourseId({ courseId });
 
-  if (bucketSize.size + fileSize > bucketSize.maxSize) {
+  if (bucketSizeInfo.size + fileSize > bucketSizeInfo.maxSize) {
     throw new HTTPException(400, {
-      message: `Bucket size exceeded. Current size: ${bucketSize.size}, max size: ${bucketSize.maxSize}`,
+      message: "BUCKET_SIZE_EXCEEDED",
     });
   }
 
-  await increaseBucketSize({ bucketId, fileSize });
+  await increaseBucketSize({ bucketId: bucketSizeInfo.bucketId, fileSize });
 
   const projectId = process.env.GOOGLE_VERTEX_PROJECT!;
   const serviceAccountEmail = process.env.CLOUD_TASKS_SA;
@@ -67,7 +63,7 @@ export async function POST(c: Context) {
 
   const file = {
     taskId,
-    bucket: bucketId,
+    bucket: bucketSizeInfo.bucketId,
     name: `${courseId}/${filename}`,
     size: fileSize,
     contentType: "application/pdf",

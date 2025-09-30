@@ -1,6 +1,6 @@
-import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@workspace/server/drizzle/db.js";
 import { courseMaintainers } from "@workspace/server/drizzle/schema.js";
+import { and, eq, inArray } from "drizzle-orm";
 
 export async function isCourseMaintainer({
   userId,

@@ -1,10 +1,10 @@
-import { type Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import {
   deleteLastMessage,
   isChatOwner,
-} from "../../../../../lib/db/queries/messages.js";
-import { uuidSchema } from "../../../../../schemas/uuid-schema.js";
+} from "@/src/lib/db/queries/messages.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { type Context } from "hono";
+import { HTTPException } from "hono/http-exception";
 
 export async function DELETE(c: Context) {
   const chatId = uuidSchema.parse(c.req.param("chatId"));
@@ -17,12 +17,12 @@ export async function DELETE(c: Context) {
   });
 
   if (!hasPermission) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   await deleteLastMessage({
     chatId,
   });
 
-  return c.text("Last message deleted");
+  return c.json("Last message deleted");
 }

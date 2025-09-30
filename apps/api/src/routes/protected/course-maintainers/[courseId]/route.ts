@@ -1,14 +1,53 @@
-import { type Context } from "hono";
-import { HTTPException } from "hono/http-exception";
-import { isBucketMaintainer } from "../../../../lib/db/queries/bucket-maintainers.js";
+import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
 import {
   filterNonExistingCourseMaintainers,
+  isCourseMaintainer,
   removeCourseMaintainersBatch,
-} from "../../../../lib/db/queries/course-maintainers.js";
-import { getCourseDetails } from "../../../../lib/db/queries/courses.js";
-import { addCourseMaintainerInvitationsBatch } from "../../../../lib/db/queries/invitations.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
+} from "@/src/lib/db/queries/course-maintainers.js";
+import {
+  getBucketIdByCourseId,
+  getCourseDetails,
+} from "@/src/lib/db/queries/courses.js";
+import { addCourseMaintainerInvitationsBatch } from "@/src/lib/db/queries/invitations.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import {
+  courseMaintainers,
+  user as profile,
+} from "@workspace/server/drizzle/schema.js";
+import { eq } from "drizzle-orm";
+import { type Context } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { courseMaintainersSchema } from "./schema.js";
+
+// Get course maintainers
+export async function GET(c: Context) {
+  const courseId = uuidSchema.parse(c.req.param("courseId"));
+
+  const user = c.get("user");
+
+  const bucketId = await getBucketIdByCourseId({ courseId });
+
+  const hasPermissions = await isBucketMaintainer({
+    userId: user.id,
+    bucketId,
+  });
+
+  if (!hasPermissions) {
+    throw new HTTPException(403, { message: "FORBIDDEN" });
+  }
+
+  const maintainers = await db
+    .select({
+      userId: courseMaintainers.userId,
+      username: profile.username,
+    })
+    .from(courseMaintainers)
+    .innerJoin(profile, eq(courseMaintainers.userId, profile.id))
+    .where(eq(courseMaintainers.courseId, courseId));
+
+  return c.json(maintainers);
+}
 
 export async function POST(c: Context) {
   const courseId = uuidSchema.parse(c.req.param("courseId"));
@@ -25,7 +64,7 @@ export async function POST(c: Context) {
   });
 
   if (!hasPermissions) {
-    return new Response("Forbidden", { status: 403 });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const payload = await c.req.json();
@@ -44,7 +83,7 @@ export async function POST(c: Context) {
     courseName: name,
   });
 
-  return c.text("Maintainers invited");
+  return c.json("Maintainers invited");
 }
 
 export async function DELETE(c: Context) {
@@ -62,7 +101,7 @@ export async function DELETE(c: Context) {
   });
 
   if (!hasPermissions) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const payload = await c.req.json();
@@ -70,7 +109,7 @@ export async function DELETE(c: Context) {
   const { userIds } = courseMaintainersSchema.parse(payload);
 
   if (userIds.includes(user.id)) {
-    throw new HTTPException(400, { message: "You cannot remove yourself" });
+    throw new HTTPException(400, { message: "CANNOT_REMOVE_YOURSELF" });
   }
 
   await removeCourseMaintainersBatch({
@@ -78,5 +117,5 @@ export async function DELETE(c: Context) {
     courseId,
   });
 
-  return c.text("Maintainers removed");
+  return c.json("Maintainers removed");
 }

@@ -1,6 +1,6 @@
+import { validateCourseKey } from "@/src/lib/db/queries/course-keys.js";
+import { addUserToCourse } from "@/src/lib/db/queries/course-users.js";
 import { type Context } from "hono";
-import { validateCourseKey } from "../../../../lib/db/queries/course-keys.js";
-import { addUserToCourse } from "../../../../lib/db/queries/course-users.js";
 import { requestAccessSchema } from "./schema.js";
 
 export async function POST(c: Context) {
@@ -20,5 +20,5 @@ export async function POST(c: Context) {
     userId: user.id,
   });
 
-  return c.text("Access granted");
+  return c.json("Access granted");
 }

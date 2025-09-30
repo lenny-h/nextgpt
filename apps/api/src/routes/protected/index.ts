@@ -25,7 +25,7 @@ import { POST as coursePost } from "./courses/route.js";
 import { POST as validateAccessPost } from "./courses/validate-access/route.js";
 import { PATCH as documentPatch } from "./documents/[documentId]/route.js";
 import { POST as documentPost } from "./documents/route.js";
-import { DELETE as fileDelete } from "./file/[fileId]/route.js";
+import { DELETE as fileDelete } from "./files/[fileId]/route.js";
 import { GET as getSignedUrlGet } from "./get-signed-url/[courseId]/[name]/route.js";
 import { POST as getSignedUrlPost } from "./get-signed-url/[courseId]/route.js";
 import { POST as acceptInvitationPost } from "./invitations/accept/route.js";

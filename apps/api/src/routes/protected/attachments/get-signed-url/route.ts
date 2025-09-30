@@ -1,5 +1,5 @@
+import { getSignedUrlForUpload } from "@/src/utils/access-clients/google-storage-client.js";
 import { type Context } from "hono";
-import { getSignedUrlForUpload } from "../../../../utils/access-clients/google-storage-client.js";
 import { getSignedUrlSchema } from "./schema.js";
 
 export async function POST(c: Context) {

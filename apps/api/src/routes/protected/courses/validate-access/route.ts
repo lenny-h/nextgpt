@@ -1,5 +1,5 @@
+import { checkUserCourseAccess } from "@/src/lib/db/queries/course-users.js";
 import { type Context } from "hono";
-import { checkUserCourseAccess } from "../../../../lib/db/queries/course-users.js";
 import { validateAccessSchema } from "./schema.js";
 
 export async function POST(c: Context) {

@@ -1,6 +1,7 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import { models } from "@workspace/server/drizzle/schema.js";
+import { buckets, models } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 
 export async function getModelById({
   id,
@@ -74,4 +75,29 @@ export async function addModel({
 
 export async function deleteModel({ modelId }: { modelId: string }) {
   await db.delete(models).where(eq(models.id, modelId));
+}
+
+export async function getModelDetailsWithOwnership({
+  modelId,
+}: {
+  modelId: string;
+}) {
+  const result = await db
+    .select({
+      bucketId: models.bucketId,
+      name: models.name,
+      owner: buckets.owner,
+    })
+    .from(models)
+    .innerJoin(buckets, eq(models.bucketId, buckets.id))
+    .where(eq(models.id, modelId))
+    .limit(1);
+
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
+  return {
+    bucketId: result[0].bucketId,
+    name: result[0].name,
+    owner: result[0].owner,
+  };
 }

@@ -1,29 +1,17 @@
 import * as z from "zod";
 import { studyModeSchema } from "./study-mode-schema.js";
+import { uuidSchema } from "./uuid-schema.js";
 
 export const practiceFilterSchema = z
   .object({
-    bucketId: z.uuid({
-      version: "v4",
-      message: "Bucket ID must be a valid UUID",
+    bucketId: uuidSchema,
+    courses: z.array(uuidSchema).max(5, {
+      message: "You can only select up to 5 courses",
     }),
-    courses: z
-      .array(
-        z.uuid({
-          version: "v4",
-          message: "Course Ids must be valid UUIDs",
-        })
-      )
-      .max(5, {
-        message: "You can only select up to 5 courses",
-      }),
     files: z
       .array(
         z.object({
-          id: z.uuid({
-            version: "v4",
-            message: "File Ids must be valid UUIDs",
-          }),
+          id: uuidSchema,
           chapters: z.array(z.number()).max(10, {
             message: "You can only select up to 10 chapters",
           }),

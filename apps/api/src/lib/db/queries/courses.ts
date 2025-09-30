@@ -1,11 +1,13 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import {
+  buckets,
   courseKeys,
   courseMaintainers,
   courses,
   courseUsers,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 
 export async function getBucketIdByCourseId({
   courseId,
@@ -18,7 +20,8 @@ export async function getBucketIdByCourseId({
     .where(eq(courses.id, courseId))
     .limit(1);
 
-  if (result.length === 0) throw new Error("Not found");
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
   return result[0].bucketId;
 }
 
@@ -29,7 +32,8 @@ export async function getCourseDetails({ courseId }: { courseId: string }) {
     .where(eq(courses.id, courseId))
     .limit(1);
 
-  if (result.length === 0) throw new Error("Not found");
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
 
   return {
     bucketId: result[0].bucketId,
@@ -44,7 +48,8 @@ export async function isPrivate({ courseId }: { courseId: string }) {
     .where(eq(courses.id, courseId))
     .limit(1);
 
-  if (result.length === 0) throw new Error("Not found");
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
   return result[0].private;
 }
 
@@ -150,4 +155,29 @@ export async function deleteCourse({ courseId }: { courseId: string }) {
 
   if (result.length === 0) throw new Error("Course not found");
   return result[0].name;
+}
+
+export async function getBucketSizeByCourseId({
+  courseId,
+}: {
+  courseId: string;
+}) {
+  const result = await db
+    .select({
+      bucketId: courses.bucketId,
+      size: buckets.size,
+      maxSize: buckets.maxSize,
+    })
+    .from(courses)
+    .innerJoin(buckets, eq(courses.bucketId, buckets.id))
+    .where(eq(courses.id, courseId))
+    .limit(1);
+
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
+  return {
+    bucketId: result[0].bucketId,
+    size: result[0].size,
+    maxSize: result[0].maxSize,
+  };
 }

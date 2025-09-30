@@ -53,6 +53,42 @@ services:
     networks:
       - supabase_network
 
+  # Redis Cache
+  redis:
+    container_name: redis
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - supabase_network
+
+  # Task Queue Dashboard (replaces Google Cloud Tasks)
+  queue-dashboard:
+    container_name: queue-dashboard
+    image: deadly0/bull-board
+    restart: unless-stopped
+    ports:
+      - "3007:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+    networks:
+      - supabase_network
+
   # The services below need not be run in Docker; it is better to run them using `pnpm run dev` due to hot-reloading
   # Custom API Service
   api:
@@ -65,6 +101,8 @@ services:
       - "3004:8080"
     depends_on:
       kong:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test:
@@ -91,8 +129,7 @@ services:
       R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
       CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
       CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
-      CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
-      TASK_QUEUE_PATH: projects/${PROJECT_ID}/locations/${REGION}/queues/pdf-processing-queue
+      REDIS_URL: redis://redis:6379
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       PROCESSOR_URL: http://pdf-processor:8080
     networks:
@@ -143,6 +180,8 @@ services:
     depends_on:
       api:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -168,6 +207,7 @@ services:
       SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+      REDIS_URL: redis://redis:6379
     networks:
       - supabase_network
 
@@ -226,6 +266,7 @@ services:
 volumes:
   db-config:
   postgres-data:
+  redis-data:
 
 networks:
   supabase_network:

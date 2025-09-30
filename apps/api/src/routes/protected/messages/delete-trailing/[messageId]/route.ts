@@ -1,9 +1,9 @@
-import { type Context } from "hono";
 import {
   deleteMessagesByChatIdAfterTimestamp,
-  getMessageById,
-} from "../../../../../lib/db/queries/messages.js";
-import { uuidSchema } from "../../../../../schemas/uuid-schema.js";
+  getMessageWithChatOwnership,
+} from "@/src/lib/db/queries/messages.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 export async function DELETE(c: Context) {
@@ -11,16 +11,19 @@ export async function DELETE(c: Context) {
 
   const user = c.get("user");
 
-  const [message] = await getMessageById({ userId: user.id, messageId });
+  const messageInfo = await getMessageWithChatOwnership({
+    messageId,
+    userId: user.id,
+  });
 
-  if (!message) {
-    throw new HTTPException(404, { message: "Message not found" });
+  if (messageInfo.owner !== user.id) {
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chat_id,
-    timestamp: message.created_at,
+    chatId: messageInfo.chatId,
+    timestamp: messageInfo.createdAt,
   });
 
-  return c.text("Trailing messages deleted");
+  return c.json("Trailing messages deleted");
 }

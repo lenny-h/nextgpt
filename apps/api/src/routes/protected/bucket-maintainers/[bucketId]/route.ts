@@ -1,25 +1,25 @@
-import { type Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import {
   filterNonExistingBucketMaintainers,
   removeBucketMaintainersBatch,
-} from "../../../../lib/db/queries/bucket-maintainers.js";
-import {
-  getBucketName,
-  isBucketOwner,
-} from "../../../../lib/db/queries/buckets.js";
-import { addBucketMaintainerInvitationsBatch } from "../../../../lib/db/queries/invitations.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
+} from "@/src/lib/db/queries/bucket-maintainers.js";
+import { getBucketOwner, isBucketOwner } from "@/src/lib/db/queries/buckets.js";
+import { addBucketMaintainerInvitationsBatch } from "@/src/lib/db/queries/invitations.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { type Context } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { bucketMaintainersSchema } from "./schema.js";
+import {
+  bucketMaintainers,
+  user as profile,
+} from "@workspace/server/drizzle/schema.js";
+import { eq } from "drizzle-orm";
 
-export async function POST(c: Context) {
-  const bucketId = c.req.param("bucketId");
+// Get bucket maintainers
+export async function GET(c: Context) {
+  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
 
   const user = c.get("user");
-
-  if (!uuidSchema.safeParse(bucketId).success) {
-    throw new HTTPException(400, { message: "Invalid bucket ID" });
-  }
 
   const hasPermissions = await isBucketOwner({
     userId: user.id,
@@ -27,7 +27,36 @@ export async function POST(c: Context) {
   });
 
   if (!hasPermissions) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
+  }
+
+  const maintainers = await db
+    .select({
+      userId: bucketMaintainers.userId,
+      username: profile.username,
+    })
+    .from(bucketMaintainers)
+    .innerJoin(profile, eq(bucketMaintainers.userId, profile.id))
+    .where(eq(bucketMaintainers.bucketId, bucketId));
+
+  return c.json(maintainers);
+}
+
+export async function POST(c: Context) {
+  const bucketId = c.req.param("bucketId");
+
+  const user = c.get("user");
+
+  if (!uuidSchema.safeParse(bucketId).success) {
+    throw new HTTPException(400, { message: "INVALID_BUCKET_ID" });
+  }
+
+  const { owner, name: bucketName } = await getBucketOwner({
+    bucketId,
+  });
+
+  if (owner !== user.id) {
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const payload = await c.req.json();
@@ -39,15 +68,11 @@ export async function POST(c: Context) {
     userIds,
   });
 
-  const name = await getBucketName({
-    bucketId,
-  });
-
   await addBucketMaintainerInvitationsBatch({
     originUserId: user.id,
     invitations: newMaintainers,
     bucketId,
-    bucketName: name,
+    bucketName,
   });
 
   return c.json("Maintainers invited");
@@ -64,7 +89,7 @@ export async function DELETE(c: Context) {
   });
 
   if (!hasPermissions) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const payload = await c.req.json();
@@ -73,7 +98,7 @@ export async function DELETE(c: Context) {
 
   if (userIds.includes(user.id)) {
     throw new HTTPException(400, {
-      message: "Cannot remove yourself as a maintainer",
+      message: "CANNOT_REMOVE_YOURSELF",
     });
   }
 

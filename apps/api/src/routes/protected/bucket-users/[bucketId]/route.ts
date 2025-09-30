@@ -1,10 +1,43 @@
+import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
+import { filterNonExistingBucketUsers } from "@/src/lib/db/queries/bucket-users.js";
+import { getBucketOwner } from "@/src/lib/db/queries/buckets.js";
+import { addUserInvitationsBatch } from "@/src/lib/db/queries/invitations.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import {
+  bucketUsers,
+  user as profile,
+} from "@workspace/server/drizzle/schema.js";
+import { and, eq, inArray } from "drizzle-orm";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { filterNonExistingBucketUsers } from "../../../../lib/db/queries/bucket-users.js";
-import { getBucketOwner } from "../../../../lib/db/queries/buckets.js";
-import { addUserInvitationsBatch } from "../../../../lib/db/queries/invitations.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
 import { bucketUsersSchema } from "./schema.js";
+
+export async function GET(c: Context) {
+  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
+
+  const user = c.get("user");
+
+  const hasPermissions = await isBucketMaintainer({
+    bucketId,
+    userId: user.id,
+  });
+
+  if (!hasPermissions) {
+    throw new HTTPException(403, { message: "FORBIDDEN" });
+  }
+
+  const users = await db
+    .select({
+      userId: bucketUsers.userId,
+      username: profile.username,
+    })
+    .from(bucketUsers)
+    .innerJoin(profile, eq(bucketUsers.userId, profile.id))
+    .where(eq(bucketUsers.bucketId, bucketId));
+
+  return c.json(users);
+}
 
 export async function POST(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
@@ -16,7 +49,7 @@ export async function POST(c: Context) {
   });
 
   if (owner !== user.id) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const payload = await c.req.json();
@@ -36,4 +69,34 @@ export async function POST(c: Context) {
   });
 
   return c.json("Users invited");
+}
+
+export async function DELETE(c: Context) {
+  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
+
+  const user = c.get("user");
+
+  const hasPermissions = await isBucketMaintainer({
+    bucketId,
+    userId: user.id,
+  });
+
+  if (!hasPermissions) {
+    throw new HTTPException(403, { message: "FORBIDDEN" });
+  }
+
+  const payload = await c.req.json();
+
+  const { userIds } = bucketUsersSchema.parse(payload);
+
+  await db
+    .delete(bucketUsers)
+    .where(
+      and(
+        eq(bucketUsers.bucketId, bucketId),
+        inArray(bucketUsers.userId, userIds)
+      )
+    );
+
+  return c.json("Users removed");
 }

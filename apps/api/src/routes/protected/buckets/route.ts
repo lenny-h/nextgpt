@@ -1,5 +1,5 @@
+import { createBucket } from "@/src/lib/db/queries/buckets.js";
 import { type Context } from "hono";
-import { createBucket } from "../../../lib/db/queries/buckets.js";
 import { createBucketPayloadSchema } from "./schema.js";
 
 export async function POST(c: Context) {
@@ -15,5 +15,5 @@ export async function POST(c: Context) {
     type,
   });
 
-  return new Response("Bucket created", { status: 200 });
+  return c.json("Bucket created");
 }

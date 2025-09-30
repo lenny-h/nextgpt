@@ -1,13 +1,10 @@
+import { isCourseMaintainer } from "@/src/lib/db/queries/course-maintainers.js";
+import { deleteTask, getTaskDetails } from "@/src/lib/db/queries/tasks.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { deleteFileFromS3 } from "@/src/utils/access-clients/s3-client.js";
 import { CloudTasksClient } from "@google-cloud/tasks";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { isCourseMaintainer } from "../../../../lib/db/queries/course-maintainers.js";
-import {
-  deleteTask,
-  getTaskDetails,
-} from "../../../../lib/db/queries/tasks.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
-import { deleteFileFromS3 } from "../../../../utils/access-clients/s3-client.js";
 
 export async function DELETE(c: Context) {
   const taskId = uuidSchema.parse(c.req.param("taskId"));
@@ -24,12 +21,12 @@ export async function DELETE(c: Context) {
   });
 
   if (!isMaintainer) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   if (status !== "scheduled") {
     throw new HTTPException(400, {
-      message: "Only tasks with status 'scheduled' can be deleted",
+      message: "ONLY_SCHEDULED_TASKS",
     });
   }
 

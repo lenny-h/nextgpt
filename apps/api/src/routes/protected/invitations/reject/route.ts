@@ -1,13 +1,11 @@
+import {
+  deleteBucketMaintainerInvitation,
+  deleteCourseMaintainerInvitation,
+  deleteUserInvitation,
+} from "@/src/lib/db/queries/invitations.js";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import {
-  deleteUserInvitation,
-  deleteCourseMaintainerInvitation,
-  deleteBucketMaintainerInvitation,
-} from "../../../../lib/db/queries/invitations.js";
 import { rejectInvitationSchema } from "./schema.js";
-
-// Important: This route is not really necessary, as we can use the supabase client to delete the invitation directly.
 
 export async function POST(c: Context) {
   const payload = await c.req.json();
@@ -36,8 +34,8 @@ export async function POST(c: Context) {
       bucketId: resourceId,
     });
   } else {
-    throw new HTTPException(400, { message: "Invalid invitation type" });
+    throw new HTTPException(400, { message: "BAD_REQUEST" });
   }
 
-  return c.text("Invitation rejected");
+  return c.json("Invitation rejected");
 }

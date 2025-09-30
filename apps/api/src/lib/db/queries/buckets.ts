@@ -5,6 +5,7 @@ import {
   bucketUsers,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, sql } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 
 const maxFileSizes = {
   small: 2,
@@ -24,7 +25,8 @@ export async function getBucketOwner({ bucketId }: { bucketId: string }) {
     .where(eq(buckets.id, bucketId))
     .limit(1);
 
-  if (result.length === 0) throw new Error("Bucket not found");
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
   return result[0];
 }
 
@@ -35,7 +37,8 @@ export async function getBucketName({ bucketId }: { bucketId: string }) {
     .where(eq(buckets.id, bucketId))
     .limit(1);
 
-  if (result.length === 0) throw new Error("Bucket not found");
+  if (result.length === 0)
+    throw new HTTPException(404, { message: "NOT_FOUND" });
   return result[0].name;
 }
 

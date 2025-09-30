@@ -1,8 +1,8 @@
+import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
+import { createCourse } from "@/src/lib/db/queries/courses.js";
+import { encryptApiKey } from "@/src/utils/encryption.js";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { isBucketMaintainer } from "../../../lib/db/queries/bucket-maintainers.js";
-import { createCourse } from "../../../lib/db/queries/courses.js";
-import { encryptApiKey } from "../../../utils/encryption.js";
 import { createCourseSchema } from "./schema.js";
 
 export async function POST(c: Context) {
@@ -19,7 +19,7 @@ export async function POST(c: Context) {
   });
 
   if (!hasPermissions) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   // Encrypt password if provided
@@ -35,5 +35,5 @@ export async function POST(c: Context) {
     encryptedKey,
   });
 
-  return c.text("Course created");
+  return c.json("Course created");
 }

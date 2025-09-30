@@ -1,23 +1,20 @@
+import { deleteBucket, isBucketOwner } from "@/src/lib/db/queries/buckets.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import {
-  deleteBucket,
-  isBucketOwner,
-} from "../../../../lib/db/queries/buckets.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
 
 export async function DELETE(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
 
   const user = c.get("user");
 
-  const isOwner = await isBucketOwner({
+  const hasPermissions = await isBucketOwner({
     userId: user.id,
     bucketId,
   });
 
-  if (!isOwner) {
-    throw new HTTPException(403, { message: "Forbidden" });
+  if (!hasPermissions) {
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const deletedBucket = await deleteBucket({ bucketId });

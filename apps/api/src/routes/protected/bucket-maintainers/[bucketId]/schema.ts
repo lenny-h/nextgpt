@@ -1,5 +1,5 @@
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import * as z from "zod";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
 
 export const bucketMaintainersSchema = z
   .object({

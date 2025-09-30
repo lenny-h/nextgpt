@@ -1,9 +1,9 @@
+import { insertDocument } from "@/src/lib/db/queries/documents.js";
+import { getPrompt } from "@/src/lib/db/queries/prompts.js";
+import { CORRECTION_PROMPT } from "@/src/lib/prompts.js";
 import { vertex } from "@ai-sdk/google-vertex";
 import { generateText } from "ai";
 import { type Context } from "hono";
-import { insertDocument } from "../../../lib/db/queries/documents.js";
-import { getPrompt } from "../../../lib/db/queries/prompts.js";
-import { CORRECTION_PROMPT } from "../../../lib/prompts.js";
 import { correctionSchema } from "./schema.js";
 
 export async function POST(c: Context) {

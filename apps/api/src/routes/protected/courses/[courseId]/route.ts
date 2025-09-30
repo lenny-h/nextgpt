@@ -1,20 +1,18 @@
+import { isCourseMaintainer } from "@/src/lib/db/queries/course-maintainers.js";
+import {
+  deleteCourse,
+  getBucketIdByCourseId,
+} from "@/src/lib/db/queries/courses.js";
+import { deleteFile, getCourseFiles } from "@/src/lib/db/queries/files.js";
+import { getFilePages } from "@/src/lib/db/queries/pages.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { getPagesBucket } from "@/src/utils/access-clients/google-storage-client.js";
+import { deleteFileFromS3 } from "@/src/utils/access-clients/s3-client.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { pages } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { type Context } from "hono";
-import { isCourseMaintainer } from "../../../../lib/db/queries/course-maintainers.js";
-import {
-  deleteCourse,
-  getBucketIdByCourseId,
-} from "../../../../lib/db/queries/courses.js";
-import {
-  deleteFile,
-  getCourseFiles,
-} from "../../../../lib/db/queries/files.js";
-import { getFilePages } from "../../../../lib/db/queries/pages.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
-import { getPagesBucket } from "../../../../utils/access-clients/google-storage-client.js";
-import { deleteFileFromS3 } from "../../../../utils/access-clients/s3-client.js";
+import { HTTPException } from "hono/http-exception";
 
 export async function DELETE(c: Context) {
   const courseId = uuidSchema.parse(c.req.param("courseId"));
@@ -27,7 +25,7 @@ export async function DELETE(c: Context) {
   });
 
   if (!isMaintainer) {
-    return new Response("Forbidden", { status: 403 });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const files = await getCourseFiles({

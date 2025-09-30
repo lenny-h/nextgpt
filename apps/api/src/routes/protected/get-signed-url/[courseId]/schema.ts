@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { filenameSchema } from "../../../../schemas/filename-schema.js";
+import { filenameSchema } from "@/src/schemas/filename-schema.js";
 
 export const getSignedUrlSchema = z
   .object({

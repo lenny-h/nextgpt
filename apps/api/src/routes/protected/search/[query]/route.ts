@@ -1,21 +1,19 @@
-import { type Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import {
   retrieveDocumentSources,
   retrieveEmbedding,
-} from "../../../../utils/retrieve-context.js";
-import { userHasPermissions } from "../../../../utils/user-has-permissions.js";
+} from "@/src/utils/retrieve-context.js";
+import { userHasPermissions } from "@/src/utils/user-has-permissions.js";
+import { type Context } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { querySchema, searchPayloadSchema } from "./schema.js";
 
-// IMPORTANT TODO(DONE): Check if the user is authorized to access the files
-
 export async function POST(c: Context) {
-  const query = c.req.param("query");
-  const payload = await c.req.json();
+  const query = querySchema.parse(c.req.param("query"));
 
   const user = c.get("user");
 
-  const validatedQuery = querySchema.parse(query);
+  const payload = await c.req.json();
+
   const { filter, fts } = searchPayloadSchema.parse(payload);
 
   const hasPermission = await userHasPermissions({
@@ -27,14 +25,14 @@ export async function POST(c: Context) {
   });
 
   if (!hasPermission) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   let embedding, ftsQuery;
   if (fts) {
-    ftsQuery = validatedQuery;
+    ftsQuery = query;
   } else {
-    embedding = await retrieveEmbedding(validatedQuery);
+    embedding = await retrieveEmbedding(query);
   }
 
   const sources = await retrieveDocumentSources({

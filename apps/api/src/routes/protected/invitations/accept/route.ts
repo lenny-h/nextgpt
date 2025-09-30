@@ -4,7 +4,7 @@ import {
   acceptBucketMaintainerInvitation,
   acceptCourseMaintainerInvitation,
   acceptUserInvitation,
-} from "../../../../lib/db/queries/invitations.js";
+} from "@/src/lib/db/queries/invitations.js";
 import { acceptInvitationSchema } from "./schema.js";
 
 export async function POST(c: Context) {
@@ -34,8 +34,8 @@ export async function POST(c: Context) {
       bucketId: resourceId,
     });
   } else {
-    throw new HTTPException(400, { message: "Invalid invitation type" });
+    throw new HTTPException(400, { message: "BAD_REQUEST" });
   }
 
-  return c.text("Invitation accepted");
+  return c.json("Invitation accepted");
 }

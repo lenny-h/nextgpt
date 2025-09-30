@@ -1,12 +1,12 @@
+import { filterNonExistingBucketUsers } from "@/src/lib/db/queries/bucket-users.js";
+import { getBucketOwner } from "@/src/lib/db/queries/buckets.js";
+import { addUserInvitationsBatch } from "@/src/lib/db/queries/invitations.js";
+import { getUserIdsByUsernames } from "@/src/lib/db/queries/users.js";
+import { uuidSchema } from "@/src/schemas/uuid-schema.js";
+import { chunk } from "@/src/utils/utils.js";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { default as papa } from "papaparse";
-import { filterNonExistingBucketUsers } from "../../../../lib/db/queries/bucket-users.js";
-import { getBucketOwner } from "../../../../lib/db/queries/buckets.js";
-import { addUserInvitationsBatch } from "../../../../lib/db/queries/invitations.js";
-import { getUserIdsByUsernames } from "../../../../lib/db/queries/users.js";
-import { uuidSchema } from "../../../../schemas/uuid-schema.js";
-import { chunk } from "../../../../utils/utils.js";
 
 const BATCH_SIZE = 100;
 
@@ -20,14 +20,14 @@ export async function POST(c: Context) {
   });
 
   if (owner !== user.id) {
-    throw new HTTPException(403, { message: "Forbidden" });
+    throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
   const formData = await c.req.formData();
   const file = formData.get("file");
 
   if (!file || !(file instanceof File)) {
-    throw new HTTPException(400, { message: "File is required" });
+    throw new HTTPException(400, { message: "BAD_REQUEST" });
   }
 
   const fileText = await file.text();
@@ -38,7 +38,7 @@ export async function POST(c: Context) {
   });
 
   if (result.errors.length > 0) {
-    throw new HTTPException(400, { message: "Invalid CSV file" });
+    throw new HTTPException(400, { message: "INVALID_CSV_FILE" });
   }
 
   const usernames = result.data.map((row) => row[0]).filter(Boolean);
@@ -46,7 +46,7 @@ export async function POST(c: Context) {
 
   if (uniqueUsernames.length > 600) {
     throw new HTTPException(400, {
-      message: "Cannot invite more than 600 users at once",
+      message: "TOO_MANY_USERS",
     });
   }
 
