@@ -1,6 +1,6 @@
 import * as m from "motion/react-m";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { AnimatePresence, LazyMotion } from "motion/react";
 import { memo } from "react";

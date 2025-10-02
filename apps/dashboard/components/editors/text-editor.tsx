@@ -1,7 +1,7 @@
 "use client";
 
 import { useAutocomplete } from "@/contexts/autocomplete-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { createCompletionPlugin } from "@workspace/ui/editors/completion-plugin";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";
@@ -34,7 +34,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
   const [autocomplete] = useAutocomplete();
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     "text-editor-input",
-    ""
+    "",
   );
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
     return () => {
       if (editorRef.current) {
         const content = mathMarkdownSerializer.serialize(
-          editorRef.current.state.doc
+          editorRef.current.state.doc,
         );
 
         setTextEditorContent((prev) => ({
@@ -91,7 +91,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
       const tr = editorRef.current.state.tr.replaceWith(
         0,
         editorRef.current.state.doc.content.size,
-        newDoc.content
+        newDoc.content,
       );
       editorRef.current.dispatch(tr);
     }
@@ -104,7 +104,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
         JSON.stringify({
           ...autocomplete,
           text: autocomplete.text,
-        })
+        }),
       );
 
       const newState = EditorState.create({
@@ -129,7 +129,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
     const saveInterval = setInterval(() => {
       if (editorRef.current) {
         const content = mathMarkdownSerializer.serialize(
-          editorRef.current.state.doc
+          editorRef.current.state.doc,
         );
         setLocalStorageInput(content);
       }
@@ -142,7 +142,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
 
   return (
     <div
-      className="relative prose dark:prose-invert p-2"
+      className="prose dark:prose-invert relative p-2"
       ref={containerRef}
       spellCheck={false}
     />

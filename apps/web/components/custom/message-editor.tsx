@@ -1,4 +1,4 @@
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { type MyUIMessage } from "@/types/custom-ui-message";

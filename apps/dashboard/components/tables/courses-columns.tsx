@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { deleteResource } from "@/lib/delete-resource";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@workspace/ui/components/button";
@@ -31,14 +31,14 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => (
-      <p className="max-w-32 md:max-w-80 truncate">{row.getValue("name")}</p>
+      <p className="max-w-32 truncate md:max-w-80">{row.getValue("name")}</p>
     ),
   },
   {
     accessorKey: "description",
     header: "Description",
     cell: ({ row }) => (
-      <p className="max-w-32 md:max-w-80 truncate">
+      <p className="max-w-32 truncate md:max-w-80">
         {row.getValue("description")}
       </p>
     ),
@@ -51,7 +51,7 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
     accessorKey: "bucket_name",
     header: "Bucket Name",
     cell: ({ row }) => (
-      <p className="max-w-32 md:max-w-80 truncate">
+      <p className="max-w-32 truncate md:max-w-80">
         {row.getValue("bucket_name")}
       </p>
     ),
@@ -83,7 +83,7 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
         searchParams.set("courseName", row.getValue("name"));
         searchParams.set("bucketId", row.getValue("bucket_id"));
         router.push(
-          `/${locale}/courses/maintainers?${searchParams.toString()}`
+          `/${locale}/courses/maintainers?${searchParams.toString()}`,
         );
       };
 

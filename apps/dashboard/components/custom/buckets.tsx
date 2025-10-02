@@ -1,13 +1,14 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
-import { type Locale } from "@/i18n.config";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { deleteResource } from "@/lib/delete-resource";
-import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";
+import { type Bucket } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { type Tables } from "@workspace/ui/types/database";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 import { memo, useState } from "react";
 import { AddBucketUsers } from "./add-bucket-users";
@@ -19,7 +20,8 @@ interface Props {
 }
 
 export const Buckets = memo(({ locale }: Props) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const {
     data: buckets,
@@ -28,19 +30,19 @@ export const Buckets = memo(({ locale }: Props) => {
   } = useQuery({
     queryKey: ["buckets"],
     queryFn: () =>
-      rpcFetcher<"get_maintained_buckets">("get_maintained_buckets"),
+      apiFetcher(
+        (client) => client["buckets"]["maintained"].$get(),
+        sharedT.apiCodes,
+      ),
   });
 
-  const [selectedBucket, setSelectedBucket] =
-    useState<Tables<"buckets"> | null>(null);
+  const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
 
   if (isPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-2xl font-semibold">
-          {globalT.components.buckets.loading}
-        </h1>
+        <h1 className="text-2xl font-semibold">{dashboardT.buckets.loading}</h1>
         <div className="grid w-full max-w-4xl grid-cols-1 sm:grid-cols-[0.7fr_1fr]">
           <div className="h-72 w-full border-r p-2">
             <Skeleton className="size-full rounded-md" />
@@ -57,7 +59,7 @@ export const Buckets = memo(({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-center text-2xl font-semibold">
-          {globalT.components.buckets.errorLoading}
+          {dashboardT.buckets.errorLoading}
         </h1>
       </div>
     );
@@ -67,11 +69,11 @@ export const Buckets = memo(({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-center text-2xl font-semibold">
-          {globalT.components.buckets.noBuckets}
+          {dashboardT.buckets.noBuckets}
         </h1>
         <Button asChild>
           <Link href={`/${locale}/buckets/new`}>
-            {globalT.components.buckets.createBucket}
+            {dashboardT.buckets.createBucket}
           </Link>
         </Button>
       </div>
@@ -80,16 +82,29 @@ export const Buckets = memo(({ locale }: Props) => {
 
   return (
     <div className="flex flex-col items-center space-y-6 p-2">
-      <h1 className="text-2xl font-semibold">
-        {globalT.components.buckets.title}
-      </h1>
+      <h1 className="text-2xl font-semibold">{dashboardT.buckets.title}</h1>
       <div className="grid min-h-80 w-full max-w-4xl grid-cols-1 border-t sm:grid-cols-[0.75fr_1.2fr] md:grid-cols-1 lg:grid-cols-[0.6fr_1.4fr]">
         <ul className="space-y-2 p-2 sm:border-r">
           {buckets.map((bucket) => (
             <li
               key={bucket.id}
               className="cursor-pointer rounded-md border px-2 py-1"
-              onClick={() => setSelectedBucket(bucket)}
+              onClick={() =>
+                setSelectedBucket({
+                  ...bucket,
+                  createdAt: new Date(bucket.createdAt),
+                })
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setSelectedBucket({
+                    ...bucket,
+                    createdAt: new Date(bucket.createdAt),
+                  });
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               {bucket.name}
             </li>
@@ -108,13 +123,15 @@ export const Buckets = memo(({ locale }: Props) => {
                     <div key={key} className="flex space-x-4 font-medium">
                       <span className="text-primary">{key}:</span>
                       <span>
-                        {key === "created_at"
-                          ? new Date(value).toLocaleString()
-                          : key === "size" || key === "max_size"
+                        {key === "createdAt"
+                          ? value instanceof Date
+                            ? value.toLocaleString()
+                            : new Date(value).toLocaleString()
+                          : key === "size" || key === "maxSize"
                             ? `${(Number(value) / (1024 * 1024 * 1024)).toFixed(
                                 2,
                               )} GB`
-                            : value}
+                            : String(value)}
                       </span>
                     </div>
                   ))}
@@ -125,26 +142,26 @@ export const Buckets = memo(({ locale }: Props) => {
                         selectedBucket.id
                       }&bucketName=${encodeURIComponent(
                         selectedBucket.name,
-                      )}&usersCount=${selectedBucket.users_count}`}
+                      )}&usersCount=${selectedBucket.usersCount}`}
                     >
-                      {globalT.components.buckets.manageUsers}
+                      {dashboardT.buckets.manageUsers}
                     </Link>
                   </Button>
                   <Button
                     onClick={() => setDeleteDialog(true)}
                     variant="outline"
                   >
-                    {globalT.components.buckets.delete}
+                    {dashboardT.buckets.delete}
                   </Button>
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="space-y-1">
                   <h2 className="text-xl font-semibold">
-                    {globalT.components.buckets.addUsers}
+                    {dashboardT.buckets.addUsers}
                   </h2>
                   <p className="text-muted-foreground text-sm">
-                    {globalT.components.buckets.addUsersDescription}
+                    {dashboardT.buckets.addUsersDescription}
                   </p>
                 </div>
                 <CSVUploader bucketId={selectedBucket.id} />
@@ -166,12 +183,12 @@ export const Buckets = memo(({ locale }: Props) => {
                 }}
                 resourceType="bucket"
                 resourceName={selectedBucket.name}
-                description={globalT.components.buckets.deleteConfirmation}
+                description={dashboardT.buckets.deleteConfirmation}
               />
             </>
           ) : (
             <h2 className="text-lg font-medium">
-              {globalT.components.buckets.selectBucket}
+              {dashboardT.buckets.selectBucket}
             </h2>
           )}
         </div>

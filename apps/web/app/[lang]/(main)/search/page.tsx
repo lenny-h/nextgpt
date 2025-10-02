@@ -4,7 +4,7 @@ import { SourcesList } from "@/components/custom/sources-list";
 import { Header } from "@/components/custom/toggle-sidebars-header";
 import { useCSResults } from "@/contexts/classic-search-results";
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useVSResults } from "@/contexts/semantic-search-results";
 import { type DocumentSource } from "@/types/document-source";
 import { Input } from "@workspace/ui/components/input";

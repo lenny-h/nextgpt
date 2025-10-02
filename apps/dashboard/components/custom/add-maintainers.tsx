@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Loader2 } from "lucide-react";

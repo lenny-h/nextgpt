@@ -2,7 +2,6 @@
 
 import * as z from "zod";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -22,7 +21,8 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,7 +49,7 @@ export const CourseKeyDialog = memo(
     courseName,
     onSuccess,
   }: CourseKeyDialogProps) => {
-    const { globalT } = useGlobalTranslations();
+    const { sharedT } = useSharedTranslations();
 
     const form = useForm<CourseKeyData>({
       resolver: zodResolver(courseKeySchema),
@@ -59,38 +59,28 @@ export const CourseKeyDialog = memo(
     });
 
     const onSubmit = async (values: CourseKeyData) => {
-      toast.promise(
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/courses/request-access`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
+      const requestAccessPromise = apiFetcher(
+        (client) =>
+          client.courses["request-access"].$post({
+            json: {
               courseId,
               key: values.key,
-            }),
-          },
-        ).then(async (response) => {
-          checkResponse(response, globalT.globalErrors, {
-            403: "Invalid course key",
-          });
-        }),
+            },
+          }),
         {
-          loading: "Requesting course access...",
-          success: () => {
-            form.reset();
-            onSuccess();
-            return "Course access granted!";
-          },
-          error: (error) => {
-            console.error(error);
-            return error.message || "Failed to request course access";
-          },
+          ...sharedT.apiCodes,
+          403: "Invalid course key",
         },
-      );
+      ).then(() => {
+        form.reset();
+        onSuccess();
+      });
+
+      toast.promise(requestAccessPromise, {
+        loading: "Requesting course access...",
+        success: "Course access granted!",
+        error: (error) => error.message || "Failed to request course access",
+      });
     };
 
     return (

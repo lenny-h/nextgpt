@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -12,6 +11,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { type ErrorDictionary } from "@workspace/ui/lib/translation-utils";
 import { capitalizeFirstLetter } from "@workspace/ui/lib/utils";
 import { useState } from "react";
@@ -37,7 +37,7 @@ export function DeleteDialogWithConfirmation({
   resourceName,
   description,
 }: Props) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");
@@ -72,7 +72,7 @@ export function DeleteDialogWithConfirmation({
             variant="destructive"
             disabled={input !== resourceName}
             onClick={() => {
-              toast.promise(deleteResource(queryClient, globalT.globalErrors), {
+              toast.promise(deleteResource(queryClient, sharedT.apiCodes), {
                 loading: "Deleting...",
                 success: (result) =>
                   `${capitalizeFirstLetter(

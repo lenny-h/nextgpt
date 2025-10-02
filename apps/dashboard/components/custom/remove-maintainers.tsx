@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { type User as AuthenticatedUser } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";

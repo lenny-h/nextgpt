@@ -12,7 +12,7 @@ import {
 } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { useEditor } from "./editor-context";
-import { useGlobalTranslations } from "./global-translations";
+import { useGlobalTranslations } from "./web-translations";
 
 interface PDFContextType {
   currentPdfUrl: string | null;

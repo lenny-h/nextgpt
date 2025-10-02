@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import {
   SidebarGroup,
   SidebarGroupContent,

@@ -5,8 +5,12 @@ import {
 import { addModel } from "@/src/lib/db/queries/models.js";
 import { encryptApiKey } from "@/src/utils/encryption.js";
 import { db } from "@workspace/server/drizzle/db.js";
-import { models, bucketMaintainers } from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm"; // Remove inArray, add eq
+import {
+  models,
+  bucketMaintainers,
+  buckets,
+} from "@workspace/server/drizzle/schema.js";
+import { eq, desc } from "drizzle-orm"; // Remove inArray, add eq
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { addModelFormSchema } from "./schema.js";
@@ -23,15 +27,20 @@ export async function GET(c: Context) {
   const result = await db
     .select({
       id: models.id,
+      bucketId: models.bucketId,
+      bucketName: buckets.name,
       name: models.name,
       description: models.description,
+      createdAt: models.createdAt,
     })
     .from(models)
+    .innerJoin(buckets, eq(models.bucketId, buckets.id))
     .innerJoin(
       bucketMaintainers,
       eq(models.bucketId, bucketMaintainers.bucketId)
     )
     .where(eq(bucketMaintainers.userId, user.id))
+    .orderBy(desc(models.createdAt))
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 

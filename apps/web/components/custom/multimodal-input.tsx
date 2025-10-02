@@ -17,7 +17,7 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useUser } from "@/contexts/user-context";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";

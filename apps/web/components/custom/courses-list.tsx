@@ -1,5 +1,5 @@
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { CourseAccessCache } from "@/lib/course-access-cache";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { memo, useCallback } from "react";

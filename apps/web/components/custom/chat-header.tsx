@@ -19,7 +19,7 @@ import { resizeEditor } from "@workspace/ui/lib/utils";
 import { PanelRightIcon, Star } from "lucide-react";
 import { toast } from "sonner";
 import { CourseSelector } from "./course-selector";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 
 interface Props {
   chatId: string;

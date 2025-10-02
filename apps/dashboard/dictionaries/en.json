@@ -1,96 +1,72 @@
 {
-  "global": {
-    "globalErrors": {
-      "400": "The server could not serve your request",
-      "401": "You must be signed in to perform this action",
-      "403": "You do not have permission to access this resource",
-      "404": "Not found",
-      "client404": "Page not found",
-      "409": "Name already exists",
-      "413": "The payload of your request is too large",
-      "429": "The rate limit has been exceeded",
-      "500": "An error occurred. Please try again later",
-      "504": "Some upstream services are not responding",
-      "error": "An error occurred. Please try again later.",
-      "loadMoreError": "Failed to load more items",
-      "abortError": "The request was aborted",
-      "imageError": "Image not available",
-      "noResults": "No results found"
-    },
-    "components": {
-      "socialLogins": {
-        "loginWithInstitution": "Login With Your Institution"
-      },
-      "deleteDialog": {
-        "delete": "Delete",
-        "cancel": "Cancel",
-        "deleting": "Deleting...",
-        "deletedSuccessfully": "deleted successfully"
-      },
-      "addMaintainers": {
-        "adding": "Adding maintainers...",
-        "success": "Maintainers invited successfully 🎉"
-      },
-      "courses": {
-        "loading": "Loading courses...",
-        "errorLoading": "Courses could not be loaded. Please try again later.",
-        "noCourses": "Looks like there are no courses yet",
-        "createCourse": "Create a course",
-        "title": "Courses",
-        "filterLabel": "course name"
-      },
-      "correction": {
-        "title": "Corrections",
-        "solutionSheet": "Solution sheet",
-        "studentHandIns": "Student hand-ins",
-        "customPrompt": "Custom Prompt (Optional)",
-        "customPromptDescription": "Select a custom prompt to instruct the AI how to correct the submissions.",
-        "selectPrompt": "Select prompt",
-        "searchPrompts": "Search prompts...",
-        "noPromptFound": "No prompt found",
-        "failedLoadPrompts": "Failed to load prompts",
-        "noPromptsFound": "No prompts found",
-        "addPrompt": "Add Prompt",
-        "addNewPrompt": "Add New Prompt",
-        "addPromptDescription": "Specify how the AI should correct the hand-ins.",
-        "startCorrection": "Start Correction",
-        "filesNotCorrected": "The following files could not be corrected:",
-        "correctionSuccess": "Correction completed successfully. You can access the results under 'Documents'",
-        "correctionFailed": "Could not correct the hand-ins"
-      },
-      "correctionDropzone": {
-        "dropFiles": "Drop the files here ...",
-        "dragDrop": "Drag and drop .pdf files here, or click to select files",
-        "maxFiles": "Max {maxFiles} files with 15 MB each"
-      },
-      "buckets": {
-        "loading": "Loading buckets...",
-        "errorLoading": "There was an error loading the buckets. Please try again later.",
-        "noBuckets": "Looks like there are no buckets yet",
-        "createBucket": "Create a bucket",
-        "title": "Buckets",
-        "manageUsers": "Manage Users",
-        "delete": "Delete",
-        "addUsers": "Add users",
-        "addUsersDescription": "Users can be added manually or by uploading a CSV file with a single column that contains the usernames of the users you want to add.",
-        "selectBucket": "Select a bucket",
-        "deleteConfirmation": "Are you sure you want to delete this bucket? This action cannot be undone."
-      },
-      "autocomplete": {
-        "searchUsers": "Search users...",
-        "errorProfiles": "Could not get profiles"
-      },
-      "addPromptForm": {
-        "creating": "Creating prompt...",
-        "success": "Prompt created 🎉",
-        "errorSaving": "Failed to save document. Please try again later.",
-        "name": "Name",
-        "promptName": "Prompt Name",
-        "content": "Content",
-        "contentPlaceholder": "Enter your instructions here...",
-        "cancel": "Cancel",
-        "create": "Create"
-      }
-    }
+  "deleteDialog": {
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "deletedSuccessfully": "deleted successfully"
+  },
+  "addMaintainers": {
+    "adding": "Adding maintainers...",
+    "success": "Maintainers invited successfully 🎉"
+  },
+  "courses": {
+    "loading": "Loading courses...",
+    "errorLoading": "Courses could not be loaded. Please try again later.",
+    "noCourses": "Looks like there are no courses yet",
+    "createCourse": "Create a course",
+    "title": "Courses",
+    "filterLabel": "course name"
+  },
+  "correction": {
+    "title": "Corrections",
+    "solutionSheet": "Solution sheet",
+    "studentHandIns": "Student hand-ins",
+    "customPrompt": "Custom Prompt (Optional)",
+    "customPromptDescription": "Select a custom prompt to instruct the AI how to correct the submissions.",
+    "selectPrompt": "Select prompt",
+    "searchPrompts": "Search prompts...",
+    "noPromptFound": "No prompt found",
+    "failedLoadPrompts": "Failed to load prompts",
+    "noPromptsFound": "No prompts found",
+    "addPrompt": "Add Prompt",
+    "addNewPrompt": "Add New Prompt",
+    "addPromptDescription": "Specify how the AI should correct the hand-ins.",
+    "startCorrection": "Start Correction",
+    "filesNotCorrected": "The following files could not be corrected:",
+    "correctionSuccess": "Correction completed successfully. You can access the results under 'Documents'",
+    "correctionFailed": "Could not correct the hand-ins"
+  },
+  "correctionDropzone": {
+    "dropFiles": "Drop the files here ...",
+    "dragDrop": "Drag and drop .pdf files here, or click to select files",
+    "maxFiles": "Max {maxFiles} files with 15 MB each"
+  },
+  "buckets": {
+    "loading": "Loading buckets...",
+    "errorLoading": "There was an error loading the buckets. Please try again later.",
+    "noBuckets": "Looks like there are no buckets yet",
+    "createBucket": "Create a bucket",
+    "title": "Buckets",
+    "manageUsers": "Manage Users",
+    "delete": "Delete",
+    "addUsers": "Add users",
+    "addUsersDescription": "Users can be added manually or by uploading a CSV file with a single column that contains the usernames of the users you want to add.",
+    "selectBucket": "Select a bucket",
+    "deleteConfirmation": "Are you sure you want to delete this bucket? This action cannot be undone."
+  },
+  "autocomplete": {
+    "searchUsers": "Search users...",
+    "errorProfiles": "Could not get profiles"
+  },
+  "addPromptForm": {
+    "creating": "Creating prompt...",
+    "success": "Prompt created 🎉",
+    "errorSaving": "Failed to save document. Please try again later.",
+    "name": "Name",
+    "promptName": "Prompt Name",
+    "content": "Content",
+    "contentPlaceholder": "Enter your instructions here...",
+    "cancel": "Cancel",
+    "create": "Create"
   }
 }

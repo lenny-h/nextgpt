@@ -1,7 +1,6 @@
 import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
 import {
   filterNonExistingCourseMaintainers,
-  isCourseMaintainer,
   removeCourseMaintainersBatch,
 } from "@/src/lib/db/queries/course-maintainers.js";
 import {
@@ -39,7 +38,7 @@ export async function GET(c: Context) {
 
   const maintainers = await db
     .select({
-      userId: courseMaintainers.userId,
+      id: courseMaintainers.userId,
       username: profile.username,
     })
     .from(courseMaintainers)

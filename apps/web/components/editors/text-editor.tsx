@@ -1,7 +1,7 @@
 "use client";
 
 import { useAutocomplete } from "@/contexts/autocomplete-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { createCompletionPlugin } from "@workspace/ui/editors/completion-plugin";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";

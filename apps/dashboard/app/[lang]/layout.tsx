@@ -1,11 +1,12 @@
 import { Providers } from "@/components/custom/providers";
-import { i18n, type Locale } from "@/i18n.config";
 import { getDictionary } from "@/lib/dictionary";
 import { inter } from "@/lib/fonts";
+import { getDictionary as getSharedDictionary } from "@workspace/ui/lib/dictionary";
+import { i18n, type Locale } from "@workspace/ui/lib/i18n.config";
 import { type Metadata } from "next";
 import { headers } from "next/headers";
 
-import "@workspace/ui/globals.css";
+import "@workspace/ui/styles/globals.css";
 
 export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
@@ -62,13 +63,15 @@ export default async function RootLayout({
 }>) {
   const lang = (await params).lang;
   const dictionary = await getDictionary(lang);
+  const sharedDictionary = await getSharedDictionary(lang);
   const nonce = (await headers()).get("x-nonce") || "";
 
   return (
     <html lang={lang} suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         <Providers
-          globalTranslations={dictionary.global}
+          sharedTranslations={sharedDictionary}
+          dashboardTranslations={dictionary}
           locale={lang}
           attribute="class"
           defaultTheme="system"

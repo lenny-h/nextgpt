@@ -34,7 +34,7 @@ export async function GET(c: Context) {
 
   const users = await db
     .select({
-      userId: bucketUsers.userId,
+      id: bucketUsers.userId,
       username: profile.username,
     })
     .from(bucketUsers)

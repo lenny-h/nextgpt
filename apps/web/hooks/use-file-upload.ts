@@ -1,4 +1,4 @@
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { type Attachment } from "@/types/attachment";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { useState, type ChangeEvent } from "react";

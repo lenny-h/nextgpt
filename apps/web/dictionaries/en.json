@@ -1,69 +1,46 @@
 {
-  "global": {
-    "globalErrors": {
-      "400": "The server could not serve your request",
-      "401": "You must be signed in to perform this action",
-      "403": "You do not have permission to access this resource",
-      "404": "Not found",
-      "client404": "Page not found",
-      "413": "The payload of your request is too large",
-      "429": "The rate limit has been exceeded",
-      "500": "An error occurred. Please try again later",
-      "504": "Some upstream services are not responding",
-      "error": "An error occurred. Please try again later.",
-      "loadMoreError": "Failed to load more items",
-      "abortError": "The request was aborted",
-      "imageError": "Image not available",
-      "noResults": "No results found"
-    },
-    "components": {
-      "addContext": {
-        "add": "Add",
-        "search": "Search"
-      },
-      "chatHeader": {
-        "chatAdded": "Chat added to favourites",
-        "chatAddedError": "Failed to add chat to favourites",
-        "chatRemoved": "Chat removed from favourites",
-        "chatRemovedError": "Failed to remove chat from favourites",
-        "addToFavourites": "Add to favourites",
-        "toggleSidebar": "Toggle sidebar"
-      },
-      "socialLogins": {
-        "loginWithInstitution": "Login With Your Institution"
-      },
-      "practiceHeader": {
-        "hidePreviousQuestions": "Hide previous questions",
-        "showPreviousQuestions": "Show previous questions",
-        "hideTextArea": "Hide text area",
-        "showTextArea": "Show text area",
-        "toggleSidebar": "Toggle sidebar"
-      },
-      "introduction": {
-        "temporaryChatActivated": "Temporary chat activated 💪🏽",
-        "messagesNotSaved": "Your messages will not be saved!",
-        "welcomeToNextGPT": "Welcome to NextGPT 🚀",
-        "selectCourseResources": "Select the course resources you want to discuss and start chatting!"
-      },
-      "pdfViewer": {
-        "noPdfSelected": "No PDF selected",
-        "authenticating": "Authenticating...",
-        "failedToLoadPdf": "Failed to load PDF"
-      },
-      "chatItem": {
-        "practiceSession": "Practice Session",
-        "more": "More",
-        "removeFromFavorites": "Remove from Favorites",
-        "addToFavourites": "Add to favourites",
-        "rename": "Rename",
-        "delete": "Delete"
-      },
-      "loadButtonLists": {
-        "selectCourseFirst": "Please select a course first"
-      },
-      "chat": {
-        "errorOccurred": "An error occurred, please try again!"
-      }
-    }
+  "addContext": {
+    "add": "Add",
+    "search": "Search"
+  },
+  "chatHeader": {
+    "chatAdded": "Chat added to favourites",
+    "chatAddedError": "Failed to add chat to favourites",
+    "chatRemoved": "Chat removed from favourites",
+    "chatRemovedError": "Failed to remove chat from favourites",
+    "addToFavourites": "Add to favourites",
+    "toggleSidebar": "Toggle sidebar"
+  },
+  "practiceHeader": {
+    "hidePreviousQuestions": "Hide previous questions",
+    "showPreviousQuestions": "Show previous questions",
+    "hideTextArea": "Hide text area",
+    "showTextArea": "Show text area",
+    "toggleSidebar": "Toggle sidebar"
+  },
+  "introduction": {
+    "temporaryChatActivated": "Temporary chat activated 💪🏽",
+    "messagesNotSaved": "Your messages will not be saved!",
+    "welcomeToNextGPT": "Welcome to NextGPT 🚀",
+    "selectCourseResources": "Select the course resources you want to discuss and start chatting!"
+  },
+  "pdfViewer": {
+    "noPdfSelected": "No PDF selected",
+    "authenticating": "Authenticating...",
+    "failedToLoadPdf": "Failed to load PDF"
+  },
+  "chatItem": {
+    "practiceSession": "Practice Session",
+    "more": "More",
+    "removeFromFavorites": "Remove from Favorites",
+    "addToFavourites": "Add to favourites",
+    "rename": "Rename",
+    "delete": "Delete"
+  },
+  "loadButtonLists": {
+    "selectCourseFirst": "Please select a course first"
+  },
+  "chat": {
+    "errorOccurred": "An error occurred, please try again!"
   }
 }

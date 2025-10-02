@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { useCorrectionDropzone } from "@/hooks/use-correction-dropzone";
 import { type Upload } from "@/types/upload";
 import { cn } from "@workspace/ui/lib/utils";

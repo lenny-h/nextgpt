@@ -20,10 +20,10 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { capitalizeFirstLetter } from "@workspace/ui/lib/utils";
-import { filenameSchema } from "@workspace/ui/types/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { filenameSchema } from "../lib/validations";
 
 const renameFormSchema = z.object({
   title: filenameSchema,
@@ -116,5 +116,5 @@ export const RenameForm = memo(
         </DialogContent>
       </Dialog>
     );
-  },
+  }
 );

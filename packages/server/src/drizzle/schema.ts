@@ -265,7 +265,7 @@ export const documents = pgTable(
   ]
 );
 
-export type Document = InferSelectModel<typeof documents>;
+export type CustomDocument = InferSelectModel<typeof documents>;
 
 // Feedback table
 export const feedback = pgTable(

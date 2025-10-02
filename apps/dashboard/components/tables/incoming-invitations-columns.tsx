@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { createClient } from "@/lib/supabase/client";
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";

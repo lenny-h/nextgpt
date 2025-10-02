@@ -15,10 +15,10 @@ import { DeleteDialog } from "../custom/delete-dialog";
 
 export type ModelTableColumns = {
   id: string;
-  bucket_id: string;
-  bucket_name: string;
+  bucketId: string;
+  bucketName: string;
   name: string;
-  created_at: string;
+  createdAt: string;
 };
 
 export const modelsColumns: ColumnDef<ModelTableColumns>[] = [
@@ -32,7 +32,7 @@ export const modelsColumns: ColumnDef<ModelTableColumns>[] = [
     header: "Bucket Name",
     cell: ({ row }) => {
       return (
-        <p className="max-w-32 md:max-w-80 truncate">
+        <p className="max-w-32 truncate md:max-w-80">
           {row.getValue("bucket_name")}
         </p>
       );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { type ErrorDictionary } from "@workspace/ui/lib/translation-utils";
 import { capitalizeFirstLetter } from "@workspace/ui/lib/utils";
 import { toast } from "sonner";
@@ -33,7 +34,9 @@ export function DeleteDialog({
   resourceType,
   description,
 }: Props) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
+
   const queryClient = useQueryClient();
 
   return (
@@ -41,7 +44,7 @@ export function DeleteDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {globalT.components.deleteDialog.delete + " " + resourceType}
+            {dashboardT.deleteDialog.delete + " " + resourceType}
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
@@ -51,18 +54,18 @@ export function DeleteDialog({
             variant="secondary"
             onClick={() => setOpen(false)}
           >
-            {globalT.components.deleteDialog.cancel}
+            {dashboardT.deleteDialog.cancel}
           </Button>
           <Button
             type="submit"
             variant="destructive"
             onClick={() => {
-              toast.promise(deleteResource(queryClient, globalT.globalErrors), {
-                loading: globalT.components.deleteDialog.deleting,
+              toast.promise(deleteResource(queryClient, sharedT.apiCodes), {
+                loading: dashboardT.deleteDialog.deleting,
                 success: (result) =>
                   `${capitalizeFirstLetter(
                     resourceType,
-                  )} ${result.name} ${globalT.components.deleteDialog.deletedSuccessfully} 🎉`,
+                  )} ${result.name} ${dashboardT.deleteDialog.deletedSuccessfully} 🎉`,
                 error: (error) =>
                   `Error deleting ${resourceType}: ${error.message}`,
               });

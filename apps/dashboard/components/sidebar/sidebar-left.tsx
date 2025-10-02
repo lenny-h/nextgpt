@@ -1,6 +1,6 @@
 "use client"; // Change to server after changing team switcher
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import {
   Sidebar,
   SidebarContent,

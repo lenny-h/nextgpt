@@ -2,17 +2,18 @@ import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
-import { createClient } from "@/lib/supabase/client";
+import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
-import { type UserDocument } from "@workspace/ui/types/user-document";
 import { File, Loader2 } from "lucide-react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { toast } from "sonner";
 
 interface Props {
-  documents: UserDocument[];
+  documents: CustomDocument[];
   isSearching: boolean;
   panelRef: React.RefObject<ImperativePanelHandle | null>;
   size: number;
@@ -24,6 +25,8 @@ export const DocumentsList = ({
   panelRef,
   size,
 }: Props) => {
+  const { sharedT } = useSharedTranslations();
+
   const [, setEditorMode] = useEditor();
   const { setTextEditorContent } = useTextEditorContent();
   const { setCodeEditorContent } = useCodeEditorContent();
@@ -47,21 +50,13 @@ export const DocumentsList = ({
     documentTitle: string,
     documentKind: "text" | "code",
   ) => {
-    const supabase = createClient();
-
-    const { data, error } = await supabase.rpc("get_user_document", {
-      p_id: documentId,
-    });
-
-    if (error || !data) {
-      throw new Error("Could not load document. Please try again later.");
-    }
-
-    if (data.length !== 1) {
-      throw new Error("Document not found");
-    }
-
-    const fullDocument = data[0]!;
+    const fullDocument = await apiFetcher(
+      (client) =>
+        client.documents[":documentId"].$get({
+          param: { documentId },
+        }),
+      sharedT.apiCodes,
+    );
 
     setEditorMode(documentKind);
 
@@ -161,7 +156,7 @@ export const DocumentsList = ({
               <Badge variant="outline">{document.kind}</Badge>
             </div>
             <p className="text-muted-foreground w-full truncate text-start text-sm">
-              {new Date(document.created_at).toLocaleString()}
+              {new Date(document.createdAt).toLocaleString()}
             </p>
           </div>
         </button>

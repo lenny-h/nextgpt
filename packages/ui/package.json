@@ -72,7 +72,6 @@
     "typescript": "^5.9.2"
   },
   "exports": {
-    "./globals.css": "./src/styles/globals.css",
     "./postcss.config": "./postcss.config.mjs",
     "./components/*": "./src/components/*.tsx",
     "./contexts/*": "./src/contexts/*.tsx",
@@ -81,6 +80,6 @@
     "./editors/*": "./src/editors/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./lib/*": "./src/lib/*.ts",
-    "./types/*": "./src/types/*.ts"
+    "./styles/*": "./src/styles/*.css"
   }
 }

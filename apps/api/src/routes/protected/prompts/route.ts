@@ -6,6 +6,7 @@ import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { insertPromptSchema } from "./schema.js";
 
+// Get all prompts for the authenticated user
 export async function GET(c: Context) {
   const user = c.get("user");
 

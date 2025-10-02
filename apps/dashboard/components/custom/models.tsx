@@ -1,11 +1,12 @@
 "use client";
 
-import { type Locale } from "@/i18n.config";
-import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { DataTable } from "@workspace/ui/components/data-table";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 import { modelsColumns } from "../tables/models-columns";
 
@@ -14,13 +15,16 @@ interface Props {
 }
 
 export const Models = ({ locale }: Props) => {
+  const { sharedT } = useSharedTranslations();
+
   const {
     data: models,
     isLoading: modelsLoading,
     error: modelsError,
   } = useQuery({
     queryKey: ["models"],
-    queryFn: () => rpcFetcher<"get_bucket_models">("get_bucket_models"),
+    queryFn: () =>
+      apiFetcher((client) => client["models"].$get(), sharedT.apiCodes),
   });
 
   if (modelsLoading) {
@@ -65,10 +69,10 @@ export const Models = ({ locale }: Props) => {
         data={models}
         visibilityState={{
           id: false,
-          bucket_id: false,
-          bucket_name: true,
+          bucketId: false,
+          bucketName: true,
           name: true,
-          created_at: true,
+          createdAt: true,
         }}
         filterLabel="model name"
         filterColumn="name"

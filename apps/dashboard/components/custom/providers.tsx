@@ -1,11 +1,15 @@
 "use client";
 
 import {
-  type GlobalTranslations,
-  GlobalTranslationsProvider,
-} from "@/contexts/global-translations";
-import { type Locale } from "@/i18n.config";
+  DashboardTranslationsProvider,
+  type DashboardTranslations,
+} from "@/contexts/dashboard-translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  SharedTranslationsProvider,
+  type SharedTranslations,
+} from "@workspace/ui/contexts/shared-translations-context";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import {
   ThemeProvider as NextThemesProvider,
   ThemeProviderProps,
@@ -13,7 +17,8 @@ import {
 import { Toaster } from "sonner";
 
 interface Props extends ThemeProviderProps {
-  globalTranslations: GlobalTranslations[Locale];
+  sharedTranslations: SharedTranslations[Locale];
+  dashboardTranslations: DashboardTranslations[Locale];
   locale: Locale;
   nonce?: string;
 }
@@ -30,7 +35,8 @@ const queryClient = new QueryClient({
 
 export function Providers({
   children,
-  globalTranslations,
+  sharedTranslations,
+  dashboardTranslations,
   locale,
   nonce,
   ...props
@@ -39,12 +45,14 @@ export function Providers({
     <>
       <QueryClientProvider client={queryClient}>
         <NextThemesProvider nonce={nonce} {...props}>
-          <GlobalTranslationsProvider
-            globalT={globalTranslations}
+          <SharedTranslationsProvider
+            sharedT={sharedTranslations}
             locale={locale}
           >
-            {children}
-          </GlobalTranslationsProvider>
+            <DashboardTranslationsProvider dashboardT={dashboardTranslations}>
+              {children}
+            </DashboardTranslationsProvider>
+          </SharedTranslationsProvider>
         </NextThemesProvider>
       </QueryClientProvider>
       <Toaster position="bottom-right" richColors />

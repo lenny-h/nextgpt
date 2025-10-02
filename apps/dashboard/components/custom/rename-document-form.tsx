@@ -1,9 +1,9 @@
 import * as z from "zod";
 
 import { type EditorContent } from "@/contexts/text-editor-content-context";
-import { createClient } from "@/lib/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import { DialogFooter } from "@workspace/ui/components/dialog";
 import {
@@ -15,8 +15,9 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
-import { type Tables } from "@workspace/ui/types/database";
-import { filenameSchema } from "@workspace/ui/types/validations";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { filenameSchema } from "@workspace/ui/lib/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -35,6 +36,8 @@ interface RenameDocumentFormProps {
 
 export const RenameDocumentForm = memo(
   ({ onClose, editorContent, setEditorContent }: RenameDocumentFormProps) => {
+    const { sharedT } = useSharedTranslations();
+
     const queryClient = useQueryClient();
 
     const form = useForm<RenameFormData>({
@@ -50,20 +53,19 @@ export const RenameDocumentForm = memo(
         return;
       }
 
-      if (!editorContent.id) {
+      const documentId = editorContent.id;
+
+      if (!documentId) {
         throw new Error("Document Id is missing");
       }
 
-      const supabase = createClient();
-
-      const { error } = await supabase.rpc("update_document_title", {
-        p_id: editorContent.id,
-        p_title: values.title,
-      });
-
-      if (error) {
-        throw new Error("Failed to rename document");
-      }
+      await apiFetcher(
+        (client) =>
+          client["documents"]["title"][":documentId"][":title"].$patch({
+            param: { documentId, title: values.title },
+          }),
+        sharedT.apiCodes,
+      );
     };
 
     useEffect(() => {
@@ -86,7 +88,7 @@ export const RenameDocumentForm = memo(
                 queryClient.setQueryData(
                   ["documents"],
                   (oldData: {
-                    pages: Array<Tables<"documents">[]>;
+                    pages: Array<CustomDocument[]>;
                     pageParams: number[];
                   }) => {
                     if (!oldData) return oldData;

@@ -1,4 +1,4 @@
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import {
   DropdownMenu,
   DropdownMenuContent,

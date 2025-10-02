@@ -6,7 +6,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@workspace/ui/components/sidebar-left";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import {
   ArchiveRestore,
   Brain,

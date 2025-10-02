@@ -1,4 +1,4 @@
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { type Upload } from "@/types/upload";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { useBaseDropzone } from "./use-base-dropzone";

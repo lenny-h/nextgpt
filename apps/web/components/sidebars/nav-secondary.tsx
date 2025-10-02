@@ -1,6 +1,5 @@
 import { Send } from "lucide-react";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -8,10 +7,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar-left";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import Link from "next/link";
 
 export const NavSecondary = () => {
-  const { locale } = useGlobalTranslations();
+  const { locale } = useSharedTranslations();
 
   return (
     <SidebarGroup>

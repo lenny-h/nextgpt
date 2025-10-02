@@ -1,10 +1,8 @@
 import * as z from "zod";
 
 import { useEditor } from "@/contexts/editor-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { type EditorContent } from "@/contexts/text-editor-content-context";
-import { filenameSchema } from "@/schemas/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -18,8 +16,10 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { filenameSchema } from "@workspace/ui/lib/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -38,7 +38,8 @@ interface SaveDocumentFormProps {
 
 export const SaveDocumentForm = memo(
   ({ onClose, editorContent, setEditorContent }: SaveDocumentFormProps) => {
-    const { globalT } = useGlobalTranslations();
+    const { sharedT } = useSharedTranslations();
+
     const queryClient = useQueryClient();
 
     const { textEditorRef, codeEditorRef } = useRefs();
@@ -72,19 +73,19 @@ export const SaveDocumentForm = memo(
         return;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/documents`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        },
+      await apiFetcher(
+        (client) => client.documents.$post({ json: payload }),
+        sharedT.apiCodes,
       );
 
-      checkResponse(response, globalT.globalErrors);
+      setEditorContent({
+        id: editorContent.id,
+        title: values.title,
+        content: editorContent.content,
+      });
+      onClose();
+
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
     };
 
     useEffect(() => {
@@ -97,19 +98,10 @@ export const SaveDocumentForm = memo(
           onSubmit={form.handleSubmit((values) => {
             toast.promise(onSubmit(values), {
               loading: "Saving...",
-              success: () => {
-                setEditorContent({
-                  id: editorContent.id,
-                  title: values.title,
-                  content: editorContent.content,
-                });
-                onClose();
-
-                queryClient.invalidateQueries({ queryKey: ["documents"] });
-
-                return "Document saved!";
-              },
-              error: () => "Failed to save document. Please try again later.",
+              success: "Document saved!",
+              error: (error) =>
+                error.message ||
+                "Failed to save document. Please try again later.",
             });
           })}
         >

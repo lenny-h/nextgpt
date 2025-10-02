@@ -56,7 +56,7 @@ import {
   POST as documentPost,
   GET as documentsGet,
 } from "./documents/route.js";
-import { PATCH as documentsTitlePatch } from "./documents/title/[documentId]/route.js";
+import { PATCH as documentsTitlePatch } from "./documents/title/[documentId]/[title]/route.js";
 import { POST as feedbackPost } from "./feedback/route.js";
 import { DELETE as filesDelete } from "./files/[fileId]/route.js";
 import { GET as filesIlikeGet } from "./files/ilike/route.js";
@@ -152,7 +152,7 @@ const protectedApiRouter = new Hono()
   .delete("/documents/:documentId", documentByIdDelete)
   .patch("/documents/content/:documentId", documentContentPatch)
   .get("/documents/ilike", documentsIlikeGet)
-  .patch("/documents/title/:documentId", documentsTitlePatch)
+  .patch("/documents/title/:documentId/:title", documentsTitlePatch)
 
   // Feedback
   .post("/feedback", feedbackPost)

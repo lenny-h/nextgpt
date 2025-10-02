@@ -3,30 +3,34 @@
 import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { DocumentsList } from "@/components/custom/documents-list";
 import { useRefs } from "@/contexts/refs-context";
-import { createClient } from "@/lib/supabase/client";
+import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Input } from "@workspace/ui/components/input";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@workspace/ui/components/resizable";
-import { type UserDocument } from "@workspace/ui/types/user-document";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2, Search, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const EditorHeader = dynamic(() =>
-  import("@/components/editors/editor-header").then((mod) => mod.EditorHeader)
+  import("@/components/editors/editor-header").then((mod) => mod.EditorHeader),
 );
 const EditorWrapper = dynamic(() =>
-  import("@/components/editors/editor-wrapper").then((mod) => mod.EditorWrapper)
+  import("@/components/editors/editor-wrapper").then(
+    (mod) => mod.EditorWrapper,
+  ),
 );
 
 export default function DocumentsPage() {
   const { panelRef } = useRefs();
+  const { sharedT } = useSharedTranslations();
 
-  const [documents, setDocuments] = useState<UserDocument[]>([]);
+  const [documents, setDocuments] = useState<CustomDocument[]>([]);
   const [size, setSize] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,20 +39,21 @@ export default function DocumentsPage() {
   const fetchDocuments = async (prefix: string) => {
     setIsLoading(true);
 
-    const supabase = createClient();
+    try {
+      const data = await apiFetcher(
+        (client) =>
+          client["documents"]["ilike"].$get({
+            query: { prefix },
+          }),
+        sharedT.apiCodes,
+      );
 
-    const { data, error } = await supabase.rpc("ilike_user_documents", {
-      prefix,
-    });
-
-    setIsLoading(false);
-
-    if (error || !data) {
+      setDocuments(data);
+    } catch (error) {
       toast.error("Failed to fetch documents");
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    setDocuments(data);
   };
 
   useEffect(() => {
@@ -72,11 +77,11 @@ export default function DocumentsPage() {
         collapsible
       >
         <BreadcrumbHeader />
-        <div className="overflow-y-auto p-2 flex flex-col space-y-6 items-center">
+        <div className="flex flex-col items-center space-y-6 overflow-y-auto p-2">
           <h1 className="text-2xl font-semibold">Documents</h1>
           <div className="relative w-full max-w-md">
             <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 transform"
               size={14}
             />
             <Input
@@ -85,10 +90,10 @@ export default function DocumentsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {isLoading ? (
-              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground animate-spin" />
+              <Loader2 className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform animate-spin" />
             ) : searchTerm.length > 0 ? (
               <X
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground cursor-pointer"
+                className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform cursor-pointer"
                 size={14}
                 onClick={() => setSearchTerm("")}
               />
@@ -104,7 +109,7 @@ export default function DocumentsPage() {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel
-        className="flex flex-col h-[calc(100svh-(--spacing(4)))]"
+        className="flex h-[calc(100svh-(--spacing(4)))] flex-col"
         ref={panelRef}
         defaultSize={0}
         onResize={(size) => {

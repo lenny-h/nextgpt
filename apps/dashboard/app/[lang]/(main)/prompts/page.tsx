@@ -2,7 +2,6 @@
 
 import { AddPromptForm } from "@/components/custom/add-prompt-form";
 import { promptsColumns } from "@/components/tables/prompts-columns";
-import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { DataTable } from "@workspace/ui/components/data-table";
@@ -15,9 +14,13 @@ import {
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useState } from "react";
 
 export default function PromptsPage() {
+  const { sharedT } = useSharedTranslations();
+
   const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false);
 
   const {
@@ -26,21 +29,22 @@ export default function PromptsPage() {
     error: promptsError,
   } = useQuery({
     queryKey: ["prompts"],
-    queryFn: () => rpcFetcher<"get_user_prompts">("get_user_prompts"),
+    queryFn: () =>
+      apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
 
   if (promptsLoading) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">Loading prompts...</h1>
-        <Skeleton className="h-96 mx-auto w-full max-w-4xl" />
+        <Skeleton className="mx-auto h-96 w-full max-w-4xl" />
       </div>
     );
   }
 
   if (promptsError || !prompts) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-center text-2xl font-semibold">
           Prompts could not be loaded. Please try again later.
         </h1>
@@ -51,14 +55,14 @@ export default function PromptsPage() {
   return (
     <>
       <Button
-        className="absolute top-4 right-4"
+        className="absolute right-4 top-4"
         onClick={() => setAddPromptDialogOpen(true)}
       >
         Add prompt
       </Button>
       <Dialog open={addPromptDialogOpen} onOpenChange={setAddPromptDialogOpen}>
         <DialogTrigger asChild>
-          <Button asChild className="absolute top-4 right-4">
+          <Button asChild className="absolute right-4 top-4">
             Add prompt
           </Button>
         </DialogTrigger>
@@ -73,7 +77,7 @@ export default function PromptsPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="p-2 flex flex-col space-y-6 items-center">
+      <div className="flex flex-col items-center space-y-6 p-2">
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-semibold">Prompts</h1>
         </div>

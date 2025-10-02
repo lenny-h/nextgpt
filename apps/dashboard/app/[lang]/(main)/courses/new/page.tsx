@@ -3,10 +3,8 @@
 import { z } from "zod";
 
 import { Selector } from "@/components/custom/selector";
-import { useGlobalTranslations } from "@/contexts/global-translations";
-import { rpcFetcher } from "@/lib/fetcher";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
   Form,
@@ -18,15 +16,17 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createCourseFormSchema } from "./schema";
+import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
 
 export default function CreateCoursePage() {
-  const { locale, globalT } = useGlobalTranslations();
+  const { locale, sharedT } = useSharedTranslations();
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -38,37 +38,10 @@ export default function CreateCoursePage() {
   } = useQuery({
     queryKey: ["buckets"],
     queryFn: () =>
-      rpcFetcher<"get_maintained_buckets">("get_maintained_buckets"),
-  });
-
-  const mutation = useMutation({
-    mutationFn: async (values: z.infer<typeof createCourseFormSchema>) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/courses`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ values }),
-        },
-      );
-      checkResponse(response, globalT.globalErrors);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
-      router.push(`/${locale}/courses`);
-      toast.success(
-        "Course created successfully 🎉\n Add course maintainers by clicking on the three dots",
-      );
-    },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : globalT.globalErrors.error,
-      );
-    },
+      apiFetcher(
+        (client) => client["buckets"]["maintained"].$get(),
+        sharedT.apiCodes,
+      ),
   });
 
   const form = useForm<z.infer<typeof createCourseFormSchema>>({
@@ -81,7 +54,23 @@ export default function CreateCoursePage() {
   });
 
   async function onSubmit(values: z.infer<typeof createCourseFormSchema>) {
-    mutation.mutate(values);
+    const createCoursePromise = apiFetcher(
+      (client) =>
+        client["courses"].$post({
+          json: { values },
+        }),
+      sharedT.apiCodes,
+    ).then(() => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      router.push(`/${locale}/courses`);
+    });
+
+    toast.promise(createCoursePromise, {
+      loading: "Creating course...",
+      success:
+        "Course created successfully 🎉\n Add course maintainers by clicking on the three dots",
+      error: (error) => `Error creating course: ${error.message}`,
+    });
   }
 
   if (bucketsLoading) {
@@ -189,10 +178,12 @@ export default function CreateCoursePage() {
           )}
         />
 
-        <Button type="submit" disabled={mutation.isPending} className="mx-auto">
+        <SubmitButton
+          isPending={form.formState.isSubmitting}
+          pendingText="Creating..."
+        >
           Create
-          {mutation.isPending && <Loader2 className="ml-2 animate-spin" />}
-        </Button>
+        </SubmitButton>
       </form>
     </Form>
   );

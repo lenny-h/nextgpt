@@ -1,4 +1,4 @@
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { Input } from "@workspace/ui/components/input";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { useState } from "react";

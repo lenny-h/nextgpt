@@ -1,5 +1,5 @@
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { usePdf } from "@/contexts/pdf-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";

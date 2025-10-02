@@ -1,18 +1,19 @@
 import { Providers } from "@/components/custom/providers";
-import { i18n, type Locale } from "@/i18n.config";
 import { getDictionary } from "@/lib/dictionary";
 import { roboto } from "@/lib/fonts";
+import { getDictionary as getSharedDictionary } from "@workspace/ui/lib/dictionary";
+import { type Locale, i18n } from "@workspace/ui/lib/i18n.config";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import "@workspace/ui/globals.css";
+import "@workspace/ui/styles/globals.css";
 
 export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
 export const metadata: Metadata = {
-  // metadataBase: new URL("https://nextgpt.ai"),
+  // metadataBase: new URL("https://nextgpt.cloud"),
   applicationName: "NextGpt",
   title: {
     default: "NextGpt",
@@ -63,13 +64,15 @@ export default async function RootLayout({
 }>) {
   const lang = (await params).lang;
   const dictionary = await getDictionary(lang);
+  const sharedDictionary = await getSharedDictionary(lang);
   const nonce = (await headers()).get("x-nonce") || "";
 
   return (
     <html lang={lang} suppressHydrationWarning>
       <body className={`${roboto.variable} antialiased`}>
         <Providers
-          globalTranslations={dictionary.global}
+          sharedTranslations={sharedDictionary}
+          webTranslations={dictionary}
           locale={lang}
           attribute="class"
           defaultTheme="system"

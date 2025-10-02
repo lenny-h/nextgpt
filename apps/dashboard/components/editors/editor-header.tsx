@@ -1,6 +1,6 @@
 import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { Button } from "@workspace/ui/components/button";

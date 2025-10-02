@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import {
   SidebarMenu,

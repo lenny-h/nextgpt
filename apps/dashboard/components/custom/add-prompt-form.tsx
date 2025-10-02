@@ -1,6 +1,4 @@
-import * as z from "zod";
-
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -15,13 +13,15 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
-import { Loader2 } from "lucide-react";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
-const promptFormSchema = z.object({
+export const promptFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(64, "Name is too long"),
   content: z
     .string()
@@ -29,14 +29,16 @@ const promptFormSchema = z.object({
     .max(512, "Content must be less than 512 characters"),
 });
 
-type PromptFormData = z.infer<typeof promptFormSchema>;
+export type PromptFormData = z.infer<typeof promptFormSchema>;
 
 interface AddPromptFormProps {
   onClose: () => void;
 }
 
 export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
+
   const queryClient = useQueryClient();
 
   const form = useForm<PromptFormData>({
@@ -48,49 +50,40 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
   });
 
   async function onSubmit(values: PromptFormData) {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/prompts`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          name: values.name,
-          content: values.content,
+    const createPromptPromise = apiFetcher(
+      (client) =>
+        client["prompts"].$post({
+          json: {
+            name: values.name,
+            content: values.content,
+          },
         }),
-      },
-    );
+      sharedT.apiCodes,
+    ).then(() => {
+      queryClient.invalidateQueries({ queryKey: ["prompts"] });
+      onClose();
+    });
 
-    checkResponse(response, globalT.globalErrors);
-
-    onClose();
-
-    queryClient.invalidateQueries({ queryKey: ["prompts"] });
+    toast.promise(createPromptPromise, {
+      loading: "Creating prompt...",
+      success: "Prompt created successfully 🎉",
+      error: (error) => `Error creating prompt: ${error.message}`,
+    });
   }
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit((values) => {
-          toast.promise(onSubmit(values), {
-            loading: globalT.components.addPromptForm.creating,
-            success: globalT.components.addPromptForm.success,
-            error: globalT.components.addPromptForm.errorSaving,
-          });
-        })}
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-4 py-2">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{globalT.components.addPromptForm.name}</FormLabel>
+                <FormLabel>{dashboardT.addPromptForm.name}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder={globalT.components.addPromptForm.promptName}
+                    placeholder={dashboardT.addPromptForm.promptName}
                     {...field}
                   />
                 </FormControl>
@@ -103,14 +96,10 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  {globalT.components.addPromptForm.content}
-                </FormLabel>
+                <FormLabel>{dashboardT.addPromptForm.content}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={
-                      globalT.components.addPromptForm.contentPlaceholder
-                    }
+                    placeholder={dashboardT.addPromptForm.contentPlaceholder}
                     className="min-h-32"
                     {...field}
                   />
@@ -122,14 +111,14 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
         </div>
         <DialogFooter className="mt-4">
           <Button type="button" variant="secondary" onClick={onClose}>
-            {globalT.components.addPromptForm.cancel}
+            {dashboardT.addPromptForm.cancel}
           </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {globalT.components.addPromptForm.create}
-            {form.formState.isSubmitting && (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            )}
-          </Button>
+          <SubmitButton
+            isPending={form.formState.isSubmitting}
+            pendingText="Creating..."
+          >
+            {dashboardT.addPromptForm.create}
+          </SubmitButton>
         </DialogFooter>
       </form>
     </Form>

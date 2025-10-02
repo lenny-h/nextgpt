@@ -15,7 +15,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { DocumentsList, FilesList } from "./add-context-lists";
 import { SearchWithSelection } from "./search-with-selection";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 
 interface AddContextProps {
   type: "files" | "documents";

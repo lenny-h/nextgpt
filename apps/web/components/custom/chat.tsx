@@ -16,7 +16,7 @@ import { Introduction } from "./introduction";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { DefaultChatTransport } from "ai";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/web-translations";
 
 export function Chat({
   chatId,

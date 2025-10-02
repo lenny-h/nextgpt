@@ -1,7 +1,7 @@
 "use client";
 
 import { signOutAction } from "@/actions";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { useUser } from "@/contexts/user-context";
 import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";

@@ -1,7 +1,6 @@
 import * as z from "zod";
 
 import { useEditor } from "@/contexts/editor-context";
-import { useGlobalTranslations } from "@/contexts/global-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { type EditorContent } from "@/contexts/text-editor-content-context";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,9 +16,10 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
-import { filenameSchema } from "@workspace/ui/types/validations";
+import { filenameSchema } from "@workspace/ui/lib/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -38,7 +38,7 @@ interface SaveDocumentFormProps {
 
 export const SaveDocumentForm = memo(
   ({ onClose, editorContent, setEditorContent }: SaveDocumentFormProps) => {
-    const { globalT } = useGlobalTranslations();
+    const { sharedT } = useSharedTranslations();
     const queryClient = useQueryClient();
 
     const { textEditorRef, codeEditorRef } = useRefs();
@@ -82,7 +82,7 @@ export const SaveDocumentForm = memo(
         },
       );
 
-      checkResponse(response, globalT.globalErrors);
+      checkResponse(response, sharedT.apiCodes);
     };
 
     useEffect(() => {

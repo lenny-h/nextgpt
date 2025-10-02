@@ -1,11 +1,8 @@
 "use client";
 
 import { Selector } from "@/components/custom/selector";
-import { useGlobalTranslations } from "@/contexts/global-translations";
-import { rpcFetcher } from "@/lib/fetcher";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@workspace/ui/components/button";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Form,
   FormControl,
@@ -16,7 +13,9 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -29,7 +28,7 @@ import {
 } from "./schema";
 
 export default function AddModelPage() {
-  const { locale, globalT } = useGlobalTranslations();
+  const { locale, sharedT } = useSharedTranslations();
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -40,35 +39,10 @@ export default function AddModelPage() {
   } = useQuery({
     queryKey: ["buckets"],
     queryFn: () =>
-      rpcFetcher<"get_maintained_buckets">("get_maintained_buckets"),
-  });
-
-  const mutation = useMutation({
-    mutationFn: async (values: AddModelFormData) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/models`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ ...values }),
-        },
-      );
-      checkResponse(response, globalT.globalErrors);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["models"] });
-      router.push(`/${locale}/models`);
-      toast.success("Model added successfully 🎉");
-    },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : globalT.globalErrors.error,
-      );
-    },
+      apiFetcher(
+        (client) => client["buckets"]["maintained"].$get(),
+        sharedT.apiCodes,
+      ),
   });
 
   const form = useForm<AddModelFormData>({
@@ -86,7 +60,22 @@ export default function AddModelPage() {
   const isAzureModel = selectedModel?.includes("azure");
 
   async function onSubmit(values: AddModelFormData) {
-    mutation.mutate(values);
+    const createModelPromise = apiFetcher(
+      (client) =>
+        client["models"].$post({
+          json: { ...values },
+        }),
+      sharedT.apiCodes,
+    ).then(() => {
+      queryClient.invalidateQueries({ queryKey: ["models"] });
+      router.push(`/${locale}/models`);
+    });
+
+    toast.promise(createModelPromise, {
+      loading: "Adding model...",
+      success: "Model added successfully 🎉",
+      error: (error) => `Error adding model: ${error.message}`,
+    });
   }
 
   if (bucketsLoading) {
@@ -224,10 +213,12 @@ export default function AddModelPage() {
           )}
         />
 
-        <Button type="submit" disabled={mutation.isPending} className="mx-auto">
+        <SubmitButton
+          isPending={form.formState.isSubmitting}
+          pendingText="Creating..."
+        >
           Create
-          {mutation.isPending && <Loader2 className="ml-2 animate-spin" />}
-        </Button>
+        </SubmitButton>
       </form>
     </Form>
   );

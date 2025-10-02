@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
 import { type Locale } from "@/i18n.config";
 import { Button } from "@workspace/ui/components/button";

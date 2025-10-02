@@ -2,11 +2,9 @@
 
 import * as z from "zod";
 
-import { useGlobalTranslations } from "@/contexts/global-translations";
 import { bucketSubscriptions } from "@/lib/bucket-subscriptions";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@workspace/ui/components/button";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Form,
   FormControl,
@@ -17,9 +15,10 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Separator } from "@workspace/ui/components/separator";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,7 +26,7 @@ import { toast } from "sonner";
 import { CreateBucketFormData, createBucketFormSchema } from "./schema";
 
 export default function CreateBucketPage() {
-  const { locale, globalT } = useGlobalTranslations();
+  const { locale, sharedT } = useSharedTranslations();
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -41,42 +40,32 @@ export default function CreateBucketPage() {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (values: CreateBucketFormData) => {
-      const subscription = bucketSubscriptions[selectedType];
-      if (!subscription) {
-        throw new Error("Invalid subscription type selected.");
-      }
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/buckets`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
+  async function onSubmit(values: z.infer<typeof createBucketFormSchema>) {
+    const subscription = bucketSubscriptions[selectedType];
+    if (!subscription) {
+      toast.error("Invalid subscription type selected.");
+      return;
+    }
+
+    const createBucketPromise = apiFetcher(
+      (client) =>
+        client["buckets"].$post({
+          json: {
             values,
             type: subscription.type.toLowerCase(),
-          }),
-        },
-      );
-      checkResponse(response, globalT.globalErrors);
-    },
-    onSuccess: () => {
+          },
+        }),
+      sharedT.apiCodes,
+    ).then(() => {
       queryClient.invalidateQueries({ queryKey: ["buckets"] });
       router.push(`/${locale}/buckets`);
-      toast.success("Bucket created successfully 🎉");
-    },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : globalT.globalErrors.error,
-      );
-    },
-  });
+    });
 
-  async function onSubmit(values: z.infer<typeof createBucketFormSchema>) {
-    mutation.mutate(values);
+    toast.promise(createBucketPromise, {
+      loading: "Creating bucket...",
+      success: "Bucket created successfully 🎉",
+      error: (error) => `Error creating bucket: ${error.message}`,
+    });
   }
 
   return (
@@ -159,14 +148,12 @@ export default function CreateBucketPage() {
             <h2 className="mt-12 text-center text-xl font-semibold">
               Users can be added after the bucket has been created
             </h2>
-            <Button
-              type="submit"
-              disabled={mutation.isPending}
-              className="mx-auto"
+            <SubmitButton
+              isPending={form.formState.isSubmitting}
+              pendingText="Processing..."
             >
               Continue to payment
-              {mutation.isPending && <Loader2 className="animate-spin" />}
-            </Button>
+            </SubmitButton>
           </>
         )}
       </form>

@@ -7,10 +7,7 @@ import { documentsTitleSchema } from "./schema.js";
 
 export async function PATCH(c: Context) {
   const documentId = uuidSchema.parse(c.req.param("documentId"));
-
-  const payload = await c.req.json();
-
-  const { title } = documentsTitleSchema.parse(payload);
+  const title = documentsTitleSchema.parse(c.req.param("title"));
 
   const user = c.get("user");
 

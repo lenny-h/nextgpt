@@ -1,11 +1,7 @@
 "use client";
 
-import { AddPromptForm } from "@/components/custom/add-prompt-form";
-import { CorrectionDropzone } from "@/components/custom/correction-dropzone";
-import { UploadList } from "@/components/custom/upload-list";
-import { useGlobalTranslations } from "@/contexts/global-translations";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { useUser } from "@/contexts/user-context";
-import { rpcFetcher } from "@/lib/fetcher";
 import { type Upload } from "@/types/upload";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -17,14 +13,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
+import { AddPromptForm } from "./add-prompt-form";
+import { CorrectionDropzone } from "./correction-dropzone";
 import { Selector } from "./selector";
+import { UploadList } from "./upload-list";
 
 export const Correction = memo(() => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
+
   const user = useUser();
 
   const [solutionUploads, setSolutionUploads] = useState<{
@@ -43,7 +46,8 @@ export const Correction = memo(() => {
     error: promptsError,
   } = useQuery({
     queryKey: ["prompts"],
-    queryFn: () => rpcFetcher<"get_user_prompts">("get_user_prompts"),
+    queryFn: () =>
+      apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
 
   const canStartCorrection = () => {
@@ -73,7 +77,7 @@ export const Correction = memo(() => {
       setIsPending(true);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/correction`,
+        `${process.env.NEXT_PUBLIC_API_URL}/capi/prdashboardT/correction`,
         {
           method: "POST",
           headers: {
@@ -90,22 +94,22 @@ export const Correction = memo(() => {
         },
       );
 
-      checkResponse(response, globalT.globalErrors);
+      checkResponse(response, sharedT.apiCodes);
 
       const { failedFiles } = await response.json();
 
       if (failedFiles.length > 0) {
         toast.error(
-          globalT.components.correction.filesNotCorrected +
+          dashboardT.correction.filesNotCorrected +
             " " +
             failedFiles.join(", "),
         );
       } else {
-        toast.success(globalT.components.correction.correctionSuccess);
+        toast.success(dashboardT.correction.correctionSuccess);
       }
     } catch (error) {
       console.error("Correction failed:", error);
-      toast.error(globalT.components.correction.correctionFailed);
+      toast.error(dashboardT.correction.correctionFailed);
     } finally {
       setIsPending(false);
     }
@@ -113,14 +117,12 @@ export const Correction = memo(() => {
 
   return (
     <div className="flex flex-col items-center space-y-6 p-2">
-      <h1 className="text-2xl font-semibold">
-        {globalT.components.correction.title}
-      </h1>
+      <h1 className="text-2xl font-semibold">{dashboardT.correction.title}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="flex flex-col items-center space-y-3">
             <h2 className="text-xl font-semibold">
-              {globalT.components.correction.solutionSheet}
+              {dashboardT.correction.solutionSheet}
             </h2>
             <div className="w-full space-y-6">
               <CorrectionDropzone
@@ -132,7 +134,7 @@ export const Correction = memo(() => {
           </div>
           <div className="flex flex-col items-center space-y-3">
             <h2 className="text-xl font-semibold">
-              {globalT.components.correction.studentHandIns}
+              {dashboardT.correction.studentHandIns}
             </h2>
             <div className="w-full space-y-6">
               <CorrectionDropzone onUploadChange={setHandInUploads} />
@@ -144,10 +146,10 @@ export const Correction = memo(() => {
         <div className="space-y-3">
           <div className="max-w-lg">
             <h2 className="text-xl font-semibold">
-              {globalT.components.correction.customPrompt}
+              {dashboardT.correction.customPrompt}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {globalT.components.correction.customPromptDescription}
+              {dashboardT.correction.customPromptDescription}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -157,11 +159,11 @@ export const Correction = memo(() => {
               onSelect={setPromptId}
               isLoading={promptsLoading}
               error={promptsError}
-              placeholder={globalT.components.correction.selectPrompt}
-              searchPlaceholder={globalT.components.correction.searchPrompts}
-              emptyMessage={globalT.components.correction.noPromptFound}
-              errorMessage={globalT.components.correction.failedLoadPrompts}
-              noItemsMessage={globalT.components.correction.noPromptsFound}
+              placeholder={dashboardT.correction.selectPrompt}
+              searchPlaceholder={dashboardT.correction.searchPrompts}
+              emptyMessage={dashboardT.correction.noPromptFound}
+              errorMessage={dashboardT.correction.failedLoadPrompts}
+              noItemsMessage={dashboardT.correction.noPromptsFound}
             />
 
             <Dialog
@@ -174,10 +176,10 @@ export const Correction = memo(() => {
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>
-                    {globalT.components.correction.addNewPrompt}
+                    {dashboardT.correction.addNewPrompt}
                   </DialogTitle>
                   <DialogDescription>
-                    {globalT.components.correction.addPromptDescription}
+                    {dashboardT.correction.addPromptDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <AddPromptForm onClose={() => setAddPromptDialogOpen(false)} />
@@ -190,7 +192,7 @@ export const Correction = memo(() => {
             onClick={handleStartCorrection}
             disabled={!canStartCorrection() || isPending}
           >
-            {globalT.components.correction.startCorrection}
+            {dashboardT.correction.startCorrection}
             {isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         </div>

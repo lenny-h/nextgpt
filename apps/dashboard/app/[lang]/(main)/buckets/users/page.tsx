@@ -4,11 +4,14 @@ import { AddBucketUsers } from "@/components/custom/add-bucket-users";
 import { CurrentBucketUsers } from "@/components/custom/current-bucket-users";
 import { RemoveBucketUsers } from "@/components/custom/remove-bucket-users";
 import { useUser } from "@/contexts/user-context";
-import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { notFound, useSearchParams } from "next/navigation";
 
 export default function BucketUsersPage() {
+  const { sharedT } = useSharedTranslations();
+
   const user = useUser();
 
   const searchParams = useSearchParams();
@@ -27,14 +30,16 @@ export default function BucketUsersPage() {
   } = useQuery({
     queryKey: ["bucket_users", bucketId],
     queryFn: () =>
-      rpcFetcher<"get_bucket_users">("get_bucket_users", {
-        p_bucket_id: bucketId,
-      }),
+      apiFetcher(
+        (client) =>
+          client["bucket-users"][":bucketId"].$get({ param: { bucketId } }),
+        sharedT.apiCodes,
+      ),
   });
 
   if (isPending) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">Loading bucket users...</h1>
       </div>
     );
@@ -42,7 +47,7 @@ export default function BucketUsersPage() {
 
   if (isError || !currentBucketUsers) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
           Bucket users could not be loaded. Please try again later.
         </h1>
@@ -51,7 +56,7 @@ export default function BucketUsersPage() {
   }
 
   return (
-    <div className="p-2 flex flex-col space-y-6 items-center">
+    <div className="flex flex-col items-center space-y-6 p-2">
       <h1 className="text-2xl font-semibold">{bucketName}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="space-y-3">
@@ -67,7 +72,7 @@ export default function BucketUsersPage() {
         <div className="space-y-3">
           <div className="max-w-lg">
             <h2 className="text-xl font-semibold">Add users</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Add users to give them access to this bucket. Users will be able
               to access all courses within this bucket that are not password
               protected.
@@ -78,7 +83,7 @@ export default function BucketUsersPage() {
         <div className="space-y-3">
           <div className="max-w-lg">
             <h2 className="text-xl font-semibold">Remove users</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Remove users from this bucket. They will lose access to all
               courses within this bucket. The removal can be delayed by up to 3
               days due to caching.
