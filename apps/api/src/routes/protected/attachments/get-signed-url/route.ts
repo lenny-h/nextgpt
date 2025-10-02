@@ -2,8 +2,8 @@ import { getSignedUrlForUpload } from "@/src/utils/access-clients/google-storage
 import { type Context } from "hono";
 import { getSignedUrlSchema } from "./schema.js";
 
+// Get signed URL for uploading an attachment
 export async function POST(c: Context) {
-  // Get user from auth middleware context
   const user = c.get("user");
 
   const payload = await c.req.json();

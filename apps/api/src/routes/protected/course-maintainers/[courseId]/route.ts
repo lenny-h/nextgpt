@@ -49,6 +49,7 @@ export async function GET(c: Context) {
   return c.json(maintainers);
 }
 
+// Invite course maintainers
 export async function POST(c: Context) {
   const courseId = uuidSchema.parse(c.req.param("courseId"));
 
@@ -86,6 +87,7 @@ export async function POST(c: Context) {
   return c.json("Maintainers invited");
 }
 
+// Remove course maintainers
 export async function DELETE(c: Context) {
   const courseId = uuidSchema.parse(c.req.param("courseId"));
 

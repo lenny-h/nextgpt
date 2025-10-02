@@ -1,0 +1,94 @@
+protected > attachments > get-signed-url > route.ts > POST: Get signed url for uploading an attachment to cloud bucket
+
+protected > bucket-maintainers > [bucketId] > route.ts > GET: Get maintainers for a bucket (permission checked)
+protected > bucket-maintainers > [bucketId] > route.ts > POST: Invite maintainers to a bucket (must be owner)
+protected > bucket-maintainers > [bucketId] > route.ts > DELETE: Remove maintainers from a bucket (must be owner)
+
+protected > bucket-users > [bucketId] > route.ts > GET ?pageNumber?itemsPerPage: Get users for a bucket (paginated, must be bucket maintainer)
+protected > bucket-users > [bucketId] > route.ts > POST: Invite users to a bucket (must be bucket maintainer)
+protected > bucket-users > [bucketId] > route.ts > DELETE: Remove users from a bucket (must be bucket maintainer)
+protected > bucket-users > ilike > [bucketId] > route.ts > GET ?prefix: Search bucket users by username prefix
+
+protected > buckets > [bucketId] > route.ts > DELETE: Delete a bucket (must be owner)
+protected > buckets > maintained > route.ts > GET: Get buckets the authenticated user maintains
+protected > buckets > used > route.ts > GET: Get buckets the authenticated user has access to
+protected > buckets > route.ts > POST: Create a new bucket
+
+protected > chat > route.ts > POST: Chat handler
+protected > chat > route.ts > PATCH/DELETE: Various chat-related actions (favourite, delete, etc.)
+
+protected > chats > [chatId] > route.ts > GET: Get a single chat by id (owned by user)
+protected > chats > [chatId] > route.ts > DELETE: Delete a single chat by id (owned by user)
+protected > chats > favourites > route.ts > GET ?pageNumber?itemsPerPage: Get favourite chats (paginated)
+protected > chats > ilike > route.ts > GET ?prefix: Search chat titles by prefix
+protected > chats > is-favourite > [chatId] > route.ts > GET: Get isFavourite status of a specific chat
+protected > chats > is-favourite > [chatId] > route.ts > PATCH: Set isFavourite status of a specific chat
+protected > chats > title > [chatId] > route.ts > PATCH: Update a chat's title
+protected > chats > route.ts > GET ?pageNumber?itemsPerPage: Get chats for authenticated user (paginated)
+
+protected > completion > route.ts > POST: Generate short completions using AI
+
+protected > correction > get-signed-url > route.ts > POST: Get signed url for uploading correction-related files
+protected > correction > route.ts > POST: Perform correction/evaluation across given files and store results
+
+protected > course-maintainers > [courseId] > route.ts > GET: Get maintainers for a course (must be bucket maintainer)
+protected > course-maintainers > [courseId] > route.ts > POST: Invite maintainers for a course (must be bucket maintainer)
+protected > course-maintainers > [courseId] > route.ts > DELETE: Remove maintainers from a course (must be bucket maintainer)
+
+protected > courses > [bucketId] > route.ts > GET: Get courses in a bucket
+protected > courses > [courseId] > route.ts > GET: Get course details
+protected > courses > maintained > route.ts > GET: Get courses the authenticated user maintains
+protected > courses > request-access > route.ts > POST: Request access to a course
+protected > courses > validate-access > route.ts > POST: Validate whether a user has access to a course
+protected > courses > route.ts > GET: Get accessible courses for user
+
+protected > documents > [documentId] > route.ts > GET: Get full document content by id
+protected > documents > [documentId] > route.ts > DELETE: Delete a document
+protected > documents > content > [documentId] > route.ts > PATCH: Update a document's content
+protected > documents > ilike > route.ts > GET ?prefix: Search documents by prefix
+protected > documents > title > [documentId] > route.ts > PATCH: Update a document's title
+protected > documents > route.ts > GET ?pageNumber?itemsPerPage: Get user's documents (paginated)
+protected > documents > route.ts > POST: Insert a new document for the user
+
+protected > feedback > route.ts > POST: Insert feedback from user
+
+protected > files > route.ts > GET ?courseIds?pageNumber?itemsPerPage: Get files for given courses (paginated)
+protected > files > [fileId] > route.ts > DELETE: Delete a file and its associated pages
+protected > files > ilike > route.ts > GET ?prefix: Search files by prefix
+
+protected > get-signed-url > [courseId] > [name] > route.ts > GET: Get signed url for downloading a course file
+protected > get-signed-url > [courseId] > route.ts > POST: Create and schedule a processing task and return signed upload URL for course files
+
+protected > invitations > accept > route.ts > POST: Accept an invitation
+protected > invitations > incoming > route.ts > GET ?pageNumber?itemsPerPage?invitationType: Get incoming invitations for the authenticated user (paginated)
+protected > invitations > outgoing > route.ts > GET ?pageNumber?itemsPerPage?invitationType: Get invitations sent by the authenticated user (paginated)
+protected > invitations > reject > route.ts > POST: Reject an invitation
+
+protected > messages > [chatId] > route.ts > GET: Get messages for a chat
+protected > messages > delete-last-message > [chatId] > route.ts > DELETE: Delete the last message in a chat
+protected > messages > delete-trailing > [messageId] > route.ts > DELETE: Delete trailing messages after a given message
+
+protected > models > [bucketId] > route.ts > GET: Get models in a bucket
+protected > models > [modelId] > route.ts > DELETE: Delete a model (must be bucket maintainer)
+protected > models > route.ts > GET ?pageNumber?itemsPerPage: Get models for buckets the user maintains (paginated)
+protected > models > route.ts > POST: Add a new model to a bucket (must be bucket maintainer)
+
+protected > practice > route.ts > POST: Practice handler for interactive exercises
+
+protected > process-csv > [bucketId] > route.ts > POST: Upload CSV to batch-invite users to a bucket (by username list)
+
+protected > profiles > ilike > route.ts > GET ?prefix: Search public profiles by prefix
+protected > profiles > route.ts > GET: Get profile of the authenticated user
+protected > profiles > route.ts > PATCH: Update profile of the authenticated user
+
+protected > prompts > [promptId] > route.ts > DELETE: Delete a prompt
+protected > prompts > [promptId] > route.ts > PATCH: Update a prompt's content
+protected > prompts > route.ts > GET: Get custom prompts for the authenticated user
+protected > prompts > route.ts > POST: Insert a new custom prompt (max limit enforced)
+
+protected > search > [query] > route.ts > GET: Perform search across multiple resources
+
+protected > tasks > [courseId] > route.ts > GET: Get tasks for a course
+protected > tasks > [taskId] > route.ts > GET: Get task details
+
+protected > unprotected > health > route.ts > GET: Health check endpoint returning API status and required env var verification

@@ -3,7 +3,7 @@ import { buckets, bucketUsers } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { type Context } from "hono";
 
-// Get buckets the user has access to
+// Get buckets the user can use
 export async function GET(c: Context) {
   const user = c.get("user");
 

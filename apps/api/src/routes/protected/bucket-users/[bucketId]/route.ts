@@ -2,6 +2,8 @@ import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
 import { filterNonExistingBucketUsers } from "@/src/lib/db/queries/bucket-users.js";
 import { getBucketOwner } from "@/src/lib/db/queries/buckets.js";
 import { addUserInvitationsBatch } from "@/src/lib/db/queries/invitations.js";
+import { itemsPerPageSchema } from "@/src/schemas/items-per-page-schema.js";
+import { pageNumberSchema } from "@/src/schemas/page-number-schema.js";
 import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
@@ -13,8 +15,11 @@ import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { bucketUsersSchema } from "./schema.js";
 
+// Get bucket users
 export async function GET(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
+  const pageNumber = pageNumberSchema.parse(c.req.query("pageNumber"));
+  const itemsPerPage = itemsPerPageSchema.parse(c.req.query("itemsPerPage"));
 
   const user = c.get("user");
 
@@ -34,11 +39,14 @@ export async function GET(c: Context) {
     })
     .from(bucketUsers)
     .innerJoin(profile, eq(bucketUsers.userId, profile.id))
-    .where(eq(bucketUsers.bucketId, bucketId));
+    .where(eq(bucketUsers.bucketId, bucketId))
+    .limit(itemsPerPage)
+    .offset(pageNumber * itemsPerPage);
 
   return c.json(users);
 }
 
+// Invite bucket users
 export async function POST(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
 
@@ -71,6 +79,7 @@ export async function POST(c: Context) {
   return c.json("Users invited");
 }
 
+// Remove bucket users
 export async function DELETE(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
 

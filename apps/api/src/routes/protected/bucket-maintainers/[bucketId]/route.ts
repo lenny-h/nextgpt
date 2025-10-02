@@ -42,6 +42,7 @@ export async function GET(c: Context) {
   return c.json(maintainers);
 }
 
+// Add bucket maintainers
 export async function POST(c: Context) {
   const bucketId = c.req.param("bucketId");
 
@@ -78,6 +79,7 @@ export async function POST(c: Context) {
   return c.json("Maintainers invited");
 }
 
+// Remove bucket maintainers
 export async function DELETE(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
 
