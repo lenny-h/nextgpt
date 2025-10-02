@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "hono": "^4.9.6",
     "katex": "^0.16.22",
     "lucide-react": "^0.475.0",
     "next": "15.4.7",
@@ -66,6 +67,7 @@
     "@types/react-dom": "^19.1.7",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "@workspace/server": "workspace:*",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"
   },

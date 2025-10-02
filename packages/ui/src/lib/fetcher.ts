@@ -1,21 +1,57 @@
 import { type QueryClient } from "@tanstack/react-query";
+import type { ProtectedApiType } from "@workspace/server/types/api";
 import {
   checkResponse,
   type ErrorDictionary,
 } from "@workspace/ui/lib/translation-utils";
+import { type ClientResponse, hc } from "hono/client";
 
-export const apiFetcher = async (
-  url: string,
-  init: RequestInit,
-  errorDictionary: ErrorDictionary
-) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/${url}`,
-    init
+// export const apiFetcher = async (
+//   url: string,
+//   init: RequestInit,
+//   errorDictionary: ErrorDictionary
+// ) => {
+//   const response = await fetch(
+//     `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/${url}`,
+//     init
+//   );
+//   checkResponse(response, errorDictionary);
+//   return response.json();
+// };
+
+export function createProtectedApiClient() {
+  return hc<ProtectedApiType>(
+    `${process.env.NEXT_PUBLIC_API_URL}/capi/protected`,
+    {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+        return fetch(input, {
+          ...init,
+          credentials: "include",
+        });
+      },
+    }
   );
+}
+
+/**
+ * Type-safe fetcher using Hono client
+ * @example
+ * const data = await apiFetcher(
+ *   (client) => client.users.$get(),
+ *   errorDictionary
+ * );
+ */
+export async function apiFetcher<T>(
+  clientCallback: (
+    client: ReturnType<typeof createProtectedApiClient>
+  ) => Promise<ClientResponse<T>>,
+  errorDictionary: ErrorDictionary
+): Promise<T> {
+  const client = createProtectedApiClient();
+  const response = await clientCallback(client);
   checkResponse(response, errorDictionary);
-  return response.json();
-};
+  return response.json() as Promise<T>;
+}
 
 export async function updateCache<T extends { id: string }>(
   queryClient: QueryClient,

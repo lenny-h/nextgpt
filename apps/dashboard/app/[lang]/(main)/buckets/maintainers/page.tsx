@@ -4,11 +4,13 @@ import { AddMaintainers } from "@/components/custom/add-maintainers";
 import { CurrentMaintainers } from "@/components/custom/current-maintainers";
 import { RemoveMaintainers } from "@/components/custom/remove-maintainers";
 import { useUser } from "@/contexts/user-context";
-import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { notFound, useSearchParams } from "next/navigation";
 
 export default function BucketMaintainersPage() {
+  const { sharedT } = useSharedTranslations();
   const user = useUser();
 
   const searchParams = useSearchParams();
@@ -26,14 +28,18 @@ export default function BucketMaintainersPage() {
   } = useQuery({
     queryKey: ["bucket_maintainers", bucketId],
     queryFn: () =>
-      rpcFetcher<"get_bucket_maintainers">("get_bucket_maintainers", {
-        p_bucket_id: bucketId,
-      }),
+      apiFetcher(
+        (client) =>
+          client["bucket-maintainers"][":bucketId"].$get({
+            param: { bucketId },
+          }),
+        sharedT.apiCodes,
+      ),
   });
 
   if (isPending) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">Loading maintainers...</h1>
       </div>
     );
@@ -41,7 +47,7 @@ export default function BucketMaintainersPage() {
 
   if (isError || !currentMaintainers) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
           Maintainers could not be loaded. Please try again later.
         </h1>
@@ -50,7 +56,7 @@ export default function BucketMaintainersPage() {
   }
 
   return (
-    <div className="p-2 flex flex-col space-y-6 items-center">
+    <div className="flex flex-col items-center space-y-6 p-2">
       <h1 className="text-2xl font-semibold">{bucketName}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="space-y-3">
@@ -63,7 +69,7 @@ export default function BucketMaintainersPage() {
         <div className="space-y-3">
           <div className="max-w-lg">
             <h2 className="text-xl font-semibold">Add maintainers</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Maintainer can manage the bucket by adding courses and the
               corresponding course maintainers. There is a maximum of 10
               maintainers by bucket.
@@ -74,7 +80,7 @@ export default function BucketMaintainersPage() {
         <div className="space-y-3">
           <div className="max-w-lg">
             <h2 className="text-xl font-semibold">Remove maintainers</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Maintainers can only be removed by the bucket owner.
             </p>
           </div>

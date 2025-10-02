@@ -1,13 +1,14 @@
 import { serve } from "@hono/node-server";
+import { authMiddleware } from "@workspace/server/auth-middleware.js";
+import { auth } from "@workspace/server/auth-server.js";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
+import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
-import { authMiddleware } from "./middleware/auth.js";
 import { protectedApiRouter } from "./routes/protected/index.js";
 import { unprotectedApiRouter } from "./routes/unprotected/index.js";
 import { errorHandler } from "./utils/error-handler.js";
-import { cors } from "hono/cors";
 
 // Create Hono application
 const app = new Hono();
@@ -19,15 +20,16 @@ app.use("*", secureHeaders());
 app.use(
   "*",
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
-      "http://localhost:3000",
-    ],
+    origin: process.env.ALLOWED_ORIGINS!.split(","),
     credentials: true,
   })
 );
 
 // Global error handler
 app.use("*", errorHandler);
+
+// Authentication middleware for protected routes
+app.use("/capi/protected/*", authMiddleware);
 
 // Default root route
 app.get("/", (c) => {
@@ -38,13 +40,13 @@ app.get("/", (c) => {
   });
 });
 
-// Unprotected API routes
+// Authentication routes
+app.on(["GET", "POST"], "/capi/auth/*", (c) => auth.handler(c.req.raw));
+
+// Unprotected routes
 app.route("/capi/public", unprotectedApiRouter);
 
-// Authentication middleware
-app.use("/capi/protected/*", authMiddleware);
-
-// Protected API routes
+// Protected routes
 app.route("/capi/protected", protectedApiRouter);
 
 const PORT = process.env.PORT || 8080;
@@ -59,3 +61,7 @@ serve(
 );
 
 export default app;
+
+export type ApiAppType = typeof app;
+export type { ProtectedApiType } from "./routes/protected/index.js";
+export type { UnprotectedApiType } from "./routes/unprotected/index.js";

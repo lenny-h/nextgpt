@@ -1,12 +1,12 @@
 "use client";
 
-import { type User as SupabaseUser } from "@supabase/supabase-js";
+import { type User as AuthenticatedUser } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
-import { User } from "./autocomplete";
 import { memo } from "react";
+import { User } from "./autocomplete";
 
 interface Props {
-  currentUser: SupabaseUser;
+  currentUser: AuthenticatedUser;
   currentBucketUsers: User[];
   usersCount: number;
 }

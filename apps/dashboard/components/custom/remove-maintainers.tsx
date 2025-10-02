@@ -1,7 +1,7 @@
 "use client";
 
 import { useGlobalTranslations } from "@/contexts/global-translations";
-import { type User as SupabaseUser } from "@supabase/supabase-js";
+import { type User as AuthenticatedUser } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Loader2 } from "lucide-react";
@@ -12,7 +12,7 @@ import { Autocomplete, type User } from "./autocomplete";
 interface Props {
   bucketId: string;
   courseId?: string;
-  currentUser: SupabaseUser;
+  currentUser: AuthenticatedUser;
   currentMaintainers: User[];
 }
 
@@ -44,7 +44,7 @@ export function RemoveMaintainers({
           body: JSON.stringify({
             userIds: selectedUsers.map((user) => user.id),
           }),
-        }
+        },
       );
 
       setSubmitLoading(false);
@@ -69,7 +69,7 @@ export function RemoveMaintainers({
       setSelectedUsers={setSelectedUsers}
       shortcut="#"
       selection={currentMaintainers.filter(
-        (user) => user.id !== currentUser.id
+        (user) => user.id !== currentUser.id,
       )}
     >
       <Button disabled={selectedUsers.length === 0} onClick={submitList}>

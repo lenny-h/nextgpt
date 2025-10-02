@@ -36,11 +36,11 @@ protected > course-maintainers > [courseId] > route.ts > POST: Invite maintainer
 protected > course-maintainers > [courseId] > route.ts > DELETE: Remove maintainers from a course (must be bucket maintainer)
 
 protected > courses > [bucketId] > route.ts > GET: Get courses in a bucket
-protected > courses > [courseId] > route.ts > GET: Get course details
+protected > courses > [courseId] > route.ts > DELETE: Delete a course (must be bucket maintainer)
 protected > courses > maintained > route.ts > GET: Get courses the authenticated user maintains
 protected > courses > request-access > route.ts > POST: Request access to a course
 protected > courses > validate-access > route.ts > POST: Validate whether a user has access to a course
-protected > courses > route.ts > GET: Get accessible courses for user
+protected > courses > route.ts > POST: Create a new course
 
 protected > documents > [documentId] > route.ts > GET: Get full document content by id
 protected > documents > [documentId] > route.ts > DELETE: Delete a document
@@ -86,9 +86,9 @@ protected > prompts > [promptId] > route.ts > PATCH: Update a prompt's content
 protected > prompts > route.ts > GET: Get custom prompts for the authenticated user
 protected > prompts > route.ts > POST: Insert a new custom prompt (max limit enforced)
 
-protected > search > [query] > route.ts > GET: Perform search across multiple resources
+protected > search > [query] > route.ts > POST: Perform search across multiple resources
 
 protected > tasks > [courseId] > route.ts > GET: Get tasks for a course
-protected > tasks > [taskId] > route.ts > GET: Get task details
+protected > tasks > [taskId] > route.ts > DELETE: Delete a task
 
 protected > unprotected > health > route.ts > GET: Health check endpoint returning API status and required env var verification

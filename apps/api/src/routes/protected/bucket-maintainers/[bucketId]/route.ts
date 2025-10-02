@@ -32,7 +32,7 @@ export async function GET(c: Context) {
 
   const maintainers = await db
     .select({
-      userId: bucketMaintainers.userId,
+      id: bucketMaintainers.userId,
       username: profile.username,
     })
     .from(bucketMaintainers)

@@ -1,7 +1,9 @@
+import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
 import { isCourseMaintainer } from "@/src/lib/db/queries/course-maintainers.js";
 import {
   deleteCourse,
   getBucketIdByCourseId,
+  getCourseDetails,
 } from "@/src/lib/db/queries/courses.js";
 import { deleteFile, getCourseFiles } from "@/src/lib/db/queries/files.js";
 import { getFilePages } from "@/src/lib/db/queries/pages.js";
@@ -19,12 +21,16 @@ export async function DELETE(c: Context) {
 
   const user = c.get("user");
 
-  const isMaintainer = await isCourseMaintainer({
-    userId: user.id,
+  const bucketId = await getBucketIdByCourseId({
     courseId,
   });
 
-  if (!isMaintainer) {
+  const hasPermissions = await isBucketMaintainer({
+    userId: user.id,
+    bucketId,
+  });
+
+  if (!hasPermissions) {
     throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
@@ -39,8 +45,6 @@ export async function DELETE(c: Context) {
 
     return c.json({ name: deletedCourse });
   }
-
-  const bucketId = await getBucketIdByCourseId({ courseId });
 
   const pagesBucket = getPagesBucket();
 

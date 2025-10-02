@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@supabase/supabase-js";
+import { type User } from "@workspace/server/drizzle/schema";
 import { ReactNode, createContext, useContext } from "react";
 
 interface Props {
