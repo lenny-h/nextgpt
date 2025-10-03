@@ -1,15 +1,16 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
-import { createClient } from "@/lib/supabase/client";
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
-import { Button } from "@workspace/ui/components/button";
 import {
-  checkResponse,
-  type ErrorDictionary,
-} from "@workspace/ui/lib/translation-utils";
-import { type Tables } from "@workspace/ui/types/database";
+  BucketMaintainerInvitation,
+  CourseMaintainerInvitation,
+  UserInvitation,
+} from "@workspace/server/drizzle/schema";
+import { Button } from "@workspace/ui/components/button";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { type ErrorDictionary } from "@workspace/ui/lib/translation-utils";
 import { toast } from "sonner";
 
 export type IncomingInvitationsTableColumns = {
@@ -33,23 +34,17 @@ const acceptInvitation = async ({
   resourceId: string;
   errorDictionary: ErrorDictionary;
 }) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/invitations/accept`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        type,
-        originUserId,
-        resourceId,
+  await apiFetcher(
+    (client) =>
+      client["invitations"]["accept"].$post({
+        json: {
+          type,
+          originUserId,
+          resourceId,
+        },
       }),
-    },
+    errorDictionary,
   );
-
-  checkResponse(response, errorDictionary);
 };
 
 export const rejectInvitation = async ({
@@ -57,24 +52,26 @@ export const rejectInvitation = async ({
   originUserId,
   targetUserId,
   resourceId,
+  errorDictionary,
 }: {
   type: "user" | "course_maintainer" | "bucket_maintainer";
   originUserId: string;
   targetUserId: string;
   resourceId: string;
+  errorDictionary: ErrorDictionary;
 }) => {
-  const supabase = createClient();
-
-  const { error } = await supabase.rpc("delete_invitation", {
-    p_invitation_type: type,
-    p_origin: originUserId,
-    p_target: targetUserId,
-    p_resource_id: resourceId,
-  });
-
-  if (error) {
-    throw new Error("Failed to reject invitation");
-  }
+  await apiFetcher(
+    (client) =>
+      client["invitations"]["reject"].$post({
+        json: {
+          type,
+          originUserId,
+          targetUserId,
+          resourceId,
+        },
+      }),
+    errorDictionary,
+  );
 };
 
 export const updateInvitationsQueryData = ({
@@ -93,9 +90,9 @@ export const updateInvitationsQueryData = ({
     (oldData: {
       pages: Array<
         (
-          | Tables<"user_invitations">
-          | Tables<"course_maintainer_invitations">
-          | Tables<"bucket_maintainer_invitations">
+          | UserInvitation[]
+          | CourseMaintainerInvitation[]
+          | BucketMaintainerInvitation[]
         )[]
       >;
       pageParams: number[];
@@ -148,9 +145,10 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
       accessorKey: "accept",
       header: "Accept",
       cell: ({ row }) => {
-        const { globalT } = useGlobalTranslations();
+        const { sharedT } = useSharedTranslations();
 
         const queryClient = useQueryClient();
+
         const type = row.getValue("type") as
           | "user"
           | "course_maintainer"
@@ -168,7 +166,7 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
                   type,
                   originUserId,
                   resourceId,
-                  errorDictionary: globalT.globalErrors,
+                  errorDictionary: sharedT.apiCodes,
                 }),
                 {
                   loading: "Accepting...",
@@ -197,7 +195,10 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
       accessorKey: "reject",
       header: "Reject",
       cell: ({ row }) => {
+        const { sharedT } = useSharedTranslations();
+
         const queryClient = useQueryClient();
+
         const type = row.getValue("type") as
           | "user"
           | "course_maintainer"
@@ -216,6 +217,7 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
                   originUserId,
                   targetUserId,
                   resourceId,
+                  errorDictionary: sharedT.apiCodes,
                 }),
                 {
                   loading: "Rejecting...",

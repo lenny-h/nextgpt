@@ -19,7 +19,7 @@ export async function PATCH(c: Context) {
     .set({ content })
     .where(and(eq(prompts.id, promptId), eq(prompts.userId, user.id)));
 
-  return c.json("Prompt updated");
+  return c.json({ message: "Prompt updated" });
 }
 
 export async function DELETE(c: Context) {
@@ -31,5 +31,5 @@ export async function DELETE(c: Context) {
     .delete(prompts)
     .where(and(eq(prompts.id, promptId), eq(prompts.userId, user.id)));
 
-  return c.json("Prompt deleted");
+  return c.json({ message: "Prompt deleted" });
 }

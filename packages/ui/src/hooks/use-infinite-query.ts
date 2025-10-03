@@ -8,13 +8,13 @@ import { useInView } from "react-intersection-observer";
 
 interface UseInfiniteQueryProps<T> {
   queryKey: string[];
-  queryFn: ({ pageParam }: { pageParam?: number }) => Promise<T[]>;
+  queryFn: ({ pageParam }: { pageParam?: number }) => Promise<T>;
   enabled?: boolean;
   pageSize?: number;
 }
 
 interface InfiniteQueryResult<T> {
-  data: T[];
+  data: T;
   isPending: boolean;
   error: Error | null;
   fetchNextPage: (
@@ -43,7 +43,7 @@ export function useInfiniteQueryWithRPC<T>(
     queryKey,
     queryFn,
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+    getNextPageParam: (lastPage, _, lastPageParam) => {
       if (
         !lastPage ||
         (Array.isArray(lastPage) && lastPage.length < pageSize)
@@ -65,11 +65,10 @@ export function useInfiniteQueryWithRPC<T>(
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Safe type assertion since we know the structure of our data
-  const flattenedData = data?.pages.flat() ?? [];
+  const flattenedData = data?.pages.flat() as T;
 
   return {
-    data: flattenedData as T[],
+    data: flattenedData,
     isPending,
     error,
     fetchNextPage,

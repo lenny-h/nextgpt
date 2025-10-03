@@ -45,7 +45,7 @@ export async function GET(c: Context) {
     .innerJoin(profile, eq(courseMaintainers.userId, profile.id))
     .where(eq(courseMaintainers.courseId, courseId));
 
-  return c.json(maintainers);
+  return c.json({ maintainers });
 }
 
 // Invite course maintainers
@@ -83,7 +83,7 @@ export async function POST(c: Context) {
     courseName: name,
   });
 
-  return c.json("Maintainers invited");
+  return c.json({ message: "Maintainers invited" });
 }
 
 // Remove course maintainers
@@ -118,5 +118,5 @@ export async function DELETE(c: Context) {
     courseId,
   });
 
-  return c.json("Maintainers removed");
+  return c.json({ message: "Maintainers removed" });
 }

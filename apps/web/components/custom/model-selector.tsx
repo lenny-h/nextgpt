@@ -2,7 +2,6 @@
 
 import { useFilter } from "@/contexts/filter-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
-import { rpcFetcher } from "@/lib/fetcher";
 import {
   customChatModels,
   defaultChatModels,
@@ -17,22 +16,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { Check, ChevronDownIcon } from "lucide-react";
 import { memo, useState } from "react";
 
 export const ModelSelector = memo(() => {
+  const { sharedT } = useSharedTranslations();
+
   const { filter } = useFilter();
   const { selectedChatModel, setSelectedChatModel } = useChatModel();
 
   const [open, setOpen] = useState(false);
 
-  const { data: userModels } = useQuery({
+  const { data: modelsData } = useQuery({
     queryKey: ["userModels", filter.bucketId],
     queryFn: () =>
-      rpcFetcher("get_user_models", { p_bucket_id: filter.bucketId }),
+      apiFetcher(
+        (client) =>
+          client["models"][":bucketId"].$get({
+            param: { bucketId: filter.bucketId },
+          }),
+        sharedT.apiCodes,
+      ),
     enabled: !!filter.bucketId,
   });
+
+  const userModels = modelsData?.models;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

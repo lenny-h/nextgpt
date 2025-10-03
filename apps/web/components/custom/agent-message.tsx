@@ -15,6 +15,7 @@ import { RetrieveWebPagesUI } from "../tools/retrieve-web-pages";
 import { RetrieveWebSourcesUI } from "../tools/retrieve-web-sources";
 import { Markdown } from "./markdown";
 import { MessageActions } from "./message-actions";
+import { StreamingIndicator } from "./streaming-indicator";
 
 const MessageReasoning = dynamic(() =>
   import("./reasoning").then((mod) => mod.MessageReasoning),
@@ -92,10 +93,8 @@ const PureAgentMessage = ({
             },
           )}
         >
-          {isThinking ? (
-            <p className="bg-primary/10 w-fit animate-pulse rounded-xl p-3">
-              {textContent}
-            </p>
+          {isThinking || (isLoading && !reasoningContent && !textContent) ? (
+            <StreamingIndicator />
           ) : (
             <>
               <div className="space-y-3">

@@ -16,5 +16,5 @@ export async function PATCH(c: Context) {
     .set({ title })
     .where(and(eq(documents.id, documentId), eq(documents.userId, user.id)));
 
-  return c.json("Document title updated");
+  return c.json({ message: "Document title updated" });
 }

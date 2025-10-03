@@ -37,5 +37,5 @@ export async function POST(c: Context) {
     throw new HTTPException(400, { message: "BAD_REQUEST" });
   }
 
-  return c.json("Invitation accepted");
+  return c.json({ message: "Invitation accepted" });
 }

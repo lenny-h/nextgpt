@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
+// Get bucket models
 export async function GET(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
 
@@ -29,5 +30,5 @@ export async function GET(c: Context) {
     .from(models)
     .where(eq(models.bucketId, bucketId));
 
-  return c.json(result);
+  return c.json({ models: result });
 }

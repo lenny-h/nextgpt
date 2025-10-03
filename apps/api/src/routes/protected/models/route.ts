@@ -44,7 +44,7 @@ export async function GET(c: Context) {
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 
-  return c.json(result);
+  return c.json({ models: result });
 }
 
 // Add a new model to a bucket the user maintains
@@ -82,5 +82,5 @@ export async function POST(c: Context) {
     description,
   });
 
-  return c.json("Model added");
+  return c.json({ message: "Model added" });
 }

@@ -18,5 +18,5 @@ export async function PATCH(c: Context) {
     content,
   });
 
-  return c.json("Document saved");
+  return c.json({ message: "Document saved" });
 }

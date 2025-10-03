@@ -1,15 +1,10 @@
 "use client";
 
-import { signOutAction } from "@/actions";
-import { useGlobalTranslations } from "@/contexts/web-translations";
-import { useUser } from "@/contexts/user-context";
-import { rpcFetcher } from "@/lib/fetcher";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar";
+import { ChevronsUpDown, LogOut, PartyPopper, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { memo, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,35 +13,39 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
+} from "../components/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@workspace/ui/components/sidebar-left";
-import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
-import { ChevronsUpDown, LogOut, PartyPopper, User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { memo, useState } from "react";
-import { InvitationsDialog } from "../custom/invitations-dialog";
-import { LocaleSwitcher } from "../custom/locale-switcher";
-import { ThemeSwitcher } from "../custom/theme-switcher";
+} from "../components/sidebar-left";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
+import { useUser } from "../contexts/user-context";
+import { useIsMobile } from "../hooks/use-mobile";
+import { client } from "../lib/auth-client";
+import { apiFetcher } from "../lib/fetcher";
+import { InvitationsDialog } from "./invitations-dialog";
+import { LocaleSwitcher } from "./locale-switcher";
+import { ThemeSwitcher } from "./theme-switcher";
 
 export const NavUser = memo(() => {
-  const isMobile = useIsMobile();
-  const [invitationsOpen, setInvitationsOpen] = useState(false);
+  const { locale, sharedT } = useSharedTranslations();
 
   const user = useUser();
-  const { locale } = useGlobalTranslations();
-
+  const isMobile = useIsMobile();
   const router = useRouter();
 
-  const { data: profile, isLoading } = useQuery({
+  const [invitationsOpen, setInvitationsOpen] = useState(false);
+
+  const { data: profileData, isLoading } = useQuery({
     queryKey: ["profile"],
-    queryFn: () => rpcFetcher<"get_user_profile">("get_user_profile"),
+    queryFn: () =>
+      apiFetcher((client) => client["profiles"].$get(), sharedT.apiCodes),
   });
 
-  const username = profile?.[0]?.username;
+  const profile = profileData?.profile;
+
+  const username = profile?.username;
 
   const initials = username
     ?.split(" ")
@@ -64,7 +63,7 @@ export const NavUser = memo(() => {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+                <AvatarImage src={undefined} />
                 <AvatarFallback className="rounded-lg">
                   {initials}
                 </AvatarFallback>
@@ -87,9 +86,7 @@ export const NavUser = memo(() => {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={user.user_metadata.avatar_url ?? undefined}
-                  />
+                  <AvatarImage src={undefined} />
                   <AvatarFallback className="rounded-lg">
                     {initials}
                   </AvatarFallback>
@@ -111,11 +108,7 @@ export const NavUser = memo(() => {
                 }}
               >
                 <User />
-                {isLoading
-                  ? "Loading..."
-                  : profile?.[0]
-                    ? "Update profile"
-                    : "Create profile"}
+                {isLoading ? "Loading..." : "Update profile"}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setInvitationsOpen(true)}>
                 <PartyPopper />
@@ -130,7 +123,7 @@ export const NavUser = memo(() => {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
-                await signOutAction();
+                await client.signOut();
               }}
             >
               <LogOut />

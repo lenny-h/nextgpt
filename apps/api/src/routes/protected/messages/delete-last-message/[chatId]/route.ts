@@ -24,5 +24,5 @@ export async function DELETE(c: Context) {
     chatId,
   });
 
-  return c.json("Last message deleted");
+  return c.json({ message: "Last message deleted" });
 }

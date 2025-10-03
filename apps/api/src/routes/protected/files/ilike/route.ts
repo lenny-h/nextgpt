@@ -1,5 +1,5 @@
 import { prefixSchema } from "@/src/schemas/prefix-schema.js";
-import { uuidArrayParamSchema } from "@/src/schemas/uuid-array-param-schema.js";
+import { createUuidArrayParamSchema } from "@/src/schemas/uuid-array-param-schema.js";
 import { userHasPermissions } from "@/src/utils/user-has-permissions.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { files } from "@workspace/server/drizzle/schema.js";
@@ -9,7 +9,9 @@ import { HTTPException } from "hono/http-exception";
 
 export async function GET(c: Context) {
   const prefix = prefixSchema.parse(c.req.query("prefix"));
-  const courseIds = uuidArrayParamSchema.parse(c.req.query("courseIds"));
+  const courseIds = createUuidArrayParamSchema(20).parse(
+    c.req.query("courseIds")
+  );
 
   const user = c.get("user");
 
@@ -25,7 +27,7 @@ export async function GET(c: Context) {
     throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
-  const results = await db
+  const result = await db
     .select({
       id: files.id,
       courseId: files.courseId,
@@ -43,5 +45,5 @@ export async function GET(c: Context) {
     .orderBy(desc(files.createdAt))
     .limit(5);
 
-  return c.json(results);
+  return c.json({ files: result });
 }

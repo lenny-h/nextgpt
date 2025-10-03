@@ -20,5 +20,5 @@ export async function POST(c: Context) {
     userId: user.id,
   });
 
-  return c.json("Access granted");
+  return c.json({ message: "Access granted" });
 }

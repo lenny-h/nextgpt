@@ -1,7 +1,5 @@
 "use client";
 
-import { updateCache } from "@/lib/fetcher";
-import { createClient } from "@/lib/supabase/client";
 import { type QueryClient } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Button } from "@workspace/ui/components/button";
@@ -11,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
+import { apiFetcher, updateCache } from "@workspace/ui/lib/fetcher";
+import { type ErrorDictionary } from "@workspace/ui/lib/translation-utils";
 import { useState } from "react";
 import { DeleteDialog } from "../custom/delete-dialog";
 
@@ -57,17 +57,16 @@ export const promptsColumns: ColumnDef<PromptTableColumns>[] = [
 
       const deletePrompt = async (
         deletedId: string,
-        queryClient: QueryClient
+        queryClient: QueryClient,
+        errorDictionary: ErrorDictionary
       ) => {
-        const supabase = createClient();
-
-        const { error } = await supabase.rpc("delete_correction_prompt", {
-          p_id: deletedId,
-        });
-
-        if (error) {
-          throw new Error("Failed to delete document");
-        }
+        await apiFetcher(
+          (client) =>
+            client["prompts"][":promptId"].$delete({
+              param: { promptId: deletedId },
+            }),
+          errorDictionary,
+        );
 
         updateCache(queryClient, ["prompts"], deletedId);
 
@@ -84,7 +83,7 @@ export const promptsColumns: ColumnDef<PromptTableColumns>[] = [
             setOpen={setDeleteDialog}
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
-              return deletePrompt(row.getValue("id"), queryClient);
+              return deletePrompt(row.getValue("id"), queryClient, errorDictionary);
             }}
             resourceType="prompt"
             description="Are you sure you want to delete this prompt? This action cannot be undone."

@@ -4,6 +4,7 @@ import { getBucketOwner } from "@/src/lib/db/queries/buckets.js";
 import { addUserInvitationsBatch } from "@/src/lib/db/queries/invitations.js";
 import { itemsPerPageSchema } from "@/src/schemas/items-per-page-schema.js";
 import { pageNumberSchema } from "@/src/schemas/page-number-schema.js";
+import { createUuidArrayParamSchema } from "@/src/schemas/uuid-array-param-schema.js";
 import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
@@ -43,7 +44,7 @@ export async function GET(c: Context) {
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 
-  return c.json(users);
+  return c.json({ users });
 }
 
 // Invite bucket users
@@ -76,12 +77,13 @@ export async function POST(c: Context) {
     bucketName,
   });
 
-  return c.json("Users invited");
+  return c.json({ message: "Users invited" });
 }
 
 // Remove bucket users
 export async function DELETE(c: Context) {
   const bucketId = uuidSchema.parse(c.req.param("bucketId"));
+  const userIds = createUuidArrayParamSchema(100).parse(c.req.query("userIds")); // max 100 userIds
 
   const user = c.get("user");
 
@@ -94,10 +96,6 @@ export async function DELETE(c: Context) {
     throw new HTTPException(403, { message: "FORBIDDEN" });
   }
 
-  const payload = await c.req.json();
-
-  const { userIds } = bucketUsersSchema.parse(payload);
-
   await db
     .delete(bucketUsers)
     .where(
@@ -107,5 +105,5 @@ export async function DELETE(c: Context) {
       )
     );
 
-  return c.json("Users removed");
+  return c.json({ message: "Users removed" });
 }

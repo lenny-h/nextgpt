@@ -22,7 +22,7 @@ export default function BucketMaintainersPage() {
   }
 
   const {
-    data: currentMaintainers,
+    data: currentMaintainersData,
     isPending,
     isError,
   } = useQuery({
@@ -36,6 +36,8 @@ export default function BucketMaintainersPage() {
         sharedT.apiCodes,
       ),
   });
+
+  const currentMaintainers = currentMaintainersData?.maintainers;
 
   if (isPending) {
     return (

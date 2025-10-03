@@ -26,7 +26,7 @@ export async function GET(c: Context) {
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 
-  return c.json(result);
+  return c.json({ documents: result });
 }
 
 export async function POST(c: Context) {
@@ -43,5 +43,5 @@ export async function POST(c: Context) {
     kind,
   });
 
-  return c.json("Document inserted");
+  return c.json({ message: "Document inserted" });
 }

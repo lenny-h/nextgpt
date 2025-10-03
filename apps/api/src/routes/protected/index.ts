@@ -31,7 +31,10 @@ import {
   PATCH as chatsIsFavouritePatch,
 } from "./chats/is-favourite/[chatId]/route.js";
 import { GET as chatsGet } from "./chats/route.js";
-import { PATCH as chatTitlePatch } from "./chats/title/[chatId]/route.js";
+import {
+  GET as chatsTitleGet,
+  PATCH as chatsTitlePatch,
+} from "./chats/title/[chatId]/route.js";
 import { POST as completionPost } from "./completion/route.js";
 import { POST as correctionGetSignedUrlPost } from "./correction/get-signed-url/route.js";
 import { POST as correctionPost } from "./correction/route.js";
@@ -123,7 +126,8 @@ const protectedApiRouter = new Hono()
   .get("/chats/ilike", chatsIlikeGet)
   .get("/chats/is-favourite/:chatId", chatsIsFavouriteGet)
   .patch("/chats/is-favourite/:chatId", chatsIsFavouritePatch)
-  .patch("/chats/title/:chatId", chatTitlePatch)
+  .get("/chats/title/:chatId", chatsTitleGet)
+  .patch("/chats/title/:chatId", chatsTitlePatch)
 
   // Completion
   .post("/completion", completionPost)

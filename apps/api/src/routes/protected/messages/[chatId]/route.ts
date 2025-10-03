@@ -28,5 +28,5 @@ export async function GET(c: Context) {
     .where(eq(messages.chatId, chatId))
     .orderBy(asc(messages.createdAt));
 
-  return c.json(result);
+  return c.json({ messages: result });
 }

@@ -25,5 +25,5 @@ export async function DELETE(c: Context) {
     timestamp: messageInfo.createdAt,
   });
 
-  return c.json("Trailing messages deleted");
+  return c.json({ message: "Trailing messages deleted" });
 }

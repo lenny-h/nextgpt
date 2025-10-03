@@ -17,14 +17,14 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useChatModel } from "@/contexts/selected-chat-model";
-import { useUser } from "@/contexts/user-context";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { type Attachment } from "@/types/attachment";
 import { type MyUIMessage } from "@/types/custom-ui-message";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useUser } from "@workspace/ui/contexts/user-context";
 import { cn, generateUUID } from "@workspace/ui/lib/utils";
 import { type ChatRequestOptions } from "ai";
 import React, {
@@ -64,10 +64,9 @@ const PureMultimodalInput = ({
   stop,
   isPractice = false,
 }: MultimodalInputProps) => {
-  console.log("Rendering MultimodalInput with input: ", input);
+  const { locale } = useSharedTranslations();
 
   const user = useUser();
-  const { locale } = useGlobalTranslations();
 
   const { filter: frontendFilter } = useFilter();
   const { selectedChatModel, reasoningEnabled } = useChatModel();

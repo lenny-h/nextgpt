@@ -1,36 +1,57 @@
+"use client";
+
 import { Chat } from "@/components/custom/chat";
-import { type Locale } from "@/i18n.config";
-import { createClient } from "@/lib/supabase/server";
+import { ChatSkeleton } from "@/components/custom/chat-skeleton";
 import { type MyUIMessage } from "@/types/custom-ui-message";
-import { redirect } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useUser } from "@workspace/ui/contexts/user-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { redirect, useParams, useRouter } from "next/navigation";
 
-export default async function ChatPage(props: {
-  params: Promise<{ lang: Locale; id: string }>;
-}) {
-  const { lang, id } = await props.params;
+export default function ChatPage() {
+  const { locale, sharedT } = useSharedTranslations();
 
-  const supabase = await createClient();
+  const user = useUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const router = useRouter();
+  const { id } = useParams();
+  const chatId = Array.isArray(id) ? id[0] : id;
 
   if (!user) {
-    return redirect(`/${lang}/sign-in`);
+    return router.push(`/${locale}/sign-in`);
   }
 
-  const { data, error } = await supabase.rpc("get_messages", {
-    p_chat_id: id,
+  if (!chatId) {
+    return redirect(`/${locale}`);
+  }
+
+  const {
+    data: messagesData,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["messages", id],
+    queryFn: () =>
+      apiFetcher(
+        (client) =>
+          client["messages"][":chatId"].$get({
+            param: { chatId },
+          }),
+        sharedT.apiCodes,
+      ),
+    enabled: !!id,
   });
 
-  if (error) {
-    console.error(error);
-    return redirect(`/${lang}`);
+  const messages = messagesData?.messages;
+
+  if (isPending) {
+    return <ChatSkeleton />;
   }
 
-  if (data.length === 0) {
-    return redirect(`/${lang}`);
+  if (isError || !messages) {
+    router.push(`/${locale}`);
   }
 
-  return <Chat chatId={id} initialMessages={data as MyUIMessage[]} />;
+  return <Chat chatId={chatId} initialMessages={messages as MyUIMessage[]} />;
 }

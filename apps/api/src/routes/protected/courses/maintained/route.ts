@@ -34,5 +34,5 @@ export async function GET(c: Context) {
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 
-  return c.json(maintainedCourses);
+  return c.json({ maintainedCourses });
 }

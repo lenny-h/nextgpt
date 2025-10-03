@@ -13,7 +13,7 @@ import { type ImperativePanelHandle } from "react-resizable-panels";
 import { toast } from "sonner";
 
 interface Props {
-  documents: CustomDocument[];
+  documents: Omit<CustomDocument, "userId">[];
   isSearching: boolean;
   panelRef: React.RefObject<ImperativePanelHandle | null>;
   size: number;
@@ -50,7 +50,7 @@ export const DocumentsList = ({
     documentTitle: string,
     documentKind: "text" | "code",
   ) => {
-    const fullDocument = await apiFetcher(
+    const { document: fullDocument } = await apiFetcher(
       (client) =>
         client.documents[":documentId"].$get({
           param: { documentId },

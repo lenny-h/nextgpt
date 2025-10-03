@@ -41,5 +41,5 @@ export async function GET(c: Context) {
     )
     .limit(5);
 
-  return c.json(users);
+  return c.json({ users });
 }

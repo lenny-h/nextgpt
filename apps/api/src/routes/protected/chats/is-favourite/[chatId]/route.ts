@@ -42,5 +42,5 @@ export async function PATCH(c: Context) {
     throw new HTTPException(404, { message: "NOT_FOUND" });
   }
 
-  return c.json("Chat favourite status updated");
+  return c.json({ message: "Chat favourite status updated" });
 }

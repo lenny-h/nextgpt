@@ -15,5 +15,5 @@ export async function POST(c: Context) {
     type,
   });
 
-  return c.json("Bucket created");
+  return c.json({ message: "Bucket created" });
 }

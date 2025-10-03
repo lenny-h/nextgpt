@@ -19,7 +19,7 @@ export async function GET(c: Context) {
     .from(prompts)
     .where(eq(prompts.userId, user.id));
 
-  return c.json(result);
+  return c.json({ prompts: result });
 }
 
 export async function POST(c: Context) {
@@ -41,5 +41,5 @@ export async function POST(c: Context) {
     content,
   });
 
-  return c.json("Prompt inserted");
+  return c.json({ message: "Prompt inserted" });
 }

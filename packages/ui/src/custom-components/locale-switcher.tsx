@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import {
   DropdownMenuPortal,
   DropdownMenuRadioGroup,
@@ -11,9 +10,10 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { memo } from "react";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 
 export const LocaleSwitcher = memo(() => {
-  const { locale } = useGlobalTranslations();
+  const { locale } = useSharedTranslations();
 
   const pathName = usePathname();
   const searchParams = useSearchParams();

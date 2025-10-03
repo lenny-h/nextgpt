@@ -1,13 +1,7 @@
 "use client";
 
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
-import {
-  removeFromInfiniteCache,
-  rpcFetcher,
-  updateInfiniteCache,
-} from "@/lib/fetcher";
-import { createClient } from "@/lib/supabase/client";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { Chat } from "@workspace/server/drizzle/schema";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -18,30 +12,38 @@ import {
   useSidebar,
 } from "@workspace/ui/components/sidebar-left";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import {
   RenameForm,
   type RenameFormData,
 } from "@workspace/ui/editors/rename-form";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
-import { type Tables } from "@workspace/ui/types/database";
+import {
+  apiFetcher,
+  removeFromInfiniteCache,
+  updateInfiniteCache,
+} from "@workspace/ui/lib/fetcher";
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { Loader2, MoreHorizontal } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { toast } from "sonner";
 import { ChatItem } from "../custom/chat-item";
 import { ChatSearch } from "../custom/chat-search";
 import { KeyboardShortcut } from "../custom/keyboard-shortcut";
 
 type GroupedChats = {
-  today: Tables<"chats">[];
-  yesterday: Tables<"chats">[];
-  lastWeek: Tables<"chats">[];
-  lastMonth: Tables<"chats">[];
-  older: Tables<"chats">[];
+  today: Chat[];
+  yesterday: Chat[];
+  lastWeek: Chat[];
+  lastMonth: Chat[];
+  older: Chat[];
 };
 
-export function NavHistory() {
+export const NavHistory = memo(() => {
+  const { sharedT } = useSharedTranslations();
+
   const queryClient = useQueryClient();
 
   const { id } = useParams();
@@ -55,7 +57,7 @@ export function NavHistory() {
   const [currentTitle, setCurrentTitle] = useState("");
 
   const {
-    data: chats,
+    data: chatsData,
     isPending: isPendingChats,
     error: chatsError,
     hasNextPage: hasNextPageChats,
@@ -63,68 +65,73 @@ export function NavHistory() {
     inViewRef,
   } = useInfiniteQueryWithRPC({
     queryKey: ["chats"],
-    procedure: "get_user_chats",
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client["chats"].$get({
+            query: {
+              ...(pageParam !== undefined ? { pageNumber: pageParam } : {}),
+            },
+          }),
+        sharedT.apiCodes,
+      ),
   });
 
+  const chats = chatsData?.userChats;
+
   const {
-    data,
+    data: favouriteChatsData,
     isPending: isPendingFavourites,
     error: favouriteUserChatError,
     fetchNextPage: fetchNextPageFavourites,
     hasNextPage: hasNextPageFavourites,
     isFetchingNextPage: isFetchingNextPageFavourites,
-  } = useInfiniteQuery({
+  } = useInfiniteQueryWithRPC({
     queryKey: ["favourites"],
-    queryFn: async ({ pageParam }) => {
-      return rpcFetcher("get_favourite_user_chats", {
-        ...(pageParam !== undefined ? { page_number: pageParam } : {}),
-      });
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.length < 10) return undefined;
-      return lastPage.length;
-    },
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client["chats"]["favourites"].$get({
+            query: {
+              ...(pageParam !== undefined ? { pageNumber: pageParam } : {}),
+            },
+          }),
+        sharedT.apiCodes,
+      ),
   });
 
-  const favouriteChats = data?.pages.flatMap((page) => page) || [];
+  const favouriteChats = favouriteChatsData?.userChats;
 
   const updateChat = async (chatId: string, isFavourite: boolean) => {
-    const supabase = createClient();
-
-    const { error } = await supabase.rpc("set_is_favourite", {
-      p_chat_id: chatId,
-      p_is_favourite: isFavourite,
-    });
-
-    if (error) {
-      throw new Error("Failed to update chat");
-    }
+    await apiFetcher(
+      (client) =>
+        client["chats"]["is-favourite"][":chatId"].$patch({
+          param: { chatId },
+          json: { isFavourite },
+        }),
+      sharedT.apiCodes,
+    );
   };
 
   const renameChat = async (chatId: string, newTitle: string) => {
-    const supabase = createClient();
-
-    const { error } = await supabase.rpc("update_chat_title", {
-      p_chat_id: chatId,
-      p_title: newTitle,
-    });
-
-    if (error) {
-      throw new Error("Failed to rename chat");
-    }
+    await apiFetcher(
+      (client) =>
+        client["chats"]["title"][":chatId"].$patch({
+          param: { chatId },
+          json: { title: newTitle },
+        }),
+      sharedT.apiCodes,
+    );
   };
 
   const deleteChat = async (chatId: string) => {
-    const supabase = createClient();
-
-    const { error } = await supabase.rpc("delete_chat", {
-      p_chat_id: chatId,
-    });
-
-    if (error) {
-      throw new Error("Failed to delete chat");
-    }
+    await apiFetcher(
+      (client) =>
+        client["chats"][":chatId"].$delete({
+          param: { chatId },
+        }),
+      sharedT.apiCodes,
+    );
   };
 
   const handleAdd = async (chatId: string) => {
@@ -155,7 +162,7 @@ export function NavHistory() {
     });
   };
 
-  const handleRename = (chat: Tables<"chats">) => {
+  const handleRename = (chat: Chat) => {
     setCurrentChatId(chat.id);
     setCurrentTitle(chat.title);
     setRenameDialogOpen(true);
@@ -210,14 +217,14 @@ export function NavHistory() {
     return "Chat renamed!";
   };
 
-  const groupChatsByDate = (chats: Tables<"chats">[]): GroupedChats => {
+  const groupChatsByDate = (chats: Chat[]): GroupedChats => {
     const now = new Date();
     const oneWeekAgo = subWeeks(now, 1);
     const oneMonthAgo = subMonths(now, 1);
 
     return chats.reduce(
       (groups, chat) => {
-        const chatDate = new Date(chat.created_at);
+        const chatDate = new Date(chat.createdAt);
 
         if (isToday(chatDate)) {
           groups.today.push(chat);
@@ -347,7 +354,12 @@ export function NavHistory() {
           <SidebarMenu>
             {chats &&
               (() => {
-                const groupedChats = groupChatsByDate(chats);
+                const groupedChats = groupChatsByDate(
+                  chats.map((chat) => ({
+                    ...chat,
+                    createdAt: new Date(chat.createdAt),
+                  })),
+                );
 
                 return (
                   <>
@@ -470,4 +482,4 @@ export function NavHistory() {
       )}
     </>
   );
-}
+});

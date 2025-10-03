@@ -7,11 +7,11 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@workspace/ui/components/sidebar-left";
+import { NavUser } from "@workspace/ui/custom-components/nav-user";
 import { BucketSwitcher } from "./bucket-switcher";
 import { NavHistory } from "./nav-history";
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
-import { NavUser } from "./nav-user";
 
 export const SidebarLeft = () => {
   return (

@@ -35,5 +35,5 @@ export async function GET(c: Context) {
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 
-  return c.json(result);
+  return c.json({ tasks: result });
 }

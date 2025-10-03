@@ -19,5 +19,5 @@ export async function GET(c: Context) {
     .where(and(eq(user.isPublic, true), ilike(profile.username, `%${prefix}%`)))
     .limit(5);
 
-  return c.json(result);
+  return c.json({ profiles: result });
 }

@@ -22,5 +22,5 @@ export async function POST(c: Context) {
     maxOutputTokens: 60,
   });
 
-  return c.json(object.completion);
+  return c.json({ completion: object.completion });
 }

@@ -15,5 +15,5 @@ export async function GET(c: Context) {
     .where(and(eq(chats.userId, user.id), ilike(chats.title, `%${prefix}%`)))
     .limit(5);
 
-  return c.json(result);
+  return c.json({ chats: result });
 }

@@ -4,8 +4,7 @@ import { memo } from "react";
 
 import { useRefs } from "@/contexts/refs-context";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
-import { removeFromInfiniteCache, rpcFetcher } from "@/lib/fetcher";
-import { createClient } from "@/lib/supabase/client";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar-left";
@@ -15,11 +14,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher, removeFromInfiniteCache } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { PanelRightIcon, Star } from "lucide-react";
 import { toast } from "sonner";
 import { CourseSelector } from "./course-selector";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 
 interface Props {
   chatId: string;
@@ -27,39 +27,53 @@ interface Props {
 }
 
 export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
+  const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
+
   const queryClient = useQueryClient();
-  const { globalT } = useGlobalTranslations();
 
   const { panelRef } = useRefs();
   const [isTemporary] = useIsTemporary();
 
   const { data: titleData, isLoading: titleIsLoading } = useQuery({
     queryKey: ["chatTitle", chatId],
-    queryFn: () => rpcFetcher("get_chat_title", { p_chat_id: chatId }),
+    queryFn: () =>
+      apiFetcher(
+        (client) =>
+          client["chats"]["title"][":chatId"].$get({
+            param: { chatId },
+          }),
+        sharedT.apiCodes,
+      ),
     enabled: !isEmpty && !isTemporary,
   });
 
   const { data: favouritesData } = useQuery({
     queryKey: ["liked", chatId],
-    queryFn: () => rpcFetcher("get_is_favourite", { p_chat_id: chatId }),
+    queryFn: () =>
+      apiFetcher(
+        (client) =>
+          client["chats"]["is-favourite"][":chatId"].$get({
+            param: { chatId },
+          }),
+        sharedT.apiCodes,
+      ),
     enabled: !isEmpty && !isTemporary,
   });
 
   const updateChat = async (chatId: string, isFavourite: boolean) => {
-    const supabase = createClient();
-
-    const { error } = await supabase.rpc("set_is_favourite", {
-      p_chat_id: chatId,
-      p_is_favourite: isFavourite,
-    });
-
-    if (error) {
-      throw new Error("Failed to update chat");
-    }
+    await apiFetcher(
+      (client) =>
+        client.chats["is-favourite"][":chatId"].$patch({
+          param: { chatId },
+          json: { isFavourite },
+        }),
+      sharedT.apiCodes,
+    );
 
     queryClient.setQueryData(
       ["liked", chatId],
-      [{ is_favourite: isFavourite }],
+      { isFavourite },
     );
   };
 
@@ -69,9 +83,9 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
       success: () => {
         queryClient.invalidateQueries({ queryKey: ["favourites"] });
 
-        return globalT.components.chatHeader.chatAdded;
+        return webT.chatHeader.chatAdded;
       },
-      error: globalT.components.chatHeader.chatAddedError,
+      error: webT.chatHeader.chatAddedError,
     });
   };
 
@@ -81,9 +95,9 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
       success: () => {
         removeFromInfiniteCache(queryClient, ["favourites"], chatId);
 
-        return globalT.components.chatHeader.chatRemoved;
+        return webT.chatHeader.chatRemoved;
       },
-      error: globalT.components.chatHeader.chatRemovedError,
+      error: webT.chatHeader.chatRemovedError,
     });
   };
 
@@ -97,7 +111,7 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
             <Skeleton className="h-6 w-44" />
           ) : (
             <h1 className="truncate text-lg font-semibold">
-              {titleData?.[0]?.title || "Chat"}
+              {titleData?.title || "Chat"}
             </h1>
           ))}
       </div>
@@ -112,7 +126,7 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
                 size="icon"
                 className="size-8"
                 onClick={() => {
-                  if (favouritesData?.[0]?.is_favourite) {
+                  if (favouritesData?.isFavourite) {
                     handleRemove(chatId);
                   } else {
                     handleAdd(chatId);
@@ -121,16 +135,14 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
               >
                 <Star
                   className={
-                    favouritesData?.[0]?.is_favourite
+                    favouritesData?.isFavourite
                       ? "text-primary fill-current"
                       : "none"
                   }
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {globalT.components.chatHeader.addToFavourites}
-            </TooltipContent>
+            <TooltipContent>{webT.chatHeader.addToFavourites}</TooltipContent>
           </Tooltip>
         )}
 
@@ -147,9 +159,7 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
               <PanelRightIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            {globalT.components.chatHeader.toggleSidebar}
-          </TooltipContent>
+          <TooltipContent>{webT.chatHeader.toggleSidebar}</TooltipContent>
         </Tooltip>
       </div>
     </header>

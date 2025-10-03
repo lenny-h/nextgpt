@@ -1,6 +1,5 @@
 "use client"; // Change to server after changing team switcher
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import {
   Sidebar,
   SidebarContent,
@@ -10,15 +9,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar-left";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { NavUser } from "@workspace/ui/custom-components/nav-user";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
-import { NavUser } from "./nav-user";
 
 export const SidebarLeft = memo(() => {
-  const { locale } = useGlobalTranslations();
+  const { locale } = useSharedTranslations();
   const router = useRouter();
 
   return (

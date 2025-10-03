@@ -1,8 +1,9 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export function RemoveBucketUsers({ bucketId }: Props) {
+  const { sharedT } = useSharedTranslations();
+
   const queryClient = useQueryClient();
 
   const router = useRouter();
@@ -34,25 +37,29 @@ export function RemoveBucketUsers({ bucketId }: Props) {
     setSubmitLoading(true);
 
     const removeBucketUsers = async () => {
-      const supabase = createClient();
-
-      const { data, error } = await supabase.rpc("remove_bucket_users", {
-        p_bucket_id: bucketId,
-        p_user_ids: selectedUsers.map((user) => user.id),
-      });
-
-      if (error || !data) throw error;
+      await apiFetcher(
+        (client) =>
+          client["bucket-users"][":bucketId"].$delete({
+            param: { bucketId },
+            json: {
+              userIds: selectedUsers.map((user) => user.id),
+            },
+          }),
+        sharedT.apiCodes,
+      );
 
       setSubmitLoading(false);
+
+      const removedCount = selectedUsers.length;
 
       // Clear selected users and invalidate the query
       setSelectedUsers([]);
       queryClient.invalidateQueries({ queryKey: ["buckets"] });
       queryClient.invalidateQueries({ queryKey: ["bucket_users", bucketId] });
 
-      decreaseUsersCount(data);
+      decreaseUsersCount(removedCount);
 
-      return data;
+      return removedCount;
     };
 
     toast.promise(removeBucketUsers(), {

@@ -22,7 +22,7 @@ export async function GET(c: Context) {
     throw new HTTPException(404, { message: "NOT_FOUND" });
   }
 
-  return c.json(result[0]);
+  return c.json({ document: result[0] });
 }
 
 export async function DELETE(c: Context) {
@@ -34,5 +34,5 @@ export async function DELETE(c: Context) {
     .delete(documents)
     .where(and(eq(documents.id, documentId), eq(documents.userId, user.id)));
 
-  return c.json("Document deleted");
+  return c.json({ message: "Document deleted" });
 }

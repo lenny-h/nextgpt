@@ -4,19 +4,19 @@ import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
 import { type MyUIMessage } from "@/types/custom-ui-message";
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { generateUUID } from "@workspace/ui/lib/utils";
+import { DefaultChatTransport } from "ai";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChatHeader } from "./chat-header";
 import { Introduction } from "./introduction";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
-import { DefaultChatTransport } from "ai";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 
 export function Chat({
   chatId,
@@ -25,8 +25,8 @@ export function Chat({
   chatId: string;
   initialMessages: Array<MyUIMessage>;
 }) {
+  const { webT } = useWebTranslations();
   const queryClient = useQueryClient();
-  const { globalT } = useGlobalTranslations();
 
   const [input, setInput] = useState("");
 
@@ -75,7 +75,7 @@ export function Chat({
           codeDiffPrev,
           setCodeDiffNext,
         }),
-      onError: () => toast.error(globalT.components.chat.errorOccurred),
+      onError: () => toast.error(webT.chat.errorOccurred),
       transport: new DefaultChatTransport({
         api: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/chat`,
         credentials: "include",

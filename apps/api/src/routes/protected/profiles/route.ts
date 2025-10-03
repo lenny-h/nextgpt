@@ -19,10 +19,10 @@ export async function GET(c: Context) {
     .limit(1);
 
   if (result.length === 0) {
-    return c.json(null);
+    return c.json(undefined);
   }
 
-  return c.json(result[0]);
+  return c.json({ profile: result[0] });
 }
 
 // Update own profile
@@ -42,5 +42,5 @@ export async function PATCH(c: Context) {
     })
     .where(eq(profile.id, user.id));
 
-  return c.json("Profile updated");
+  return c.json({ message: "Profile updated" });
 }

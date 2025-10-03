@@ -16,5 +16,5 @@ export async function POST(c: Context) {
     content,
   });
 
-  return c.json("Feedback inserted");
+  return c.json({ message: "Feedback inserted" });
 }

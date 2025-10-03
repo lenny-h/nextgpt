@@ -73,5 +73,5 @@ export async function GET(c: Context) {
       .offset(offset);
   }
 
-  return c.json(result);
+  return c.json({ invitations: result });
 }

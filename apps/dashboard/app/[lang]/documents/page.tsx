@@ -30,7 +30,9 @@ export default function DocumentsPage() {
   const { panelRef } = useRefs();
   const { sharedT } = useSharedTranslations();
 
-  const [documents, setDocuments] = useState<CustomDocument[]>([]);
+  const [documents, setDocuments] = useState<Omit<CustomDocument, "userId">[]>(
+    [],
+  );
   const [size, setSize] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +42,7 @@ export default function DocumentsPage() {
     setIsLoading(true);
 
     try {
-      const data = await apiFetcher(
+      const documentsData = await apiFetcher(
         (client) =>
           client["documents"]["ilike"].$get({
             query: { prefix },
@@ -48,7 +50,12 @@ export default function DocumentsPage() {
         sharedT.apiCodes,
       );
 
-      setDocuments(data);
+      const documents = documentsData.documents.map((doc) => ({
+        ...doc,
+        createdAt: new Date(doc.createdAt),
+      }));
+
+      setDocuments(documents);
     } catch (error) {
       toast.error("Failed to fetch documents");
     } finally {

@@ -21,5 +21,5 @@ export async function GET(c: Context) {
     .limit(itemsPerPage)
     .offset(pageNumber * itemsPerPage);
 
-  return c.json(userChats);
+  return c.json({ userChats });
 }

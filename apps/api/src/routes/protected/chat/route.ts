@@ -23,7 +23,7 @@ export async function PATCH(c: Context) {
     isFavourite,
   });
 
-  return c.json(updatedChat);
+  return c.json({ updatedChat });
 }
 
 export async function DELETE(c: Context) {
@@ -39,5 +39,5 @@ export async function DELETE(c: Context) {
 
   await deleteChatById({ id });
 
-  return c.json("Chat deleted");
+  return c.json({ message: "Chat deleted" });
 }

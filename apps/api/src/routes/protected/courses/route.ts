@@ -35,5 +35,5 @@ export async function POST(c: Context) {
     encryptedKey,
   });
 
-  return c.json("Course created");
+  return c.json({ message: "Course created" });
 }

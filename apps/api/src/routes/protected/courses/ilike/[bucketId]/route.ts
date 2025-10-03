@@ -31,5 +31,5 @@ export async function GET(c: Context) {
     )
     .limit(5);
 
-  return c.json(result);
+  return c.json({ courses: result });
 }

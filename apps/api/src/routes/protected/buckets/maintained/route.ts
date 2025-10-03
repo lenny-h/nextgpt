@@ -26,5 +26,5 @@ export async function GET(c: Context) {
     .innerJoin(buckets, eq(bucketMaintainers.bucketId, buckets.id))
     .where(eq(bucketMaintainers.userId, user.id));
 
-  return c.json(maintainedBuckets);
+  return c.json({ maintainedBuckets });
 }
