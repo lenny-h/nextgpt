@@ -8,6 +8,7 @@ import {
   rejectInvitation,
   updateInvitationsQueryData,
 } from "./incoming-invitations-columns";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 
 export type outgoingInvitationsTableColumns = {
   type: "user" | "course_maintainer" | "bucket_maintainer";
@@ -28,35 +29,37 @@ export const outgoingInvitationsColumns: ColumnDef<outgoingInvitationsTableColum
       header: "Recipient",
     },
     {
-      accessorKey: "target_username",
+      accessorKey: "targetUsername",
       header: "Recipient Name",
     },
     {
-      accessorKey: "resource_id",
+      accessorKey: "resourceId",
       header: "Resource Id",
     },
     {
-      accessorKey: "resource_name",
+      accessorKey: "resourceName",
       header: "Resource Name",
     },
     {
-      accessorKey: "created_at",
+      accessorKey: "createdAt",
       header: "Created At",
       cell: ({ row }) => {
-        return new Date(row.getValue("created_at")).toLocaleString();
+        return new Date(row.getValue("createdAt")).toLocaleString();
       },
     },
     {
       accessorKey: "delete",
       header: "Delete",
       cell: ({ row }) => {
+        const { sharedT } = useSharedTranslations();
         const queryClient = useQueryClient();
+
         const type = row.getValue("type") as
           | "user"
           | "course_maintainer"
           | "bucket_maintainer";
         const targetUserId = row.getValue("target") as string;
-        const resourceId = row.getValue("resource_id") as string;
+        const resourceId = row.getValue("resourceId") as string;
 
         return (
           <Button
@@ -68,6 +71,7 @@ export const outgoingInvitationsColumns: ColumnDef<outgoingInvitationsTableColum
                   originUserId: row.getValue("origin"),
                   targetUserId,
                   resourceId,
+                  errorDictionary: sharedT.apiCodes,
                 }),
                 {
                   loading: "Deleting...",

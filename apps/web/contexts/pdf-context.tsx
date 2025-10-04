@@ -1,6 +1,7 @@
 "use client";
 
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import {
   createContext,
@@ -12,7 +13,6 @@ import {
 } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { useEditor } from "./editor-context";
-import { useGlobalTranslations } from "./web-translations";
 
 interface PDFContextType {
   currentPdfUrl: string | null;
@@ -34,7 +34,7 @@ const PDFContext = createContext<PDFContextType | undefined>(undefined);
 const urlCache = new Map<string, { url: string; expiresAt: number }>();
 
 export function PDFProvider({ children }: { children: ReactNode }) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
@@ -58,19 +58,13 @@ export function PDFProvider({ children }: { children: ReactNode }) {
       }
 
       // Otherwise, fetch a new signed URL
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL
-        }/capi/protected/get-signed-url/${courseId}/${encodeURIComponent(filename)}`,
-        {
-          method: "GET",
-          credentials: "include",
-        },
+      const { signedUrl } = await apiFetcher(
+        (client) =>
+          client["get-signed-url"][":courseId"][":name"].$get({
+            param: { courseId, name: encodeURIComponent(filename) },
+          }),
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, globalT.globalErrors);
-
-      const { signedUrl } = await response.json();
 
       // Cache the URL with its expiration time (3 hours from now)
       urlCache.set(cacheKey, {

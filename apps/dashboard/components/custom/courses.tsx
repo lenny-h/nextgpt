@@ -1,10 +1,12 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
-import { type Locale } from "@/i18n.config";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 import { coursesColumns } from "../tables/courses-columns";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
@@ -14,10 +16,11 @@ interface Props {
 }
 
 export const Courses = ({ locale }: Props) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const {
-    data: courses,
+    data: coursesData,
     isPending,
     error: coursesError,
     fetchNextPage,
@@ -25,15 +28,22 @@ export const Courses = ({ locale }: Props) => {
     isFetchingNextPage,
   } = useInfiniteQueryWithRPC({
     queryKey: ["courses"],
-    procedure: "get_maintained_courses",
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client["courses"]["maintained"].$get({
+            query: { pageNumber: (pageParam ?? 0).toString() },
+          }),
+        sharedT.apiCodes,
+      ),
   });
+
+  const courses = coursesData?.maintainedCourses;
 
   if (isPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-2xl font-semibold">
-          {globalT.components.courses.loading}
-        </h1>
+        <h1 className="text-2xl font-semibold">{dashboardT.courses.loading}</h1>
         <Skeleton className="mx-auto h-96 w-full max-w-4xl rounded-md" />
       </div>
     );
@@ -43,7 +53,7 @@ export const Courses = ({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-center text-2xl font-semibold">
-          {globalT.components.courses.errorLoading}
+          {dashboardT.courses.errorLoading}
         </h1>
       </div>
     );
@@ -53,11 +63,11 @@ export const Courses = ({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-center text-2xl font-semibold">
-          {globalT.components.courses.noCourses}
+          {dashboardT.courses.noCourses}
         </h1>
         <Button asChild>
           <Link href={`/${locale}/courses/new`}>
-            {globalT.components.courses.createCourse}
+            {dashboardT.courses.createCourse}
           </Link>
         </Button>
       </div>
@@ -66,9 +76,7 @@ export const Courses = ({ locale }: Props) => {
 
   return (
     <div className="flex flex-col items-center space-y-6 p-2">
-      <h1 className="text-2xl font-semibold">
-        {globalT.components.courses.title}
-      </h1>
+      <h1 className="text-2xl font-semibold">{dashboardT.courses.title}</h1>
       <InfiniteDataTable
         columns={coursesColumns}
         data={courses}
@@ -79,12 +87,12 @@ export const Courses = ({ locale }: Props) => {
           id: false,
           name: true,
           description: true,
-          bucket_id: false,
-          bucket_name: true,
-          created_at: true,
+          bucketId: false,
+          bucketName: true,
+          createdAt: true,
           private: true,
         }}
-        filterLabel={globalT.components.courses.filterLabel}
+        filterLabel={dashboardT.courses.filterLabel}
         filterColumn="name"
       />
     </div>

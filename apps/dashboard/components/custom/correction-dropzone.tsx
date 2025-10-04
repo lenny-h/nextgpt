@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { useCorrectionDropzone } from "@/hooks/use-correction-dropzone";
 import { type Upload } from "@/types/upload";
 import { cn } from "@workspace/ui/lib/utils";
@@ -13,7 +13,7 @@ interface Props {
 
 export const CorrectionDropzone = memo(
   ({ onUploadChange, maxFiles }: Props) => {
-    const { globalT } = useGlobalTranslations();
+    const { dashboardT } = useDashboardTranslations();
 
     const { getRootProps, getInputProps, isDragActive } = useCorrectionDropzone(
       { onUploadChange, maxFiles },
@@ -30,15 +30,15 @@ export const CorrectionDropzone = memo(
         <input {...getInputProps()} />
         {isDragActive ? (
           <p className="text-primary">
-            {globalT.components.correctionDropzone.dropFiles}
+            {dashboardT.correctionDropzone.dropFiles}
           </p>
         ) : (
           <div className="flex flex-col gap-5 px-2">
             <p className="text-primary text-center">
-              {globalT.components.correctionDropzone.dragDrop}
+              {dashboardT.correctionDropzone.dragDrop}
             </p>
             <p className="text-muted-foreground text-center">
-              {globalT.components.correctionDropzone.maxFiles.replace(
+              {dashboardT.correctionDropzone.maxFiles.replace(
                 "{maxFiles}",
                 (maxFiles ?? 5).toString(),
               )}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { deleteResource } from "@/lib/delete-resource";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@workspace/ui/components/button";
@@ -10,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -18,10 +18,10 @@ import { DeleteDialogWithConfirmation } from "../custom/delete-dialog-with-confi
 export type CourseTableColumns = {
   id: string;
   name: string;
-  description: string;
-  bucket_id: string;
-  bucket_name: string;
-  created_at: string;
+  description: string | null;
+  bucketId: string;
+  bucketName: string;
+  createdAt: string;
   private: boolean;
 };
 
@@ -44,23 +44,23 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
     ),
   },
   {
-    accessorKey: "bucket_id",
+    accessorKey: "bucketId",
     header: "Bucket",
   },
   {
-    accessorKey: "bucket_name",
+    accessorKey: "bucketName",
     header: "Bucket Name",
     cell: ({ row }) => (
       <p className="max-w-32 truncate md:max-w-80">
-        {row.getValue("bucket_name")}
+        {row.getValue("bucketName")}
       </p>
     ),
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      return new Date(row.getValue("created_at")).toLocaleString();
+      return new Date(row.getValue("createdAt")).toLocaleString();
     },
   },
   {
@@ -71,7 +71,7 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const { locale } = useGlobalTranslations();
+      const { locale } = useSharedTranslations();
 
       const router = useRouter();
 
@@ -81,7 +81,7 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
         const searchParams = new URLSearchParams();
         searchParams.set("courseId", row.getValue("id"));
         searchParams.set("courseName", row.getValue("name"));
-        searchParams.set("bucketId", row.getValue("bucket_id"));
+        searchParams.set("bucketId", row.getValue("bucketId"));
         router.push(
           `/${locale}/courses/maintainers?${searchParams.toString()}`,
         );

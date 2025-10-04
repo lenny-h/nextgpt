@@ -1,5 +1,4 @@
 import { useEditor } from "@/contexts/editor-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
@@ -11,7 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn, resizeEditor } from "@workspace/ui/lib/utils";
 import type { ChatRequestOptions } from "ai";
 import { Copy, Pencil, RefreshCcw, ThumbsDown, ThumbsUp } from "lucide-react";
@@ -37,7 +37,7 @@ export const MessageActions = memo(
     regenerate,
     isPractice = false,
   }: MessageActionsProps) => {
-    const { globalT } = useGlobalTranslations();
+    const { sharedT } = useSharedTranslations();
 
     const { selectedChatModel, reasoningEnabled } = useChatModel();
     const [isTemporary] = useIsTemporary();
@@ -79,15 +79,15 @@ export const MessageActions = memo(
                   variant="ghost"
                   onClick={async () => {
                     try {
-                      const response = await fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/messages/delete-last-message/${chatId}`,
-                        {
-                          method: "DELETE",
-                          credentials: "include",
-                        },
+                      await apiFetcher(
+                        (client) =>
+                          client.messages["delete-last-message"][
+                            ":chatId"
+                          ].$delete({
+                            param: { chatId },
+                          }),
+                        sharedT.apiCodes,
                       );
-
-                      checkResponse(response, globalT.globalErrors);
 
                       await regenerate({
                         body: {

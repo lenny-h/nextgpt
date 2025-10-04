@@ -91,14 +91,21 @@ export const bucketTypeEnum = pgEnum("bucket_type", [
   "large",
   "org",
 ]);
+export type BucketType = "small" | "medium" | "large" | "org";
+
 export const roleEnum = pgEnum("role", ["user", "assistant", "system"]);
+export type Role = "user" | "assistant" | "system";
+
 export const documentKindEnum = pgEnum("document_kind", ["code", "text"]);
+export type DocumentKind = "code" | "text";
+
 export const taskStatusEnum = pgEnum("task_status", [
   "scheduled",
   "processing",
   "failed",
   "finished",
 ]);
+export type TaskStatus = "scheduled" | "processing" | "failed" | "finished";
 
 // Buckets table
 export const buckets = pgTable(

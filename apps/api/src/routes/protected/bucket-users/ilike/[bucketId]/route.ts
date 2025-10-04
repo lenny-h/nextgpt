@@ -7,39 +7,53 @@ import {
   user as profile,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, ilike } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 
-export async function GET(c: Context) {
-  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
+const paramSchema = z.object({ bucketId: uuidSchema }).strict();
+const querySchema = z.object({ prefix: prefixSchema }).strict();
 
-  const prefix = prefixSchema.parse(c.req.query("prefix"));
+const app = new Hono().get(
+  "/",
+  validator("param", (value) => {
+    return paramSchema.parse(value);
+  }),
+  validator("query", (value) => {
+    return querySchema.parse(value);
+  }),
+  async (c) => {
+    const { bucketId } = c.req.valid("param");
+    const { prefix } = c.req.valid("query");
+    const user = c.get("user");
 
-  const user = c.get("user");
+    const hasPermissions = await isBucketMaintainer({
+      bucketId,
+      userId: user.id,
+    });
 
-  const hasPermissions = await isBucketMaintainer({
-    bucketId,
-    userId: user.id,
-  });
+    if (!hasPermissions) {
+      throw new HTTPException(403, { message: "FORBIDDEN" });
+    }
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
-
-  const users = await db
-    .select({
-      userId: bucketUsers.userId,
-      username: profile.username,
-    })
-    .from(bucketUsers)
-    .innerJoin(profile, eq(bucketUsers.userId, profile.id))
-    .where(
-      and(
-        eq(bucketUsers.bucketId, bucketId),
-        ilike(profile.username, `%${prefix}%`)
+    const users = await db
+      .select({
+        userId: bucketUsers.userId,
+        username: profile.username,
+      })
+      .from(bucketUsers)
+      .innerJoin(profile, eq(bucketUsers.userId, profile.id))
+      .where(
+        and(
+          eq(bucketUsers.bucketId, bucketId),
+          ilike(profile.username, `%${prefix}%`)
+        )
       )
-    )
-    .limit(5);
+      .limit(5);
 
-  return c.json({ users });
-}
+    return c.json({ users });
+  }
+);
+
+export default app;

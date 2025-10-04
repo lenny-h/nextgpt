@@ -1,6 +1,5 @@
 import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { Button } from "@workspace/ui/components/button";
@@ -18,11 +17,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { textEditorSchema } from "@workspace/ui/editors/prosemirror-math/config";
 import {
   mathLatexSerializer,
   mathMarkdownSerializer,
 } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Check, Copy, Download, X } from "lucide-react";
 import { DOMSerializer } from "prosemirror-model";
@@ -35,7 +36,7 @@ import { EditorDropdownMenu } from "./editor-dropdown-menu";
 import { ModeSwitcher } from "./mode-switcher";
 
 export const EditorHeader = memo(() => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode] = useEditor();
@@ -72,22 +73,14 @@ export const EditorHeader = memo(() => {
       setIsSaving(true);
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/documents/${savedId}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ content }),
-          },
+        await apiFetcher(
+          (client) =>
+            client.documents.content[":documentId"].$patch({
+              param: { documentId: savedId },
+              json: { content },
+            }),
+          sharedT.apiCodes,
         );
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to save document");
-        }
       } catch (error) {
         toast.error("Failed to save document");
       } finally {
@@ -161,7 +154,7 @@ export const EditorHeader = memo(() => {
           },
         );
 
-        checkResponse(response, globalT.globalErrors);
+        checkResponse(response, sharedT.apiCodes);
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

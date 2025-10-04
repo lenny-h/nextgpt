@@ -1,22 +1,33 @@
 import { saveDocument } from "@/src/lib/db/queries/documents.js";
 import { uuidSchema } from "@/src/schemas/uuid-schema.js";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
+import * as z from "zod";
 import { documentsContentSchema } from "./schema.js";
 
-export async function PATCH(c: Context) {
-  const documentId = uuidSchema.parse(c.req.param("documentId"));
+const paramSchema = z.object({ documentId: uuidSchema }).strict();
 
-  const payload = await c.req.json();
+const app = new Hono().patch(
+  "/",
+  validator("param", (value) => {
+    return paramSchema.parse(value);
+  }),
+  validator("json", async (value, c) => {
+    return documentsContentSchema.parse(value);
+  }),
+  async (c) => {
+    const { documentId } = c.req.valid("param");
+    const { content } = c.req.valid("json");
+    const user = c.get("user");
 
-  const { content } = documentsContentSchema.parse(payload);
+    await saveDocument({
+      userId: user.id,
+      id: documentId,
+      content,
+    });
 
-  const user = c.get("user");
+    return c.json({ message: "Document saved" });
+  }
+);
 
-  await saveDocument({
-    userId: user.id,
-    id: documentId,
-    content,
-  });
-
-  return c.json({ message: "Document saved" });
-}
+export default app;

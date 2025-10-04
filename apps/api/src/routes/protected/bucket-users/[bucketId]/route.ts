@@ -12,98 +12,134 @@ import {
   user as profile,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 import { bucketUsersSchema } from "./schema.js";
 
-// Get bucket users
-export async function GET(c: Context) {
-  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
-  const pageNumber = pageNumberSchema.parse(c.req.query("pageNumber"));
-  const itemsPerPage = itemsPerPageSchema.parse(c.req.query("itemsPerPage"));
+const paramSchema = z.object({ bucketId: uuidSchema }).strict();
+const querySchema = z
+  .object({
+    pageNumber: pageNumberSchema,
+    itemsPerPage: itemsPerPageSchema,
+  })
+  .strict();
+const deleteQuerySchema = z
+  .object({
+    userIds: createUuidArrayParamSchema(100),
+  })
+  .strict();
 
-  const user = c.get("user");
+const app = new Hono()
+  .get(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    validator("query", (value) => {
+      return querySchema.parse({
+        pageNumber: Number(value.pageNumber),
+        itemsPerPage: Number(value.itemsPerPage),
+      });
+    }),
+    async (c) => {
+      const { bucketId } = c.req.valid("param");
+      const { pageNumber, itemsPerPage } = c.req.valid("query");
+      const user = c.get("user");
 
-  const hasPermissions = await isBucketMaintainer({
-    bucketId,
-    userId: user.id,
-  });
+      const hasPermissions = await isBucketMaintainer({
+        bucketId,
+        userId: user.id,
+      });
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
+      if (!hasPermissions) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  const users = await db
-    .select({
-      id: bucketUsers.userId,
-      username: profile.username,
-    })
-    .from(bucketUsers)
-    .innerJoin(profile, eq(bucketUsers.userId, profile.id))
-    .where(eq(bucketUsers.bucketId, bucketId))
-    .limit(itemsPerPage)
-    .offset(pageNumber * itemsPerPage);
+      const users = await db
+        .select({
+          id: bucketUsers.userId,
+          username: profile.username,
+        })
+        .from(bucketUsers)
+        .innerJoin(profile, eq(bucketUsers.userId, profile.id))
+        .where(eq(bucketUsers.bucketId, bucketId))
+        .limit(itemsPerPage)
+        .offset(pageNumber * itemsPerPage);
 
-  return c.json({ users });
-}
+      return c.json({ users });
+    }
+  )
+  .post(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    validator("json", async (value, c) => {
+      return bucketUsersSchema.parse(value);
+    }),
+    async (c) => {
+      const { bucketId } = c.req.valid("param");
+      const { userIds } = c.req.valid("json");
+      const user = c.get("user");
 
-// Invite bucket users
-export async function POST(c: Context) {
-  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
+      const { owner, name: bucketName } = await getBucketOwner({
+        bucketId,
+      });
 
-  const user = c.get("user");
+      if (owner !== user.id) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  const { owner, name: bucketName } = await getBucketOwner({
-    bucketId,
-  });
+      const newUsers = await filterNonExistingBucketUsers({
+        bucketId,
+        userIds,
+      });
 
-  if (owner !== user.id) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
+      await addUserInvitationsBatch({
+        originUserId: user.id,
+        invitations: newUsers,
+        bucketId,
+        bucketName,
+      });
 
-  const payload = await c.req.json();
+      return c.json({ message: "Users invited" });
+    }
+  )
+  .delete(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    validator("json", (value) => {
+      return deleteQuerySchema.parse(value);
+    }),
+    async (c) => {
+      const { bucketId } = c.req.valid("param");
+      const { userIds } = c.req.valid("json");
+      const user = c.get("user");
 
-  const { userIds } = bucketUsersSchema.parse(payload);
+      const hasPermissions = await isBucketMaintainer({
+        bucketId,
+        userId: user.id,
+      });
 
-  const newUsers = await filterNonExistingBucketUsers({
-    bucketId,
-    userIds,
-  });
+      if (!hasPermissions) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  await addUserInvitationsBatch({
-    originUserId: user.id,
-    invitations: newUsers,
-    bucketId,
-    bucketName,
-  });
+      await db
+        .delete(bucketUsers)
+        .where(
+          and(
+            eq(bucketUsers.bucketId, bucketId),
+            inArray(bucketUsers.userId, userIds)
+          )
+        );
 
-  return c.json({ message: "Users invited" });
-}
+      return c.json({ message: "Users removed" });
+    }
+  );
 
-// Remove bucket users
-export async function DELETE(c: Context) {
-  const bucketId = uuidSchema.parse(c.req.param("bucketId"));
-  const userIds = createUuidArrayParamSchema(100).parse(c.req.query("userIds")); // max 100 userIds
-
-  const user = c.get("user");
-
-  const hasPermissions = await isBucketMaintainer({
-    bucketId,
-    userId: user.id,
-  });
-
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
-
-  await db
-    .delete(bucketUsers)
-    .where(
-      and(
-        eq(bucketUsers.bucketId, bucketId),
-        inArray(bucketUsers.userId, userIds)
-      )
-    );
-
-  return c.json({ message: "Users removed" });
-}
+export default app;

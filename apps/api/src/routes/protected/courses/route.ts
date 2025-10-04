@@ -1,39 +1,45 @@
 import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
 import { createCourse } from "@/src/lib/db/queries/courses.js";
 import { encryptApiKey } from "@/src/utils/encryption.js";
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
 import { createCourseSchema } from "./schema.js";
 
-export async function POST(c: Context) {
-  const payload = await c.req.json();
+const app = new Hono().post(
+  "/",
+  validator("json", async (value) => {
+    return createCourseSchema.parse(value);
+  }),
+  async (c) => {
+    const { values } = c.req.valid("json");
+    const user = c.get("user");
 
-  const { values } = createCourseSchema.parse(payload);
+    const bucketId = values.bucketId;
+    const hasPermissions = await isBucketMaintainer({
+      userId: user.id,
+      bucketId,
+    });
 
-  const user = c.get("user");
+    if (!hasPermissions) {
+      throw new HTTPException(403, { message: "FORBIDDEN" });
+    }
 
-  const bucketId = values.bucketId;
-  const hasPermissions = await isBucketMaintainer({
-    userId: user.id,
-    bucketId,
-  });
+    // Encrypt password if provided
+    const encryptedKey = values.password
+      ? encryptApiKey(values.password)
+      : undefined;
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
+    await createCourse({
+      name: values.courseName,
+      description: values.courseDescription,
+      bucketId: bucketId,
+      userId: user.id,
+      encryptedKey,
+    });
+
+    return c.json({ message: "Course created" });
   }
+);
 
-  // Encrypt password if provided
-  const encryptedKey = values.password
-    ? encryptApiKey(values.password)
-    : undefined;
-
-  await createCourse({
-    name: values.courseName,
-    description: values.courseDescription,
-    bucketId: bucketId,
-    userId: user.id,
-    encryptedKey,
-  });
-
-  return c.json({ message: "Course created" });
-}
+export default app;

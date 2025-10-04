@@ -6,38 +6,64 @@ import {
 } from "@/src/lib/db/queries/chats.js";
 import { booleanSchema } from "@/src/schemas/boolean-schema.js";
 import { uuidSchema } from "@/src/schemas/uuid-schema.js";
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 
-export async function POST(c: Context) {
-  const handler = await ChatHandlerFactory.createStandardChatHandler(c);
-  return await handler.handleRequest();
-}
+const patchQuerySchema = z
+  .object({
+    id: uuidSchema,
+    fav: booleanSchema,
+  })
+  .strict();
 
-export async function PATCH(c: Context) {
-  const id = uuidSchema.parse(c.req.query("id"));
-  const isFavourite = booleanSchema.parse(c.req.query("fav"));
+const deleteQuerySchema = z
+  .object({
+    id: uuidSchema,
+  })
+  .strict();
 
-  const updatedChat = await updateChatFavouriteStatus({
-    id,
-    isFavourite,
-  });
+const app = new Hono()
+  .post("/", async (c) => {
+    const handler = await ChatHandlerFactory.createStandardChatHandler(c);
+    return await handler.handleRequest();
+  })
+  .patch(
+    "/",
+    validator("query", (value) => {
+      return patchQuerySchema.parse(value);
+    }),
+    async (c) => {
+      const { id, fav: isFavourite } = c.req.valid("query");
 
-  return c.json({ updatedChat });
-}
+      const updatedChat = await updateChatFavouriteStatus({
+        id,
+        isFavourite,
+      });
 
-export async function DELETE(c: Context) {
-  const id = uuidSchema.parse(c.req.query("id"));
+      return c.json({ updatedChat });
+    }
+  )
+  .delete(
+    "/",
+    validator("query", (value) => {
+      return deleteQuerySchema.parse(value);
+    }),
+    async (c) => {
+      const { id } = c.req.valid("query");
+      const user = c.get("user");
 
-  const user = c.get("user");
+      const chat = await getChatById({ id });
 
-  const chat = await getChatById({ id });
+      if (chat.userId !== user.id) {
+        throw new HTTPException(401, { message: "UNAUTHORIZED" });
+      }
 
-  if (chat.userId !== user.id) {
-    throw new HTTPException(401, { message: "UNAUTHORIZED" });
-  }
+      await deleteChatById({ id });
 
-  await deleteChatById({ id });
+      return c.json({ message: "Chat deleted" });
+    }
+  );
 
-  return c.json({ message: "Chat deleted" });
-}
+export default app;

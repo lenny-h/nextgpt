@@ -3,59 +3,66 @@ import { getPrompt } from "@/src/lib/db/queries/prompts.js";
 import { CORRECTION_PROMPT } from "@/src/lib/prompts.js";
 import { vertex } from "@ai-sdk/google-vertex";
 import { generateText } from "ai";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
 import { correctionSchema } from "./schema.js";
 
-export async function POST(c: Context) {
-  const payload = await c.req.json();
+const app = new Hono().post(
+  "/",
+  validator("json", async (value) => {
+    return correctionSchema.parse(value);
+  }),
+  async (c) => {
+    const {
+      solutionFilename,
+      handInFilenames,
+      promptId,
+    }: {
+      solutionFilename: string;
+      handInFilenames: string[];
+      promptId?: string;
+    } = c.req.valid("json");
 
-  const {
-    solutionFilename,
-    handInFilenames,
-    promptId,
-  }: {
-    solutionFilename: string;
-    handInFilenames: string[];
-    promptId?: string;
-  } = correctionSchema.parse(payload);
+    const user = c.get("user");
 
-  const user = c.get("user");
+    const customPrompt = promptId ? await getPrompt(promptId) : undefined;
 
-  const customPrompt = promptId ? await getPrompt(promptId) : undefined;
+    const failedFiles: string[] = [];
 
-  const failedFiles: string[] = [];
+    for (const handInFilename of handInFilenames) {
+      try {
+        const evaluation = await evaluateSubmission(
+          solutionFilename,
+          handInFilename,
+          user.id,
+          customPrompt
+        );
 
-  for (const handInFilename of handInFilenames) {
-    try {
-      const evaluation = await evaluateSubmission(
-        solutionFilename,
-        handInFilename,
-        user.id,
-        customPrompt
-      );
-
-      await insertDocument({
-        userId: user.id,
-        title: handInFilename.split("/").pop()?.split(".")[0] + "_eval",
-        content: evaluation,
-        kind: "text",
-      });
-    } catch (error) {
-      console.error(`Error processing ${handInFilename}:`, error);
-      failedFiles.push(handInFilename);
+        await insertDocument({
+          userId: user.id,
+          title: handInFilename.split("/").pop()?.split(".")[0] + "_eval",
+          content: evaluation,
+          kind: "text",
+        });
+      } catch (error) {
+        console.error(`Error processing ${handInFilename}:`, error);
+        failedFiles.push(handInFilename);
+      }
     }
-  }
 
-  if (failedFiles.length > 0) {
+    if (failedFiles.length > 0) {
+      return c.json({
+        failedFiles,
+      });
+    }
+
     return c.json({
-      failedFiles,
+      failedFiles: [],
     });
   }
+);
 
-  return c.json({
-    failedFiles: [],
-  });
-}
+export default app;
 
 async function evaluateSubmission(
   solutionFilename: string,

@@ -1,8 +1,9 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
@@ -14,7 +15,8 @@ interface Props {
 }
 
 export const AddMaintainers = memo(({ bucketId, courseId }: Props) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -23,31 +25,37 @@ export const AddMaintainers = memo(({ bucketId, courseId }: Props) => {
     setSubmitLoading(true);
 
     const addMaintainers = async () => {
-      const response = await fetch(
-        courseId
-          ? `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/course-maintainers/${courseId}`
-          : `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/bucket-maintainers/${bucketId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            userIds: selectedUsers.map((user) => user.id),
-          }),
-        },
-      );
+      if (courseId) {
+        await apiFetcher(
+          (client) =>
+            client["course-maintainers"][":courseId"].$post({
+              param: { courseId },
+              json: {
+                userIds: selectedUsers.map((user) => user.id),
+              },
+            }),
+          sharedT.apiCodes,
+        );
+      } else {
+        await apiFetcher(
+          (client) =>
+            client["bucket-maintainers"][":bucketId"].$post({
+              param: { bucketId },
+              json: {
+                userIds: selectedUsers.map((user) => user.id),
+              },
+            }),
+          sharedT.apiCodes,
+        );
+      }
 
       setSubmitLoading(false);
-
-      checkResponse(response, globalT.globalErrors);
     };
 
     toast.promise(addMaintainers(), {
-      loading: globalT.components.addMaintainers.adding,
+      loading: dashboardT.addMaintainers.adding,
       success: () => {
-        return globalT.components.addMaintainers.success;
+        return dashboardT.addMaintainers.success;
       },
       error: (err) => {
         return `Error adding maintainers: ${err.message}`;
@@ -59,6 +67,15 @@ export const AddMaintainers = memo(({ bucketId, courseId }: Props) => {
     <Autocomplete
       selectedUsers={selectedUsers}
       setSelectedUsers={setSelectedUsers}
+      userFetcher={async (prefix: string) =>
+        apiFetcher(
+          (client) =>
+            client.profiles.ilike.$get({
+              query: { prefix },
+            }),
+          sharedT.apiCodes,
+        )
+      }
     >
       <Button disabled={selectedUsers.length === 0} onClick={submitList}>
         Submit{submitLoading && <Loader2 className="animate-spin" />}

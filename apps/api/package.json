@@ -18,6 +18,7 @@
     "@google-cloud/storage": "^7.17.0",
     "@google-cloud/tasks": "^6.2.0",
     "@hono/node-server": "^1.19.1",
+    "@workspace/server": "workspace:*",
     "ai": "^5.0.34",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.9.6",

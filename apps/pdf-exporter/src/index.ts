@@ -1,13 +1,15 @@
+import "@workspace/server/types/hono.js";
+
 import { serve } from "@hono/node-server";
+import { authMiddleware } from "@workspace/server/auth-middleware.js";
+import { errorHandler } from "@workspace/server/error-handler.js";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
+import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
-import { errorHandler } from "./utils/error-handler.js";
-import { authMiddleware } from "./middleware/auth.js";
 import { protectedApiRouter } from "./routes/protected/index.js";
 import { unprotectedApiRouter } from "./routes/unprotected/index.js";
-import { cors } from "hono/cors";
 
 // Create Hono application
 const app = new Hono();
@@ -19,14 +21,16 @@ app.use("*", secureHeaders());
 app.use(
   "*",
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
-      "http://localhost:3000",
-    ],
+    origin: process.env.ALLOWED_ORIGINS!.split(","),
     credentials: true,
   })
 );
 
+// Global error handler
 app.use("*", errorHandler);
+
+// Authentication middleware for protected routes
+app.use("/pdf-exporter/protected/*", authMiddleware);
 
 // Default root route
 app.get("/", (c) => {
@@ -37,13 +41,10 @@ app.get("/", (c) => {
   });
 });
 
-// Unprotected API routes
+// Unprotected routes
 app.route("/pdf-exporter/public", unprotectedApiRouter);
 
-// Authentication middleware
-app.use("/pdf-exporter/protected/*", authMiddleware);
-
-// Protected API routes
+// Protected routes
 app.route("/pdf-exporter/protected", protectedApiRouter);
 
 const PORT = process.env.PORT || 8080;

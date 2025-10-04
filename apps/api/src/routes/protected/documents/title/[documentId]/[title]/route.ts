@@ -2,19 +2,34 @@ import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { documents } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
+import * as z from "zod";
 import { documentsTitleSchema } from "./schema.js";
 
-export async function PATCH(c: Context) {
-  const documentId = uuidSchema.parse(c.req.param("documentId"));
-  const title = documentsTitleSchema.parse(c.req.param("title"));
+const paramSchema = z
+  .object({
+    documentId: uuidSchema,
+    title: documentsTitleSchema,
+  })
+  .strict();
 
-  const user = c.get("user");
+const app = new Hono().patch(
+  "/",
+  validator("param", (value) => {
+    return paramSchema.parse(value);
+  }),
+  async (c) => {
+    const { documentId, title } = c.req.valid("param");
+    const user = c.get("user");
 
-  await db
-    .update(documents)
-    .set({ title })
-    .where(and(eq(documents.id, documentId), eq(documents.userId, user.id)));
+    await db
+      .update(documents)
+      .set({ title })
+      .where(and(eq(documents.id, documentId), eq(documents.userId, user.id)));
 
-  return c.json({ message: "Document title updated" });
-}
+    return c.json({ message: "Document title updated" });
+  }
+);
+
+export default app;

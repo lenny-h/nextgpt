@@ -2,6 +2,7 @@
 
 import { deleteResource } from "@/lib/delete-resource";
 import type { ColumnDef } from "@tanstack/react-table";
+import { TaskStatus } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -11,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import { cn } from "@workspace/ui/lib/utils";
-import { type Database } from "@workspace/ui/types/database";
 import { ArrowUpDown, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DeleteDialog } from "../custom/delete-dialog";
@@ -19,9 +19,9 @@ import { DeleteDialog } from "../custom/delete-dialog";
 export type TaskTableColumns = {
   id: string;
   name: string;
-  status: Database["public"]["Enums"]["task_status"];
-  created_at: string;
-  pub_date: string;
+  status: TaskStatus;
+  createdAt: string;
+  pubDate: string;
 };
 
 export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
@@ -59,7 +59,7 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
                 ? "bg-blue-500"
                 : status === "failed"
                   ? "bg-red-500"
-                  : "bg-green-500"
+                  : "bg-green-500",
           )}
         >
           {status}
@@ -68,17 +68,17 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
     },
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      return new Date(row.getValue("created_at")).toLocaleString();
+      return new Date(row.getValue("createdAt")).toLocaleString();
     },
   },
   {
-    accessorKey: "pub_date",
+    accessorKey: "pubDate",
     header: "Scheduled For",
     cell: ({ row }) => {
-      const pubDate = row.getValue("pub_date");
+      const pubDate = row.getValue("pubDate");
       return pubDate ? new Date(pubDate as string).toLocaleString() : "ASAP";
     },
   },
@@ -89,7 +89,7 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
       const [deleteDialog, setDeleteDialog] = useState(false);
 
       if (row.getValue("status") !== "scheduled") {
-        return <div className="h-8 flex items-center">No actions</div>;
+        return <div className="flex h-8 items-center">No actions</div>;
       }
 
       return (

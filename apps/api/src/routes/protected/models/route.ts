@@ -11,76 +11,96 @@ import {
   buckets,
 } from "@workspace/server/drizzle/schema.js";
 import { eq, desc } from "drizzle-orm"; // Remove inArray, add eq
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 import { addModelFormSchema } from "./schema.js";
 import { pageNumberSchema } from "@/src/schemas/page-number-schema.js";
 import { itemsPerPageSchema } from "@/src/schemas/items-per-page-schema.js";
 
-// Get models of all buckets the user maintains
-export async function GET(c: Context) {
-  const pageNumber = pageNumberSchema.parse(c.req.query("pageNumber"));
-  const itemsPerPage = itemsPerPageSchema.parse(c.req.query("itemsPerPage"));
+const querySchema = z
+  .object({
+    pageNumber: pageNumberSchema,
+    itemsPerPage: itemsPerPageSchema,
+  })
+  .strict();
 
-  const user = c.get("user");
+const app = new Hono()
+  .get(
+    "/",
+    validator("query", (value) => {
+      return querySchema.parse({
+        pageNumber: Number(value.pageNumber),
+        itemsPerPage: Number(value.itemsPerPage),
+      });
+    }),
+    async (c) => {
+      const { pageNumber, itemsPerPage } = c.req.valid("query");
 
-  const result = await db
-    .select({
-      id: models.id,
-      bucketId: models.bucketId,
-      bucketName: buckets.name,
-      name: models.name,
-      description: models.description,
-      createdAt: models.createdAt,
-    })
-    .from(models)
-    .innerJoin(buckets, eq(models.bucketId, buckets.id))
-    .innerJoin(
-      bucketMaintainers,
-      eq(models.bucketId, bucketMaintainers.bucketId)
-    )
-    .where(eq(bucketMaintainers.userId, user.id))
-    .orderBy(desc(models.createdAt))
-    .limit(itemsPerPage)
-    .offset(pageNumber * itemsPerPage);
+      const user = c.get("user");
 
-  return c.json({ models: result });
-}
+      const result = await db
+        .select({
+          id: models.id,
+          bucketId: models.bucketId,
+          bucketName: buckets.name,
+          name: models.name,
+          description: models.description,
+          createdAt: models.createdAt,
+        })
+        .from(models)
+        .innerJoin(buckets, eq(models.bucketId, buckets.id))
+        .innerJoin(
+          bucketMaintainers,
+          eq(models.bucketId, bucketMaintainers.bucketId)
+        )
+        .where(eq(bucketMaintainers.userId, user.id))
+        .orderBy(desc(models.createdAt))
+        .limit(itemsPerPage)
+        .offset(pageNumber * itemsPerPage);
 
-// Add a new model to a bucket the user maintains
-export async function POST(c: Context) {
-  const user = c.get("user");
+      return c.json({ models: result });
+    }
+  )
+  .post(
+    "/",
+    validator("json", async (value, c) => {
+      return addModelFormSchema.parse(value);
+    }),
+    async (c) => {
+      const {
+        bucketId,
+        modelName,
+        resourceName,
+        deploymentId,
+        apiKey,
+        description,
+      } = c.req.valid("json");
+      const user = c.get("user");
 
-  const payload = await c.req.json();
+      const hasPermissions = await isBucketMaintainer({
+        userId: user.id,
+        bucketId,
+      });
 
-  const {
-    bucketId,
-    modelName,
-    resourceName,
-    deploymentId,
-    apiKey,
-    description,
-  } = addModelFormSchema.parse(payload);
+      if (!hasPermissions) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  const hasPermissions = await isBucketMaintainer({
-    userId: user.id,
-    bucketId,
-  });
+      const encApiKey = encryptApiKey(apiKey);
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
+      await addModel({
+        bucketId,
+        modelName,
+        resourceName,
+        deploymentId,
+        encApiKey,
+        description,
+      });
 
-  const encApiKey = encryptApiKey(apiKey);
+      return c.json({ message: "Model added" });
+    }
+  );
 
-  await addModel({
-    bucketId,
-    modelName,
-    resourceName,
-    deploymentId,
-    encApiKey,
-    description,
-  });
-
-  return c.json({ message: "Model added" });
-}
+export default app;

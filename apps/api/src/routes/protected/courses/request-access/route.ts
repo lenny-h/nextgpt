@@ -1,24 +1,30 @@
 import { validateCourseKey } from "@/src/lib/db/queries/course-keys.js";
 import { addUserToCourse } from "@/src/lib/db/queries/course-users.js";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
 import { requestAccessSchema } from "./schema.js";
 
-export async function POST(c: Context) {
-  const payload = await c.req.json();
+const app = new Hono().post(
+  "/",
+  validator("json", async (value) => {
+    return requestAccessSchema.parse(value);
+  }),
+  async (c) => {
+    const { courseId, key } = c.req.valid("json");
+    const user = c.get("user");
 
-  const { courseId, key } = requestAccessSchema.parse(payload);
+    await validateCourseKey({
+      courseId,
+      key,
+    });
 
-  const user = c.get("user");
+    await addUserToCourse({
+      courseId,
+      userId: user.id,
+    });
 
-  await validateCourseKey({
-    courseId,
-    key,
-  });
+    return c.json({ message: "Access granted" });
+  }
+);
 
-  await addUserToCourse({
-    courseId,
-    userId: user.id,
-  });
-
-  return c.json({ message: "Access granted" });
-}
+export default app;

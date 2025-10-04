@@ -1,6 +1,6 @@
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { Input } from "@workspace/ui/components/input";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,9 +9,28 @@ interface Props {
 }
 
 export const CSVUploader = ({ bucketId }: Props) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const [file, setFile] = useState<File | null>(null);
+
+  const handleSubmit = async () => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("bucketId", bucketId);
+
+    const result = await apiFetcher(
+      (client) =>
+        client["process-csv"][":bucketId"].$post({
+          param: { bucketId },
+          form: formData,
+        }),
+      sharedT.apiCodes,
+    );
+
+    return result;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -42,28 +61,6 @@ export const CSVUploader = ({ bucketId }: Props) => {
         return `Error processing file: ${err.message}`;
       },
     });
-  };
-
-  const handleSubmit = async () => {
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("bucketId", bucketId);
-
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/process-csv/${bucketId}`,
-      {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      },
-    );
-
-    checkResponse(response, globalT.globalErrors);
-
-    const result = await response.json();
-    return result;
   };
 
   return (

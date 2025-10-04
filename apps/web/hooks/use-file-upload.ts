@@ -1,33 +1,30 @@
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { type Attachment } from "@/types/attachment";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 
 export const useFileUpload = () => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const getSignedUrl = async (file: File) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/attachments/get-signed-url`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          filename: file.name,
-          fileSize: file.size,
-          fileType: file.type,
+    return await apiFetcher(
+      (client) =>
+        client.attachments["get-signed-url"].$post({
+          json: {
+            filename: file.name,
+            fileSize: file.size,
+            fileType: file.type as
+              | "application/pdf"
+              | "image/jpeg"
+              | "image/png",
+          },
         }),
-      },
+      sharedT.apiCodes,
     );
-
-    checkResponse(response, globalT.globalErrors);
-    return response.json();
   };
 
   const uploadFile = async (file: File) => {
@@ -44,7 +41,7 @@ export const useFileUpload = () => {
         body: renamedFile,
       });
 
-      checkResponse(uploadResponse, globalT.globalErrors);
+      checkResponse(uploadResponse, sharedT.apiCodes);
 
       return {
         filename: newFilename,
@@ -52,7 +49,9 @@ export const useFileUpload = () => {
       };
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : globalT.globalErrors.error,
+        error instanceof Error
+          ? error.message
+          : sharedT.apiCodes.FALLBACK_ERROR,
       );
     }
   };

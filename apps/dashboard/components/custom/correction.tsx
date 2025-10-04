@@ -15,7 +15,6 @@ import {
 } from "@workspace/ui/components/dialog";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +40,7 @@ export const Correction = memo(() => {
   const [isPending, setIsPending] = useState(false);
 
   const {
-    data: prompts,
+    data: promptsData,
     isLoading: promptsLoading,
     error: promptsError,
   } = useQuery({
@@ -49,6 +48,8 @@ export const Correction = memo(() => {
     queryFn: () =>
       apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
+
+  const prompts = promptsData?.prompts;
 
   const canStartCorrection = () => {
     const successfulSolutionFiles = Object.values(solutionUploads).filter(
@@ -76,27 +77,19 @@ export const Correction = memo(() => {
     try {
       setIsPending(true);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/prdashboardT/correction`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            solutionFilename: user.id + "/" + solutionFile.name,
-            handInFilenames: handInFiles.map(
-              (file) => user.id + "/" + file.name,
-            ),
-            ...(promptId ? { promptId } : {}),
+      const { failedFiles } = await apiFetcher(
+        (client) =>
+          client.correction.$post({
+            json: {
+              solutionFilename: user.id + "/" + solutionFile.name,
+              handInFilenames: handInFiles.map(
+                (file) => user.id + "/" + file.name,
+              ),
+              ...(promptId ? { promptId } : {}),
+            },
           }),
-        },
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, sharedT.apiCodes);
-
-      const { failedFiles } = await response.json();
 
       if (failedFiles.length > 0) {
         toast.error(

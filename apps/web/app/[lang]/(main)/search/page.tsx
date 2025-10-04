@@ -4,18 +4,18 @@ import { SourcesList } from "@/components/custom/sources-list";
 import { Header } from "@/components/custom/toggle-sidebars-header";
 import { useCSResults } from "@/contexts/classic-search-results";
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useVSResults } from "@/contexts/semantic-search-results";
 import { type DocumentSource } from "@/types/document-source";
 import { Input } from "@workspace/ui/components/input";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2, Search, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function SearchPage() {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const { filter } = useFilter();
   const [csResults, setCsResults] = useCSResults();
@@ -61,33 +61,27 @@ export default function SearchPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/search/${encodeURI(query)}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            filter: {
-              ...filter,
-              courses: filter.courses.map((course) => course.id),
+      const { sources } = await apiFetcher(
+        (client) =>
+          client.search[":query"].$post({
+            param: { query: encodeURI(query) },
+            json: {
+              filter: {
+                ...filter,
+                courses: filter.courses.map((course) => course.id),
+              },
+              fts: searchMode === "keywords",
             },
-            fts: searchMode === "keywords",
           }),
-        },
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, globalT.globalErrors);
-
-      const { sources }: { sources: Array<DocumentSource> } =
-        await response.json();
 
       setSources(sources);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : globalT.globalErrors.error,
+        error instanceof Error
+          ? error.message
+          : sharedT.apiCodes.FALLBACK_ERROR,
       );
     } finally {
       setIsLoading(false);

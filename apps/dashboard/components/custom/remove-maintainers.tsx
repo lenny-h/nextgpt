@@ -1,9 +1,9 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { type User as AuthenticatedUser } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ export function RemoveMaintainers({
   currentUser,
   currentMaintainers,
 }: Props) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -31,25 +31,31 @@ export function RemoveMaintainers({
     setSubmitLoading(true);
 
     const removeMaintainers = async () => {
-      const response = await fetch(
-        courseId
-          ? `/api/course-maintainers/${courseId}`
-          : `/api/bucket-maintainers/${bucketId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            userIds: selectedUsers.map((user) => user.id),
-          }),
-        },
-      );
+      if (courseId) {
+        await apiFetcher(
+          (client) =>
+            client["course-maintainers"][":courseId"].$delete({
+              param: { courseId },
+              json: {
+                userIds: selectedUsers.map((user) => user.id),
+              },
+            }),
+          sharedT.apiCodes,
+        );
+      } else {
+        await apiFetcher(
+          (client) =>
+            client["bucket-maintainers"][":bucketId"].$delete({
+              param: { bucketId },
+              json: {
+                userIds: selectedUsers.map((user) => user.id),
+              },
+            }),
+          sharedT.apiCodes,
+        );
+      }
 
       setSubmitLoading(false);
-
-      checkResponse(response, globalT.globalErrors);
     };
 
     toast.promise(removeMaintainers(), {
@@ -67,6 +73,15 @@ export function RemoveMaintainers({
     <Autocomplete
       selectedUsers={selectedUsers}
       setSelectedUsers={setSelectedUsers}
+      userFetcher={async (prefix: string) =>
+        apiFetcher(
+          (client) =>
+            client.profiles.ilike.$get({
+              query: { prefix },
+            }),
+          sharedT.apiCodes,
+        )
+      }
       shortcut="#"
       selection={currentMaintainers.filter(
         (user) => user.id !== currentUser.id,

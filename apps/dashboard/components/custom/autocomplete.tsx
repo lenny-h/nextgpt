@@ -1,14 +1,12 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
-import { createClient } from "@/lib/supabase/client";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { Loader2, Plus, X } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 
 export type User = {
   id: string;
@@ -19,10 +17,9 @@ interface Props {
   children: React.ReactNode;
   selectedUsers: User[];
   setSelectedUsers: (users: User[] | ((prev: User[]) => User[])) => void;
+  userFetcher: (prefix: string) => Promise<{ users: User[] }>;
   shortcut?: string;
   selection?: User[];
-  rpc?: "ilike_public_profiles" | "ilike_bucket_users";
-  bucketId?: string;
 }
 
 export const Autocomplete = memo(
@@ -32,10 +29,10 @@ export const Autocomplete = memo(
     setSelectedUsers,
     shortcut = "/",
     selection,
-    rpc = "ilike_public_profiles",
-    bucketId,
+    userFetcher,
   }: Props) => {
-    const { globalT } = useGlobalTranslations();
+    const { dashboardT } = useDashboardTranslations();
+
     const isMobile = useIsMobile();
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -94,21 +91,11 @@ export const Autocomplete = memo(
     const fetchUsers = async (prefix: string) => {
       setIsLoading(true);
 
-      const supabase = createClient();
-
-      const { data, error } = await supabase.rpc(rpc, {
-        ...(bucketId ? { p_bucket_id: bucketId } : {}),
-        prefix,
-      });
+      const usersData = await userFetcher(prefix);
 
       setIsLoading(false);
 
-      if (error || !data) {
-        toast.error(globalT.components.autocomplete.errorProfiles);
-        return;
-      }
-
-      setUsers(data);
+      setUsers(usersData.users);
     };
 
     return (
@@ -118,7 +105,7 @@ export const Autocomplete = memo(
             <Input
               ref={inputRef}
               value={inputValue}
-              placeholder={globalT.components.autocomplete.searchUsers}
+              placeholder={dashboardT.autocomplete.searchUsers}
               onChange={(e) => setInputValue(e.target.value)}
             />
             {isLoading ? (

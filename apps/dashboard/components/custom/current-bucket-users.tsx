@@ -3,7 +3,7 @@
 import { type User as AuthenticatedUser } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { memo } from "react";
-import { User } from "./autocomplete";
+import { type User } from "./autocomplete";
 
 interface Props {
   currentUser: AuthenticatedUser;

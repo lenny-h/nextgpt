@@ -1,10 +1,13 @@
-import { Context } from "hono";
+import * as z from "zod";
+import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 export const errorHandler = async (c: Context, next: Function) => {
   try {
     await next();
   } catch (error) {
+    console.error(error);
+
     if (error instanceof HTTPException) {
       return c.json(
         {
@@ -17,25 +20,22 @@ export const errorHandler = async (c: Context, next: Function) => {
       );
     }
 
-    if (error instanceof Error && "code" in error) {
-      switch (error.code) {
-        case "23505":
-          return c.json(
-            {
-              error: {
-                message: "Resource already exists",
-                status: 409,
-              },
-            },
-            409
-          );
-      }
+    if (error instanceof z.ZodError) {
+      return c.json(
+        {
+          error: {
+            message: "BAD_REQUEST",
+            status: 400,
+          },
+        },
+        400
+      );
     }
 
     return c.json(
       {
         error: {
-          message: "Internal Server Error",
+          message: "INTERNAL_SERVER_ERROR",
           status: 500,
         },
       },

@@ -1,32 +1,20 @@
 "use client";
 
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
-import { type Locale } from "@/i18n.config";
 import { Button } from "@workspace/ui/components/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@workspace/ui/components/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/components/popover";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { cn } from "@workspace/ui/lib/utils";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 import { useState } from "react";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
+import { CourseSelector } from "./courses-selector";
 
 interface Props<T> {
   locale: Locale;
   resourceName: "files" | "tasks";
-  resourceProcedure: "get_course_files" | "get_course_tasks";
+  resourceFetcher: ({ pageParam }: { pageParam?: number }) => Promise<T>;
   columns: any[];
   visibilityState: Record<string, boolean>;
   filterLabel: string;
@@ -36,17 +24,18 @@ interface Props<T> {
 export const FilesTasksTable = <T extends object>({
   locale,
   resourceName,
-  resourceProcedure,
+  resourceFetcher,
   columns,
   visibilityState,
   filterLabel,
   filterColumn,
 }: Props<T>) => {
-  const [coursesPopoverOpen, setCoursesPopoverOpen] = useState(false);
+  const { sharedT } = useSharedTranslations();
+
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
   const {
-    data: courses,
+    data: coursesData,
     isPending: coursesPending,
     error: coursesError,
     hasNextPage: hasNextCoursesPage,
@@ -54,11 +43,20 @@ export const FilesTasksTable = <T extends object>({
     inViewRef,
   } = useInfiniteQueryWithRPC({
     queryKey: ["courses"],
-    procedure: "get_maintained_courses",
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client["courses"]["maintained"].$get({
+            query: { pageNumber: (pageParam ?? 0).toString() },
+          }),
+        sharedT.apiCodes,
+      ),
   });
 
+  const courses = coursesData?.maintainedCourses;
+
   const {
-    data: resources,
+    data: resourcesData,
     isPending: resourcesPending,
     error: resourcesError,
     fetchNextPage: fetchNextResources,
@@ -67,8 +65,7 @@ export const FilesTasksTable = <T extends object>({
     isFetching: resourcesFetching,
   } = useInfiniteQueryWithRPC({
     queryKey: [resourceName, selectedCourseId],
-    procedure: resourceProcedure,
-    params: { p_course_id: selectedCourseId },
+    queryFn: resourceFetcher,
     enabled: !!selectedCourseId,
   });
 
@@ -106,72 +103,15 @@ export const FilesTasksTable = <T extends object>({
 
   return (
     <div className="flex flex-col items-center space-y-6 p-2">
-      <div className="flex items-center space-x-2">
-        <h1 className="text-2xl font-semibold">
-          {resourceName.charAt(0).toUpperCase() + resourceName.slice(1)} for
-          course{" "}
-        </h1>
-        <Popover open={coursesPopoverOpen} onOpenChange={setCoursesPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={coursesPopoverOpen}
-              className="flex w-[200px]"
-            >
-              <p className="flex-1 truncate text-left">
-                {selectedCourseId
-                  ? courses.find((course) => course.id === selectedCourseId)
-                      ?.name
-                  : "Select course..."}
-              </p>
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Search courses..." className="h-9" />
-              <CommandList>
-                <CommandEmpty>No course found</CommandEmpty>
-                <CommandGroup>
-                  {courses.map((course) => (
-                    <CommandItem
-                      key={course.id}
-                      value={course.id}
-                      onSelect={(currentValue) => {
-                        setSelectedCourseId(
-                          currentValue === selectedCourseId ? "" : currentValue,
-                        );
-                        setCoursesPopoverOpen(false);
-                      }}
-                    >
-                      {course.name}
-                      <Check
-                        className={cn(
-                          "ml-auto",
-                          selectedCourseId === course.id
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                  {hasNextCoursesPage && (
-                    <div
-                      ref={inViewRef}
-                      className="flex h-8 items-center justify-center"
-                    >
-                      {isFetchingNextCoursesPage && (
-                        <Loader2 className="size-4 animate-spin" />
-                      )}
-                    </div>
-                  )}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
+      <CourseSelector
+        resourceName={resourceName}
+        selectedCourseId={selectedCourseId}
+        setSelectedCourseId={setSelectedCourseId}
+        courses={courses}
+        hasNextCoursesPage={hasNextCoursesPage}
+        isFetchingNextCoursesPage={isFetchingNextCoursesPage}
+        inViewRef={inViewRef}
+      />
       {!selectedCourseId ? (
         <div className="mt-8 text-center text-lg font-semibold">
           Please select a course to view {resourceName}

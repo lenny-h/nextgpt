@@ -1,19 +1,25 @@
 import { createBucket } from "@/src/lib/db/queries/buckets.js";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
 import { createBucketPayloadSchema } from "./schema.js";
 
-export async function POST(c: Context) {
-  const user = c.get("user");
+const app = new Hono().post(
+  "/",
+  validator("json", async (value, c) => {
+    return createBucketPayloadSchema.parse(value);
+  }),
+  async (c) => {
+    const { values, type } = c.req.valid("json");
+    const user = c.get("user");
 
-  const payload = await c.req.json();
+    await createBucket({
+      userId: user.id,
+      name: values.bucketName,
+      type,
+    });
 
-  const { values, type } = createBucketPayloadSchema.parse(payload);
+    return c.json({ message: "Bucket created" });
+  }
+);
 
-  await createBucket({
-    userId: user.id,
-    name: values.bucketName,
-    type,
-  });
-
-  return c.json({ message: "Bucket created" });
-}
+export default app;

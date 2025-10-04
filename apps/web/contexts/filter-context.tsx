@@ -1,9 +1,10 @@
 "use client";
 
-import { rpcFetcher } from "@/lib/fetcher";
-import { StudyMode } from "@/lib/study-modes";
-import type { FrontendFilter } from "@/types/filter";
+import { type StudyMode } from "@/lib/study-modes";
+import { type FrontendFilter } from "@/types/filter";
 import { useQuery } from "@tanstack/react-query";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import React, {
   createContext,
   type ReactNode,
@@ -19,7 +20,7 @@ interface Props {
 interface FilterContextType {
   data:
     | {
-        bucket_id: string;
+        bucketId: string;
         name: string;
         type: string;
       }[]
@@ -35,6 +36,8 @@ interface FilterContextType {
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
 export function FilterProvider({ children }: Props) {
+  const { sharedT } = useSharedTranslations();
+
   const [filter, setFilter] = useState<FrontendFilter>({
     bucketId: "",
     courses: [],
@@ -44,27 +47,36 @@ export function FilterProvider({ children }: Props) {
 
   const [studyMode, setStudyMode] = useState<StudyMode>("facts");
 
-  const { data, isLoading, isError } = useQuery({
+  const {
+    data: bucketsData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["buckets"],
-    queryFn: () => rpcFetcher("get_user_buckets"),
+    queryFn: () =>
+      apiFetcher(
+        (client) => client["buckets"]["used"].$get(),
+        sharedT.apiCodes,
+      ),
   });
 
+  const buckets = bucketsData?.usedBuckets;
+
   useEffect(() => {
-    if (data && data.length > 0 && data[0]) {
-      const bucketId = data[0].bucket_id;
+    if (buckets && buckets.length > 0 && buckets[0]) {
       setFilter({
-        bucketId,
+        bucketId: buckets[0].bucketId,
         courses: [],
         files: [],
         documents: [],
       });
     }
-  }, [data]);
+  }, [buckets]);
 
   return (
     <FilterContext.Provider
       value={{
-        data,
+        data: buckets,
         isLoading,
         isError,
         filter,

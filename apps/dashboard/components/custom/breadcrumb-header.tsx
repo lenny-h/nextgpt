@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,11 +10,12 @@ import {
 } from "@workspace/ui/components/breadcrumb";
 import { Separator } from "@workspace/ui/components/separator";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar-left";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { usePathname } from "next/navigation";
 import { memo } from "react";
 
 export const BreadcrumbHeader = memo(() => {
-  const { locale } = useGlobalTranslations();
+  const { locale } = useSharedTranslations();
 
   const pathname = usePathname();
   const paths = pathname.split("/").filter((path) => path !== "");

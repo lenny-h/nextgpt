@@ -4,36 +4,58 @@ import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { courseMaintainers, tasks } from "@workspace/server/drizzle/schema.js";
 import { and, desc, eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
+import * as z from "zod";
 
-export async function GET(c: Context) {
-  const courseId = uuidSchema.parse(c.req.param("courseId"));
-  const pageNumber = pageNumberSchema.parse(c.req.query("pageNumber"));
-  const itemsPerPage = itemsPerPageSchema.parse(c.req.query("itemsPerPage"));
+const paramSchema = z.object({ courseId: uuidSchema }).strict();
+const querySchema = z
+  .object({
+    pageNumber: pageNumberSchema,
+    itemsPerPage: itemsPerPageSchema,
+  })
+  .strict();
 
-  const user = c.get("user");
+const app = new Hono().get(
+  "/",
+  validator("param", (value) => {
+    return paramSchema.parse(value);
+  }),
+  validator("query", (value) => {
+    return querySchema.parse({
+      pageNumber: Number(value.pageNumber),
+      itemsPerPage: Number(value.itemsPerPage),
+    });
+  }),
+  async (c) => {
+    const { courseId } = c.req.valid("param");
+    const { pageNumber, itemsPerPage } = c.req.valid("query");
+    const user = c.get("user");
 
-  const result = await db
-    .select({
-      id: tasks.id,
-      courseId: tasks.courseId,
-      name: tasks.name,
-      status: tasks.status,
-      createdAt: tasks.createdAt,
-      pubDate: tasks.pubDate,
-    })
-    .from(tasks)
-    .innerJoin(
-      courseMaintainers,
-      and(
-        eq(courseMaintainers.courseId, tasks.courseId),
-        eq(courseMaintainers.userId, user.id)
+    const result = await db
+      .select({
+        id: tasks.id,
+        courseId: tasks.courseId,
+        name: tasks.name,
+        status: tasks.status,
+        createdAt: tasks.createdAt,
+        pubDate: tasks.pubDate,
+      })
+      .from(tasks)
+      .innerJoin(
+        courseMaintainers,
+        and(
+          eq(courseMaintainers.courseId, tasks.courseId),
+          eq(courseMaintainers.userId, user.id)
+        )
       )
-    )
-    .where(eq(tasks.courseId, courseId))
-    .orderBy(desc(tasks.createdAt))
-    .limit(itemsPerPage)
-    .offset(pageNumber * itemsPerPage);
+      .where(eq(tasks.courseId, courseId))
+      .orderBy(desc(tasks.createdAt))
+      .limit(itemsPerPage)
+      .offset(pageNumber * itemsPerPage);
 
-  return c.json({ tasks: result });
-}
+    return c.json({ tasks: result });
+  }
+);
+
+export default app;

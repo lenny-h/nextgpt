@@ -16,11 +16,11 @@ import { toast } from "sonner";
 export type IncomingInvitationsTableColumns = {
   type: "user" | "course_maintainer" | "bucket_maintainer";
   origin: string;
-  origin_username: string;
+  originUsername: string;
   target: string;
-  resource_id: string;
-  resource_name: string;
-  created_at: string;
+  resourceId: string;
+  resourceName: string;
+  createdAt: string;
 };
 
 const acceptInvitation = async ({
@@ -89,11 +89,9 @@ export const updateInvitationsQueryData = ({
     [`incoming_${type}_invitations`],
     (oldData: {
       pages: Array<
-        (
-          | UserInvitation[]
-          | CourseMaintainerInvitation[]
-          | BucketMaintainerInvitation[]
-        )[]
+        | UserInvitation[]
+        | CourseMaintainerInvitation[]
+        | BucketMaintainerInvitation[]
       >;
       pageParams: number[];
     }) => {
@@ -104,8 +102,8 @@ export const updateInvitationsQueryData = ({
             (doc) =>
               doc.target !== targetUserId ||
               (type === "user"
-                ? "bucket_id" in doc && doc.bucket_id !== resourceId
-                : "course_id" in doc && doc.course_id !== resourceId),
+                ? "bucketId" in doc && doc.bucketId !== resourceId
+                : "courseId" in doc && doc.courseId !== resourceId),
           ),
         ),
         pageParams: oldData.pageParams,
@@ -119,7 +117,7 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
     { accessorKey: "type", header: "Type" },
     { accessorKey: "origin", header: "Sender" },
     {
-      accessorKey: "origin_username",
+      accessorKey: "originUsername",
       header: "Sender Name",
     },
     {
@@ -127,15 +125,15 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
       header: "Recipient",
     },
     {
-      accessorKey: "resource_id",
+      accessorKey: "resourceId",
       header: "Resource Id",
     },
     {
-      accessorKey: "resource_name",
+      accessorKey: "resourceName",
       header: "Resource Name",
     },
     {
-      accessorKey: "created_at",
+      accessorKey: "createdAt",
       header: "Created At",
       cell: ({ row }) => {
         return new Date(row.getValue("created_at")).toLocaleString();
@@ -154,7 +152,7 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
           | "course_maintainer"
           | "bucket_maintainer";
         const originUserId = row.getValue("origin") as string;
-        const resourceId = row.getValue("resource_id") as string;
+        const resourceId = row.getValue("resourceId") as string;
         const targetUserId = row.getValue("target") as string;
 
         return (
@@ -204,7 +202,7 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
           | "course_maintainer"
           | "bucket_maintainer";
         const originUserId = row.getValue("origin") as string;
-        const resourceId = row.getValue("resource_id") as string;
+        const resourceId = row.getValue("resourceId") as string;
         const targetUserId = row.getValue("target") as string;
 
         return (

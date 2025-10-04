@@ -1,215 +1,163 @@
 import { Hono } from "hono";
-import { POST as attachmentsGetSignedUrlPost } from "./attachments/get-signed-url/route.js";
-import {
-  DELETE as bucketMaintainersDelete,
-  GET as bucketMaintainersGet,
-  POST as bucketMaintainersPost,
-} from "./bucket-maintainers/[bucketId]/route.js";
-import {
-  DELETE as bucketUsersDelete,
-  GET as bucketUsersGet,
-  POST as bucketUsersPost,
-} from "./bucket-users/[bucketId]/route.js";
-import { GET as bucketUsersIlikeGet } from "./bucket-users/ilike/[bucketId]/route.js";
-import { DELETE as bucketsDelete } from "./buckets/[bucketId]/route.js";
-import { GET as bucketsMaintainedGet } from "./buckets/maintained/route.js";
-import { POST as bucketsPost } from "./buckets/route.js";
-import { GET as bucketsUsedGet } from "./buckets/used/route.js";
-import {
-  DELETE as chatDelete,
-  PATCH as chatPatch,
-  POST as chatPost,
-} from "./chat/route.js";
-import {
-  GET as chatByIdGet,
-  DELETE as chatsDelete,
-} from "./chats/[chatId]/route.js";
-import { GET as chatsFavouritesGet } from "./chats/favourites/route.js";
-import { GET as chatsIlikeGet } from "./chats/ilike/route.js";
-import {
-  GET as chatsIsFavouriteGet,
-  PATCH as chatsIsFavouritePatch,
-} from "./chats/is-favourite/[chatId]/route.js";
-import { GET as chatsGet } from "./chats/route.js";
-import {
-  GET as chatsTitleGet,
-  PATCH as chatsTitlePatch,
-} from "./chats/title/[chatId]/route.js";
-import { POST as completionPost } from "./completion/route.js";
-import { POST as correctionGetSignedUrlPost } from "./correction/get-signed-url/route.js";
-import { POST as correctionPost } from "./correction/route.js";
-import {
-  DELETE as courseMaintainersDelete,
-  GET as courseMaintainersGet,
-  POST as courseMaintainersPost,
-} from "./course-maintainers/[courseId]/route.js";
-import { GET as coursesByBucketGet } from "./courses/[bucketId]/route.js";
-import { DELETE as courseDelete } from "./courses/[courseId]/route.js";
-import { GET as coursesMaintainedGet } from "./courses/maintained/route.js";
-import { POST as requestAccessPost } from "./courses/request-access/route.js";
-import { POST as coursePost } from "./courses/route.js";
-import { POST as validateAccessPost } from "./courses/validate-access/route.js";
-import {
-  DELETE as documentByIdDelete,
-  GET as documentByIdGet,
-} from "./documents/[documentId]/route.js";
-import { PATCH as documentContentPatch } from "./documents/content/[documentId]/route.js";
-import { GET as documentsIlikeGet } from "./documents/ilike/route.js";
-import {
-  POST as documentPost,
-  GET as documentsGet,
-} from "./documents/route.js";
-import { PATCH as documentsTitlePatch } from "./documents/title/[documentId]/[title]/route.js";
-import { POST as feedbackPost } from "./feedback/route.js";
-import { DELETE as filesDelete } from "./files/[fileId]/route.js";
-import { GET as filesIlikeGet } from "./files/ilike/route.js";
-import { GET as filesGet } from "./files/route.js";
-import { GET as getSignedUrlGet } from "./get-signed-url/[courseId]/[name]/route.js";
-import { POST as getSignedUrlPost } from "./get-signed-url/[courseId]/route.js";
-import { POST as acceptInvitationPost } from "./invitations/accept/route.js";
-import { GET as incomingInvitationsGet } from "./invitations/incoming/route.js";
-import { GET as outgoingInvitationsGet } from "./invitations/outgoing/route.js";
-import { POST as rejectInvitationPost } from "./invitations/reject/route.js";
-import { GET as messagesGet } from "./messages/[chatId]/route.js";
-import { DELETE as lastMessageDelete } from "./messages/delete-last-message/[chatId]/route.js";
-import { DELETE as trailingMessagesDelete } from "./messages/delete-trailing/[messageId]/route.js";
-import { GET as modelsByBucketGet } from "./models/[bucketId]/route.js";
-import { DELETE as modelDelete } from "./models/[modelId]/route.js";
-import { POST as modelPost, GET as modelsGet } from "./models/route.js";
-import { POST as practicePost } from "./practice/route.js";
-import { POST as processCsvPost } from "./process-csv/[bucketId]/route.js";
-import { GET as profilesIlikeGet } from "./profiles/ilike/route.js";
-import {
-  GET as profilesGet,
-  PATCH as profilesPatch,
-} from "./profiles/route.js";
-import {
-  DELETE as promptsDelete,
-  PATCH as promptsPatch,
-} from "./prompts/[promptId]/route.js";
-import { GET as promptsGet, POST as promptsPost } from "./prompts/route.js";
-import { POST as searchPost } from "./search/[query]/route.js";
-import { GET as tasksByCourseGet } from "./tasks/[courseId]/route.js";
-import { DELETE as tasksDelete } from "./tasks/[taskId]/route.js";
+
+// Import handlers
+import attachmentsGetSignedUrlRoute from "./attachments/get-signed-url/route.js";
+import bucketMaintainersRoute from "./bucket-maintainers/[bucketId]/route.js";
+import bucketUsersRoute from "./bucket-users/[bucketId]/route.js";
+import bucketUsersIlikeRoute from "./bucket-users/ilike/[bucketId]/route.js";
+import bucketsDeleteRoute from "./buckets/[bucketId]/route.js";
+import bucketsMaintainedRoute from "./buckets/maintained/route.js";
+import bucketsRoute from "./buckets/route.js";
+import bucketsUsedRoute from "./buckets/used/route.js";
+import chatRoute from "./chat/route.js";
+import chatsByIdRoute from "./chats/[chatId]/route.js";
+import chatsRoute from "./chats/route.js";
+import chatsFavourites from "./chats/favourites/route.js";
+import chatsIlike from "./chats/ilike/route.js";
+import chatsIsFavouriteRoute from "./chats/is-favourite/[chatId]/route.js";
+import chatsTitleRoute from "./chats/title/[chatId]/route.js";
+import completionRoute from "./completion/route.js";
+import correctionGetSignedUrlRoute from "./correction/get-signed-url/route.js";
+import correctionRoute from "./correction/route.js";
+import courseMaintainersRoute from "./course-maintainers/[courseId]/route.js";
+import coursesByBucketRoute from "./courses/[bucketId]/route.js";
+import courseDeleteRoute from "./courses/[courseId]/route.js";
+import coursesMaintainedRoute from "./courses/maintained/route.js";
+import requestAccessRoute from "./courses/request-access/route.js";
+import courseRoute from "./courses/route.js";
+import validateAccessRoute from "./courses/validate-access/route.js";
+import documentByIdRoute from "./documents/[documentId]/route.js";
+import documentContentRoute from "./documents/content/[documentId]/route.js";
+import documentsIlike from "./documents/ilike/route.js";
+import documentsRoute from "./documents/route.js";
+import documentsTitleRoute from "./documents/title/[documentId]/[title]/route.js";
+import feedbackRoute from "./feedback/route.js";
+import filesDeleteRoute from "./files/[fileId]/route.js";
+import filesIlike from "./files/ilike/route.js";
+import filesRoute from "./files/route.js";
+import getSignedUrlNameRoute from "./get-signed-url/[courseId]/[name]/route.js";
+import getSignedUrlRoute from "./get-signed-url/[courseId]/route.js";
+import acceptInvitationRoute from "./invitations/accept/route.js";
+import incomingInvitationsRoute from "./invitations/incoming/route.js";
+import outgoingInvitationsRoute from "./invitations/outgoing/route.js";
+import rejectInvitationRoute from "./invitations/reject/route.js";
+import messagesRoute from "./messages/[chatId]/route.js";
+import lastMessageRoute from "./messages/delete-last-message/[chatId]/route.js";
+import trailingMessagesRoute from "./messages/delete-trailing/[messageId]/route.js";
+import modelsByBucketRoute from "./models/[bucketId]/route.js";
+import modelDeleteRoute from "./models/[modelId]/route.js";
+import modelsRoute from "./models/route.js";
+import practiceRoute from "./practice/route.js";
+import processCsvRoute from "./process-csv/[bucketId]/route.js";
+import profilesIlike from "./profiles/ilike/route.js";
+import profilesRoute from "./profiles/route.js";
+import promptsDeleteRoute from "./prompts/[promptId]/route.js";
+import promptsRoute from "./prompts/route.js";
+import searchRoute from "./search/[query]/route.js";
+import tasksByCourseRoute from "./tasks/[courseId]/route.js";
+import tasksDeleteRoute from "./tasks/[taskId]/route.js";
 
 const protectedApiRouter = new Hono()
   // Attachments
-  .post("/attachments/get-signed-url", attachmentsGetSignedUrlPost)
+  .route("/attachments/get-signed-url", attachmentsGetSignedUrlRoute)
 
   // Bucket maintainers
-  .get("/bucket-maintainers/:bucketId", bucketMaintainersGet)
-  .post("/bucket-maintainers/:bucketId", bucketMaintainersPost)
-  .delete("/bucket-maintainers/:bucketId", bucketMaintainersDelete)
+  .route("/bucket-maintainers/:bucketId", bucketMaintainersRoute)
 
   // Bucket users
-  .get("/bucket-users/:bucketId", bucketUsersGet)
-  .post("/bucket-users/:bucketId", bucketUsersPost)
-  .delete("/bucket-users/:bucketId", bucketUsersDelete)
-  .get("/bucket-users/ilike/:bucketId", bucketUsersIlikeGet)
+  .route("/bucket-users/:bucketId", bucketUsersRoute)
+  .route("/bucket-users/ilike/:bucketId", bucketUsersIlikeRoute)
 
   // Buckets
-  .post("/buckets", bucketsPost)
-  .delete("/buckets/:bucketId", bucketsDelete)
-  .get("/buckets/maintained", bucketsMaintainedGet)
-  .get("/buckets/used", bucketsUsedGet)
+  .route("/buckets", bucketsRoute)
+  .route("/buckets/:bucketId", bucketsDeleteRoute)
+  .route("/buckets/maintained", bucketsMaintainedRoute)
+  .route("/buckets/used", bucketsUsedRoute)
 
   // Chat
-  .post("/chat", chatPost)
-  .patch("/chat", chatPatch)
-  .delete("/chat", chatDelete)
+  .route("/chat", chatRoute)
 
   // Chats
-  .get("/chats", chatsGet)
-  .get("/chats/:chatId", chatByIdGet)
-  .delete("/chats/:chatId", chatsDelete)
-  .get("/chats/favourites", chatsFavouritesGet)
-  .get("/chats/ilike", chatsIlikeGet)
-  .get("/chats/is-favourite/:chatId", chatsIsFavouriteGet)
-  .patch("/chats/is-favourite/:chatId", chatsIsFavouritePatch)
-  .get("/chats/title/:chatId", chatsTitleGet)
-  .patch("/chats/title/:chatId", chatsTitlePatch)
+  .route("/chats", chatsRoute)
+  .route("/chats/:chatId", chatsByIdRoute)
+  .route("/chats/favourites", chatsFavourites)
+  .route("/chats/ilike", chatsIlike)
+  .route("/chats/is-favourite/:chatId", chatsIsFavouriteRoute)
+  .route("/chats/title/:chatId", chatsTitleRoute)
 
   // Completion
-  .post("/completion", completionPost)
+  .route("/completion", completionRoute)
 
   // Correction
-  .post("/correction", correctionPost)
-  .post("/correction/get-signed-url", correctionGetSignedUrlPost)
+  .route("/correction", correctionRoute)
+  .route("/correction/get-signed-url", correctionGetSignedUrlRoute)
 
   // Course maintainers
-  .get("/course-maintainers/:courseId", courseMaintainersGet)
-  .post("/course-maintainers/:courseId", courseMaintainersPost)
-  .delete("/course-maintainers/:courseId", courseMaintainersDelete)
+  .route("/course-maintainers/:courseId", courseMaintainersRoute)
 
   // Courses
-  .post("/courses", coursePost)
-  .get("/courses/:bucketId", coursesByBucketGet)
-  .delete("/courses/:courseId", courseDelete)
-  .get("/courses/maintained", coursesMaintainedGet)
-  .post("/courses/request-access", requestAccessPost)
-  .post("/courses/validate-access", validateAccessPost)
+  .route("/courses", courseRoute)
+  .route("/courses/:bucketId", coursesByBucketRoute)
+  .route("/courses/:courseId", courseDeleteRoute)
+  .route("/courses/maintained", coursesMaintainedRoute)
+  .route("/courses/request-access", requestAccessRoute)
+  .route("/courses/validate-access", validateAccessRoute)
 
   // Documents
-  .get("/documents", documentsGet)
-  .post("/documents", documentPost)
-  .get("/documents/:documentId", documentByIdGet)
-  .delete("/documents/:documentId", documentByIdDelete)
-  .patch("/documents/content/:documentId", documentContentPatch)
-  .get("/documents/ilike", documentsIlikeGet)
-  .patch("/documents/title/:documentId/:title", documentsTitlePatch)
+  .route("/documents", documentsRoute)
+  .route("/documents/:documentId", documentByIdRoute)
+  .route("/documents/content/:documentId", documentContentRoute)
+  .route("/documents/ilike", documentsIlike)
+  .route("/documents/title/:documentId/:title", documentsTitleRoute)
 
   // Feedback
-  .post("/feedback", feedbackPost)
+  .route("/feedback", feedbackRoute)
 
   // Files
-  .get("/files", filesGet)
-  .delete("/files/:fileId", filesDelete)
-  .get("/files/ilike", filesIlikeGet)
+  .route("/files", filesRoute)
+  .route("/files/:fileId", filesDeleteRoute)
+  .route("/files/ilike", filesIlike)
 
   // Get signed URL
-  .post("/get-signed-url/:courseId", getSignedUrlPost)
-  .get("/get-signed-url/:courseId/:name", getSignedUrlGet)
+  .route("/get-signed-url/:courseId", getSignedUrlRoute)
+  .route("/get-signed-url/:courseId/:name", getSignedUrlNameRoute)
 
   // Invitations
-  .post("/invitations/accept", acceptInvitationPost)
-  .get("/invitations/incoming", incomingInvitationsGet)
-  .get("/invitations/outgoing", outgoingInvitationsGet)
-  .post("/invitations/reject", rejectInvitationPost)
+  .route("/invitations/accept", acceptInvitationRoute)
+  .route("/invitations/incoming", incomingInvitationsRoute)
+  .route("/invitations/outgoing", outgoingInvitationsRoute)
+  .route("/invitations/reject", rejectInvitationRoute)
 
   // Messages
-  .get("/messages/:chatId", messagesGet)
-  .delete("/messages/delete-last-message/:chatId", lastMessageDelete)
-  .delete("/messages/delete-trailing/:messageId", trailingMessagesDelete)
+  .route("/messages/:chatId", messagesRoute)
+  .route("/messages/delete-last-message/:chatId", lastMessageRoute)
+  .route("/messages/delete-trailing/:messageId", trailingMessagesRoute)
 
   // Models
-  .get("/models", modelsGet)
-  .post("/models", modelPost)
-  .get("/models/:bucketId", modelsByBucketGet)
-  .delete("/models/:modelId", modelDelete)
+  .route("/models", modelsRoute)
+  .route("/models/:bucketId", modelsByBucketRoute)
+  .route("/models/:modelId", modelDeleteRoute)
 
   // Practice
-  .post("/practice", practicePost)
+  .route("/practice", practiceRoute)
 
   // Process CSV
-  .post("/process-csv/:bucketId", processCsvPost)
+  .route("/process-csv/:bucketId", processCsvRoute)
 
   // Profiles
-  .get("/profiles", profilesGet)
-  .patch("/profiles", profilesPatch)
-  .get("/profiles/ilike", profilesIlikeGet)
+  .route("/profiles", profilesRoute)
+  .route("/profiles/ilike", profilesIlike)
 
   // Prompts
-  .get("/prompts", promptsGet)
-  .post("/prompts", promptsPost)
-  .delete("/prompts/:promptId", promptsDelete)
-  .patch("/prompts/:promptId", promptsPatch)
+  .route("/prompts", promptsRoute)
+  .route("/prompts/:promptId", promptsDeleteRoute)
 
   // Search
-  .get("/search/:query", searchPost)
+  .route("/search/:query", searchRoute)
 
   // Tasks
-  .get("/tasks/:courseId", tasksByCourseGet)
-  .get("/tasks/:taskId", tasksDelete);
+  .route("/tasks/:courseId", tasksByCourseRoute)
+  .route("/tasks/:taskId", tasksDeleteRoute);
 
 export { protectedApiRouter };
 export type ProtectedApiType = typeof protectedApiRouter;

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Check, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export function InvitationsDialog({
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const {
-    data: invitations,
+    data: invitationsData,
     isPending,
     error,
     inViewRef,
@@ -48,32 +48,37 @@ export function InvitationsDialog({
     isFetchingNextPage,
   } = useInfiniteQueryWithRPC({
     queryKey: ["invitations"],
-    procedure: "get_incoming_invitations",
-    params: { invitation_type: "user" },
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client.invitations.incoming.$get({
+            query: {
+              invitationType: "user",
+              pageNumber: (pageParam ?? 0).toString(),
+            },
+          }),
+        sharedT.apiCodes
+      ),
     enabled: open,
   });
+
+  const invitations = invitationsData?.invitations;
 
   const acceptInvitation = async (invitation: Invitation) => {
     try {
       setProcessingId(`accept-${invitation.origin}-${invitation.resource_id}`);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/invitations/accept`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            type: "user",
-            originUserId: invitation.origin,
-            resourceId: invitation.resource_id,
+      await apiFetcher(
+        (client) =>
+          client.invitations.accept.$post({
+            json: {
+              type: "user",
+              originUserId: invitation.origin,
+              resourceId: invitation.resource_id,
+            },
           }),
-        }
+        sharedT.apiCodes
       );
-
-      checkResponse(response, sharedT.apiCodes);
 
       toast.success(`You've joined ${invitation.resource_name}`);
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
@@ -90,23 +95,17 @@ export function InvitationsDialog({
     try {
       setProcessingId(`reject-${invitation.origin}-${invitation.resource_id}`);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/invitations/reject`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            type: "user",
-            originUserId: invitation.origin,
-            resourceId: invitation.resource_id,
+      await apiFetcher(
+        (client) =>
+          client.invitations.reject.$post({
+            json: {
+              type: "user",
+              originUserId: invitation.origin,
+              resourceId: invitation.resource_id,
+            },
           }),
-        }
+        sharedT.apiCodes
       );
-
-      checkResponse(response, sharedT.apiCodes);
 
       toast.success("Invitation rejected");
       queryClient.invalidateQueries({ queryKey: ["invitations"] });

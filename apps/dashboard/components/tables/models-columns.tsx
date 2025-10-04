@@ -24,16 +24,16 @@ export type ModelTableColumns = {
 export const modelsColumns: ColumnDef<ModelTableColumns>[] = [
   { accessorKey: "id", header: "Id" },
   {
-    accessorKey: "bucket_id",
+    accessorKey: "bucketId",
     header: "Bucket",
   },
   {
-    accessorKey: "bucket_name",
+    accessorKey: "bucketName",
     header: "Bucket Name",
     cell: ({ row }) => {
       return (
         <p className="max-w-32 truncate md:max-w-80">
-          {row.getValue("bucket_name")}
+          {row.getValue("bucketName")}
         </p>
       );
     },
@@ -46,10 +46,10 @@ export const modelsColumns: ColumnDef<ModelTableColumns>[] = [
     },
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      return new Date(row.getValue("created_at")).toLocaleString();
+      return new Date(row.getValue("createdAt")).toLocaleString();
     },
   },
   {

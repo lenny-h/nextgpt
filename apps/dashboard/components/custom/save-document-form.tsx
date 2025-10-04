@@ -18,7 +18,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { filenameSchema } from "@workspace/ui/lib/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -66,23 +66,17 @@ export const SaveDocumentForm = memo(
         kind = "code";
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/documents`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            title: values.title,
-            content,
-            kind,
+      await apiFetcher(
+        (client) =>
+          client.documents.$post({
+            json: {
+              title: values.title,
+              content,
+              kind,
+            },
           }),
-        },
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, sharedT.apiCodes);
     };
 
     useEffect(() => {

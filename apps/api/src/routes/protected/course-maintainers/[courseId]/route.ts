@@ -15,108 +15,127 @@ import {
   user as profile,
 } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 import { courseMaintainersSchema } from "./schema.js";
 
-// Get course maintainers
-export async function GET(c: Context) {
-  const courseId = uuidSchema.parse(c.req.param("courseId"));
+const paramSchema = z.object({ courseId: uuidSchema }).strict();
 
-  const user = c.get("user");
+const app = new Hono()
+  .get(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    async (c) => {
+      const { courseId } = c.req.valid("param");
 
-  const bucketId = await getBucketIdByCourseId({ courseId });
+      const user = c.get("user");
 
-  const hasPermissions = await isBucketMaintainer({
-    userId: user.id,
-    bucketId,
-  });
+      const bucketId = await getBucketIdByCourseId({ courseId });
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
+      const hasPermissions = await isBucketMaintainer({
+        userId: user.id,
+        bucketId,
+      });
 
-  const maintainers = await db
-    .select({
-      id: courseMaintainers.userId,
-      username: profile.username,
-    })
-    .from(courseMaintainers)
-    .innerJoin(profile, eq(courseMaintainers.userId, profile.id))
-    .where(eq(courseMaintainers.courseId, courseId));
+      if (!hasPermissions) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  return c.json({ maintainers });
-}
+      const maintainers = await db
+        .select({
+          id: courseMaintainers.userId,
+          username: profile.username,
+        })
+        .from(courseMaintainers)
+        .innerJoin(profile, eq(courseMaintainers.userId, profile.id))
+        .where(eq(courseMaintainers.courseId, courseId));
 
-// Invite course maintainers
-export async function POST(c: Context) {
-  const courseId = uuidSchema.parse(c.req.param("courseId"));
+      return c.json({ maintainers });
+    }
+  )
+  .post(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    validator("json", async (value, c) => {
+      return courseMaintainersSchema.parse(value);
+    }),
+    async (c) => {
+      const { courseId } = c.req.valid("param");
 
-  const user = c.get("user");
+      const { userIds } = c.req.valid("json");
+      const user = c.get("user");
 
-  const { bucketId, name } = await getCourseDetails({
-    courseId,
-  });
+      const { bucketId, name } = await getCourseDetails({
+        courseId,
+      });
 
-  const hasPermissions = await isBucketMaintainer({
-    userId: user.id,
-    bucketId,
-  });
+      const hasPermissions = await isBucketMaintainer({
+        userId: user.id,
+        bucketId,
+      });
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
+      if (!hasPermissions) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  const payload = await c.req.json();
+      const newMaintainers = await filterNonExistingCourseMaintainers({
+        courseId,
+        userIds,
+      });
 
-  const { userIds } = courseMaintainersSchema.parse(payload);
+      await addCourseMaintainerInvitationsBatch({
+        originUserId: user.id,
+        invitations: newMaintainers,
+        courseId,
+        courseName: name,
+      });
 
-  const newMaintainers = await filterNonExistingCourseMaintainers({
-    courseId,
-    userIds,
-  });
+      return c.json({ message: "Maintainers invited" });
+    }
+  )
+  .delete(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    validator("json", async (value, c) => {
+      return courseMaintainersSchema.parse(value);
+    }),
+    async (c) => {
+      const { courseId } = c.req.valid("param");
+      const { userIds } = c.req.valid("json");
+      const user = c.get("user");
 
-  await addCourseMaintainerInvitationsBatch({
-    originUserId: user.id,
-    invitations: newMaintainers,
-    courseId,
-    courseName: name,
-  });
+      const { bucketId } = await getCourseDetails({
+        courseId,
+      });
 
-  return c.json({ message: "Maintainers invited" });
-}
+      const hasPermissions = await isBucketMaintainer({
+        userId: user.id,
+        bucketId,
+      });
 
-// Remove course maintainers
-export async function DELETE(c: Context) {
-  const courseId = uuidSchema.parse(c.req.param("courseId"));
+      if (!hasPermissions) {
+        throw new HTTPException(403, { message: "FORBIDDEN" });
+      }
 
-  const user = c.get("user");
+      if (userIds.includes(user.id)) {
+        throw new HTTPException(400, { message: "CANNOT_REMOVE_YOURSELF" });
+      }
 
-  const { bucketId } = await getCourseDetails({
-    courseId,
-  });
+      await removeCourseMaintainersBatch({
+        userIds,
+        courseId,
+      });
 
-  const hasPermissions = await isBucketMaintainer({
-    userId: user.id,
-    bucketId,
-  });
+      return c.json({ message: "Maintainers removed" });
+    }
+  );
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
-
-  const payload = await c.req.json();
-
-  const { userIds } = courseMaintainersSchema.parse(payload);
-
-  if (userIds.includes(user.id)) {
-    throw new HTTPException(400, { message: "CANNOT_REMOVE_YOURSELF" });
-  }
-
-  await removeCourseMaintainersBatch({
-    userIds,
-    courseId,
-  });
-
-  return c.json({ message: "Maintainers removed" });
-}
+export default app;

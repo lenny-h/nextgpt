@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@workspace/server/*": ["../../packages/server/src/*"]
+    },
     "target": "ESNext",
     "module": "NodeNext",
     "strict": true,

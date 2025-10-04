@@ -1,7 +1,5 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/web-translations";
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -11,7 +9,9 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Check, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -34,13 +34,13 @@ export function InvitationsDialog({
   open,
   onOpenChange,
 }: InvitationsDialogProps) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
   const queryClient = useQueryClient();
 
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const {
-    data: invitations,
+    data: invitationsData,
     isPending,
     error,
     inViewRef,
@@ -48,32 +48,37 @@ export function InvitationsDialog({
     isFetchingNextPage,
   } = useInfiniteQueryWithRPC({
     queryKey: ["invitations"],
-    procedure: "get_incoming_invitations",
-    params: { invitation_type: "user" },
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client.invitations.incoming.$get({
+            query: {
+              invitationType: "user",
+              pageNumber: (pageParam ?? 0).toString(),
+            },
+          }),
+        sharedT.apiCodes,
+      ),
     enabled: open,
   });
+
+  const invitations = invitationsData?.invitations;
 
   const acceptInvitation = async (invitation: Invitation) => {
     try {
       setProcessingId(`accept-${invitation.origin}-${invitation.resource_id}`);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/invitations/accept`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            type: "user",
-            originUserId: invitation.origin,
-            resourceId: invitation.resource_id,
+      await apiFetcher(
+        (client) =>
+          client.invitations.accept.$post({
+            json: {
+              type: "user",
+              originUserId: invitation.origin,
+              resourceId: invitation.resource_id,
+            },
           }),
-        },
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, globalT.globalErrors);
 
       toast.success(`You've joined ${invitation.resource_name}`);
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
@@ -90,23 +95,17 @@ export function InvitationsDialog({
     try {
       setProcessingId(`reject-${invitation.origin}-${invitation.resource_id}`);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/invitations/reject`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            type: "user",
-            originUserId: invitation.origin,
-            resourceId: invitation.resource_id,
+      await apiFetcher(
+        (client) =>
+          client.invitations.reject.$post({
+            json: {
+              type: "user",
+              originUserId: invitation.origin,
+              resourceId: invitation.resource_id,
+            },
           }),
-        },
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, globalT.globalErrors);
 
       toast.success("Invitation rejected");
       queryClient.invalidateQueries({ queryKey: ["invitations"] });

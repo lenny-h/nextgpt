@@ -1,5 +1,5 @@
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useBaseDropzone } from "./use-base-dropzone";
 
 interface Props {
@@ -8,28 +8,22 @@ interface Props {
 }
 
 export function useDropzoneHook({ courseId, processingDate }: Props) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const getSignedUrl = async (file: File, name: string) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/get-signed-url/${courseId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          filename: name,
-          fileSize: file.size,
-          fileType: file.type,
-          processingDate: processingDate?.toISOString(),
+    return await apiFetcher(
+      (client) =>
+        client["get-signed-url"][":courseId"].$post({
+          param: { courseId },
+          json: {
+            filename: name,
+            fileSize: file.size,
+            fileType: file.type as "application/pdf",
+            processingDate: processingDate?.toISOString(),
+          },
         }),
-      },
+      sharedT.apiCodes,
     );
-
-    checkResponse(response, globalT.globalErrors);
-    return response.json();
   };
 
   return useBaseDropzone({ getSignedUrl });

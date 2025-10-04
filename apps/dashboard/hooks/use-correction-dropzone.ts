@@ -1,6 +1,6 @@
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import { type Upload } from "@/types/upload";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useBaseDropzone } from "./use-base-dropzone";
 
 interface Props {
@@ -12,27 +12,25 @@ export function useCorrectionDropzone({
   onUploadChange,
   maxFiles,
 }: Props = {}) {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const getSignedUrl = async (file: File, name: string) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/correction/get-signed-url`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          filename: name,
-          fileSize: file.size,
-          fileType: file.type,
+    const result = await apiFetcher(
+      (client) =>
+        client.correction["get-signed-url"].$post({
+          json: {
+            filename: name,
+            fileSize: file.size,
+            fileType: "application/pdf" as const,
+          },
         }),
-      },
+      sharedT.apiCodes,
     );
-
-    checkResponse(response, globalT.globalErrors);
-    return response.json();
+    // Map newFilename to extFilename for compatibility with useBaseDropzone
+    return {
+      signedUrl: result.signedUrl,
+      extFilename: result.newFilename,
+    };
   };
 
   return useBaseDropzone({

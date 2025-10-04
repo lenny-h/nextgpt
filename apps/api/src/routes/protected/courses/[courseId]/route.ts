@@ -13,65 +13,77 @@ import { deleteFileFromS3 } from "@/src/utils/access-clients/s3-client.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { pages } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 
-export async function DELETE(c: Context) {
-  const courseId = uuidSchema.parse(c.req.param("courseId"));
+const paramSchema = z.object({ courseId: uuidSchema }).strict();
 
-  const user = c.get("user");
+const app = new Hono().delete(
+  "/",
+  validator("param", (value) => {
+    return paramSchema.parse(value);
+  }),
+  async (c) => {
+    const { courseId } = c.req.valid("param");
 
-  const bucketId = await getBucketIdByCourseId({
-    courseId,
-  });
+    const user = c.get("user");
 
-  const hasPermissions = await isBucketMaintainer({
-    userId: user.id,
-    bucketId,
-  });
+    const bucketId = await getBucketIdByCourseId({
+      courseId,
+    });
 
-  if (!hasPermissions) {
-    throw new HTTPException(403, { message: "FORBIDDEN" });
-  }
+    const hasPermissions = await isBucketMaintainer({
+      userId: user.id,
+      bucketId,
+    });
 
-  const files = await getCourseFiles({
-    courseId,
-  });
+    if (!hasPermissions) {
+      throw new HTTPException(403, { message: "FORBIDDEN" });
+    }
 
-  if (files.length === 0) {
+    const files = await getCourseFiles({
+      courseId,
+    });
+
+    if (files.length === 0) {
+      const deletedCourse = await deleteCourse({
+        courseId,
+      });
+
+      return c.json({ name: deletedCourse });
+    }
+
+    const pagesBucket = getPagesBucket();
+
+    for (const file of files) {
+      const filePages = await getFilePages({
+        fileId: file.id,
+      });
+
+      for (const filePage of filePages) {
+        const pageName = filePage.id + ".pdf";
+        await pagesBucket.file(pageName).delete(); // Delete from GCS
+        await db.delete(pages).where(eq(pages.id, filePage.id)); // Delete from postgres
+      }
+
+      await deleteFileFromS3({
+        bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
+        key: `${courseId}/${file.name}`,
+      });
+      await deleteFile({
+        bucketId,
+        fileId: file.id,
+      });
+    }
+
     const deletedCourse = await deleteCourse({
       courseId,
     });
 
     return c.json({ name: deletedCourse });
   }
+);
 
-  const pagesBucket = getPagesBucket();
-
-  for (const file of files) {
-    const filePages = await getFilePages({
-      fileId: file.id,
-    });
-
-    for (const filePage of filePages) {
-      const pageName = filePage.id + ".pdf";
-      await pagesBucket.file(pageName).delete(); // Delete from GCS
-      await db.delete(pages).where(eq(pages.id, filePage.id)); // Delete from postgres
-    }
-
-    await deleteFileFromS3({
-      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
-      key: `${courseId}/${file.name}`,
-    });
-    await deleteFile({
-      bucketId,
-      fileId: file.id,
-    });
-  }
-
-  const deletedCourse = await deleteCourse({
-    courseId,
-  });
-
-  return c.json({ name: deletedCourse });
-}
+export default app;

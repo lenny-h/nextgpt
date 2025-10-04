@@ -2,45 +2,61 @@ import { uuidSchema } from "@/src/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { chats } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
-import { Context } from "hono";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
+import * as z from "zod";
 import { chatsIsFavouriteSchema } from "./schema.js";
 
-export async function GET(c: Context) {
-  const chatId = uuidSchema.parse(c.req.param("chatId"));
+const paramSchema = z.object({ chatId: uuidSchema }).strict();
 
-  const user = c.get("user");
+const app = new Hono()
+  .get(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    async (c) => {
+      const { chatId } = c.req.valid("param");
+      const user = c.get("user");
 
-  const result = await db
-    .select({ isFavourite: chats.isFavourite })
-    .from(chats)
-    .where(and(eq(chats.id, chatId), eq(chats.userId, user.id)))
-    .limit(1);
+      const result = await db
+        .select({ isFavourite: chats.isFavourite })
+        .from(chats)
+        .where(and(eq(chats.id, chatId), eq(chats.userId, user.id)))
+        .limit(1);
 
-  if (result.length === 0) {
-    throw new HTTPException(404, { message: "NOT_FOUND" });
-  }
+      if (result.length === 0) {
+        throw new HTTPException(404, { message: "NOT_FOUND" });
+      }
 
-  return c.json({ isFavourite: result[0].isFavourite });
-}
+      return c.json({ isFavourite: result[0].isFavourite });
+    }
+  )
+  .patch(
+    "/",
+    validator("param", (value) => {
+      return paramSchema.parse(value);
+    }),
+    validator("json", async (value, c) => {
+      return chatsIsFavouriteSchema.parse(value);
+    }),
+    async (c) => {
+      const { chatId } = c.req.valid("param");
+      const { isFavourite } = c.req.valid("json");
+      const user = c.get("user");
 
-export async function PATCH(c: Context) {
-  const chatId = uuidSchema.parse(c.req.param("chatId"));
+      const result = await db
+        .update(chats)
+        .set({ isFavourite })
+        .where(and(eq(chats.id, chatId), eq(chats.userId, user.id)));
 
-  const payload = await c.req.json();
+      if (result.rowCount === 0) {
+        throw new HTTPException(404, { message: "NOT_FOUND" });
+      }
 
-  const { isFavourite } = chatsIsFavouriteSchema.parse(payload);
+      return c.json({ message: "Chat favourite status updated" });
+    }
+  );
 
-  const user = c.get("user");
-
-  const result = await db
-    .update(chats)
-    .set({ isFavourite })
-    .where(and(eq(chats.id, chatId), eq(chats.userId, user.id)));
-
-  if (result.rowCount === 0) {
-    throw new HTTPException(404, { message: "NOT_FOUND" });
-  }
-
-  return c.json({ message: "Chat favourite status updated" });
-}
+export default app;

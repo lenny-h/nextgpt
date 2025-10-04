@@ -4,10 +4,9 @@ import {
   buckets,
 } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
 
-// Get buckets the user maintains
-export async function GET(c: Context) {
+const app = new Hono().get("/", async (c) => {
   const user = c.get("user");
 
   const maintainedBuckets = await db
@@ -27,4 +26,6 @@ export async function GET(c: Context) {
     .where(eq(bucketMaintainers.userId, user.id));
 
   return c.json({ maintainedBuckets });
-}
+});
+
+export default app;

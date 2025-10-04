@@ -1,4 +1,3 @@
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { type MyUIMessage } from "@/types/custom-ui-message";
@@ -8,7 +7,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { ChatRequestOptions } from "ai";
 import equal from "fast-deep-equal";
 import { X } from "lucide-react";
@@ -34,7 +34,7 @@ const PureMessageEditor = ({
   setMessages,
   regenerate,
 }: MessageEditorProps) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const { selectedChatModel } = useChatModel();
   const [isTemporary] = useIsTemporary();
@@ -50,15 +50,13 @@ const PureMessageEditor = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/messages/delete-trailing/${message.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
+      await apiFetcher(
+        (client) =>
+          client.messages["delete-trailing"][":messageId"].$delete({
+            param: { messageId: message.id },
+          }),
+        sharedT.apiCodes,
       );
-
-      checkResponse(response, globalT.globalErrors);
 
       setMessages((messages) => {
         const index = messages.findIndex((m) => m.id === message.id);

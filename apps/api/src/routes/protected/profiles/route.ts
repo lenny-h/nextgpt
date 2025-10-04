@@ -1,46 +1,50 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import { user as profile } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
 import { createProfileSchema } from "./schema.js";
 
-// Get own profile
-export async function GET(c: Context) {
-  const user = c.get("user");
+const app = new Hono()
+  .get("/", async (c) => {
+    const user = c.get("user");
 
-  const result = await db
-    .select({
-      name: profile.name,
-      username: profile.username,
-      isPublic: profile.isPublic,
-    })
-    .from(profile)
-    .where(eq(profile.id, user.id))
-    .limit(1);
+    const result = await db
+      .select({
+        name: profile.name,
+        username: profile.username,
+        isPublic: profile.isPublic,
+      })
+      .from(profile)
+      .where(eq(profile.id, user.id))
+      .limit(1);
 
-  if (result.length === 0) {
-    return c.json(undefined);
-  }
+    if (result.length === 0) {
+      return c.json(undefined);
+    }
 
-  return c.json({ profile: result[0] });
-}
+    return c.json({ profile: result[0] });
+  })
+  .patch(
+    "/",
+    validator("json", async (value, c) => {
+      return createProfileSchema.parse(value);
+    }),
+    async (c) => {
+      const { name, username, isPublic } = c.req.valid("json");
+      const user = c.get("user");
 
-// Update own profile
-export async function PATCH(c: Context) {
-  const payload = await c.req.json();
+      await db
+        .update(profile)
+        .set({
+          name,
+          username,
+          isPublic,
+        })
+        .where(eq(profile.id, user.id));
 
-  const { name, username, isPublic } = createProfileSchema.parse(payload);
+      return c.json({ message: "Profile updated" });
+    }
+  );
 
-  const user = c.get("user");
-
-  await db
-    .update(profile)
-    .set({
-      name,
-      username,
-      isPublic,
-    })
-    .where(eq(profile.id, user.id));
-
-  return c.json({ message: "Profile updated" });
-}
+export default app;

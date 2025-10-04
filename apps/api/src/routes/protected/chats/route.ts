@@ -3,23 +3,39 @@ import { pageNumberSchema } from "@/src/schemas/page-number-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { chats } from "@workspace/server/drizzle/schema.js";
 import { desc, eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
+import * as z from "zod";
 
-export async function GET(c: Context) {
-  const pageNumber = pageNumberSchema.parse(Number(c.req.query("pageNumber")));
-  const itemsPerPage = itemsPerPageSchema.parse(
-    Number(c.req.query("itemsPerPage"))
-  );
+const querySchema = z
+  .object({
+    pageNumber: pageNumberSchema,
+    itemsPerPage: itemsPerPageSchema,
+  })
+  .strict();
 
-  const user = c.get("user");
+const app = new Hono().get(
+  "/",
+  validator("query", (value) => {
+    return querySchema.parse({
+      pageNumber: Number(value.pageNumber),
+      itemsPerPage: Number(value.itemsPerPage),
+    });
+  }),
+  async (c) => {
+    const { pageNumber, itemsPerPage } = c.req.valid("query");
+    const user = c.get("user");
 
-  const userChats = await db
-    .select()
-    .from(chats)
-    .where(eq(chats.userId, user.id))
-    .orderBy(desc(chats.createdAt))
-    .limit(itemsPerPage)
-    .offset(pageNumber * itemsPerPage);
+    const userChats = await db
+      .select()
+      .from(chats)
+      .where(eq(chats.userId, user.id))
+      .orderBy(desc(chats.createdAt))
+      .limit(itemsPerPage)
+      .offset(pageNumber * itemsPerPage);
 
-  return c.json({ userChats });
-}
+    return c.json({ userChats });
+  }
+);
+
+export default app;

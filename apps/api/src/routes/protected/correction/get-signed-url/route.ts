@@ -1,25 +1,31 @@
 import { getSignedUrlForUpload } from "@/src/utils/access-clients/google-storage-client.js";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
 import { getSignedUrlSchema } from "../../get-signed-url/[courseId]/schema.js";
 
-export async function POST(c: Context) {
-  const payload = await c.req.json();
+const app = new Hono().post(
+  "/",
+  validator("json", async (value) => {
+    return getSignedUrlSchema.parse(value);
+  }),
+  async (c) => {
+    const { filename, fileSize } = c.req.valid("json");
+    const user = c.get("user");
 
-  const { filename, fileSize } = getSignedUrlSchema.parse(payload);
+    const newFilename = user.id + "/" + filename;
 
-  const user = c.get("user");
+    const signedUrl = await getSignedUrlForUpload({
+      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket`,
+      filename: newFilename,
+      contentType: "application/pdf",
+      contentLength: fileSize,
+    });
 
-  const newFilename = user.id + "/" + filename;
+    return c.json({
+      signedUrl,
+      newFilename,
+    });
+  }
+);
 
-  const signedUrl = await getSignedUrlForUpload({
-    bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket`,
-    filename: newFilename,
-    contentType: "application/pdf",
-    contentLength: fileSize,
-  });
-
-  return c.json({
-    signedUrl,
-    newFilename,
-  });
-}
+export default app;

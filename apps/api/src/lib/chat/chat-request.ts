@@ -1,6 +1,5 @@
 import * as z from "zod";
 
-import { type User } from "@supabase/supabase-js";
 import { validateUIMessages } from "ai";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -10,6 +9,7 @@ import { metadataSchema } from "../../schemas/metadata-schema.js";
 import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { tools } from "../tools/index.js";
+import { User } from "@workspace/server/drizzle/schema.js";
 
 export class ChatRequest {
   public readonly id: string; // Chat ID
@@ -113,7 +113,7 @@ export class ChatRequest {
 
     const hasPermission = await userHasPermissions({
       userId: this.user.id,
-      metadata: this.user.app_metadata,
+      metadata: (this.user as any).app_metadata, // TODO: fix
       bucketId: this.filter.bucketId,
       courses: this.filter.courses,
       files,

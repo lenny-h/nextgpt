@@ -7,32 +7,46 @@ import {
   courses,
 } from "@workspace/server/drizzle/schema.js";
 import { desc, eq } from "drizzle-orm";
-import { type Context } from "hono";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
+import * as z from "zod";
 
-// Get courses the user maintains
-export async function GET(c: Context) {
-  const pageNumber = pageNumberSchema.parse(c.req.query("pageNumber"));
-  const itemsPerPage = itemsPerPageSchema.parse(c.req.query("itemsPerPage"));
+const querySchema = z
+  .object({
+    pageNumber: pageNumberSchema,
+    itemsPerPage: itemsPerPageSchema,
+  })
+  .strict();
 
-  const user = c.get("user");
+const app = new Hono().get(
+  "/",
+  validator("query", (value) => {
+    return querySchema.parse(value);
+  }),
+  async (c) => {
+    const { pageNumber, itemsPerPage } = c.req.valid("query");
+    const user = c.get("user");
 
-  const maintainedCourses = await db
-    .select({
-      id: courses.id,
-      name: courses.name,
-      description: courses.description,
-      bucket_id: courses.bucketId,
-      bucket_name: buckets.name,
-      created_at: courses.createdAt,
-      private: courses.private,
-    })
-    .from(courseMaintainers)
-    .innerJoin(courses, eq(courseMaintainers.courseId, courses.id))
-    .innerJoin(buckets, eq(courses.bucketId, buckets.id))
-    .where(eq(courseMaintainers.userId, user.id))
-    .orderBy(desc(courses.createdAt))
-    .limit(itemsPerPage)
-    .offset(pageNumber * itemsPerPage);
+    const maintainedCourses = await db
+      .select({
+        id: courses.id,
+        name: courses.name,
+        description: courses.description,
+        bucketId: courses.bucketId,
+        bucketName: buckets.name,
+        createdAt: courses.createdAt,
+        private: courses.private,
+      })
+      .from(courseMaintainers)
+      .innerJoin(courses, eq(courseMaintainers.courseId, courses.id))
+      .innerJoin(buckets, eq(courses.bucketId, buckets.id))
+      .where(eq(courseMaintainers.userId, user.id))
+      .orderBy(desc(courses.createdAt))
+      .limit(itemsPerPage)
+      .offset(pageNumber * itemsPerPage);
 
-  return c.json({ maintainedCourses });
-}
+    return c.json({ maintainedCourses });
+  }
+);
+
+export default app;

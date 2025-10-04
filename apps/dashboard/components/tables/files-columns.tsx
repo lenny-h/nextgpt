@@ -17,7 +17,7 @@ export type FileTableColumns = {
   id: string;
   name: string;
   size: number;
-  created_at: string;
+  createdAt: string;
 };
 
 export const filesColumns: ColumnDef<FileTableColumns>[] = [
@@ -27,7 +27,7 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
     header: "Name",
     cell: ({ row }) => {
       return (
-        <p className="max-w-32 md:max-w-80 truncate">{row.getValue("name")}</p>
+        <p className="max-w-32 truncate md:max-w-80">{row.getValue("name")}</p>
       );
     },
   },
@@ -40,7 +40,7 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
     },
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
       return new Date(row.getValue("created_at")).toLocaleString();

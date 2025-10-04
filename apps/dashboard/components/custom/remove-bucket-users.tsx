@@ -78,8 +78,16 @@ export function RemoveBucketUsers({ bucketId }: Props) {
       selectedUsers={selectedUsers}
       setSelectedUsers={setSelectedUsers}
       shortcut="#"
-      rpc="ilike_bucket_users"
-      bucketId={bucketId}
+      userFetcher={(prefix: string) =>
+        apiFetcher(
+          (client) =>
+            client["bucket-users"][":bucketId"].$get({
+              param: { bucketId },
+              query: { prefix },
+            }),
+          sharedT.apiCodes,
+        )
+      }
     >
       <Button disabled={selectedUsers.length === 0} onClick={submitList}>
         Submit{submitLoading && <Loader2 className="animate-spin" />}
