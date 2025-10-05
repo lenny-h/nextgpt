@@ -27,13 +27,13 @@ export const Models = ({ locale }: Props) => {
       apiFetcher(
         (client) =>
           client["models"].$get({
-            query: { pageNumber: "0" },
+            query: { pageNumber: "0", itemsPerPage: "10" },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const models = modelsData?.models;
+  const models = modelsData?.items;
 
   if (modelsLoading) {
     return (

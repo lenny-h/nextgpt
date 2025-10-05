@@ -2,7 +2,7 @@
 
 import * as m from "motion/react-m";
 
-import { type MyUIMessage } from "@/types/custom-ui-message";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { cn } from "@workspace/ui/lib/utils";
 import { type ChatRequestOptions } from "ai";
 import equal from "fast-deep-equal";

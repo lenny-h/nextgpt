@@ -1,9 +1,9 @@
 import { type EditorMode } from "@/contexts/editor-context";
 import { type EditorContent } from "@/contexts/text-editor-content-context";
-import { type MyUIDataTypes } from "@/types/custom-ui-data-types";
 import { type EditorState as CodeEditorState } from "@codemirror/state";
 import { type EditorView as CodeEditorView } from "@codemirror/view";
 import { type QueryClient } from "@tanstack/react-query";
+import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
 import { diffLines } from "@workspace/ui/editors/jsdiff/line";
 import { diffSentences } from "@workspace/ui/editors/jsdiff/sentence";
 import { resizeEditor } from "@workspace/ui/lib/utils";
@@ -127,7 +127,7 @@ export const processDataPart = ({
         setCodeEditorContent((prev) => {
           const diffResult = diffLines(
             codeDiffPrev.current!.doc.toString(),
-            prev.content
+            prev.content,
           );
 
           return {

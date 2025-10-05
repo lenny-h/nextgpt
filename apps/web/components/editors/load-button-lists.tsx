@@ -3,7 +3,7 @@ import { usePdf } from "@/contexts/pdf-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
-import { ArtifactKind } from "@/types/artifact-kind";
+import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
@@ -20,7 +20,7 @@ interface Props {
 interface File extends ListItem {
   id: string;
   name: string;
-  course_id: string;
+  courseId: string;
 }
 
 export const FilesList = memo(({ open, setOpen, inputValue }: Props) => {

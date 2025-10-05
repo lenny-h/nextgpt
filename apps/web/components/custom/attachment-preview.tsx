@@ -14,7 +14,7 @@
 
 // Modifications copyright (C) 2025 <NextGpt.ai Technologies>
 
-import type { Attachment } from "@/types/attachment";
+import { type Attachment } from "@workspace/api-routes/types/attachment";
 import { FileImage, FileText, Loader, X } from "lucide-react";
 
 interface PreviewAttachmentProps {

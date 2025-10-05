@@ -122,7 +122,7 @@ const app = new Hono().post(
     return c.json({
       signedUrl,
       extFilename,
-      processingDate: processingDate || null,
+      processingDate: processingDate || undefined,
     });
   }
 );

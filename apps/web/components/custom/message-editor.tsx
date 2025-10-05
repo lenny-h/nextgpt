@@ -1,6 +1,6 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
-import { type MyUIMessage } from "@/types/custom-ui-message";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,

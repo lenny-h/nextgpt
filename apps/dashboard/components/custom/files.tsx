@@ -35,13 +35,16 @@ export const Files = ({ locale }: Props) => {
       apiFetcher(
         (client) =>
           client["courses"]["maintained"].$get({
-            query: { pageNumber: (pageParam ?? 0).toString() },
+            query: {
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
+            },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const courses = coursesData?.maintainedCourses.map((course) => ({
+  const courses = coursesData?.items.map((course) => ({
     ...course,
     createdAt: new Date(course.createdAt),
   }));
@@ -63,6 +66,7 @@ export const Files = ({ locale }: Props) => {
             query: {
               courseIds: [selectedCourseId],
               pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
@@ -70,7 +74,7 @@ export const Files = ({ locale }: Props) => {
     enabled: !!selectedCourseId,
   });
 
-  const files = filesData?.files;
+  const files = filesData?.items;
 
   if (coursesPending) {
     return (

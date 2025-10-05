@@ -1,7 +1,6 @@
 "use client";
 
 import { Dropzone } from "@/components/custom/dropzone";
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
 import { Button } from "@workspace/ui/components/button";
 import {
   Command,
@@ -17,19 +16,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export default function UploadFilesPage() {
+  const { sharedT } = useSharedTranslations();
+
   const [value, setValue] = useState("");
   const [coursesPopoverOpen, setCoursesPopoverOpen] = useState(false);
   const [processingDate, setProcessingDate] = useState<Date | undefined>(
-    undefined
+    undefined,
   );
 
   const {
-    data: courses,
+    data: coursesData,
     isPending,
     error: coursesError,
     hasNextPage,
@@ -37,12 +41,24 @@ export default function UploadFilesPage() {
     inViewRef,
   } = useInfiniteQueryWithRPC({
     queryKey: ["courses"],
-    procedure: "get_maintained_courses",
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client["courses"]["maintained"].$get({
+            query: {
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
+            },
+          }),
+        sharedT.apiCodes,
+      ),
   });
+
+  const courses = coursesData.items;
 
   if (isPending) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <Loader2 className="animate-spin" />
       </div>
     );
@@ -50,7 +66,7 @@ export default function UploadFilesPage() {
 
   if (coursesError || !courses) {
     return (
-      <div className="p-2 flex flex-col space-y-8 justify-center items-center h-3/5">
+      <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
           There was an error loading the courses. Please try again later.
         </h1>
@@ -59,7 +75,7 @@ export default function UploadFilesPage() {
   }
 
   return (
-    <div className="w-full flex flex-col items-center space-y-6 px-8 py-2">
+    <div className="flex w-full flex-col items-center space-y-6 px-8 py-2">
       <h1 className="text-2xl font-semibold">Upload course content</h1>
       <Popover open={coursesPopoverOpen} onOpenChange={setCoursesPopoverOpen}>
         <PopoverTrigger asChild>
@@ -67,9 +83,9 @@ export default function UploadFilesPage() {
             variant="outline"
             role="combobox"
             aria-expanded={coursesPopoverOpen}
-            className="w-[200px] flex"
+            className="flex w-[200px]"
           >
-            <p className="flex-1 text-left truncate">
+            <p className="flex-1 truncate text-left">
               {value
                 ? courses.find((course) => course.id === value)?.name
                 : "Select course..."}
@@ -96,7 +112,7 @@ export default function UploadFilesPage() {
                     <Check
                       className={cn(
                         "ml-auto",
-                        value === course.id ? "opacity-100" : "opacity-0"
+                        value === course.id ? "opacity-100" : "opacity-0",
                       )}
                     />
                   </CommandItem>
@@ -104,10 +120,10 @@ export default function UploadFilesPage() {
                 {hasNextPage && (
                   <div
                     ref={inViewRef}
-                    className="h-8 flex justify-center items-center"
+                    className="flex h-8 items-center justify-center"
                   >
                     {isFetchingNextPage && (
-                      <Loader2 className="animate-spin size-4" />
+                      <Loader2 className="size-4 animate-spin" />
                     )}
                   </div>
                 )}

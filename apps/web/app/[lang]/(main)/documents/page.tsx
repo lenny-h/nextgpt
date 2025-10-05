@@ -2,7 +2,7 @@
 
 import { DocumentsList } from "@/components/custom/documents-list";
 import { Header } from "@/components/custom/toggle-sidebars-header";
-import { type Document } from "@/types/document";
+import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Input } from "@workspace/ui/components/input";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
@@ -12,7 +12,9 @@ import { useEffect, useState } from "react";
 export default function DocumentsPage() {
   const { sharedT } = useSharedTranslations();
 
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<Omit<CustomDocument, "userId">[]>(
+    [],
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);

@@ -43,7 +43,7 @@ export const ModelSelector = memo(() => {
     enabled: !!filter.bucketId,
   });
 
-  const userModels = modelsData?.models;
+  const userModels = modelsData?.items;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

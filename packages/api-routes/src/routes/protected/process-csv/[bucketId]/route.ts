@@ -12,12 +12,23 @@ import { validator } from "hono/validator";
 import { default as papa } from "papaparse";
 
 const BATCH_SIZE = 100;
+const MAX_FILE_SIZE = 32 * 1024; // 32KB
 const paramSchema = z.object({ bucketId: uuidSchema }).strict();
+const formSchema = z
+  .object({
+    file: z
+      .instanceof(File)
+      .refine((f) => f.size <= MAX_FILE_SIZE, { message: "FILE_TOO_LARGE" }),
+  })
+  .strict();
 
 const app = new Hono().post(
   "/",
   validator("param", (value) => {
     return paramSchema.parse(value);
+  }),
+  validator("form", (value) => {
+    return formSchema.parse(value);
   }),
   async (c) => {
     const { bucketId } = c.req.valid("param");
@@ -32,8 +43,8 @@ const app = new Hono().post(
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
 
-    const formData = await c.req.formData();
-    const file = formData.get("file");
+    const body = c.req.valid("form");
+    const file = body.file;
 
     if (!file || !(file instanceof File)) {
       throw new HTTPException(400, { message: "BAD_REQUEST" });

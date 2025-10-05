@@ -1,6 +1,6 @@
 import { usePdf } from "@/contexts/pdf-context";
 import { useRefs } from "@/contexts/refs-context";
-import { type DocumentSource } from "@/types/document-source";
+import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { cn } from "@workspace/ui/lib/utils";

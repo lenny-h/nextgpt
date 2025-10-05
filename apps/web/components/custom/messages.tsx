@@ -1,4 +1,4 @@
-import { type MyUIMessage } from "@/types/custom-ui-message";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { useScrollToBottom } from "@workspace/ui/hooks/use-scroll-to-bottom";
 import { type ChatRequestOptions } from "ai";
 import equal from "fast-deep-equal";

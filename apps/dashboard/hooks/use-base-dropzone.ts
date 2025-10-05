@@ -1,6 +1,6 @@
 import { type Upload } from "@/types/upload";
+import { filenameSchema } from "@workspace/api-routes/schemas/filename-schema";
 import { generateUUID } from "@workspace/ui/lib/utils";
-import { filenameSchema } from "@workspace/ui/types/validations";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -8,7 +8,7 @@ interface Props {
   onUploadChange?: (uploads: { [key: string]: Upload }) => void;
   getSignedUrl: (
     file: File,
-    name: string
+    name: string,
   ) => Promise<{
     signedUrl: string;
     extFilename: string;
@@ -62,7 +62,7 @@ export function useBaseDropzone({
     try {
       const { signedUrl, extFilename, processingDate } = await getSignedUrl(
         file,
-        name
+        name,
       );
       const renamedFile = new File([file], extFilename, { type: file.type });
 
@@ -87,10 +87,10 @@ export function useBaseDropzone({
               "Upload failed:",
               xhr.status,
               xhr.statusText,
-              xhr.responseText
+              xhr.responseText,
             );
             reject(
-              new Error(`HTTP Error: ${xhr.status} - ${xhr.responseText}`)
+              new Error(`HTTP Error: ${xhr.status} - ${xhr.responseText}`),
             );
           }
         };

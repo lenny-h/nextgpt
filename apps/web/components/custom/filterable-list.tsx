@@ -1,4 +1,4 @@
-import { ArtifactKind } from "@/types/artifact-kind";
+import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { Check, Loader2 } from "lucide-react";

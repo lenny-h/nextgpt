@@ -1,11 +1,11 @@
 import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
 import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { File, Loader2 } from "lucide-react";
@@ -32,7 +32,7 @@ export const DocumentsList = ({
   const { setCodeEditorContent } = useCodeEditorContent();
 
   const {
-    data: documents,
+    data: documentsData,
     isPending,
     error,
     inViewRef,
@@ -40,9 +40,20 @@ export const DocumentsList = ({
     isFetchingNextPage,
   } = useInfiniteQueryWithRPC({
     queryKey: ["documents"],
-    procedure: "get_user_documents",
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client.documents.$get({
+            query: {
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
+            },
+          }),
+        sharedT.apiCodes,
+      ),
   });
 
+  const documents = documentsData.items;
   const documentsToDisplay = isSearching ? ilikeDocuments : documents;
 
   const onClickDocument = async (
@@ -50,7 +61,7 @@ export const DocumentsList = ({
     documentTitle: string,
     documentKind: "text" | "code",
   ) => {
-    const { document: fullDocument } = await apiFetcher(
+    const { item: fullDocument } = await apiFetcher(
       (client) =>
         client.documents[":documentId"].$get({
           param: { documentId },

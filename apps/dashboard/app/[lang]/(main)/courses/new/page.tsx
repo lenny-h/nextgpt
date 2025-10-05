@@ -5,7 +5,6 @@ import { z } from "zod";
 import { Selector } from "@/components/custom/selector";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@workspace/ui/components/button";
 import {
   Form,
   FormControl,
@@ -17,13 +16,13 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createCourseFormSchema } from "./schema";
-import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
 
 export default function CreateCoursePage() {
   const { locale, sharedT } = useSharedTranslations();
@@ -32,7 +31,7 @@ export default function CreateCoursePage() {
   const router = useRouter();
 
   const {
-    data: buckets,
+    data: bucketsData,
     error: bucketsError,
     isLoading: bucketsLoading,
   } = useQuery({
@@ -43,6 +42,8 @@ export default function CreateCoursePage() {
         sharedT.apiCodes,
       ),
   });
+
+  const buckets = bucketsData?.items;
 
   const form = useForm<z.infer<typeof createCourseFormSchema>>({
     resolver: zodResolver(createCourseFormSchema),

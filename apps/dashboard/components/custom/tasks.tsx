@@ -34,13 +34,16 @@ export const Tasks = ({ locale }: Props) => {
       apiFetcher(
         (client) =>
           client["courses"]["maintained"].$get({
-            query: { pageNumber: (pageParam ?? 0).toString() },
+            query: {
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
+            },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const courses = coursesData?.maintainedCourses.map((course) => ({
+  const courses = coursesData?.items.map((course) => ({
     ...course,
     createdAt: new Date(course.createdAt),
   }));
@@ -61,8 +64,8 @@ export const Tasks = ({ locale }: Props) => {
           client.tasks[":courseId"].$get({
             param: { courseId: selectedCourseId },
             query: {
-              courseIds: [selectedCourseId],
               pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
@@ -70,7 +73,7 @@ export const Tasks = ({ locale }: Props) => {
     enabled: !!selectedCourseId,
   });
 
-  const tasks = tasksData?.tasks.map((task) => ({
+  const tasks = tasksData?.items.map((task) => ({
     ...task,
     pubDate: task.pubDate ?? "",
   }));

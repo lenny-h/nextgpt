@@ -1,6 +1,6 @@
 "use client";
 
-import type { DocumentSource } from "@/types/document-source";
+import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import React, {
   createContext,
   type ReactNode,
@@ -14,7 +14,7 @@ type CSResultsContextType = [
 ];
 
 const CSResultsContext = createContext<CSResultsContextType | undefined>(
-  undefined
+  undefined,
 );
 
 interface Props {

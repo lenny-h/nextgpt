@@ -31,13 +31,14 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
             query: {
               invitationType: type,
               pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const incomingInvitations = incomingInvitationsData.invitations;
+  const incomingInvitations = incomingInvitationsData.items;
 
   const {
     data: outgoingInvitationsData,
@@ -55,13 +56,14 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
             query: {
               invitationType: type,
               pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const outgoingInvitations = outgoingInvitationsData.invitations;
+  const outgoingInvitations = outgoingInvitationsData.items;
 
   return (
     <div className="flex flex-col space-y-6">

@@ -1,18 +1,20 @@
+import { Chat } from "@workspace/server/drizzle/schema.js";
 import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   smoothStream,
+  streamText,
   type Tool,
   type UIMessageStreamWriter,
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
-import { generateUUID } from "../../utils/utils.js";
 import { getChatById, saveChat } from "../db/queries/chats.js";
 import { saveMessages } from "../db/queries/messages.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatRequest } from "./chat-request.js";
-import { Chat } from "@workspace/server/drizzle/schema.js";
+
+type StreamTextInput = Parameters<typeof streamText>[0];
 
 export abstract class ChatHandler {
   protected request: ChatRequest;
@@ -77,12 +79,15 @@ export abstract class ChatHandler {
     });
   }
 
-  protected createStreamTextConfig({ systemPrompt }: { systemPrompt: string }) {
+  protected createStreamTextConfig({
+    systemPrompt,
+  }: {
+    systemPrompt: string;
+  }): StreamTextInput {
     return {
-      system: systemPrompt,
       model: this.config.modelId,
+      system: systemPrompt,
       messages: convertToModelMessages(this.request.messages),
-      experimental_generateMessageId: generateUUID,
       experimental_transform: smoothStream({
         chunking: "line",
       }),

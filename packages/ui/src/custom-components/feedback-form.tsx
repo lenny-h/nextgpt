@@ -1,11 +1,9 @@
-import { memo } from "react";
-import { useSharedTranslations } from "../contexts/shared-translations-context";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { feedbackSchema, type FeedbackFormData } from "../lib/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { memo } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { apiFetcher } from "../lib/fetcher";
 import {
   Form,
   FormControl,
@@ -16,8 +14,10 @@ import {
 } from "../components/form";
 import { Input } from "../components/input";
 import { Textarea } from "../components/textarea";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
+import { apiFetcher } from "../lib/fetcher";
+import { feedbackSchema, type FeedbackFormData } from "../lib/validations";
 import { SubmitButton } from "./submit-button";
-import Link from "next/link";
 
 export const FeedbackForm = memo(() => {
   const { locale, sharedT } = useSharedTranslations();
@@ -34,15 +34,10 @@ export const FeedbackForm = memo(() => {
 
   async function onSubmit(values: FeedbackFormData) {
     const feedbackPromise = apiFetcher(
-      "feedback",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(values),
-      },
+      (client) =>
+        client.feedback.$post({
+          json: values,
+        }),
       sharedT.apiCodes
     ).then(() => {
       router.push(`/${locale}`);

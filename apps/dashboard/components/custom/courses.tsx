@@ -32,13 +32,16 @@ export const Courses = ({ locale }: Props) => {
       apiFetcher(
         (client) =>
           client["courses"]["maintained"].$get({
-            query: { pageNumber: (pageParam ?? 0).toString() },
+            query: {
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
+            },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const courses = coursesData?.maintainedCourses;
+  const courses = coursesData?.items;
 
   if (isPending) {
     return (

@@ -1,7 +1,7 @@
 import { useRefs } from "@/contexts/refs-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
-import { type ArtifactKind } from "@/types/artifact-kind";
-import { type Document } from "@/types/document";
+import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
+import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
@@ -12,7 +12,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
-  documents: Document[];
+  documents: Omit<CustomDocument, "userId">[];
   isSearching: boolean;
 }
 
@@ -129,7 +129,7 @@ export const DocumentsList = ({
               <Badge variant="outline">{document.kind}</Badge>
             </div>
             <p className="text-muted-foreground w-full truncate text-start text-sm">
-              {new Date(document.created_at).toLocaleString()}
+              {new Date(document.createdAt).toLocaleString()}
             </p>
           </div>
         </button>

@@ -1,6 +1,5 @@
+import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema";
 import * as z from "zod";
-
-import { uuidSchema } from "@workspace/ui/types/validations";
 
 export const createCourseFormSchema = z
   .object({

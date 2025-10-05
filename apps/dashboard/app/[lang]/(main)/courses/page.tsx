@@ -1,6 +1,6 @@
 import { Courses } from "@/components/custom/courses";
-import { type Locale } from "@/i18n.config";
 import { Button } from "@workspace/ui/components/button";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 
 export default async function CoursesPage({
@@ -12,7 +12,7 @@ export default async function CoursesPage({
 
   return (
     <>
-      <Button asChild className="absolute top-4 right-4">
+      <Button asChild className="absolute right-4 top-4">
         <Link href={`/${lang}/courses/new`}>Create a course</Link>
       </Button>
       <Courses locale={lang} />

@@ -1,13 +1,13 @@
 import { usePdf } from "@/contexts/pdf-context";
 import { useRefs } from "@/contexts/refs-context";
-import { type MyUITools } from "@/types/custom-ui-tools";
+import { type MyUITools } from "@workspace/api-routes/types/custom-ui-tools";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
-import { ToolUIPart } from "ai";
+import { type ToolUIPart } from "ai";
 import { ChevronDownIcon, FileText, Loader2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 

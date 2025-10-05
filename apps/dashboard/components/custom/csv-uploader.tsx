@@ -1,7 +1,6 @@
 import { Input } from "@workspace/ui/components/input";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { useState } from "react";
 import { toast } from "sonner";
 
 interface Props {
@@ -11,20 +10,14 @@ interface Props {
 export const CSVUploader = ({ bucketId }: Props) => {
   const { sharedT } = useSharedTranslations();
 
-  const [file, setFile] = useState<File | null>(null);
-
-  const handleSubmit = async () => {
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("bucketId", bucketId);
-
+  const handleSubmit = async (file: File) => {
     const result = await apiFetcher(
       (client) =>
         client["process-csv"][":bucketId"].$post({
           param: { bucketId },
-          form: formData,
+          form: {
+            file,
+          },
         }),
       sharedT.apiCodes,
     );
@@ -49,14 +42,9 @@ export const CSVUploader = ({ bucketId }: Props) => {
       return;
     }
 
-    setFile(selectedFile);
-
-    toast.promise(handleSubmit(), {
+    toast.promise(handleSubmit(selectedFile), {
       loading: "Processing CSV file...",
-      success: (result) => {
-        setFile(null);
-        return `${result.nameCount} names processed successfully`;
-      },
+      success: (result) => `${result.nameCount} names processed successfully`,
       error: (err) => {
         return `Error processing file: ${err.message}`;
       },

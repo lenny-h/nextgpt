@@ -1,4 +1,4 @@
-import { type Attachment } from "@/types/attachment";
+import { type Attachment } from "@workspace/api-routes/types/attachment";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";

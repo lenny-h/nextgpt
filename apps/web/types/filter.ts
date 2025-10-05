@@ -1,4 +1,4 @@
-import { ArtifactKind } from "./artifact-kind";
+import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 
 export interface FrontendFilter {
   bucketId: string;

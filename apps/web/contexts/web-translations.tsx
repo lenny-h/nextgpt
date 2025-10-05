@@ -1,6 +1,6 @@
 import deDictionary from "@/dictionaries/de.json";
 import enDictionary from "@/dictionaries/en.json";
-import { type Locale } from "@/i18n.config";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import { type ReactNode, createContext, useContext } from "react";
 
 export type WebTranslations = {

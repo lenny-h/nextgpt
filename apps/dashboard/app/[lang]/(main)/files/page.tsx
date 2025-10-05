@@ -1,6 +1,6 @@
 import { Files } from "@/components/custom/files";
-import { type Locale } from "@/i18n.config";
 import { Button } from "@workspace/ui/components/button";
+import { Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 
 export default async function FilePage({
@@ -12,7 +12,7 @@ export default async function FilePage({
 
   return (
     <>
-      <Button asChild className="absolute top-4 right-4">
+      <Button asChild className="absolute right-4 top-4">
         <Link href={`/${lang}/files/new`}>Upload files</Link>
       </Button>
       <Files locale={lang} />

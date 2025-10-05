@@ -33,7 +33,7 @@ export default function PromptsPage() {
       apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
 
-  const prompts = promptsData?.prompts;
+  const prompts = promptsData?.items;
 
   if (promptsLoading) {
     return (

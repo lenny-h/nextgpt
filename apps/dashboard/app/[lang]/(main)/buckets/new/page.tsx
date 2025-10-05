@@ -5,6 +5,7 @@ import * as z from "zod";
 import { bucketSubscriptions } from "@/lib/bucket-subscriptions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { BucketType } from "@workspace/server/drizzle/schema";
 import {
   Form,
   FormControl,
@@ -52,7 +53,10 @@ export default function CreateBucketPage() {
         client["buckets"].$post({
           json: {
             values,
-            type: subscription.type.toLowerCase(),
+            type: subscription.type.toLowerCase() as
+              | "small"
+              | "medium"
+              | "large",
           },
         }),
       sharedT.apiCodes,

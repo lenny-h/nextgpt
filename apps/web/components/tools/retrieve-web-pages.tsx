@@ -1,10 +1,10 @@
-import { type MyUITools } from "@/types/custom-ui-tools";
+import { type MyUITools } from "@workspace/api-routes/types/custom-ui-tools";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible";
-import { ToolUIPart } from "ai";
+import { type ToolUIPart } from "ai";
 import { ChevronDownIcon, Globe, Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 

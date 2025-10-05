@@ -2,8 +2,8 @@
 
 import { Chat } from "@/components/custom/chat";
 import { ChatSkeleton } from "@/components/custom/chat-skeleton";
-import { type MyUIMessage } from "@/types/custom-ui-message";
 import { useQuery } from "@tanstack/react-query";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useUser } from "@workspace/ui/contexts/user-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";

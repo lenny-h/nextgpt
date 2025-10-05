@@ -33,7 +33,7 @@ export default function AddModelPage() {
   const router = useRouter();
 
   const {
-    data: buckets,
+    data: bucketsData,
     error: bucketsError,
     isLoading: bucketsLoading,
   } = useQuery({
@@ -44,6 +44,8 @@ export default function AddModelPage() {
         sharedT.apiCodes,
       ),
   });
+
+  const buckets = bucketsData?.items;
 
   const form = useForm<AddModelFormData>({
     resolver: zodResolver(addModelFormSchema),

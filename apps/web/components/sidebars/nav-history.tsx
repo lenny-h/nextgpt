@@ -70,14 +70,15 @@ export const NavHistory = memo(() => {
         (client) =>
           client["chats"].$get({
             query: {
-              ...(pageParam !== undefined ? { pageNumber: pageParam } : {}),
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const chats = chatsData?.userChats;
+  const chats = chatsData?.items;
 
   const {
     data: favouriteChatsData,
@@ -93,14 +94,15 @@ export const NavHistory = memo(() => {
         (client) =>
           client["chats"]["favourites"].$get({
             query: {
-              ...(pageParam !== undefined ? { pageNumber: pageParam } : {}),
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
       ),
   });
 
-  const favouriteChats = favouriteChatsData?.userChats;
+  const favouriteChats = favouriteChatsData?.items;
 
   const updateChat = async (chatId: string, isFavourite: boolean) => {
     await apiFetcher(
@@ -311,7 +313,7 @@ export const NavHistory = memo(() => {
             {favouriteChats.map((chat) => (
               <ChatItem
                 key={chat.id}
-                chat={chat}
+                chat={{ ...chat, createdAt: new Date(chat.createdAt) }}
                 isActive={chat.id === id}
                 isFavorite={true}
                 onFavorite={handleRemove}

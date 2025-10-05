@@ -1,6 +1,6 @@
 import { Models } from "@/components/custom/models";
-import { type Locale } from "@/i18n.config";
 import { Button } from "@workspace/ui/components/button";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 
 export default async function ModelsPage({
@@ -12,7 +12,7 @@ export default async function ModelsPage({
 
   return (
     <>
-      <Button asChild className="absolute top-4 right-4">
+      <Button asChild className="absolute right-4 top-4">
         <Link href={`/${lang}/models/new`}>Add models</Link>
       </Button>
       <Models locale={lang} />

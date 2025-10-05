@@ -1,6 +1,6 @@
 "use client";
 
-import type { DocumentSource } from "@/types/document-source";
+import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import React, {
   createContext,
   type ReactNode,
@@ -14,7 +14,7 @@ type VSResultsContextType = [
 ];
 
 const VSResultsContext = createContext<VSResultsContextType | undefined>(
-  undefined
+  undefined,
 );
 
 interface Props {

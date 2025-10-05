@@ -1,8 +1,8 @@
-import { type MyUIMessage } from "@/types/custom-ui-message";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 
 export function createDiffViewString(
   changes: Array<{ value: string; added?: boolean; removed?: boolean }>,
-  isText: boolean
+  isText: boolean,
 ) {
   let diffString = "";
 

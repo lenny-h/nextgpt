@@ -24,7 +24,7 @@ export default function BucketUsersPage() {
   }
 
   const {
-    data: currentBucketUsers,
+    data: currentBucketUsersData,
     isPending,
     isError,
   } = useQuery({
@@ -32,10 +32,18 @@ export default function BucketUsersPage() {
     queryFn: () =>
       apiFetcher(
         (client) =>
-          client["bucket-users"][":bucketId"].$get({ param: { bucketId } }),
+          client["bucket-users"][":bucketId"].$get({
+            param: { bucketId },
+            query: {
+              pageNumber: "0",
+              itemsPerPage: "10",
+            },
+          }),
         sharedT.apiCodes,
       ),
   });
+
+  const currentBucketUsers = currentBucketUsersData?.items;
 
   if (isPending) {
     return (

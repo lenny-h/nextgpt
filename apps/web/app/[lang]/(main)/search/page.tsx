@@ -5,7 +5,7 @@ import { Header } from "@/components/custom/toggle-sidebars-header";
 import { useCSResults } from "@/contexts/classic-search-results";
 import { useFilter } from "@/contexts/filter-context";
 import { useVSResults } from "@/contexts/semantic-search-results";
-import { type DocumentSource } from "@/types/document-source";
+import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Input } from "@workspace/ui/components/input";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
@@ -61,7 +61,7 @@ export default function SearchPage() {
     setIsLoading(true);
 
     try {
-      const { sources } = await apiFetcher(
+      const { items } = await apiFetcher(
         (client) =>
           client.search[":query"].$post({
             param: { query: encodeURI(query) },
@@ -69,6 +69,8 @@ export default function SearchPage() {
               filter: {
                 ...filter,
                 courses: filter.courses.map((course) => course.id),
+                files: filter.files.map((file) => file.id),
+                documents: filter.documents.map((doc) => doc.id),
               },
               fts: searchMode === "keywords",
             },
@@ -76,7 +78,7 @@ export default function SearchPage() {
         sharedT.apiCodes,
       );
 
-      setSources(sources);
+      setSources(items.documentSources);
     } catch (error) {
       toast.error(
         error instanceof Error

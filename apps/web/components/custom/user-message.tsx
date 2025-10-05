@@ -2,7 +2,7 @@
 
 import * as m from "motion/react-m";
 
-import { type MyUIMessage } from "@/types/custom-ui-message";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,

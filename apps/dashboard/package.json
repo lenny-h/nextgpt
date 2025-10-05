@@ -25,7 +25,6 @@
     "@opennextjs/cloudflare": "^1.8.2",
     "@tanstack/react-query": "^5.87.1",
     "@tanstack/react-table": "^8.21.3",
-    "@workspace/server": "workspace:*",
     "@workspace/ui": "workspace:*",
     "codemirror": "^6.0.2",
     "lucide-react": "^0.475.0",
@@ -44,7 +43,7 @@
     "react-resizable-panels": "^3.0.5",
     "sonner": "^2.0.7",
     "usehooks-ts": "^3.1.1",
-    "zod": "^4.1.5"
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@types/node": "^22.13.14",
@@ -52,6 +51,7 @@
     "@types/react-dom": "^19.1.7",
     "@workspace/api-routes": "workspace:*",
     "@workspace/eslint-config": "workspace:*",
+    "@workspace/server": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "typescript": "^5.9.3",

@@ -60,7 +60,7 @@ export function FilterProvider({ children }: Props) {
       ),
   });
 
-  const buckets = bucketsData?.usedBuckets;
+  const buckets = bucketsData?.items;
 
   useEffect(() => {
     if (buckets && buckets.length > 0 && buckets[0]) {

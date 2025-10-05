@@ -40,7 +40,7 @@ const app = new Hono().get(
 
     const users = await db
       .select({
-        userId: bucketUsers.userId,
+        id: bucketUsers.userId,
         username: profile.username,
       })
       .from(bucketUsers)

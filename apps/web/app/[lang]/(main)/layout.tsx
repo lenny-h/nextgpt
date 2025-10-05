@@ -10,14 +10,14 @@ import { ChatModelProvider } from "@/contexts/selected-chat-model";
 import { VSResultsProvider } from "@/contexts/semantic-search-results";
 import { TempChatProvider } from "@/contexts/temporary-chat-context";
 import { TextEditorContentProvider } from "@/contexts/text-editor-content-context";
-import { auth } from "@workspace/server/auth-server";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
+import { client } from "@workspace/ui/lib/auth-client";
 import { type Locale } from "@workspace/ui/lib/i18n.config";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function MainLayout({
@@ -29,14 +29,10 @@ export default async function MainLayout({
 }) {
   const lang = (await params).lang;
 
-  const headersStore = await headers();
+  const { data } = await client.getSession();
 
-  const session = await auth.api.getSession({
-    headers: headersStore,
-  });
-
-  const user = session?.user
-    ? { ...session.user, image: session.user.image ?? null }
+  const user = data?.user
+    ? { ...data.user, image: data.user.image ?? null }
     : null;
 
   if (!user) {

@@ -6,11 +6,12 @@ import { useRefs } from "@/contexts/refs-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
-import { type MyUIMessage } from "@/types/custom-ui-message";
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
+import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { generateUUID } from "@workspace/ui/lib/utils";
-import { DefaultChatTransport } from "ai";
+import { type DataUIPart, DefaultChatTransport } from "ai";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ChatHeader } from "./chat-header";
@@ -58,7 +59,7 @@ export function Chat({
         processDataPart({
           chatId,
           queryClient,
-          dataPart,
+          dataPart: dataPart as DataUIPart<MyUIDataTypes>,
           panelRef,
           textEditorRef,
           codeEditorRef,

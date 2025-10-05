@@ -16,18 +16,18 @@ import { Check, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+type Invitation = {
+  origin: string;
+  originUsername: string;
+  target: string;
+  resourceId: string;
+  createdAt: string;
+  resourceName: string;
+};
+
 interface InvitationsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-interface Invitation {
-  created_at: string;
-  origin: string;
-  origin_username: string;
-  resource_id: string;
-  resource_name: string;
-  target: string;
 }
 
 export function InvitationsDialog({
@@ -55,6 +55,7 @@ export function InvitationsDialog({
             query: {
               invitationType: "user",
               pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
             },
           }),
         sharedT.apiCodes,
@@ -62,11 +63,11 @@ export function InvitationsDialog({
     enabled: open,
   });
 
-  const invitations = invitationsData?.invitations;
+  const invitations = invitationsData?.items;
 
   const acceptInvitation = async (invitation: Invitation) => {
     try {
-      setProcessingId(`accept-${invitation.origin}-${invitation.resource_id}`);
+      setProcessingId(`accept-${invitation.origin}-${invitation.resourceId}`);
 
       await apiFetcher(
         (client) =>
@@ -74,13 +75,13 @@ export function InvitationsDialog({
             json: {
               type: "user",
               originUserId: invitation.origin,
-              resourceId: invitation.resource_id,
+              resourceId: invitation.resourceId,
             },
           }),
         sharedT.apiCodes,
       );
 
-      toast.success(`You've joined ${invitation.resource_name}`);
+      toast.success(`You've joined ${invitation.resourceName}`);
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
       queryClient.invalidateQueries({ queryKey: ["buckets"] });
     } catch (error) {
@@ -93,7 +94,7 @@ export function InvitationsDialog({
 
   const rejectInvitation = async (invitation: Invitation) => {
     try {
-      setProcessingId(`reject-${invitation.origin}-${invitation.resource_id}`);
+      setProcessingId(`reject-${invitation.origin}-${invitation.resourceId}`);
 
       await apiFetcher(
         (client) =>
@@ -101,7 +102,7 @@ export function InvitationsDialog({
             json: {
               type: "user",
               originUserId: invitation.origin,
-              resourceId: invitation.resource_id,
+              resourceId: invitation.resourceId,
             },
           }),
         sharedT.apiCodes,
@@ -141,18 +142,18 @@ export function InvitationsDialog({
             <>
               {invitations.map((invitation) => (
                 <div
-                  key={`${invitation.origin}-${invitation.resource_id}`}
+                  key={`${invitation.origin}-${invitation.resourceId}`}
                   className="flex flex-col space-y-2 rounded-lg border p-3"
                 >
                   <div>
                     <p className="text-sm font-medium">
-                      {invitation.origin_username} invited you to join
+                      {invitation.originUsername} invited you to join
                     </p>
                     <p className="text-base font-semibold">
-                      {invitation.resource_name}
+                      {invitation.resourceName}
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      {new Date(invitation.created_at).toLocaleDateString()}
+                      {new Date(invitation.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex justify-end space-x-2">
@@ -163,7 +164,7 @@ export function InvitationsDialog({
                       disabled={!!processingId}
                     >
                       {processingId ===
-                      `reject-${invitation.origin}-${invitation.resource_id}` ? (
+                      `reject-${invitation.origin}-${invitation.resourceId}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <X className="mr-1 h-4 w-4" />
@@ -177,7 +178,7 @@ export function InvitationsDialog({
                       disabled={!!processingId}
                     >
                       {processingId ===
-                      `accept-${invitation.origin}-${invitation.resource_id}` ? (
+                      `accept-${invitation.origin}-${invitation.resourceId}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Check className="mr-1 h-4 w-4" />

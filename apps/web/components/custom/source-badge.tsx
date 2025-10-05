@@ -2,7 +2,7 @@
 
 import { usePdf } from "@/contexts/pdf-context";
 import { useRefs } from "@/contexts/refs-context";
-import { type DocumentSource } from "@/types/document-source";
+import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Badge } from "@workspace/ui/components/badge";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { cn } from "@workspace/ui/lib/utils";

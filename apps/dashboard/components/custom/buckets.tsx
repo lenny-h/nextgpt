@@ -24,7 +24,7 @@ export const Buckets = memo(({ locale }: Props) => {
   const { dashboardT } = useDashboardTranslations();
 
   const {
-    data: buckets,
+    data: bucketsData,
     isPending,
     isError,
   } = useQuery({
@@ -35,6 +35,8 @@ export const Buckets = memo(({ locale }: Props) => {
         sharedT.apiCodes,
       ),
   });
+
+  const buckets = bucketsData?.items;
 
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -173,7 +175,7 @@ export const Buckets = memo(({ locale }: Props) => {
                 deleteResource={(queryClient, errorDictionary) => {
                   setDeleteDialog(false);
                   return deleteResource({
-                    deleteFetcher: apiFetcher(
+                    deletePromise: apiFetcher(
                       (client) =>
                         client["buckets"][":bucketId"].$delete({
                           param: { bucketId: selectedBucket.id },

@@ -1,5 +1,5 @@
 import { useFilter } from "@/contexts/filter-context";
-import { type ArtifactKind } from "@/types/artifact-kind";
+import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
@@ -15,7 +15,7 @@ interface Props {
 interface File extends ListItem {
   id: string;
   name: string;
-  course_id: string;
+  courseId: string;
 }
 
 export const FilesList = memo(({ open, inputValue, max }: Props) => {

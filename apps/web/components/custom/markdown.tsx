@@ -1,4 +1,4 @@
-import { type DocumentSource } from "@/types/document-source";
+import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";

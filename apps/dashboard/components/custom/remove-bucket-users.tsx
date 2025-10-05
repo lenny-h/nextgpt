@@ -81,7 +81,7 @@ export function RemoveBucketUsers({ bucketId }: Props) {
       userFetcher={(prefix: string) =>
         apiFetcher(
           (client) =>
-            client["bucket-users"][":bucketId"].$get({
+            client["bucket-users"]["ilike"][":bucketId"].$get({
               param: { bucketId },
               query: { prefix },
             }),

@@ -1,6 +1,5 @@
 import * as z from "zod";
 
-import { artifactKindSchema } from "@/types/artifact-kind.js";
 import { uuidSchema } from "./uuid-schema.js";
 
 export const dataSchemas = {
@@ -13,7 +12,7 @@ export const dataSchemas = {
     .object({
       id: uuidSchema,
       title: z.string().min(1).max(128),
-      kind: artifactKindSchema,
+      kind: z.enum(["text", "code"]),
     })
     .strict(),
   "text-delta": z.string(),
