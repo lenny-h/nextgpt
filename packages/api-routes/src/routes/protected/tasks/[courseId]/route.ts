@@ -55,7 +55,7 @@ const app = new Hono().get(
       .limit(itemsPerPage)
       .offset(pageNumber * itemsPerPage);
 
-    return c.json({ tasks: result });
+    return c.json({ items: result });
   }
 );
 

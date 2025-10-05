@@ -8,9 +8,9 @@ import {
 import { Key } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
-import { useSharedTranslations } from "../contexts/shared-translations-context.js";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 import { client } from "../lib/auth-client";
-import { SubmitButton } from "./submit-button.js";
+import { SubmitButton } from "./submit-button";
 
 export const SocialLogins = memo(() => {
   const { sharedT } = useSharedTranslations();

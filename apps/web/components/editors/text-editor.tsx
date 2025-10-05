@@ -1,7 +1,6 @@
 "use client";
 
 import { useAutocomplete } from "@/contexts/autocomplete-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { createCompletionPlugin } from "@workspace/ui/editors/completion-plugin";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";
@@ -19,6 +18,7 @@ import { EditorView } from "prosemirror-view";
 import { memo, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import "./prosemirror-math/styles.css";
 
 type EditorProps = {
@@ -26,7 +26,7 @@ type EditorProps = {
 };
 
 export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const { textEditorContent, setTextEditorContent, diffPrev } =
     useTextEditorContent();
@@ -48,7 +48,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
         plugins: [
           ...exampleSetup({ schema: textEditorSchema, menuBar: false }),
           ...plugins,
-          createCompletionPlugin(650, autocomplete.text, globalT.globalErrors),
+          createCompletionPlugin(650, autocomplete.text, sharedT.apiCodes),
         ],
         schema: textEditorSchema,
       });
@@ -113,7 +113,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
         plugins: [
           ...exampleSetup({ schema: textEditorSchema, menuBar: false }),
           ...plugins,
-          createCompletionPlugin(650, autocomplete.text, globalT.globalErrors),
+          createCompletionPlugin(650, autocomplete.text, sharedT.apiCodes),
         ],
         schema: textEditorSchema,
       });

@@ -8,8 +8,8 @@
     "@ai-sdk/azure": "^2.0.24",
     "@ai-sdk/google-vertex": "^3.0.21",
     "@ai-sdk/openai": "^2.0.24",
-    "@aws-sdk/client-s3": "^3.883.0",
-    "@aws-sdk/s3-request-presigner": "^3.883.0",
+    "@aws-sdk/client-s3": "^3.901.0",
+    "@aws-sdk/s3-request-presigner": "^3.901.0",
     "@google-cloud/storage": "^7.17.0",
     "@google-cloud/tasks": "^6.2.0",
     "@hono/node-server": "^1.19.1",
@@ -26,8 +26,7 @@
     "@types/papaparse": "^5.3.16",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "drizzle-kit": "^0.31.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "exports": {
     "./*": "./src/*.ts"

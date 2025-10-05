@@ -1,7 +1,6 @@
 "use client";
 
 import { useDashboardTranslations } from "@/contexts/dashboard-translations";
-import { useUser } from "@/contexts/user-context";
 import { type Upload } from "@/types/upload";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -14,6 +13,7 @@ import {
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useUser } from "@workspace/ui/contexts/user-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { memo, useState } from "react";
@@ -49,7 +49,7 @@ export const Correction = memo(() => {
       apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
 
-  const prompts = promptsData?.prompts;
+  const prompts = promptsData?.items;
 
   const canStartCorrection = () => {
     const successfulSolutionFiles = Object.values(solutionUploads).filter(

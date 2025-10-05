@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Checkbox } from "../components/checkbox.js";
+import { Checkbox } from "../components/checkbox";
 import {
   Form,
   FormControl,
@@ -15,22 +15,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../components/form.js";
-import { Input } from "../components/input.js";
+} from "../components/form";
+import { Input } from "../components/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../components/tooltip.js";
-import { useSharedTranslations } from "../contexts/shared-translations-context.js";
+} from "../components/tooltip";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 import { signUp } from "../lib/auth-client";
-import { apiFetcher } from "../lib/fetcher";
-import { type SignUpFormData, signUpFormSchema } from "../lib/validations.js";
-import { SubmitButton } from "./submit-button.js";
+import { signUpFormSchema, type SignUpFormData } from "../lib/validations";
+import { SubmitButton } from "./submit-button";
 
 export const SignUp = memo(() => {
-  const { locale, sharedT } = useSharedTranslations();
+  const { locale } = useSharedTranslations();
   const router = useRouter();
 
   const form = useForm<SignUpFormData>({

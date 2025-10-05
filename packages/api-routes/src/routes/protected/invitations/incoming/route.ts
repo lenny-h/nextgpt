@@ -84,7 +84,7 @@ const app = new Hono().get(
         .offset(offset);
     }
 
-    return c.json({ invitations: result });
+    return c.json({ items: result });
   }
 );
 

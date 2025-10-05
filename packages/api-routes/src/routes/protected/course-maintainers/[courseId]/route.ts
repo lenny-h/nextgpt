@@ -55,7 +55,7 @@ const app = new Hono()
         .innerJoin(profile, eq(courseMaintainers.userId, profile.id))
         .where(eq(courseMaintainers.courseId, courseId));
 
-      return c.json({ maintainers });
+      return c.json({ items: maintainers });
     }
   )
   .post(

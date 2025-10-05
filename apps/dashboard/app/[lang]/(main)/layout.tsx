@@ -1,15 +1,13 @@
 import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { SidebarLeft } from "@/components/sidebar/sidebar-left";
-import { EditorProvider } from "@/contexts/editor-context";
-import { RefsProvider } from "@/contexts/refs-context";
-import { UserProvider } from "@/contexts/user-context";
-import { type Locale } from "@/i18n.config";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@workspace/server/auth-server";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
-import { cookies } from "next/headers";
+import { UserProvider } from "@workspace/ui/contexts/user-context";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function MainLayout({
@@ -21,11 +19,15 @@ export default async function MainLayout({
 }) {
   const lang = (await params).lang;
 
-  const supabase = await createClient();
+  const headersStore = await headers();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth.api.getSession({
+    headers: headersStore,
+  });
+
+  const user = session?.user
+    ? { ...session.user, image: session.user.image ?? null }
+    : null;
 
   if (!user) {
     return redirect(`/${lang}/sign-in`);

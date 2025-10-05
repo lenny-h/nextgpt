@@ -1,11 +1,11 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { usePdf } from "@/contexts/pdf-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useState } from "react";
 
 export const PDFViewer = () => {
-  const { globalT } = useGlobalTranslations();
+  const { webT } = useWebTranslations();
   const { currentPdfUrl, currentPage, isFetching } = usePdf();
 
   const [error, setError] = useState<string | null>(null);
@@ -13,9 +13,7 @@ export const PDFViewer = () => {
   if (!currentPdfUrl) {
     return (
       <div className="bg-muted/20 flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground">
-          {globalT.components.pdfViewer.noPdfSelected}
-        </p>
+        <p className="text-muted-foreground">{webT.pdfViewer.noPdfSelected}</p>
       </div>
     );
   }
@@ -23,9 +21,7 @@ export const PDFViewer = () => {
   if (isFetching) {
     return (
       <div className="bg-muted/20 flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground">
-          {globalT.components.pdfViewer.authenticating}
-        </p>
+        <p className="text-muted-foreground">{webT.pdfViewer.authenticating}</p>
       </div>
     );
   }
@@ -33,9 +29,7 @@ export const PDFViewer = () => {
   if (error) {
     return (
       <div className="bg-muted/20 flex flex-1 items-center justify-center">
-        <p className="text-red-500">
-          {globalT.components.pdfViewer.failedToLoadPdf}
-        </p>
+        <p className="text-red-500">{webT.pdfViewer.failedToLoadPdf}</p>
       </div>
     );
   }

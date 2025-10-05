@@ -13,7 +13,7 @@ export async function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  // metadataBase: new URL("https://dashboard.nextgpt.ai"),
+  // metadataBase: new URL("https://dashboard.nextgpt.cloud"),
   applicationName: "NextGpt Dashboard",
   title: {
     default: "NextGpt Dashboard",

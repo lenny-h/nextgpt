@@ -3,9 +3,9 @@
 import { AddMaintainers } from "@/components/custom/add-maintainers";
 import { CurrentMaintainers } from "@/components/custom/current-maintainers";
 import { RemoveMaintainers } from "@/components/custom/remove-maintainers";
-import { useUser } from "@/contexts/user-context";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useUser } from "@workspace/ui/contexts/user-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { notFound, useSearchParams } from "next/navigation";
 
@@ -24,7 +24,7 @@ export default function CourseMaintainersPage() {
   }
 
   const {
-    data: currentMaintainers,
+    data: currentMaintainersData,
     isPending,
     isError,
   } = useQuery({
@@ -38,6 +38,8 @@ export default function CourseMaintainersPage() {
         sharedT.apiCodes,
       ),
   });
+
+  const currentMaintainers = currentMaintainersData?.items;
 
   if (isPending) {
     return (

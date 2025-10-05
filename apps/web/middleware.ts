@@ -1,6 +1,6 @@
-import { cspMiddleware } from "./middleware/csp-header";
-import { negotiatorMiddleware } from "./middleware/negogiator";
-import { stackHandler } from "./middleware/stack-handler";
+import { cspMiddleware } from "@workspace/ui/middleware/csp-header";
+import { negotiatorMiddleware } from "@workspace/ui/middleware/negogiator";
+import { stackHandler } from "@workspace/ui/middleware/stack-handler";
 
 export const config = {
   matcher: [

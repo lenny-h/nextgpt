@@ -1,10 +1,12 @@
 import { useRefs } from "@/contexts/refs-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
 import { type ArtifactKind } from "@/types/artifact-kind";
 import { type Document } from "@/types/document";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,12 +20,14 @@ export const DocumentsList = ({
   documents: ilikeDocuments,
   isSearching,
 }: Props) => {
+  const { sharedT } = useSharedTranslations();
+
   const { panelRef, size } = useRefs();
 
   const { handleDocumentClick } = useDocumentHandler();
 
   const {
-    data: documents,
+    data: documentsData,
     isPending,
     error,
     inViewRef,
@@ -31,8 +35,20 @@ export const DocumentsList = ({
     isFetchingNextPage,
   } = useInfiniteQueryWithRPC({
     queryKey: ["documents"],
-    procedure: "get_user_documents",
+    queryFn: ({ pageParam }) =>
+      apiFetcher(
+        (client) =>
+          client.documents.$get({
+            query: {
+              pageNumber: (pageParam ?? 0).toString(),
+              itemsPerPage: "10",
+            },
+          }),
+        sharedT.apiCodes,
+      ),
   });
+
+  const documents = documentsData.items;
 
   const documentsToDisplay = isSearching ? ilikeDocuments : documents;
 

@@ -2,40 +2,37 @@ import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
-import { createClient } from "@/lib/supabase/client";
 import { type ArtifactKind } from "@/types/artifact-kind";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { useCallback } from "react";
 
 export function useDocumentHandler() {
+  const { sharedT } = useSharedTranslations();
+
   const { panelRef } = useRefs();
   const [, setEditorMode] = useEditor();
   const { textEditorContent, setTextEditorContent } = useTextEditorContent();
   const { codeEditorContent, setCodeEditorContent } = useCodeEditorContent();
 
   const retrieveFullDocument = useCallback(async (documentId: string) => {
-    const supabase = createClient();
+    const data = await apiFetcher(
+      (client) =>
+        client["documents"][":documentId"].$get({
+          param: { documentId },
+        }),
+      sharedT.apiCodes,
+    );
 
-    const { data, error } = await supabase.rpc("get_user_document", {
-      p_id: documentId,
-    });
-
-    if (error || !data) {
-      throw new Error("Could not load document. Please try again later.");
-    }
-
-    if (data.length !== 1) {
-      throw new Error("Document not found");
-    }
-
-    return data[0]!;
+    return data.item;
   }, []);
 
   const handleDocumentClick = useCallback(
     async (
       documentId: string,
       documentTitle: string,
-      documentKind: ArtifactKind
+      documentKind: ArtifactKind,
     ) => {
       setEditorMode(documentKind);
       resizeEditor(panelRef, false);
@@ -73,7 +70,7 @@ export function useDocumentHandler() {
       setTextEditorContent,
       setCodeEditorContent,
       retrieveFullDocument,
-    ]
+    ],
   );
 
   return { handleDocumentClick };

@@ -16,7 +16,6 @@ const app = new Hono().get(
   }),
   async (c) => {
     const { prefix } = c.req.valid("query");
-    const user = c.get("user");
 
     const result = await db
       .select({
@@ -29,7 +28,7 @@ const app = new Hono().get(
       )
       .limit(5);
 
-    return c.json({ users: result });
+    return c.json({ items: result });
   }
 );
 

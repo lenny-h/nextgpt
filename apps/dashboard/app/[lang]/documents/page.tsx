@@ -50,7 +50,7 @@ export default function DocumentsPage() {
         sharedT.apiCodes,
       );
 
-      const documents = documentsData.documents.map((doc) => ({
+      const documents = documentsData.items.map((doc) => ({
         ...doc,
         createdAt: new Date(doc.createdAt),
       }));

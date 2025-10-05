@@ -2,6 +2,7 @@
 
 import { useFilter } from "@/contexts/filter-context";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Badge } from "@workspace/ui/components/badge";
 import {
   Dialog,
@@ -15,14 +16,14 @@ import { cn } from "@workspace/ui/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { DocumentsList, FilesList } from "./add-context-lists";
 import { SearchWithSelection } from "./search-with-selection";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 
 interface AddContextProps {
   type: "files" | "documents";
 }
 
 export const AddContext = memo(({ type }: AddContextProps) => {
-  const { globalT } = useGlobalTranslations();
+  const { webT } = useWebTranslations();
+
   const { isLoading, isError } = useFilter();
   const [isTemporary] = useIsTemporary();
 
@@ -63,7 +64,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
           )}
           onClick={() => setOpen((open) => !open)}
         >
-          {globalT.components.addContext.add + " " + type}
+          {webT.addContext.add + " " + type}
           <kbd className="bg-muted text-muted-foreground inline-flex h-4 items-center gap-1 rounded-xl border px-1.5 font-mono font-medium">
             <span className="text-xs">⌘</span>
             {shortcut}
@@ -72,9 +73,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {globalT.components.addContext.search + " " + type}
-          </DialogTitle>
+          <DialogTitle>{webT.addContext.search + " " + type}</DialogTitle>
         </DialogHeader>
         <SearchWithSelection
           type={type}

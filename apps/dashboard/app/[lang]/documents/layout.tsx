@@ -4,14 +4,14 @@ import { CodeEditorContentProvider } from "@/contexts/code-editor-content-contex
 import { EditorProvider } from "@/contexts/editor-context";
 import { RefsProvider } from "@/contexts/refs-context";
 import { TextEditorContentProvider } from "@/contexts/text-editor-content-context";
-import { UserProvider } from "@/contexts/user-context";
-import { type Locale } from "@/i18n.config";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@workspace/server/auth-server";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
-import { cookies } from "next/headers";
+import { UserProvider } from "@workspace/ui/contexts/user-context";
+import { type Locale } from "@workspace/ui/lib/i18n.config";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function DocumentsLayout({
@@ -23,14 +23,18 @@ export default async function DocumentsLayout({
 }) {
   const lang = (await params).lang;
 
-  const supabase = await createClient();
+  const headersStore = await headers();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth.api.getSession({
+    headers: headersStore,
+  });
+
+  const user = session?.user
+    ? { ...session.user, image: session.user.image ?? null }
+    : null;
 
   if (!user) {
-    redirect(`/${lang}/sign-in`);
+    return redirect(`/${lang}/sign-in`);
   }
 
   const cookieStore = await cookies();

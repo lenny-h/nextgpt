@@ -13,13 +13,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../components/form.js";
-import { Input } from "../components/input.js";
-import { useSharedTranslations } from "../contexts/shared-translations-context.js";
+} from "../components/form";
+import { Input } from "../components/input";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 import { client, signIn } from "../lib/auth-client";
-import { type SignInFormData, signInFormSchema } from "../lib/validations.js";
-import { SocialLogins } from "./social-logins.js";
-import { SubmitButton } from "./submit-button.js";
+import { signInFormSchema, type SignInFormData } from "../lib/validations";
+import { SocialLogins } from "./social-logins";
+import { SubmitButton } from "./submit-button";
 
 export const SignIn = memo(() => {
   const { locale } = useSharedTranslations();

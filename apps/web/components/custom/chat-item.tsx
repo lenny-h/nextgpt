@@ -1,4 +1,5 @@
-import { useGlobalTranslations } from "@/contexts/web-translations";
+import { useWebTranslations } from "@/contexts/web-translations";
+import { Chat } from "@workspace/server/drizzle/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,17 +12,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar-left";
-import { type Tables } from "@workspace/ui/types/database";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { MoreHorizontal, Pencil, Star, StarOff, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
 
 interface PureChatItemProps {
-  chat: Tables<"chats">;
+  chat: Chat;
   isActive: boolean;
   isFavorite: boolean;
   onFavorite: (chatId: string) => void;
-  onRename: (chatId: Tables<"chats">) => void;
+  onRename: (chat: Chat) => void;
   onDelete: (chatId: string) => void;
   isMobile: boolean;
   setOpenMobile: (open: boolean) => void;
@@ -37,7 +38,8 @@ const PureChatItem = ({
   isMobile,
   setOpenMobile,
 }: PureChatItemProps) => {
-  const { globalT, locale } = useGlobalTranslations();
+  const { locale, sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   return (
     <SidebarMenuItem>
@@ -61,7 +63,7 @@ const PureChatItem = ({
             showOnHover={!isActive}
           >
             <MoreHorizontal />
-            <span className="sr-only">{globalT.components.chatItem.more}</span>
+            <span className="sr-only">{webT.chatItem.more}</span>
           </SidebarMenuAction>
         </DropdownMenuTrigger>
 
@@ -77,12 +79,12 @@ const PureChatItem = ({
             {isFavorite ? (
               <>
                 <StarOff className="text-muted-foreground" />
-                <span>{globalT.components.chatItem.removeFromFavorites}</span>
+                <span>{webT.chatItem.removeFromFavorites}</span>
               </>
             ) : (
               <>
                 <Star />
-                <span>{globalT.components.chatItem.addToFavourites}</span>
+                <span>{webT.chatItem.addToFavourites}</span>
               </>
             )}
           </DropdownMenuItem>
@@ -92,14 +94,14 @@ const PureChatItem = ({
             onSelect={() => onRename(chat)}
           >
             <Pencil />
-            <span>{globalT.components.chatItem.rename}</span>
+            <span>{webT.chatItem.rename}</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer text-red-500 focus:text-red-400"
             onSelect={() => onDelete(chat.id)}
           >
             <Trash2 />
-            <span>{globalT.components.chatItem.delete}</span>
+            <span>{webT.chatItem.delete}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -36,26 +36,13 @@ export const ProfileForm = memo(() => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: profile, isPending } = useQuery<{
-    name: string;
-    username: string;
-    isPublic: boolean;
-  } | null>({
+  const { data: profileData, isPending } = useQuery({
     queryKey: ["profile"],
     queryFn: () =>
-      apiFetcher(
-        "profiles",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        },
-        sharedT.apiCodes
-      ),
+      apiFetcher((client) => client.profiles.$get(), sharedT.apiCodes),
   });
 
+  const profile = profileData?.item;
   const name = profile?.name;
   const username = profile?.username;
 
@@ -70,15 +57,14 @@ export const ProfileForm = memo(() => {
 
   async function onSubmit(values: CreateProfileData) {
     const updatePromise = apiFetcher(
-      "profiles",
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ values }),
-      },
+      (client) =>
+        client.profiles.$patch({
+          json: {
+            name: values.name,
+            username: values.username,
+            isPublic: values.isPublic,
+          },
+        }),
       sharedT.apiCodes
     ).then(() => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });

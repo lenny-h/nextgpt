@@ -1,12 +1,9 @@
-import { i18n } from "@/i18n.config";
 import { match as matchLocale } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
-import {
-  NextResponse,
-  type NextFetchEvent,
-  type NextRequest,
-} from "next/server";
-import { type CustomMiddleware } from "./stack-handler";
+import type { NextFetchEvent, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { i18n } from "../lib/i18n.config";
+import { CustomMiddleware } from "./stack-handler";
 
 function getLocale(request: NextRequest): string | undefined {
   const negotiatorHeaders: Record<string, string> = {};
@@ -27,13 +24,13 @@ export function negotiatorMiddleware(middleware: CustomMiddleware) {
   return (
     request: NextRequest,
     event: NextFetchEvent,
-    response: NextResponse,
+    response: NextResponse
   ) => {
     const pathname = request.nextUrl.pathname;
 
     const pathnameIsMissingLocale = i18n.locales.every(
       (locale) =>
-        !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`,
+        !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
     );
 
     if (pathnameIsMissingLocale) {
@@ -45,9 +42,9 @@ export function negotiatorMiddleware(middleware: CustomMiddleware) {
         NextResponse.redirect(
           new URL(
             `/${locale}${!pathname || pathname.startsWith("/") ? "" : "/"}${pathname}`,
-            request.url,
-          ),
-        ),
+            request.url
+          )
+        )
       );
     }
 

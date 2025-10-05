@@ -1,7 +1,6 @@
-import { useInfiniteQueryWithRPC } from "@/hooks/use-infinite-query";
-import { createClient } from "@/lib/supabase/client";
 import { ArtifactKind } from "@/types/artifact-kind";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { Check, Loader2 } from "lucide-react";
 import { KeyboardEvent, memo, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -19,18 +18,8 @@ interface FilterableListProps<T extends ListItem> {
   open: boolean;
   inputValue: string;
   queryKey: string[];
-  rpcProcedure:
-    | "get_user_chats"
-    | "get_bucket_courses"
-    | "get_courses_files"
-    | "get_user_documents";
-  rpcParams: Record<string, any>;
-  ilikeProcedure:
-    | "ilike_user_chats"
-    | "ilike_bucket_courses"
-    | "ilike_courses_files"
-    | "ilike_user_documents";
-  ilikeParams: Record<string, any>;
+  queryFn: (params: { pageParam?: number }) => Promise<{ items: T[] }>;
+  ilikeQueryFn: (prefix: string) => Promise<{ items: T[] }>;
   selectedItems: T[];
   onToggleItem: (item: T) => void;
   disabledMessage?: string;
@@ -43,10 +32,8 @@ export const FilterableList = memo(
     open,
     inputValue,
     queryKey,
-    rpcProcedure,
-    rpcParams,
-    ilikeProcedure,
-    ilikeParams,
+    queryFn,
+    ilikeQueryFn,
     selectedItems,
     onToggleItem,
     disabledMessage,
@@ -58,7 +45,7 @@ export const FilterableList = memo(
     const listRef = useRef<HTMLDivElement>(null);
 
     const {
-      data: items,
+      data: itemsData,
       isPending,
       error,
       inViewRef,
@@ -66,11 +53,11 @@ export const FilterableList = memo(
       isFetchingNextPage,
     } = useInfiniteQueryWithRPC({
       queryKey,
-      procedure: rpcProcedure,
-      params: rpcParams,
+      queryFn,
       enabled: open && enabled,
     });
 
+    const items = itemsData.items;
     const itemsToDisplay = inputValue.trim().length > 1 ? ilikeItems : items;
 
     useEffect(() => {
@@ -85,7 +72,7 @@ export const FilterableList = memo(
       }, 250);
 
       return () => clearTimeout(delayDebounce);
-    }, [inputValue, ...Object.values(ilikeParams)]);
+    }, [inputValue]);
 
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent<Document>) => {
@@ -143,19 +130,9 @@ export const FilterableList = memo(
         return;
       }
 
-      const supabase = createClient();
+      const data = await ilikeQueryFn(prefix);
 
-      const { data, error } = await supabase.rpc(ilikeProcedure, {
-        ...ilikeParams,
-        prefix,
-      });
-
-      if (error || !data) {
-        toast.error(`Could not get ${queryKey[0]}`);
-        return;
-      }
-
-      setIlikeItems(data as T[]);
+      setIlikeItems(data.items);
     };
 
     if (disabledMessage && !enabled) {

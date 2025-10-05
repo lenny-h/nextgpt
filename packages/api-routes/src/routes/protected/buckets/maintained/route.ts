@@ -25,7 +25,7 @@ const app = new Hono().get("/", async (c) => {
     .innerJoin(buckets, eq(bucketMaintainers.bucketId, buckets.id))
     .where(eq(bucketMaintainers.userId, user.id));
 
-  return c.json({ maintainedBuckets });
+  return c.json({ items: maintainedBuckets });
 });
 
 export default app;

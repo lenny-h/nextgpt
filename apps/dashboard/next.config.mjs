@@ -20,7 +20,7 @@ const nextConfig = {
     ];
   },
   output: "standalone",
-  transpilePackages: ["@workspace/ui"],
+  transpilePackages: ["@workspace/ui", "@workspace/server"],
 };
 
 export default nextConfig;

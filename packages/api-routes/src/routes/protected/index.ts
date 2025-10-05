@@ -23,6 +23,7 @@ import correctionRoute from "./correction/route.js";
 import courseMaintainersRoute from "./course-maintainers/[courseId]/route.js";
 import coursesByBucketRoute from "./courses/[bucketId]/route.js";
 import courseDeleteRoute from "./courses/[courseId]/route.js";
+import coursesIlikeRoute from "./courses/ilike/[bucketId]/route.js";
 import coursesMaintainedRoute from "./courses/maintained/route.js";
 import requestAccessRoute from "./courses/request-access/route.js";
 import courseRoute from "./courses/route.js";
@@ -100,6 +101,7 @@ const protectedApiRouter = new Hono()
   .route("/courses", courseRoute)
   .route("/courses/:bucketId", coursesByBucketRoute)
   .route("/courses/:courseId", courseDeleteRoute)
+  .route("/courses/ilike/:bucketId", coursesIlikeRoute)
   .route("/courses/maintained", coursesMaintainedRoute)
   .route("/courses/request-access", requestAccessRoute)
   .route("/courses/validate-access", validateAccessRoute)

@@ -10,15 +10,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../components/form.js";
-import { Input } from "../components/input.js";
-import { useSharedTranslations } from "../contexts/shared-translations-context.js";
+} from "../components/form";
+import { Input } from "../components/input";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 import { client } from "../lib/auth-client";
 import {
-  ResetPasswordFormData,
   resetPasswordFormSchema,
-} from "../lib/validations.js";
-import { SubmitButton } from "./submit-button.js";
+  type ResetPasswordFormData,
+} from "../lib/validations";
+import { SubmitButton } from "./submit-button";
 
 export const ResetPassword = memo(() => {
   const { locale } = useSharedTranslations();

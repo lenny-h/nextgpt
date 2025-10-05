@@ -1,10 +1,12 @@
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { usePdf } from "@/contexts/pdf-context";
 import { useRefs } from "@/contexts/refs-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { ArtifactKind } from "@/types/artifact-kind";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { FilterableList, ListItem } from "../custom/filterable-list";
@@ -22,7 +24,8 @@ interface File extends ListItem {
 }
 
 export const FilesList = memo(({ open, setOpen, inputValue }: Props) => {
-  const { globalT } = useGlobalTranslations();
+  const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const isMobile = useIsMobile();
 
@@ -41,17 +44,34 @@ export const FilesList = memo(({ open, setOpen, inputValue }: Props) => {
       open={open}
       inputValue={inputValue}
       queryKey={["files", ...filter.courses.map((c) => c.id)]}
-      rpcProcedure="get_courses_files"
-      rpcParams={{
-        p_course_ids: filter.courses.map((c) => c.id),
-      }}
-      ilikeProcedure="ilike_courses_files"
-      ilikeParams={{
-        p_course_ids: filter.courses.map((c) => c.id),
-      }}
+      queryFn={({ pageParam }) =>
+        apiFetcher(
+          (client) =>
+            client.files.$get({
+              query: {
+                courseIds: filter.courses.map((c) => c.id).join(","),
+                pageNumber: (pageParam ?? 0).toString(),
+                itemsPerPage: "10",
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
+      ilikeQueryFn={(prefix) =>
+        apiFetcher(
+          (client) =>
+            client.files.ilike.$get({
+              query: {
+                courseIds: filter.courses.map((c) => c.id).join(","),
+                prefix,
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
       selectedItems={[]}
       onToggleItem={handleItemClick}
-      disabledMessage={globalT.components.loadButtonLists.selectCourseFirst}
+      disabledMessage={webT.loadButtonLists.selectCourseFirst}
       enabled={filter.courses.length > 0}
       maxItems={5}
     />
@@ -65,6 +85,8 @@ interface Document extends ListItem {
 }
 
 export const DocumentsList = memo(({ open, setOpen, inputValue }: Props) => {
+  const { sharedT } = useSharedTranslations();
+
   const { handleDocumentClick } = useDocumentHandler();
 
   const handleItemClick = (item: ListItem) => {
@@ -78,10 +100,29 @@ export const DocumentsList = memo(({ open, setOpen, inputValue }: Props) => {
       open={open}
       inputValue={inputValue}
       queryKey={["documents"]}
-      rpcProcedure="get_user_documents"
-      rpcParams={{}}
-      ilikeProcedure="ilike_user_documents"
-      ilikeParams={{}}
+      queryFn={({ pageParam }) =>
+        apiFetcher(
+          (client) =>
+            client.documents.$get({
+              query: {
+                pageNumber: (pageParam ?? 0).toString(),
+                itemsPerPage: "10",
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
+      ilikeQueryFn={(prefix) =>
+        apiFetcher(
+          (client) =>
+            client.documents.ilike.$get({
+              query: {
+                prefix,
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
       selectedItems={[]}
       onToggleItem={handleItemClick}
       maxItems={1}
@@ -95,8 +136,9 @@ interface Chat extends ListItem {
 }
 
 export const ChatsList = memo(({ open, setOpen, inputValue }: Props) => {
+  const { locale, sharedT } = useSharedTranslations();
+
   const router = useRouter();
-  const { locale } = useGlobalTranslations();
 
   const handleItemClick = (item: ListItem) => {
     const chat = item as Chat;
@@ -109,10 +151,29 @@ export const ChatsList = memo(({ open, setOpen, inputValue }: Props) => {
       open={open}
       inputValue={inputValue}
       queryKey={["chats"]}
-      rpcProcedure="get_user_chats"
-      rpcParams={{}}
-      ilikeProcedure="ilike_user_chats"
-      ilikeParams={{}}
+      queryFn={({ pageParam }) =>
+        apiFetcher(
+          (client) =>
+            client.chats.$get({
+              query: {
+                pageNumber: (pageParam ?? 0).toString(),
+                itemsPerPage: "10",
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
+      ilikeQueryFn={(prefix) =>
+        apiFetcher(
+          (client) =>
+            client.chats.ilike.$get({
+              query: {
+                prefix,
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
       selectedItems={[]}
       onToggleItem={handleItemClick}
       maxItems={1}

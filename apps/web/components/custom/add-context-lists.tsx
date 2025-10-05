@@ -1,7 +1,9 @@
 import { useFilter } from "@/contexts/filter-context";
+import { type ArtifactKind } from "@/types/artifact-kind";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
 import { FilterableList, ListItem } from "./filterable-list";
-import { type ArtifactKind } from "@/types/artifact-kind";
 
 interface Props {
   open: boolean;
@@ -17,6 +19,8 @@ interface File extends ListItem {
 }
 
 export const FilesList = memo(({ open, inputValue, max }: Props) => {
+  const { sharedT } = useSharedTranslations();
+
   const { filter, setFilter } = useFilter();
 
   const toggleFile = (item: ListItem) => {
@@ -37,14 +41,31 @@ export const FilesList = memo(({ open, inputValue, max }: Props) => {
       open={open}
       inputValue={inputValue}
       queryKey={["files", ...filter.courses.map((c) => c.id)]}
-      rpcProcedure="get_courses_files"
-      rpcParams={{
-        p_course_ids: filter.courses.map((c) => c.id),
-      }}
-      ilikeProcedure="ilike_courses_files"
-      ilikeParams={{
-        p_course_ids: filter.courses.map((c) => c.id),
-      }}
+      queryFn={({ pageParam }) =>
+        apiFetcher(
+          (client) =>
+            client.files.$get({
+              query: {
+                courseIds: filter.courses.map((c) => c.id).join(","),
+                pageNumber: (pageParam ?? 0).toString(),
+                itemsPerPage: "10",
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
+      ilikeQueryFn={(prefix) =>
+        apiFetcher(
+          (client) =>
+            client.files.ilike.$get({
+              query: {
+                courseIds: filter.courses.map((c) => c.id).join(","),
+                prefix,
+              },
+            }),
+          sharedT.apiCodes,
+        )
+      }
       selectedItems={filter.files}
       onToggleItem={toggleFile}
       disabledMessage="Please select a course first"
@@ -62,6 +83,8 @@ interface Document extends ListItem {
 
 export const DocumentsList = memo(
   ({ open, setOpen, inputValue, max }: Props) => {
+    const { sharedT } = useSharedTranslations();
+
     const { filter, setFilter } = useFilter();
 
     const toggleDocument = (item: ListItem) => {
@@ -84,14 +107,31 @@ export const DocumentsList = memo(
         open={open}
         inputValue={inputValue}
         queryKey={["documents"]}
-        rpcProcedure="get_user_documents"
-        rpcParams={{}}
-        ilikeProcedure="ilike_user_documents"
-        ilikeParams={{}}
+        queryFn={({ pageParam }) =>
+          apiFetcher(
+            (client) =>
+              client.documents.$get({
+                query: {
+                  pageNumber: (pageParam ?? 0).toString(),
+                  itemsPerPage: "10",
+                },
+              }),
+            sharedT.apiCodes,
+          )
+        }
+        ilikeQueryFn={(prefix) =>
+          apiFetcher(
+            (client) =>
+              client.documents.ilike.$get({
+                query: { prefix },
+              }),
+            sharedT.apiCodes,
+          )
+        }
         selectedItems={filter.documents}
         onToggleItem={toggleDocument}
         maxItems={max}
       />
     );
-  }
+  },
 );

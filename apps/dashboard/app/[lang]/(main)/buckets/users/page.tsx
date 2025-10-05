@@ -3,9 +3,9 @@
 import { AddBucketUsers } from "@/components/custom/add-bucket-users";
 import { CurrentBucketUsers } from "@/components/custom/current-bucket-users";
 import { RemoveBucketUsers } from "@/components/custom/remove-bucket-users";
-import { useUser } from "@/contexts/user-context";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useUser } from "@workspace/ui/contexts/user-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { notFound, useSearchParams } from "next/navigation";
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import {
   SidebarMenu,
@@ -9,6 +8,7 @@ import {
   useSidebar,
 } from "@workspace/ui/components/sidebar-left";
 import { Switch } from "@workspace/ui/components/switch";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import {
   ExternalLink,
   FileText,
@@ -20,9 +20,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { memo } from "react";
 
-export function NavMain() {
-  const { locale } = useGlobalTranslations();
+export const NavMain = memo(() => {
+  const { locale } = useSharedTranslations();
   const [tempChat, setTempChat] = useIsTemporary();
 
   const pathname = usePathname();
@@ -124,4 +125,4 @@ export function NavMain() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+});

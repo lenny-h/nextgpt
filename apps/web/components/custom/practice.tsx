@@ -3,7 +3,6 @@
 import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
@@ -14,6 +13,7 @@ import { type MyUIMessage } from "@/types/custom-ui-message";
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { DefaultChatTransport } from "ai";
 import { useCallback, useState } from "react";
@@ -30,6 +30,8 @@ export function Practice({
   chatId: string;
   initialMessages: Array<MyUIMessage>;
 }) {
+  const { locale } = useSharedTranslations();
+
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");
@@ -92,8 +94,6 @@ export function Practice({
         }),
       }),
     });
-
-  const { locale } = useGlobalTranslations();
 
   const { filter: frontendFilter, studyMode } = useFilter();
   const { selectedChatModel } = useChatModel();

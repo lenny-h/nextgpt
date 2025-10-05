@@ -56,7 +56,7 @@ const app = new Hono().get(
       .orderBy(desc(files.createdAt))
       .limit(5);
 
-    return c.json({ files: result });
+    return c.json({ items: result });
   }
 );
 

@@ -1,6 +1,3 @@
-import * as React from "react";
-
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -8,11 +5,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar-left";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { Send } from "lucide-react";
 import Link from "next/link";
+import { memo } from "react";
 
-export const NavSecondary = React.memo(() => {
-  const { locale } = useGlobalTranslations();
+export const NavSecondary = memo(() => {
+  const { locale } = useSharedTranslations();
 
   return (
     <SidebarGroup className="mt-auto">

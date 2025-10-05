@@ -1,7 +1,7 @@
 import { useFilter } from "@/contexts/filter-context";
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { CourseAccessCache } from "@/lib/course-access-cache";
-import { checkResponse } from "@workspace/ui/lib/translation-utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import { FilterableList, ListItem } from "./filterable-list";
@@ -22,7 +22,8 @@ interface Course extends ListItem {
 
 export const CoursesList = memo(
   ({ open, inputValue, max, onShowKeyDialog, onAddCourseToFilter }: Props) => {
-    const { globalT } = useGlobalTranslations();
+    const { sharedT } = useSharedTranslations();
+
     const { filter, setFilter } = useFilter();
 
     const removeCourseFromFilter = useCallback(
@@ -65,41 +66,28 @@ export const CoursesList = memo(
       }
 
       // Validate course access
-      toast.promise(
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/courses/validate-access`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ courseId: course.id }),
-          },
-        ).then(async (response) => {
-          checkResponse(response, globalT.globalErrors);
+      const validateAccessPromise = apiFetcher(
+        (client) =>
+          client.courses["validate-access"].$post({
+            json: { courseId: course.id },
+          }),
+        sharedT.apiCodes,
+      ).then(({ hasAccess }) => {
+        CourseAccessCache.set(course.id, hasAccess);
+        if (hasAccess) {
+          onAddCourseToFilter(course);
+        } else {
+          onShowKeyDialog(course);
+        }
+        return hasAccess;
+      });
 
-          const { hasAccess } = await response.json();
-          return hasAccess;
-        }),
-        {
-          loading: "Checking course access...",
-          success: (hasAccess) => {
-            CourseAccessCache.set(course.id, hasAccess);
-            if (hasAccess) {
-              onAddCourseToFilter(course);
-              return "Course access validated!";
-            } else {
-              onShowKeyDialog(course);
-              return "Course key required";
-            }
-          },
-          error: (error) => {
-            console.error(error);
-            return "Unable to validate access, please try again later";
-          },
-        },
-      );
+      toast.promise(validateAccessPromise, {
+        loading: "Checking course access...",
+        success: (hasAccess) =>
+          hasAccess ? "Course access validated!" : "Course key required",
+        error: (error) => "Error checking course access: " + error.message,
+      });
     };
 
     return (
@@ -107,14 +95,31 @@ export const CoursesList = memo(
         open={open}
         inputValue={inputValue}
         queryKey={["courses", filter.bucketId]}
-        rpcProcedure="get_bucket_courses"
-        rpcParams={{
-          p_bucket_id: filter.bucketId,
-        }}
-        ilikeProcedure="ilike_bucket_courses"
-        ilikeParams={{
-          p_bucket_id: filter.bucketId,
-        }}
+        queryFn={({ pageParam }) =>
+          apiFetcher(
+            (client) =>
+              client["courses"][":bucketId"].$get({
+                param: { bucketId: filter.bucketId },
+                query: {
+                  pageNumber: (pageParam ?? 0).toString(),
+                  itemsPerPage: "10",
+                },
+              }),
+            sharedT.apiCodes,
+          )
+        }
+        ilikeQueryFn={(prefix) =>
+          apiFetcher(
+            (client) =>
+              client["courses"]["ilike"][":bucketId"].$get({
+                param: { bucketId: filter.bucketId },
+                query: {
+                  prefix,
+                },
+              }),
+            sharedT.apiCodes,
+          )
+        }
         selectedItems={filter.courses}
         onToggleItem={toggleCourse}
         disabledMessage="Please select a bucket first"

@@ -16,13 +16,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.14",
-    "@types/papaparse": "^5.3.16",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "dotenv": "^17.2.2",
-    "drizzle-kit": "^0.31.5",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }
 }

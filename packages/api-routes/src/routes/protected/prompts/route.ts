@@ -23,7 +23,7 @@ const app = new Hono()
       .from(prompts)
       .where(eq(prompts.userId, user.id));
 
-    return c.json({ prompts: result });
+    return c.json({ items: result });
   })
   .post(
     "/",

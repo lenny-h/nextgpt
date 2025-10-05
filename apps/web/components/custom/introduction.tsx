@@ -1,14 +1,15 @@
 import * as m from "motion/react-m";
 
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { AnimatePresence, LazyMotion } from "motion/react";
 import { memo } from "react";
 
 const loadFeatures = () => import("@/lib/features").then((res) => res.default);
 
 export const Introduction = memo(() => {
-  const { globalT } = useGlobalTranslations();
+  const { webT } = useWebTranslations();
+
   const [isTemporary] = useIsTemporary();
 
   return (
@@ -25,10 +26,10 @@ export const Introduction = memo(() => {
                 exit={{ opacity: 0, y: 20 }}
               >
                 <h1 className="text-3xl font-semibold">
-                  {globalT.components.introduction.temporaryChatActivated}
+                  {webT.introduction.temporaryChatActivated}
                 </h1>
                 <p className="text-xl font-medium">
-                  {globalT.components.introduction.messagesNotSaved}
+                  {webT.introduction.messagesNotSaved}
                 </p>
               </m.div>
             ) : (
@@ -40,10 +41,10 @@ export const Introduction = memo(() => {
                 exit={{ opacity: 0, y: -20 }}
               >
                 <h1 className="text-3xl font-semibold">
-                  {globalT.components.introduction.welcomeToNextGPT}
+                  {webT.introduction.welcomeToNextGPT}
                 </h1>
                 <p className="text-xl font-medium">
-                  {globalT.components.introduction.selectCourseResources}
+                  {webT.introduction.selectCourseResources}
                 </p>
               </m.div>
             )}

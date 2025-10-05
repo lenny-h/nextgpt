@@ -6,7 +6,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@workspace/ui/components/sidebar-left";
-import { useGlobalTranslations } from "@/contexts/dashboard-translations";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import {
   ArchiveRestore,
   Brain,
@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { memo } from "react";
 
-export function NavMain() {
-  const { locale } = useGlobalTranslations();
+export const NavMain = memo(() => {
+  const { locale } = useSharedTranslations();
 
   const pathname = usePathname();
 
@@ -110,4 +111,4 @@ export function NavMain() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+});

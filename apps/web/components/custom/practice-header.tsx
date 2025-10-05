@@ -1,5 +1,5 @@
-import { useGlobalTranslations } from "@/contexts/web-translations";
 import { useRefs } from "@/contexts/refs-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar-left";
 import {
@@ -9,7 +9,7 @@ import {
 } from "@workspace/ui/components/tooltip";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { Eye, PanelRightIcon, TextCursorInput } from "lucide-react";
-import { Dispatch, memo, SetStateAction } from "react";
+import { type Dispatch, memo, type SetStateAction } from "react";
 import { CourseSelector } from "./course-selector";
 
 interface Props {
@@ -28,7 +28,8 @@ export const PracticeHeader = memo(
     showPreviousMessages,
     setShowPreviousMessages,
   }: Props) => {
-    const { globalT } = useGlobalTranslations();
+    const { webT } = useWebTranslations();
+
     const { panelRef } = useRefs();
 
     return (
@@ -51,8 +52,8 @@ export const PracticeHeader = memo(
               </TooltipTrigger>
               <TooltipContent>
                 {showPreviousMessages
-                  ? globalT.components.practiceHeader.hidePreviousQuestions
-                  : globalT.components.practiceHeader.showPreviousQuestions}
+                  ? webT.practiceHeader.hidePreviousQuestions
+                  : webT.practiceHeader.showPreviousQuestions}
               </TooltipContent>
             </Tooltip>
           )}
@@ -70,8 +71,8 @@ export const PracticeHeader = memo(
               </TooltipTrigger>
               <TooltipContent>
                 {showTextArea
-                  ? globalT.components.practiceHeader.hideTextArea
-                  : globalT.components.practiceHeader.showTextArea}
+                  ? webT.practiceHeader.hideTextArea
+                  : webT.practiceHeader.showTextArea}
               </TooltipContent>
             </Tooltip>
           )}
@@ -88,9 +89,7 @@ export const PracticeHeader = memo(
                 <PanelRightIcon />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {globalT.components.practiceHeader.toggleSidebar}
-            </TooltipContent>
+            <TooltipContent>{webT.practiceHeader.toggleSidebar}</TooltipContent>
           </Tooltip>
         </div>
       </header>

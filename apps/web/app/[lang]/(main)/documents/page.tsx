@@ -2,14 +2,16 @@
 
 import { DocumentsList } from "@/components/custom/documents-list";
 import { Header } from "@/components/custom/toggle-sidebars-header";
-import { createClient } from "@/lib/supabase/client";
 import { type Document } from "@/types/document";
 import { Input } from "@workspace/ui/components/input";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export default function DocumentsPage() {
+  const { sharedT } = useSharedTranslations();
+
   const [documents, setDocuments] = useState<Document[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,20 +20,22 @@ export default function DocumentsPage() {
   const fetchDocuments = async (prefix: string) => {
     setIsLoading(true);
 
-    const supabase = createClient();
+    const documentsData = await apiFetcher(
+      (client) =>
+        client.documents.ilike.$get({
+          query: { prefix },
+        }),
+      sharedT.apiCodes,
+    );
 
-    const { data, error } = await supabase.rpc("ilike_user_documents", {
-      prefix,
-    });
+    const documents = documentsData.items.map((doc) => ({
+      ...doc,
+      createdAt: new Date(doc.createdAt),
+    }));
 
     setIsLoading(false);
 
-    if (error || !data) {
-      toast.error("Failed to fetch documents");
-      return;
-    }
-
-    setDocuments(data);
+    setDocuments(documents);
   };
 
   useEffect(() => {
@@ -48,13 +52,13 @@ export default function DocumentsPage() {
   }, [searchTerm]);
 
   return (
-    <div className="flex flex-col h-dvh">
+    <div className="flex h-dvh flex-col">
       <Header showCourseSelector={false} />
-      <div className="overflow-y-auto flex-1 px-3 pb-3 pt-8 flex flex-col items-center space-y-4 md:space-y-6">
+      <div className="flex flex-1 flex-col items-center space-y-4 overflow-y-auto px-3 pb-3 pt-8 md:space-y-6">
         <h1 className="text-2xl font-semibold">Documents</h1>
         <div className="relative w-full max-w-xl">
           <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+            className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 transform"
             size={14}
           />
           <Input
@@ -63,10 +67,10 @@ export default function DocumentsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {isLoading ? (
-            <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground animate-spin" />
+            <Loader2 className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform animate-spin" />
           ) : searchTerm.length > 0 ? (
             <X
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground cursor-pointer"
+              className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform cursor-pointer"
               size={14}
               onClick={() => setSearchTerm("")}
             />

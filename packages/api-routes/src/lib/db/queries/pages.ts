@@ -60,17 +60,20 @@ export async function matchDocuments({
     .orderBy(desc(similarity))
     .limit(matchCount);
 
-  return result.map((doc) => ({
-    id: doc.id,
-    fileId: doc.fileId,
-    fileName: doc.fileName,
-    courseId: doc.courseId,
-    courseName: doc.courseName,
-    pageIndex: doc.pageIndex,
-    ...(retrieveContent && "content" in doc
-      ? { pageContent: doc.content }
-      : {}),
-  }));
+  return result.map((doc) => {
+    const base = {
+      id: doc.id,
+      fileId: doc.fileId,
+      fileName: doc.fileName,
+      courseId: doc.courseId,
+      courseName: doc.courseName,
+      pageIndex: doc.pageIndex,
+    };
+    if (retrieveContent && "content" in doc && doc.content) {
+      return { ...base, pageContent: doc.content as string };
+    }
+    return base;
+  });
 }
 
 export async function searchPagesByContent({
@@ -131,18 +134,20 @@ export async function searchPagesByContent({
 
   const result = await baseQuery.where(and(...conditions)).limit(limit);
 
-  return result.map((doc) => ({
-    id: doc.id,
-    fileId: doc.fileId,
-    fileName: doc.fileName,
-    courseId: doc.courseId,
-    courseName: doc.courseName,
-    pageIndex: doc.pageIndex,
-    pageNumber: doc.pageNumber,
-    ...(retrieveContent && "content" in doc
-      ? { pageContent: doc.content }
-      : {}),
-  }));
+  return result.map((doc) => {
+    const base = {
+      id: doc.id,
+      fileId: doc.fileId,
+      fileName: doc.fileName,
+      courseId: doc.courseId,
+      courseName: doc.courseName,
+      pageIndex: doc.pageIndex,
+    };
+    if (retrieveContent && "content" in doc && doc.content) {
+      return { ...base, pageContent: doc.content as string };
+    }
+    return base;
+  });
 }
 
 export async function retrievePagesByPageNumbers({
@@ -192,15 +197,20 @@ export async function retrievePagesByPageNumbers({
 
   const data = await baseQuery.where(and(...conditions)).limit(4);
 
-  return data.map((doc) => ({
-    id: doc.id,
-    fileId: doc.fileId,
-    fileName: doc.fileName,
-    courseId: doc.courseId,
-    courseName: doc.courseName,
-    pageIndex: doc.pageIndex,
-    ...("content" in doc && doc.content ? { pageContent: doc.content } : {}),
-  }));
+  return data.map((doc) => {
+    const base = {
+      id: doc.id,
+      fileId: doc.fileId,
+      fileName: doc.fileName,
+      courseId: doc.courseId,
+      courseName: doc.courseName,
+      pageIndex: doc.pageIndex,
+    };
+    if ("content" in doc && doc.content) {
+      return { ...base, pageContent: doc.content as string };
+    }
+    return base;
+  });
 }
 
 export async function retrievePagesByChapter({
@@ -253,15 +263,20 @@ export async function retrievePagesByChapter({
     .orderBy(asc(pages.pageIndex))
     .limit(8);
 
-  return data.map((doc) => ({
-    id: doc.id,
-    fileId: doc.fileId,
-    fileName: doc.fileName,
-    courseId: doc.courseId,
-    courseName: doc.courseName,
-    pageIndex: doc.pageIndex,
-    ...("content" in doc && doc.content ? { pageContent: doc.content } : {}),
-  }));
+  return data.map((doc) => {
+    const base = {
+      id: doc.id,
+      fileId: doc.fileId,
+      fileName: doc.fileName,
+      courseId: doc.courseId,
+      courseName: doc.courseName,
+      pageIndex: doc.pageIndex,
+    };
+    if ("content" in doc && doc.content) {
+      return { ...base, pageContent: doc.content as string };
+    }
+    return base;
+  });
 }
 
 export async function retrieveRandomSources({
@@ -323,30 +338,24 @@ export async function retrieveRandomSources({
 
   const randomChapterPages = randomChapterPagesResults.flat();
 
-  return [
-    ...randomPages.map((page) => ({
+  const mapPage = (
+    page: (typeof randomPages)[number] | (typeof randomChapterPages)[number]
+  ) => {
+    const base = {
       id: page.id,
       fileId: page.fileId,
       fileName: page.fileName,
       courseId: page.courseId,
       courseName: page.courseName,
       pageIndex: page.pageIndex,
-      ...(retrieveContent && "content" in page && page.content
-        ? { pageContent: page.content }
-        : {}),
-    })),
-    ...randomChapterPages.map((page) => ({
-      id: page.id,
-      fileId: page.fileId,
-      fileName: page.fileName,
-      courseId: page.courseId,
-      courseName: page.courseName,
-      pageIndex: page.pageIndex,
-      ...(retrieveContent && "content" in page && page.content
-        ? { pageContent: page.content }
-        : {}),
-    })),
-  ];
+    };
+    if (retrieveContent && "content" in page && page.content) {
+      return { ...base, pageContent: page.content as string };
+    }
+    return base;
+  };
+
+  return [...randomPages.map(mapPage), ...randomChapterPages.map(mapPage)];
 }
 
 export async function getFilePages({ fileId }: { fileId: string }) {

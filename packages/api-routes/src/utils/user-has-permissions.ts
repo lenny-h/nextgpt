@@ -1,7 +1,6 @@
 import { isBucketUser } from "../lib/db/queries/buckets.js";
 import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
 import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
-import { createServiceClient } from "./supabase/service-client.js";
 
 interface UserMetadata {
   bucket_ids?: string[];
@@ -69,15 +68,7 @@ export async function userHasPermissions({
   }
 
   if (!permissionsCached) {
-    const supabase = createServiceClient();
-
-    await supabase.auth.admin.updateUserById(userId, {
-      app_metadata: {
-        bucket_ids: [bucketId],
-        course_ids: courseIds,
-        file_ids: fileIds,
-      },
-    });
+    // TODO: Cache in redis
   }
 
   return true;
