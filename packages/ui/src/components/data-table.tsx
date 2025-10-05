@@ -34,7 +34,7 @@ interface DataTableProps<T> {
   data: T[];
   visibilityState: VisibilityState;
   filterLabel: string;
-  filterColumn: string;
+  filterColumn: keyof T;
   queryKey?: string[];
   isRefreshing?: boolean;
 }
@@ -78,10 +78,14 @@ export function DataTable<T>({
         <Input
           placeholder={`Filter by ${filterLabel}...`}
           value={
-            (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""
+            (table
+              .getColumn(filterColumn as string)
+              ?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
+            table
+              .getColumn(filterColumn as string)
+              ?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

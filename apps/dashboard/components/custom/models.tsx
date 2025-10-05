@@ -18,14 +18,22 @@ export const Models = ({ locale }: Props) => {
   const { sharedT } = useSharedTranslations();
 
   const {
-    data: models,
+    data: modelsData,
     isLoading: modelsLoading,
     error: modelsError,
   } = useQuery({
     queryKey: ["models"],
     queryFn: () =>
-      apiFetcher((client) => client["models"].$get(), sharedT.apiCodes),
+      apiFetcher(
+        (client) =>
+          client["models"].$get({
+            query: { pageNumber: "0" },
+          }),
+        sharedT.apiCodes,
+      ),
   });
+
+  const models = modelsData?.models;
 
   if (modelsLoading) {
     return (

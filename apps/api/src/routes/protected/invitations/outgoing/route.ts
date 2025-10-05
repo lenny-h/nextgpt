@@ -38,10 +38,10 @@ const app = new Hono().get(
         .select({
           origin: userInvitations.origin,
           target: userInvitations.target,
-          target_username: profile.username,
-          resource_id: userInvitations.bucketId,
-          created_at: userInvitations.createdAt,
-          resource_name: userInvitations.bucketName,
+          targetUsername: profile.username,
+          resourceId: userInvitations.bucketId,
+          createdAt: userInvitations.createdAt,
+          resourceName: userInvitations.bucketName,
         })
         .from(userInvitations)
         .innerJoin(profile, eq(profile.id, userInvitations.target))
@@ -54,10 +54,10 @@ const app = new Hono().get(
         .select({
           origin: courseMaintainerInvitations.origin,
           target: courseMaintainerInvitations.target,
-          target_username: profile.username,
-          resource_id: courseMaintainerInvitations.courseId,
-          created_at: courseMaintainerInvitations.createdAt,
-          resource_name: courseMaintainerInvitations.courseName,
+          targetUsername: profile.username,
+          resourceId: courseMaintainerInvitations.courseId,
+          createdAt: courseMaintainerInvitations.createdAt,
+          resourceName: courseMaintainerInvitations.courseName,
         })
         .from(courseMaintainerInvitations)
         .innerJoin(profile, eq(profile.id, courseMaintainerInvitations.target))
@@ -70,10 +70,10 @@ const app = new Hono().get(
         .select({
           origin: bucketMaintainerInvitations.origin,
           target: bucketMaintainerInvitations.target,
-          target_username: profile.username,
-          resource_id: bucketMaintainerInvitations.bucketId,
-          created_at: bucketMaintainerInvitations.createdAt,
-          resource_name: bucketMaintainerInvitations.bucketName,
+          targetUsername: profile.username,
+          resourceId: bucketMaintainerInvitations.bucketId,
+          createdAt: bucketMaintainerInvitations.createdAt,
+          resourceName: bucketMaintainerInvitations.bucketName,
         })
         .from(bucketMaintainerInvitations)
         .innerJoin(profile, eq(profile.id, bucketMaintainerInvitations.target))

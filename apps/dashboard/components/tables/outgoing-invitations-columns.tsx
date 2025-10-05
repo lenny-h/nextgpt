@@ -14,10 +14,10 @@ export type outgoingInvitationsTableColumns = {
   type: "user" | "course_maintainer" | "bucket_maintainer";
   origin: string;
   target: string;
-  target_username: string;
-  resource_id: string;
-  resource_name: string;
-  created_at: string;
+  targetUsername: string;
+  resourceId: string;
+  resourceName: string;
+  createdAt: string;
 };
 
 export const outgoingInvitationsColumns: ColumnDef<outgoingInvitationsTableColumns>[] =

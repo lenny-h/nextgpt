@@ -24,7 +24,7 @@ export default function PromptsPage() {
   const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false);
 
   const {
-    data: prompts,
+    data: promptsData,
     isLoading: promptsLoading,
     error: promptsError,
   } = useQuery({
@@ -32,6 +32,8 @@ export default function PromptsPage() {
     queryFn: () =>
       apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
+
+  const prompts = promptsData?.prompts;
 
   if (promptsLoading) {
     return (

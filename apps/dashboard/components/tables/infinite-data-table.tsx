@@ -14,7 +14,7 @@ interface DataTableProps<T> {
   fetchNextPage: () => void;
   visibilityState: VisibilityState;
   filterLabel: string;
-  filterColumn: string;
+  filterColumn: keyof T;
   queryKey?: string[];
   isRefreshing?: boolean;
 }
@@ -52,8 +52,8 @@ export function InfiniteDataTable<T>({
       isRefreshing={isRefreshing}
     >
       {hasNextPage && (
-        <div ref={ref} className="h-8 flex justify-center items-center">
-          {isFetching && <Loader2 className="animate-spin size-4" />}
+        <div ref={ref} className="flex h-8 items-center justify-center">
+          {isFetching && <Loader2 className="size-4 animate-spin" />}
         </div>
       )}
     </DataTable>
