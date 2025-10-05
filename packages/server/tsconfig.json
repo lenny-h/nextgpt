@@ -2,7 +2,7 @@
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
     "paths": {
-      "@workspace/server/*": ["./src/*"]
+      "@workspace/server/*": ["./src/*"],
     }
   },
   "include": ["."],

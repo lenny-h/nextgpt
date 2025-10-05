@@ -66,7 +66,6 @@ export const rejectInvitation = async ({
         json: {
           type,
           originUserId,
-          targetUserId,
           resourceId,
         },
       }),

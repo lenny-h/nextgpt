@@ -18,6 +18,8 @@
     "INVALID_COURSE_KEY": "Ungültiger Kurs-Schlüssel",
     "INVALID_BUCKET_ID": "Ungültige Bucket-ID",
     "BUCKET_SIZE_EXCEEDED": "Die Bucket-Größe wurde überschritten",
+    "BUCKET_USER_LIMIT_EXCEEDED": "Die maximale Anzahl von Benutzern in diesem Bucket wurde erreicht",
+    "COURSE_MAINTAINER_LIMIT_EXCEEDED": "Die maximale Anzahl von Kurs-Maintainern wurde erreicht",
     "CANNOT_REMOVE_YOURSELF": "Sie können sich nicht selbst entfernen",
     "INVALID_CSV_FILE": "Ungültige CSV-Datei",
     "TOO_MANY_USERS": "Sie können nicht mehr als 600 Benutzer auf einmal einladen",

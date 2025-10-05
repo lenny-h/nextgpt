@@ -1,6 +1,8 @@
 import "@workspace/server/types/hono.js";
 
 import { serve } from "@hono/node-server";
+import { protectedApiRouter } from "@workspace/api-routes/routes/protected/index.js";
+import { unprotectedApiRouter } from "@workspace/api-routes/routes/unprotected/index.js";
 import { authMiddleware } from "@workspace/server/auth-middleware.js";
 import { auth } from "@workspace/server/auth-server.js";
 import { errorHandler } from "@workspace/server/error-handler.js";
@@ -9,8 +11,6 @@ import { compress } from "hono/compress";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
-import { protectedApiRouter } from "./routes/protected/index.js";
-import { unprotectedApiRouter } from "./routes/unprotected/index.js";
 
 // Create Hono application
 const app = new Hono();
@@ -65,5 +65,3 @@ serve(
 export default app;
 
 export type ApiAppType = typeof app;
-export type { ProtectedApiType } from "./routes/protected/index.js";
-export type { UnprotectedApiType } from "./routes/unprotected/index.js";

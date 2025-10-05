@@ -84,7 +84,7 @@ export const modelsColumns: ColumnDef<ModelTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                deleteFetcher: apiFetcher(
+                deletePromise: apiFetcher(
                   (client) =>
                     client["models"][":modelId"].$delete({
                       param: { modelId: row.getValue("id") },

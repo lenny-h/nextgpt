@@ -78,7 +78,7 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                deleteFetcher: apiFetcher(
+                deletePromise: apiFetcher(
                   (client) =>
                     client["files"][":fileId"].$delete({
                       param: { fileId: row.getValue("id") },

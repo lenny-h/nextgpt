@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DeleteDialogWithConfirmation } from "../custom/delete-dialog-with-confirmation";
-import { apiFetcher } from "@workspace/ui/lib/fetcher";
 
 export type CourseTableColumns = {
   id: string;
@@ -120,17 +120,17 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                deleteFetcher: apiFetcher(
+                deletePromise: apiFetcher(
                   (client) =>
                     client["courses"][":courseId"].$delete({
                       param: { courseId: row.getValue("id") },
                     }),
                   errorDictionary,
                 ),
+                resourceId: row.getValue("id"),
                 queryClient,
                 queryKey: ["courses"],
                 isInfinite: true,
-                globalErrors: errorDictionary,
               });
             }}
             resourceType="course"

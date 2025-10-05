@@ -2,6 +2,7 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"],
+      "@workspace/api-routes/*": ["../../packages/api-routes/src/*"],
       "@workspace/server/*": ["../../packages/server/src/*"]
     },
     "target": "ESNext",

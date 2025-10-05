@@ -13,6 +13,7 @@ import { apiFetcher, updateCache } from "@workspace/ui/lib/fetcher";
 import { type ErrorDictionary } from "@workspace/ui/lib/translation-utils";
 import { useState } from "react";
 import { DeleteDialog } from "../custom/delete-dialog";
+import { deleteResource } from "@/lib/delete-resource";
 
 export type PromptTableColumns = {
   id: string;
@@ -55,24 +56,6 @@ export const promptsColumns: ColumnDef<PromptTableColumns>[] = [
     cell: ({ row }) => {
       const [deleteDialog, setDeleteDialog] = useState(false);
 
-      const deletePrompt = async (
-        deletedId: string,
-        queryClient: QueryClient,
-        errorDictionary: ErrorDictionary
-      ) => {
-        await apiFetcher(
-          (client) =>
-            client["prompts"][":promptId"].$delete({
-              param: { promptId: deletedId },
-            }),
-          errorDictionary,
-        );
-
-        updateCache(queryClient, ["prompts"], deletedId);
-
-        return { name: row.getValue("name") as string };
-      };
-
       return (
         <>
           <Button onClick={() => setDeleteDialog(true)} variant="outline">
@@ -83,7 +66,19 @@ export const promptsColumns: ColumnDef<PromptTableColumns>[] = [
             setOpen={setDeleteDialog}
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
-              return deletePrompt(row.getValue("id"), queryClient, errorDictionary);
+              return deleteResource({
+                deletePromise: apiFetcher(
+                  (client) =>
+                    client["prompts"][":promptId"].$delete({
+                      param: { promptId: row.getValue("id") },
+                    }),
+                  errorDictionary,
+                ),
+                resourceId: row.getValue("id"),
+                queryClient,
+                queryKey: ["tasks"],
+                isInfinite: true,
+              });
             }}
             resourceType="prompt"
             description="Are you sure you want to delete this prompt? This action cannot be undone."

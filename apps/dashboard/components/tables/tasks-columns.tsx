@@ -118,7 +118,7 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                deleteFetcher: apiFetcher(
+                deletePromise: apiFetcher(
                   (client) =>
                     client["tasks"][":taskId"].$delete({
                       param: { taskId: row.getValue("id") },

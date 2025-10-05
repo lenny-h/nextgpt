@@ -5,19 +5,19 @@ import {
 } from "@workspace/ui/lib/fetcher";
 
 export async function deleteResource({
-  deleteFetcher,
+  deletePromise,
   resourceId,
   queryClient,
   queryKey,
   isInfinite,
 }: {
-  deleteFetcher: () => Promise<{ name: string }>;
+  deletePromise: Promise<{ name: string }>;
   resourceId: string;
   queryClient: QueryClient;
   queryKey: string[];
   isInfinite: boolean;
 }) {
-  const response = await deleteFetcher();
+  const response = await deletePromise;
 
   if (isInfinite) {
     removeFromInfiniteCache(queryClient, queryKey, resourceId);

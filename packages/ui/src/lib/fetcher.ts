@@ -1,5 +1,5 @@
 import { type QueryClient } from "@tanstack/react-query";
-import type { ProtectedApiType } from "@workspace/server/types/api";
+import { type ProtectedApiType } from "@workspace/api-routes/routes/protected/index";
 import {
   checkResponse,
   type ErrorDictionary,

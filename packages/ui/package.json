@@ -65,9 +65,10 @@
     "@types/node": "^22.13.14",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
+    "@workspace/api-routes": "workspace:*",
     "@workspace/eslint-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
     "@workspace/server": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"
   },

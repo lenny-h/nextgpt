@@ -3,8 +3,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"],
+      "@workspace/api-routes/*": ["../../packages/api-routes/src/*"],
+      "@workspace/server/*": ["../../packages/server/src/*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"],
-      "@workspace/server/*": ["../../packages/server/src/*"]
     },
     "plugins": [
       {
