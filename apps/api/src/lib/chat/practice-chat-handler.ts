@@ -6,7 +6,7 @@ import {
 } from "ai";
 import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
-import { DocumentSource } from "../../types/document-source.js";
+import { type DocumentSource } from "../../types/document-source.js";
 import { createMultipleChoiceTool } from "../tools/create-multiple-choice.js";
 import { retrieveDocumentSourcesTool } from "../tools/retrieve-document-sources.js";
 import { ChatConfig } from "./chat-config.js";

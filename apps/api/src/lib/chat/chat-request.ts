@@ -77,7 +77,7 @@ export class ChatRequest {
       validatedUIMessages,
       selectedChatModelId,
       isTemporary,
-      user,
+      { ...user, image: user.image ?? null },
       reasoningEnabled
     );
   }

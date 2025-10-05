@@ -81,22 +81,24 @@ async function fetchCompletion(
   state.requestInProgress = true;
 
   try {
-    return await apiFetcher(
-      "completion",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ context }),
-        signal: abortController.signal,
-      },
+    const response = await apiFetcher(
+      (client) =>
+        client.completion.$post(
+          {
+            json: { context },
+          },
+          {
+            init: {
+              signal: abortController.signal,
+            },
+          }
+        ),
       errorDictionary
     );
+
+    return response.completion;
   } catch (error) {
     console.log("Aborted request");
-
     return null;
   } finally {
     if (state.currentAbortController === abortController) {

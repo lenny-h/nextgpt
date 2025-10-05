@@ -1,9 +1,7 @@
 import { isBucketMaintainer } from "@/src/lib/db/queries/bucket-maintainers.js";
-import { isCourseMaintainer } from "@/src/lib/db/queries/course-maintainers.js";
 import {
   deleteCourse,
   getBucketIdByCourseId,
-  getCourseDetails,
 } from "@/src/lib/db/queries/courses.js";
 import { deleteFile, getCourseFiles } from "@/src/lib/db/queries/files.js";
 import { getFilePages } from "@/src/lib/db/queries/pages.js";

@@ -173,12 +173,17 @@ export const Buckets = memo(({ locale }: Props) => {
                 deleteResource={(queryClient, errorDictionary) => {
                   setDeleteDialog(false);
                   return deleteResource({
-                    fetchUrl: "buckets",
+                    deleteFetcher: apiFetcher(
+                      (client) =>
+                        client["buckets"][":bucketId"].$delete({
+                          param: { bucketId: selectedBucket.id },
+                        }),
+                      errorDictionary,
+                    ),
                     resourceId: selectedBucket.id,
                     queryClient,
                     queryKey: ["buckets"],
                     isInfinite: false,
-                    globalErrors: errorDictionary,
                   });
                 }}
                 resourceType="bucket"

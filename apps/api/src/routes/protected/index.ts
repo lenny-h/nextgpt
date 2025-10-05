@@ -70,18 +70,18 @@ const protectedApiRouter = new Hono()
 
   // Buckets
   .route("/buckets", bucketsRoute)
-  .route("/buckets/:bucketId", bucketsDeleteRoute)
-  .route("/buckets/maintained", bucketsMaintainedRoute)
   .route("/buckets/used", bucketsUsedRoute)
+  .route("/buckets/maintained", bucketsMaintainedRoute)
+  .route("/buckets/:bucketId", bucketsDeleteRoute)
 
   // Chat
   .route("/chat", chatRoute)
 
   // Chats
   .route("/chats", chatsRoute)
-  .route("/chats/:chatId", chatsByIdRoute)
-  .route("/chats/favourites", chatsFavourites)
   .route("/chats/ilike", chatsIlike)
+  .route("/chats/favourites", chatsFavourites)
+  .route("/chats/:chatId", chatsByIdRoute)
   .route("/chats/is-favourite/:chatId", chatsIsFavouriteRoute)
   .route("/chats/title/:chatId", chatsTitleRoute)
 
@@ -115,8 +115,8 @@ const protectedApiRouter = new Hono()
 
   // Files
   .route("/files", filesRoute)
-  .route("/files/:fileId", filesDeleteRoute)
   .route("/files/ilike", filesIlike)
+  .route("/files/:fileId", filesDeleteRoute)
 
   // Get signed URL
   .route("/get-signed-url/:courseId", getSignedUrlRoute)

@@ -7,12 +7,12 @@ import {
   type UIMessageStreamWriter,
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
-import { type Tables } from "../../types/database.js";
 import { generateUUID } from "../../utils/utils.js";
 import { getChatById, saveChat } from "../db/queries/chats.js";
 import { saveMessages } from "../db/queries/messages.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatRequest } from "./chat-request.js";
+import { Chat } from "@workspace/server/drizzle/schema.js";
 
 export abstract class ChatHandler {
   protected request: ChatRequest;
@@ -48,12 +48,12 @@ export abstract class ChatHandler {
     return createUIMessageStreamResponse({ stream });
   }
 
-  protected async handleChatCreation(): Promise<Tables<"chats"> | undefined> {
+  protected async handleChatCreation(): Promise<Chat | undefined> {
     if (this.request.isTemporary) {
       return undefined;
     }
 
-    let createdChat: Tables<"chats"> | undefined;
+    let createdChat: Chat | undefined;
 
     try {
       await getChatById({ id: this.request.id });

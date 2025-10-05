@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DeleteDialog } from "../custom/delete-dialog";
@@ -77,12 +78,17 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                fetchUrl: "files",
+                deleteFetcher: apiFetcher(
+                  (client) =>
+                    client["files"][":fileId"].$delete({
+                      param: { fileId: row.getValue("id") },
+                    }),
+                  errorDictionary,
+                ),
                 resourceId: row.getValue("id"),
                 queryClient,
                 queryKey: ["files"],
                 isInfinite: true,
-                globalErrors: errorDictionary,
               });
             }}
             resourceType="file"

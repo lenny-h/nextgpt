@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { ArrowUpDown, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -117,12 +118,17 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                fetchUrl: "tasks",
+                deleteFetcher: apiFetcher(
+                  (client) =>
+                    client["tasks"][":taskId"].$delete({
+                      param: { taskId: row.getValue("id") },
+                    }),
+                  errorDictionary,
+                ),
                 resourceId: row.getValue("id"),
                 queryClient,
                 queryKey: ["tasks"],
                 isInfinite: true,
-                globalErrors: errorDictionary,
               });
             }}
             resourceType="task"

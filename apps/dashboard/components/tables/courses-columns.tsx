@@ -14,6 +14,7 @@ import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DeleteDialogWithConfirmation } from "../custom/delete-dialog-with-confirmation";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 
 export type CourseTableColumns = {
   id: string;
@@ -119,8 +120,13 @@ export const coursesColumns: ColumnDef<CourseTableColumns>[] = [
             deleteResource={(queryClient, errorDictionary) => {
               setDeleteDialog(false);
               return deleteResource({
-                fetchUrl: "courses",
-                resourceId: row.getValue("id"),
+                deleteFetcher: apiFetcher(
+                  (client) =>
+                    client["courses"][":courseId"].$delete({
+                      param: { courseId: row.getValue("id") },
+                    }),
+                  errorDictionary,
+                ),
                 queryClient,
                 queryKey: ["courses"],
                 isInfinite: true,

@@ -1,34 +1,23 @@
 import { type QueryClient } from "@tanstack/react-query";
 import {
-  checkResponse,
-  type ErrorDictionary,
-} from "@workspace/ui/lib/translation-utils";
-import { removeFromInfiniteCache, updateCache } from "./fetcher";
+  removeFromInfiniteCache,
+  updateCache,
+} from "@workspace/ui/lib/fetcher";
 
 export async function deleteResource({
-  fetchUrl,
+  deleteFetcher,
   resourceId,
   queryClient,
   queryKey,
   isInfinite,
-  globalErrors,
 }: {
-  fetchUrl: string;
+  deleteFetcher: () => Promise<{ name: string }>;
   resourceId: string;
   queryClient: QueryClient;
   queryKey: string[];
   isInfinite: boolean;
-  globalErrors: ErrorDictionary;
 }) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/${fetchUrl}/${resourceId}`,
-    {
-      method: "DELETE",
-      credentials: "include",
-    },
-  );
-
-  checkResponse(response, globalErrors);
+  const response = await deleteFetcher();
 
   if (isInfinite) {
     removeFromInfiniteCache(queryClient, queryKey, resourceId);
@@ -36,5 +25,5 @@ export async function deleteResource({
     updateCache(queryClient, queryKey, resourceId);
   }
 
-  return await response.json();
+  return response;
 }
