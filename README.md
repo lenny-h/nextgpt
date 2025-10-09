@@ -22,7 +22,7 @@ Api, PDF Exporter, PDF Processor, Web, and Dashboard services can also be starte
 ## Prerequisites
 
 - Docker and Docker Compose installed
-- All the custom services (api, pdf-exporter, pdf-processor, web, dashboard) built successfully
+- All the custom services (api, pdf-exporter, document-processor, web, dashboard) built successfully
 - Access to the parent Supabase volumes directory
 
 ## Port Mapping
@@ -107,7 +107,7 @@ Once running, you can access:
 ### Common Issues
 
 1. **Port conflicts**: Make sure the ports aren't already in use
-2. **Build failures**: Ensure the custom services (api, pdf-exporter, pdf-processor) can be built
+2. **Build failures**: Ensure the custom services (api, pdf-exporter, document-processor) can be built
 3. **Database connection issues**: Check that PostgreSQL is healthy before other services start
 4. **Volume mount issues**: Ensure the ../volumes directory exists and is accessible
 

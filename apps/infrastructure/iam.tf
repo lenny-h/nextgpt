@@ -73,33 +73,33 @@ resource "google_service_account_key" "api_sa_key" {
   service_account_id = google_service_account.api_sa.name
 }
 
-# IAM for PDF Processor -----------------------------------------------------------------------------------
+# IAM for Document Processor -----------------------------------------------------------------------------------
 
-# Create Service Account for PDF Processor
-resource "google_service_account" "pdf_processor_sa" {
-  account_id   = "pdf-processor-sa"
-  display_name = "pdf Processor Service Account"
+# Create Service Account for Document Processor
+resource "google_service_account" "document_processor_sa" {
+  account_id   = "document-processor-sa"
+  display_name = "document Processor Service Account"
 }
 
-# IAM Binding to allow pdf_processor to write to pages_bucket
-resource "google_storage_bucket_iam_member" "pdf_processor_pages_bucket_writer" {
+# IAM Binding to allow document_processor to write to pages_bucket
+resource "google_storage_bucket_iam_member" "document_processor_pages_bucket_writer" {
   bucket = google_storage_bucket.pages_bucket.name
   role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${google_service_account.pdf_processor_sa.email}"
+  member = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
-# IAM Binding to allow pdf_processor to delete files from pages_bucket
-resource "google_storage_bucket_iam_member" "pdf_processor_pages_bucket_deleter" {
+# IAM Binding to allow document_processor to delete files from pages_bucket
+resource "google_storage_bucket_iam_member" "document_processor_pages_bucket_deleter" {
   bucket = google_storage_bucket.pages_bucket.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.pdf_processor_sa.email}"
+  member = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
-# IAM Binding to allow pdf_processor to use vertex AI API
-resource "google_project_iam_member" "pdf_processor_vertex_ai_user" {
+# IAM Binding to allow document_processor to use vertex AI API
+resource "google_project_iam_member" "document_processor_vertex_ai_user" {
   project = var.project_id
   role    = "roles/aiplatform.user"
-  member  = "serviceAccount:${google_service_account.pdf_processor_sa.email}"
+  member  = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
 # IAM for PDF Exporter ------------------------------------------------------------------------------------
@@ -126,10 +126,10 @@ resource "google_cloud_run_v2_service_iam_member" "api_deployer" {
   member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
-# Allow CI/CD service account to deploy pdf processor
-resource "google_cloud_run_v2_service_iam_member" "pdf_processor_deployer" {
-  name     = google_cloud_run_v2_service.pdf_processor.name
-  location = google_cloud_run_v2_service.pdf_processor.location
+# Allow CI/CD service account to deploy document processor
+resource "google_cloud_run_v2_service_iam_member" "document_processor_deployer" {
+  name     = google_cloud_run_v2_service.document_processor.name
+  location = google_cloud_run_v2_service.document_processor.location
   role     = "roles/run.admin"
   member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
@@ -150,8 +150,8 @@ resource "google_service_account_iam_member" "ci_cd_act_as_api_sa" {
 }
 
 # Allow CI/CD SA to act as Pdf processor service account
-resource "google_service_account_iam_member" "ci_cd_act_as_pdf_processor_sa" {
-  service_account_id = google_service_account.pdf_processor_sa.name
+resource "google_service_account_iam_member" "ci_cd_act_as_document_processor_sa" {
+  service_account_id = google_service_account.document_processor_sa.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }

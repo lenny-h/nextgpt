@@ -1,5 +1,5 @@
 {
-  "name": "docling",
+  "name": "document-processor",
   "version": "1.0.0",
   "type": "module",
   "private": true,

@@ -11,7 +11,7 @@ if [ -z "$REGION" ] || [ -z "$PROJECT_ID" ]; then
   exit 1
 fi
 
-declare -a SERVICES=("api" "pdf-exporter" "pdf-processor" "analytics" "auth" "kong" "meta" "rest" "studio")
+declare -a SERVICES=("api" "pdf-exporter" "document-processor")
 
 for SERVICE in "${SERVICES[@]}"; do
   echo "Building and pushing $SERVICE..."
@@ -20,11 +20,7 @@ for SERVICE in "${SERVICES[@]}"; do
   if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^$IMAGE$"; then
     echo "Image $IMAGE does not exist locally. Building..."
 
-    if [[ "$SERVICE" == "api" || "$SERVICE" == "pdf-exporter" || "$SERVICE" == "pdf-processor" ]]; then
-      docker build -f apps/$SERVICE/Dockerfile -t $REPO/$SERVICE .
-    else
-      docker build -f apps/supabase/images/$SERVICE.Dockerfile -t $REPO/$SERVICE .
-    fi
+    docker build -f apps/$SERVICE/Dockerfile -t $REPO/$SERVICE .
   else
     echo "Image $IMAGE already exists locally. Skipping build."
   fi

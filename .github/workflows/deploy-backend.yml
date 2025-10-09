@@ -13,7 +13,7 @@ jobs:
     outputs:
       api: ${{ steps.changes.outputs.api }}
       pdf-exporter: ${{ steps.changes.outputs.pdf-exporter }}
-      pdf-processor: ${{ steps.changes.outputs.pdf-processor }}
+      document-processor: ${{ steps.changes.outputs.document-processor }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,8 +33,8 @@ jobs:
               - 'apps/pdf-exporter/**'
               - 'package.json'
               - '.github/workflows/deploy-backend.yml'
-            pdf-processor:
-              - 'apps/pdf-processor/**'
+            document-processor:
+              - 'apps/document-processor/**'
               - 'package.json'
               - '.github/workflows/deploy-backend.yml'
 
@@ -110,12 +110,12 @@ jobs:
             --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/pdf-exporter:${{ github.sha }} \
             --region=${{ vars.REGION }}
 
-  # Deploy PDF Processor service
-  deploy-pdf-processor:
+  # Deploy Document Processor service
+  deploy-document-processor:
     name: Deploy PDF Processor Service
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.pdf-processor == 'true'
+    if: needs.changes.outputs.document-processor == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -133,15 +133,15 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/pdf-processor:${{ github.sha }}
-          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/pdf-processor:latest
+          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/document-processor:${{ github.sha }}
+          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/document-processor:latest
 
-          docker build -f apps/pdf-processor/Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST .
+          docker build -f apps/document-processor/Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST .
           docker push $IMAGE_NAME
           docker push $IMAGE_LATEST
 
       - name: Update Cloud Run service
         run: |
-          gcloud run services update pdf-processor \
-            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/pdf-processor:${{ github.sha }} \
+          gcloud run services update document-processor \
+            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/document-processor:${{ github.sha }} \
             --region=${{ vars.REGION }}

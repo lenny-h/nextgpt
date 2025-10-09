@@ -101,7 +101,6 @@ services:
       start_period: 30s
     environment:
       NODE_ENV: development
-      USE_LOCAL_TASKS: "true"
       PORT: 8080
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
       GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
@@ -114,7 +113,8 @@ services:
       CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
       REDIS_URL: redis://redis:6379
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      PROCESSOR_URL: http://pdf-processor:8080
+      PROCESSOR_URL: http://document-processor:8080
+      USE_LOCAL_TASKS: "true"
     networks:
       - database_network
 
@@ -151,58 +151,15 @@ services:
     networks:
       - database_network
 
-  # PDF Processor Service
-  pdf-processor:
-    container_name: pdf-processor
-    build:
-      context: .
-      dockerfile: apps/pdf-processor/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3006:8080"
-    depends_on:
-      api:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      NODE_ENV: production
-      PORT: 8080
-      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
-      GOOGLE_VERTEX_LOCATION: ${REGION}
-      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
-      SUPABASE_URL: http://kong:8000
-      SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-      REDIS_URL: redis://redis:6379
-    networks:
-      - database_network
-
-  # Docling Service - Convert various files to Markdown
-  docling:
+  # Document processor - Convert various files to Markdown
+  document-processor:
     container_name: docling
     build:
       context: .
-      dockerfile: apps/docling/Dockerfile
+      dockerfile: apps/document-processor/Dockerfile
     restart: unless-stopped
     ports:
-      - "3007:8080"
+      - "3006:8080"
     healthcheck:
       test:
         [
@@ -217,7 +174,16 @@ services:
       start_period: 30s
     environment:
       PORT: 8080
-      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+      GOOGLE_VERTEX_LOCATION: ${REGION}
+      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+      REDIS_URL: redis://redis:6379
     networks:
       - database_network
 

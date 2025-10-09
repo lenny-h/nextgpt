@@ -1,6 +1,6 @@
 # Access Clients
 
-This directory contains client wrappers for external services. The tasks client can be mocked locally for development, since otherwise pdf-processor would need to be running on the cloud.
+This directory contains client wrappers for external services. The tasks client can be mocked locally for development, since otherwise document-processor would need to be running on the cloud.
 
 ## Tasks Client
 

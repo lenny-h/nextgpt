@@ -331,8 +331,6 @@ export const pages = pgTable(
     content: text("content").notNull(),
     pageIndex: smallint("page_index").notNull(),
     pageNumber: smallint("page_number"),
-    chapter: smallint("chapter"),
-    subChapter: smallint("sub_chapter"),
     fts: tsvector("fts")
       .notNull()
       .generatedAlwaysAs(

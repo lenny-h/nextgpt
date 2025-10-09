@@ -62,7 +62,7 @@ resource "google_cloud_run_v2_service" "api" {
       }
       env {
         name  = "PROCESSOR_URL"
-        value = "http://pdf-processor.${var.region}.internal"
+        value = "http://document-processor.${var.region}.internal"
       }
       resources {
         limits = {
@@ -149,16 +149,16 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
   deletion_protection = false
 }
 
-# PDF Processor Service
-resource "google_cloud_run_v2_service" "pdf_processor" {
-  name     = "pdf-processor"
+# Document Processor Service
+resource "google_cloud_run_v2_service" "document_processor" {
+  name     = "document-processor"
   location = var.region
   project  = var.project_id
   ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/pdf-processor:latest"
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/document-processor:latest"
       ports {
         container_port = 8080
       }

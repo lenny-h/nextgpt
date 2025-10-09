@@ -1,0 +1,40 @@
+from typing import List, Union
+from uuid import uuid4
+
+from models.responses import PdfChunkData, DocumentChunkData
+from db.postgres import EmbeddedChunk
+from s3.client import delete_file_from_s3
+from db.postgres import update_status_to_failed
+from models.requests import DocumentUploadEvent
+
+
+def create_embedded_chunk(
+    chunk: Union[PdfChunkData, DocumentChunkData],
+    embedding: List[float]
+) -> EmbeddedChunk:
+    """Create an EmbeddedChunk from a chunk (PDF or Document) and its embedding."""
+    page_number = chunk.page_number if isinstance(
+        chunk, PdfChunkData) and chunk.page_number else 0
+
+    return EmbeddedChunk(
+        page_id=str(uuid4()),
+        page_index=chunk.chunk_index,
+        embedding=embedding,
+        content=chunk.contextualized_content,
+        page_number=page_number
+    )
+
+
+def handle_processing_error(event: DocumentUploadEvent, error: Exception):
+    """Handle errors during document/PDF processing with cleanup."""
+    try:
+        delete_file_from_s3(event.bucket, event.name)
+    except Exception as e:
+        print(f"Failed to clean up source file: {e}")
+
+    try:
+        update_status_to_failed(event.taskId, event.bucket)
+    except Exception as e:
+        print(f"Failed to update task status: {e}")
+
+    print(f"Error processing file: {error}")
