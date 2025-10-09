@@ -51,12 +51,12 @@ services:
         "log_min_messages=fatal",
       ]
     networks:
-      - supabase_network
+      - database_network
 
   # Redis Cache
   redis:
     container_name: redis
-    image: redis:7.2-alpine
+    image: redis:7.2.11-alpine
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -69,25 +69,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - supabase_network
-
-  # Task Queue Dashboard (replaces Google Cloud Tasks)
-  queue-dashboard:
-    container_name: queue-dashboard
-    image: deadly0/bull-board
-    restart: unless-stopped
-    ports:
-      - "3007:3000"
-    depends_on:
-      redis:
-        condition: service_healthy
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ""
-      REDIS_USE_TLS: "false"
-    networks:
-      - supabase_network
+      - database_network
 
   # The services below need not be run in Docker; it is better to run them using `pnpm run dev` due to hot-reloading
   # Custom API Service
@@ -118,7 +100,8 @@ services:
       retries: 3
       start_period: 30s
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
+      USE_LOCAL_TASKS: "true"
       PORT: 8080
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
       GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
@@ -133,7 +116,7 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       PROCESSOR_URL: http://pdf-processor:8080
     networks:
-      - supabase_network
+      - database_network
 
   # PDF Exporter Service
   pdf-exporter:
@@ -166,7 +149,7 @@ services:
       ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
       GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
     networks:
-      - supabase_network
+      - database_network
 
   # PDF Processor Service
   pdf-processor:
@@ -209,7 +192,34 @@ services:
       EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
       REDIS_URL: redis://redis:6379
     networks:
-      - supabase_network
+      - database_network
+
+  # Docling Service - Convert various files to Markdown
+  docling:
+    container_name: docling
+    build:
+      context: .
+      dockerfile: apps/docling/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3007:8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      PORT: 8080
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+    networks:
+      - database_network
 
   # # Web interface (Next.js)
   # web:
@@ -269,5 +279,5 @@ volumes:
   redis-data:
 
 networks:
-  supabase_network:
+  database_network:
     driver: bridge

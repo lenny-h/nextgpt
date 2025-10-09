@@ -6,8 +6,8 @@ import { getBucketSizeByCourseId } from "@workspace/api-routes/lib/db/queries/co
 import { addTask } from "@workspace/api-routes/lib/db/queries/tasks.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { getSignedUrlForUpload } from "@workspace/api-routes/utils/access-clients/s3-client.js";
+import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
-import { CloudTasksClient } from "@google-cloud/tasks";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -53,11 +53,11 @@ const app = new Hono().post(
     await increaseBucketSize({ bucketId: bucketSizeInfo.bucketId, fileSize });
 
     const projectId = process.env.GOOGLE_VERTEX_PROJECT!;
-    const serviceAccountEmail = process.env.CLOUD_TASKS_SA;
+    const serviceAccountEmail = process.env.CLOUD_TASKS_SA!;
     const processorUrl = process.env.PROCESSOR_URL;
     const queuePath = process.env.TASK_QUEUE_PATH!;
 
-    const tasksClient = new CloudTasksClient();
+    const tasksClient = getTasksClient();
 
     const taskId = generateUUID();
     const taskName = `pdf-process-${taskId}`;
@@ -82,10 +82,14 @@ const app = new Hono().post(
     const location = queuePathParts[3];
     const queue = queuePathParts.pop() || "";
 
-    const task: any = {
+    const scheduleTime = processingDate
+      ? new Date(processingDate)
+      : new Date(Date.now() + 60 * 1000); // 60 seconds from now
+
+    const task = {
       name: tasksClient.taskPath(projectId, location, queue, taskName),
       httpRequest: {
-        httpMethod: "POST",
+        httpMethod: "POST" as const,
         url: processorUrl + "/process-pdf",
         headers: {
           "Content-Type": "application/json",
@@ -95,14 +99,9 @@ const app = new Hono().post(
           serviceAccountEmail: serviceAccountEmail,
         },
       },
-    };
-
-    const scheduleTime = processingDate
-      ? new Date(processingDate)
-      : new Date(Date.now() + 80 * 1000); // 80 seconds from now
-
-    task.scheduleTime = {
-      seconds: Math.floor(scheduleTime.getTime() / 1000),
+      scheduleTime: {
+        seconds: Math.floor(scheduleTime.getTime() / 1000),
+      },
     };
 
     await tasksClient.createTask({

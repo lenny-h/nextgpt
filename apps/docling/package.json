@@ -1,0 +1,10 @@
+{
+  "name": "docling",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "cd src && python main.py",
+    "install": "pip install -r requirements.txt"
+  }
+}

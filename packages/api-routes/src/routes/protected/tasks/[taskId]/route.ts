@@ -7,7 +7,7 @@ import {
 } from "@workspace/api-routes/lib/db/queries/tasks.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { deleteFileFromS3 } from "@workspace/api-routes/utils/access-clients/s3-client.js";
-import { CloudTasksClient } from "@google-cloud/tasks";
+import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -43,7 +43,7 @@ const app = new Hono().delete(
       });
     }
 
-    const tasksClient = new CloudTasksClient();
+    const tasksClient = getTasksClient();
     const taskQueuePath = process.env.TASK_QUEUE_PATH!;
 
     const queuePathParts = taskQueuePath.split("/");

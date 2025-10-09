@@ -1,9 +1,9 @@
 import * as z from "zod";
 
+import { documentSourceSchema } from "@workspace/api-routes/schemas/document-source-schema.js";
 import { tool } from "ai";
 import { uuidSchema } from "../../schemas/uuid-schema.js";
 import { artifactKindSchema } from "../../types/artifact-kind.js";
-import { documentSourceSchema } from "../../types/document-source.js";
 
 export const tools = {
   retrieveDocumentSources: tool({

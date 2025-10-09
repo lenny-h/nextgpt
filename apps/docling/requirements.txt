@@ -1,0 +1,20 @@
+# FastAPI and server dependencies
+fastapi==0.117.0
+uvicorn[standard]==0.36.0
+
+# Docling - document conversion library
+docling==2.54.0
+
+# Transformers for HuggingFace tokenizer (used in chunking)
+transformers==4.56.2
+
+# Google Cloud Storage
+google-cloud-storage==3.3.0
+
+# AWS S3 / Cloudflare R2
+boto3==1.40.42
+botocore==1.40.42
+
+# Additional utilities
+pydantic==2.11.9
+pydantic-settings==2.10.1

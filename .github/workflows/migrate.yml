@@ -1,10 +1,11 @@
 name: Database Migrations
 
 on:
-  push:
-    branches: main
-    paths:
-      - "apps/supabase/volumes/db/migrations/**"
+  workflow_dispatch:
+  # push:
+  #   branches: main
+  #   paths:
+  #     - "apps/supabase/volumes/db/migrations/**"
 
 env:
   PROJECT_ID: ${{ vars.PROJECT_ID }}

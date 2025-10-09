@@ -2,9 +2,9 @@ name: Deploy Frontend Services to Cloudflare Workers
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   # Job to detect changes in web and dashboard apps

@@ -1,11 +1,13 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { processPdf, type GCSEvent } from "./routes/process-pdf.js";
+import { processPdf } from "./routes/process-pdf.js";
+import { DocumentUploadEvent } from "./types/document-upload-event.js";
+import { processDocument } from "./routes/process-document.js";
 
 // Create Hono application
 const app = new Hono();
 
-app.get("/process-pdf/public", (c) => {
+app.get("/document-processor/health", (c) => {
   try {
     const requiredEnvVars = ["GOOGLE_VERTEX_PROJECT"];
 
@@ -29,9 +31,9 @@ app.get("/process-pdf/public", (c) => {
   }
 });
 
-app.post("/process-pdf", async (c) => {
+app.post("/document-processor/process-pdf", async (c) => {
   try {
-    const data = (await c.req.json()) as GCSEvent;
+    const data = (await c.req.json()) as DocumentUploadEvent;
 
     if (!data.bucket || !data.name || !data.size) {
       return c.json(
@@ -47,6 +49,27 @@ app.post("/process-pdf", async (c) => {
   } catch (error) {
     console.error("Error in PDF processing endpoint:", error);
     return c.json({ error: "Failed to process PDF" }, 500);
+  }
+});
+
+app.post("/document-processor/process-document", async (c) => {
+  try {
+    const data = (await c.req.json()) as DocumentUploadEvent;
+
+    if (!data.bucket || !data.name || !data.size) {
+      return c.json(
+        {
+          error: "Missing required fields: bucket, name, and size are required",
+        },
+        400
+      );
+    }
+
+    await processDocument(data);
+    return c.json({ message: "Document processed successfully" }, 200);
+  } catch (error) {
+    console.error("Error in document processing endpoint:", error);
+    return c.json({ error: "Failed to process document" }, 500);
   }
 });
 
