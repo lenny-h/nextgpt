@@ -1,18 +1,10 @@
 import { type Filter } from "@workspace/api-routes/schemas/filter-schema.js";
 import { type PracticeFilter } from "@workspace/api-routes/schemas/practice-filter-schema.js";
 import { type DocumentSource } from "@workspace/api-routes/types/document-source.js";
+import { parsePageRange } from "@workspace/api-routes/utils/parse-page-range.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { pages } from "@workspace/server/drizzle/schema.js";
-import {
-  and,
-  asc,
-  cosineDistance,
-  desc,
-  eq,
-  gt,
-  inArray,
-  sql,
-} from "drizzle-orm";
+import { and, cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
 
 export async function matchDocuments({
   queryEmbedding,
@@ -46,13 +38,23 @@ export async function matchDocuments({
 
   if (filter.files.length > 0) {
     if ("studyMode" in filter) {
-      const fileIds = filter.files.map((file) => file.id);
+      const fileIds = filter.files.map((f) => f.id);
       conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      conditions.push(inArray(pages.fileId, filter.files));
+      conditions.push(
+        inArray(
+          pages.fileId,
+          filter.files.map((f) => f.id)
+        )
+      );
     }
   } else if (filter.courses.length > 0) {
-    conditions.push(inArray(pages.courseId, filter.courses));
+    conditions.push(
+      inArray(
+        pages.courseId,
+        filter.courses.map((c) => c.id)
+      )
+    );
   }
 
   const result = await baseQuery
@@ -123,13 +125,23 @@ export async function searchPagesByContent({
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
-      const fileIds = filter.files.map((file) => file.id);
+      const fileIds = filter.files.map((f) => f.id);
       conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      conditions.push(inArray(pages.fileId, filter.files));
+      conditions.push(
+        inArray(
+          pages.fileId,
+          filter.files.map((f) => f.id)
+        )
+      );
     }
   } else if (filter.courses && filter.courses.length > 0) {
-    conditions.push(inArray(pages.courseId, filter.courses));
+    conditions.push(
+      inArray(
+        pages.courseId,
+        filter.courses.map((c) => c.id)
+      )
+    );
   }
 
   const result = await baseQuery.where(and(...conditions)).limit(limit);
@@ -186,13 +198,23 @@ export async function retrievePagesByPageNumbers({
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
-      const fileIds = filter.files.map((file) => file.id);
+      const fileIds = filter.files.map((f) => f.id);
       conditions.push(inArray(pages.fileId, fileIds));
     } else {
-      conditions.push(inArray(pages.fileId, filter.files));
+      conditions.push(
+        inArray(
+          pages.fileId,
+          filter.files.map((file) => file.id)
+        )
+      );
     }
   } else if (filter.courses && filter.courses.length > 0) {
-    conditions.push(inArray(pages.courseId, filter.courses));
+    conditions.push(
+      inArray(
+        pages.courseId,
+        filter.courses.map((c) => c.id)
+      )
+    );
   }
 
   const data = await baseQuery.where(and(...conditions)).limit(4);
@@ -221,9 +243,9 @@ export async function retrieveRandomSources({
   retrieveContent?: boolean;
 }): Promise<DocumentSource[]> {
   const fileIds = filter.files
-    .filter((file) => file.chapters.length === 0)
+    .filter((file) => !file.pageRange)
     .map((file) => file.id);
-  const fileObjects = filter.files.filter((file) => file.chapters.length !== 0);
+  const fileObjects = filter.files.filter((file) => file.pageRange);
 
   const randomPagesPromise =
     fileIds.length > 0
@@ -243,8 +265,9 @@ export async function retrieveRandomSources({
           .limit(4)
       : Promise.resolve([]);
 
-  const randomChapterPagesPromises = fileObjects.map((fileObject) =>
-    db
+  const randomPageRangePagesPromises = fileObjects.map((fileObject) => {
+    const pageNumbers = parsePageRange(fileObject.pageRange!);
+    return db
       .select({
         id: pages.id,
         fileId: pages.fileId,
@@ -258,22 +281,22 @@ export async function retrieveRandomSources({
       .where(
         and(
           eq(pages.fileId, fileObject.id),
-          inArray(pages.chapter, fileObject.chapters)
+          inArray(pages.pageNumber, pageNumbers)
         )
       )
       .orderBy(sql`random()`)
-      .limit(4)
-  );
+      .limit(4);
+  });
 
-  const [randomPages, ...randomChapterPagesResults] = await Promise.all([
+  const [randomPages, ...randomPageRangePagesResults] = await Promise.all([
     randomPagesPromise,
-    ...randomChapterPagesPromises,
+    ...randomPageRangePagesPromises,
   ]);
 
-  const randomChapterPages = randomChapterPagesResults.flat();
+  const randomPageRangePages = randomPageRangePagesResults.flat();
 
   const mapPage = (
-    page: (typeof randomPages)[number] | (typeof randomChapterPages)[number]
+    page: (typeof randomPages)[number] | (typeof randomPageRangePages)[number]
   ) => {
     const base = {
       id: page.id,
@@ -289,7 +312,7 @@ export async function retrieveRandomSources({
     return base;
   };
 
-  return [...randomPages.map(mapPage), ...randomChapterPages.map(mapPage)];
+  return [...randomPages.map(mapPage), ...randomPageRangePages.map(mapPage)];
 }
 
 export async function getFilePages({ fileId }: { fileId: string }) {

@@ -6,12 +6,7 @@ import { HTTPException } from "hono/http-exception";
 
 export async function getDocument({ id }: { id: string }) {
   const result = await db
-    .select({
-      userId: documents.userId,
-      title: documents.title,
-      content: documents.content,
-      kind: documents.kind,
-    })
+    .select()
     .from(documents)
     .where(eq(documents.id, id))
     .limit(1);
@@ -19,7 +14,7 @@ export async function getDocument({ id }: { id: string }) {
   if (result.length === 0) {
     throw new HTTPException(404, { message: "NOT_FOUND" });
   }
-  return { id, ...result[0] };
+  return result[0];
 }
 
 export async function insertDocument({

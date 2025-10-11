@@ -50,8 +50,9 @@ function PureUserMessage({
 
   // Extract text and file parts from the message
   const textParts = message.parts.filter((part) => part.type === "text");
-  const fileParts = message.parts.filter((part) => part.type === "file");
   const textContent = textParts.map((part) => part.text).join("\n");
+
+  const attachments = message.metadata?.attachments;
 
   return (
     <LazyMotion features={loadFeatures}>
@@ -62,17 +63,20 @@ function PureUserMessage({
         data-role={message.role}
       >
         <div className="group/message flex flex-col space-y-1">
-          {fileParts.length > 0 && (
+          {attachments && attachments.length > 0 && (
             <div className="flex flex-row justify-end gap-2">
-              {fileParts.map((filePart, index) => (
-                <AttachmentPreview
-                  key={filePart.filename || index}
-                  attachment={{
-                    filename: filePart.filename || `file-${index}`,
-                    contentType: filePart.mediaType,
-                  }}
-                />
-              ))}
+              {attachments.map((attachment, index) => {
+                const filename = attachment.url.split("/").pop() ?? "";
+                return (
+                  <AttachmentPreview
+                    key={index}
+                    attachment={{
+                      filename,
+                      contentType: filename.split(".").pop() || "",
+                    }}
+                  />
+                );
+              })}
             </div>
           )}
           <div className="flex w-full items-center justify-end space-x-2">
@@ -108,13 +112,9 @@ function PureUserMessage({
                   <TooltipContent>Edit message</TooltipContent>
                 </Tooltip>
                 <div className="bg-muted max-w-3/4 w-fit rounded-2xl px-4 py-2">
-                  {isPractice ? (
-                    <Markdown sources={[]} parseSourceRefs={false}>
-                      {textContent}
-                    </Markdown>
-                  ) : (
-                    textContent
-                  )}
+                  <Markdown sources={[]} parseSourceRefs={false}>
+                    {textContent}
+                  </Markdown>
                 </div>
               </>
             ) : (

@@ -1,5 +1,5 @@
 import io
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from fastapi import APIRouter, HTTPException
 from botocore.exceptions import ClientError
@@ -91,8 +91,8 @@ async def _convert_pdf_to_chunks(
     bucketId: str,
     key: str,
     pipeline_options: Optional[object] = None
-) -> PdfChunkedConversionResponse:
-    """Convert PDF to chunks without full processing."""
+) -> Tuple[PdfChunkedConversionResponse, int]:
+    """Convert PDF to chunks without full processing and return page count."""
     file_content = get_object_bytes(bucketId, key)
     buf = io.BytesIO(file_content)
     source = DocumentStream(name="document.pdf", stream=buf)
@@ -121,7 +121,7 @@ async def _convert_pdf_to_chunks(
         total_chunks=len(chunks),
         success=True,
         message=f"Successfully converted and chunked PDF {key}"
-    )
+    ), result.document.num_pages()
 
 
 async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
@@ -132,7 +132,7 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
     try:
         update_status_to_processing(task_id)
 
-        chunks_response = await _convert_pdf_to_chunks(
+        chunks_response, page_count = await _convert_pdf_to_chunks(
             event.bucket, event.name, event.pipelineOptions
         )
 
@@ -150,7 +150,7 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
 
         upload_to_postgres_db(
             task_id, course_id, shortened_filename,
-            int(event.size), embedded_chunks
+            int(event.size), embedded_chunks, page_count
         )
 
         update_status_to_finished(task_id)

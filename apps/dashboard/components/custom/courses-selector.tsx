@@ -13,9 +13,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
-import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
-import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
-import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { type Dispatch, memo, type SetStateAction, useState } from "react";
@@ -58,8 +55,7 @@ export const CourseSelector = memo(
             >
               <p className="flex-1 truncate text-left">
                 {selectedCourseId
-                  ? courses.find((course) => course.id === selectedCourseId)
-                      ?.name
+                  ? courses.find((c) => c.id === selectedCourseId)?.name
                   : "Select course..."}
               </p>
               <ChevronsUpDown className="opacity-50" />
@@ -71,10 +67,10 @@ export const CourseSelector = memo(
               <CommandList>
                 <CommandEmpty>No course found</CommandEmpty>
                 <CommandGroup>
-                  {courses.map((course) => (
+                  {courses.map((c) => (
                     <CommandItem
-                      key={course.id}
-                      value={course.id}
+                      key={c.id}
+                      value={c.id}
                       onSelect={(currentValue) => {
                         setSelectedCourseId(
                           currentValue === selectedCourseId ? "" : currentValue,
@@ -82,11 +78,11 @@ export const CourseSelector = memo(
                         setCoursesPopoverOpen(false);
                       }}
                     >
-                      {course.name}
+                      {c.name}
                       <Check
                         className={cn(
                           "ml-auto",
-                          selectedCourseId === course.id
+                          selectedCourseId === c.id
                             ? "opacity-100"
                             : "opacity-0",
                         )}

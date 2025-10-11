@@ -80,6 +80,14 @@ export function Chat({
       transport: new DefaultChatTransport({
         api: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/chat`,
         credentials: "include",
+        prepareSendMessagesRequest({ id, messages }) {
+          return {
+            id,
+            body: {
+              message: messages[messages.length - 1],
+            },
+          };
+        },
       }),
     });
 

@@ -1,28 +1,12 @@
-import { filenameSchema } from "@workspace/api-routes/schemas/filename-schema.js";
+import {
+  allowedMimeTypes,
+  filenameWithExtensionSchema,
+} from "@workspace/api-routes/schemas/filename-schema.js";
 import * as z from "zod";
 
 export const getSignedUrlSchema = z
   .object({
-    filename: z.string().refine(
-      (value) => {
-        const validExtensions = [".pdf", ".jpg", ".png"];
-        const extension = value.substring(value.lastIndexOf("."));
-
-        if (!validExtensions.includes(extension)) return false;
-
-        const nameWithoutExt = value.slice(0, value.lastIndexOf("."));
-        try {
-          filenameSchema.parse(nameWithoutExt);
-          return true;
-        } catch {
-          return false;
-        }
-      },
-      {
-        message:
-          "Filename must end with .pdf, .jpg, or .png and can only contain letters, numbers, underscores, and whitespaces.",
-      }
-    ),
+    filename: filenameWithExtensionSchema,
     fileSize: z
       .number()
       .int()
@@ -30,8 +14,10 @@ export const getSignedUrlSchema = z
       .max(10 * 1024 * 1024, {
         message: "File size must be less than 10 MB",
       }),
-    fileType: z.enum(["application/pdf", "image/jpeg", "image/png"], {
-      message: "File type must be either PDF, JPG, or PNG",
+    fileType: z.string().refine((value) => allowedMimeTypes.includes(value), {
+      message: `Unsupported file type. Supported MIME types: ${allowedMimeTypes.join(
+        ", "
+      )}`,
     }),
   })
   .strict();

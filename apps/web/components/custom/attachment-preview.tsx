@@ -52,8 +52,9 @@ export const AttachmentPreview: React.FC<PreviewAttachmentProps> = ({
           <X className="h-4 w-4" />
         </button>
       )}
-      <div className="max-w-16 truncate text-xs">
-        {filename.split("/").pop()}
+      <div className="max-w-16 truncate text-xs">{filename}</div>
+      <div className="text-muted-foreground max-w-16 truncate text-[10px] uppercase">
+        {contentType?.toUpperCase()}
       </div>
     </div>
   );

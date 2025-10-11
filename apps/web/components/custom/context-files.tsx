@@ -9,7 +9,7 @@ import { AddContext } from "./add-context";
 export const ContextFiles = memo(() => {
   const { filter, setFilter } = useFilter();
 
-  if (!filter.bucketId) {
+  if (!filter.bucket.id) {
     return null;
   }
 

@@ -1,3 +1,6 @@
+import { Filter } from "@/schemas/filter-schema";
+import { PracticeFilter } from "@/schemas/practice-filter-schema";
+import { FrontendFilter } from "@/types/filter";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 
 export function createDiffViewString(
@@ -41,23 +44,57 @@ export function getMostRecentUserMessage(messages: Array<MyUIMessage>) {
   return messages.filter((message) => message.role === "user").at(-1);
 }
 
-export function getMessagesAfterLastStart(messages: Array<MyUIMessage>) {
+export function getLastStartIndex(messages: Array<MyUIMessage>) {
   const lastStartIndex = messages
     .map((msg, index) => (msg.metadata?.isStartMessage ? index : -1))
     .filter((index) => index !== -1)
     .pop();
+
+  return lastStartIndex;
+}
+
+export function getMessagesAfterLastStart(messages: Array<MyUIMessage>) {
+  const lastStartIndex = getLastStartIndex(messages);
 
   return lastStartIndex !== undefined
     ? messages.slice(lastStartIndex)
     : messages;
 }
 
-export function prepareRequestBody(options: {
-  messages: Array<MyUIMessage>;
-  body?: object;
-}) {
+export async function getMessageCountAfterLastStart(
+  messages: Array<MyUIMessage>,
+) {
+  const lastStartIndex = getLastStartIndex(messages);
+
+  if (lastStartIndex !== undefined) {
+    const count = messages.length - lastStartIndex;
+    return count;
+  }
+
+  return messages.length;
+}
+
+export function stripFilter(
+  filter: FrontendFilter,
+  includePageRanges: false,
+): Filter;
+export function stripFilter(
+  filter: FrontendFilter,
+  includePageRanges: true,
+): PracticeFilter;
+export function stripFilter(
+  filter: FrontendFilter,
+  includePageRanges: boolean,
+): Filter | PracticeFilter {
   return {
-    messages: getMessagesAfterLastStart(options.messages),
-    ...options.body,
+    ...filter,
+    courses: filter.courses.map((c) => ({
+      id: c.id,
+    })),
+    files: filter.files.map((f) => ({
+      id: f.id,
+      ...(includePageRanges && f.pageRange ? { pageRange: f.pageRange } : {}),
+    })),
+    documents: filter.documents.map((doc) => ({ id: doc.id })),
   };
 }

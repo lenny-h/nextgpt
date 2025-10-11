@@ -8,11 +8,18 @@ import { UploadList } from "./upload-list";
 interface Props {
   courseId: string;
   processingDate?: Date;
+  pdfPipelineOptions?: {
+    do_ocr: boolean;
+    do_code_enrichment: boolean;
+    do_formula_enrichment: boolean;
+    do_picture_description: boolean;
+  };
 }
 
-export const Dropzone = memo(({ courseId, processingDate }: Props) => {
-  const { getRootProps, getInputProps, isDragActive, uploads } =
-    useDropzoneHook({ courseId, processingDate });
+export const Dropzone = memo(
+  ({ courseId, processingDate, pdfPipelineOptions }: Props) => {
+    const { getRootProps, getInputProps, isDragActive, uploads } =
+      useDropzoneHook({ courseId, processingDate, pdfPipelineOptions });
 
   return (
     <div className="flex w-full max-w-2xl flex-col items-center space-y-6">
@@ -53,4 +60,5 @@ export const Dropzone = memo(({ courseId, processingDate }: Props) => {
       </div>
     </div>
   );
-});
+  },
+);

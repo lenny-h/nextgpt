@@ -1,5 +1,5 @@
-import { Hono } from "hono";
 import "@workspace/server/types/hono.js";
+import { Hono } from "hono";
 
 // Import handlers
 import attachmentsGetSignedUrlRoute from "./attachments/get-signed-url/route.js";
@@ -12,10 +12,10 @@ import bucketsRoute from "./buckets/route.js";
 import bucketsUsedRoute from "./buckets/used/route.js";
 import chatRoute from "./chat/route.js";
 import chatsByIdRoute from "./chats/[chatId]/route.js";
-import chatsRoute from "./chats/route.js";
 import chatsFavourites from "./chats/favourites/route.js";
 import chatsIlike from "./chats/ilike/route.js";
 import chatsIsFavouriteRoute from "./chats/is-favourite/[chatId]/route.js";
+import chatsRoute from "./chats/route.js";
 import chatsTitleRoute from "./chats/title/[chatId]/route.js";
 import completionRoute from "./completion/route.js";
 import correctionGetSignedUrlRoute from "./correction/get-signed-url/route.js";
@@ -34,6 +34,7 @@ import documentsIlike from "./documents/ilike/route.js";
 import documentsRoute from "./documents/route.js";
 import documentsTitleRoute from "./documents/title/[documentId]/[title]/route.js";
 import feedbackRoute from "./feedback/route.js";
+import filesByCourseRoute from "./files/[courseId]/route.js";
 import filesDeleteRoute from "./files/[fileId]/route.js";
 import filesIlike from "./files/ilike/route.js";
 import filesRoute from "./files/route.js";
@@ -119,6 +120,7 @@ const protectedApiRouter = new Hono()
   // Files
   .route("/files", filesRoute)
   .route("/files/ilike", filesIlike)
+  .route("/files/:courseId", filesByCourseRoute)
   .route("/files/:fileId", filesDeleteRoute)
 
   // Get signed URL

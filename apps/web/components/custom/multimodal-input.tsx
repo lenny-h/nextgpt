@@ -41,6 +41,7 @@ import { AttachmentPreview } from "./attachment-preview";
 import { ContextFiles } from "./context-files";
 import { Textarea } from "./text-area";
 import { TextAreaControl } from "./text-area-control";
+import { stripFilter } from "@/lib/utils";
 
 interface MultimodalInputProps {
   sendMessage: (
@@ -68,7 +69,7 @@ const PureMultimodalInput = ({
 
   const user = useUser();
 
-  const { filter: frontendFilter } = useFilter();
+  const { filter } = useFilter();
   const { selectedChatModel, reasoningEnabled } = useChatModel();
   const [isTemporary] = useIsTemporary();
 
@@ -132,7 +133,7 @@ const PureMultimodalInput = ({
   };
 
   const submitForm = useCallback(() => {
-    if (!frontendFilter.bucketId) {
+    if (!filter.bucket.id) {
       toast.error("Please select a bucket before submitting your question");
       return;
     }
@@ -141,8 +142,8 @@ const PureMultimodalInput = ({
 
     window.history.replaceState({}, "", `/${locale}/${path}/${chatId}`);
 
-    if ("documents" in frontendFilter && frontendFilter.documents.length > 0) {
-      const document = frontendFilter.documents[0];
+    if ("documents" in filter && filter.documents.length > 0) {
+      const document = filter.documents[0];
 
       if (!document) {
         toast.error("Document not found in the filter");
@@ -156,21 +157,12 @@ const PureMultimodalInput = ({
       {
         id: generateUUID(),
         role: "user",
-        parts: [
-          { type: "text", text: input },
-          ...attachments.map((attachment) => ({
-            type: "file" as const,
-            url: `gs://${process.env.NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT}-correction-bucket/${user.id}/${attachment.filename}`,
-            mediaType: attachment.contentType,
-          })),
-        ],
+        parts: [{ type: "text", text: input }],
         metadata: {
-          filter: {
-            bucketId: frontendFilter.bucketId,
-            courses: frontendFilter.courses.map((c) => c.id),
-            files: frontendFilter.files.map((f) => f.id),
-            documents: frontendFilter.documents.map((d) => d.id),
-          },
+          filter: stripFilter(filter, false),
+          attachments: attachments.map((attachment) => ({
+            url: `gs://${process.env.NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT}-correction-bucket/${user.id}/${attachment.filename}`,
+          })),
         },
       },
       {
@@ -193,7 +185,7 @@ const PureMultimodalInput = ({
   }, [
     input,
     locale,
-    frontendFilter,
+    filter,
     chatId,
     selectedChatModel,
     reasoningEnabled,

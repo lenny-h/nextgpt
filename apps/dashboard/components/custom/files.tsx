@@ -34,7 +34,7 @@ export const Files = ({ locale }: Props) => {
     queryFn: ({ pageParam }) =>
       apiFetcher(
         (client) =>
-          client["courses"]["maintained"].$get({
+          client.courses.maintained.$get({
             query: {
               pageNumber: (pageParam ?? 0).toString(),
               itemsPerPage: "10",
@@ -44,9 +44,9 @@ export const Files = ({ locale }: Props) => {
       ),
   });
 
-  const courses = coursesData?.items.map((course) => ({
-    ...course,
-    createdAt: new Date(course.createdAt),
+  const courses = coursesData?.items.map((c) => ({
+    ...c,
+    createdAt: new Date(c.createdAt),
   }));
 
   const {
@@ -62,9 +62,9 @@ export const Files = ({ locale }: Props) => {
     queryFn: ({ pageParam }) =>
       apiFetcher(
         (client) =>
-          client.files.$get({
+          client["files"][":courseId"].$get({
+            param: { courseId: selectedCourseId },
             query: {
-              courseIds: [selectedCourseId],
               pageNumber: (pageParam ?? 0).toString(),
               itemsPerPage: "10",
             },

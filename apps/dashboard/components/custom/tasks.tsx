@@ -43,9 +43,9 @@ export const Tasks = ({ locale }: Props) => {
       ),
   });
 
-  const courses = coursesData?.items.map((course) => ({
-    ...course,
-    createdAt: new Date(course.createdAt),
+  const courses = coursesData?.items.map((c) => ({
+    ...c,
+    createdAt: new Date(c.createdAt),
   }));
 
   const {

@@ -49,6 +49,7 @@ export const FilesList = memo(({ open, setOpen, inputValue }: Props) => {
           (client) =>
             client.files.$get({
               query: {
+                bucketId: filter.bucket.id,
                 courseIds: filter.courses.map((c) => c.id).join(","),
                 pageNumber: (pageParam ?? 0).toString(),
                 itemsPerPage: "10",
@@ -62,8 +63,9 @@ export const FilesList = memo(({ open, setOpen, inputValue }: Props) => {
           (client) =>
             client.files.ilike.$get({
               query: {
-                courseIds: filter.courses.map((c) => c.id).join(","),
                 prefix,
+                bucketId: filter.bucket.id,
+                courseIds: filter.courses.map((c) => c.id).join(","),
               },
             }),
           sharedT.apiCodes,

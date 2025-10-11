@@ -47,6 +47,40 @@ await tasksClient.createTask({
 // [LocalTasksClient] Task completed successfully
 ```
 
+## Redis Client
+
+### Usage
+
+```typescript
+import {
+  getRedisClient,
+  getUserPermissionsCacheKey,
+  PERMISSIONS_CACHE_TTL,
+} from "@workspace/api-routes/utils/access-clients/redis-client.js";
+
+const redis = await getRedisClient();
+const cacheKey = getUserPermissionsCacheKey(userId);
+
+// Get cached data
+const data = await redis.get(cacheKey);
+
+// Set cached data with TTL
+await redis.set(cacheKey, JSON.stringify(data), { EX: PERMISSIONS_CACHE_TTL });
+```
+
+### Configuration
+
+Set environment variable:
+
+- `REDIS_URL=redis://localhost:6379`
+
+### Features
+
+- Automatic connection management with 1-hour client expiration
+- Connection pooling and error handling
+- Helper functions for permission cache keys
+- Configurable TTL (default: 7 days for permissions cache)
+
 ## Other Clients
 
 - **s3-client.ts**: Cloudflare R2 client

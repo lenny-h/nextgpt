@@ -13,6 +13,7 @@ import { getChatById, saveChat } from "../db/queries/chats.js";
 import { saveMessages } from "../db/queries/messages.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatRequest } from "./chat-request.js";
+import { integrateAttachmentsIntoMessages } from "./process-attachments.js";
 
 type StreamTextInput = Parameters<typeof streamText>[0];
 
@@ -26,8 +27,8 @@ export abstract class ChatHandler {
   }
 
   async handleRequest(): Promise<Response> {
-    await this.request.validatePermissions();
-    this.request.validateUserMessage();
+    await this.request.validatePermissions(); // Check if user has permissions to access content referenced in messages
+    this.request.validateUserMessage(); // Check if last message is from the user
     await this.validateSpecificRequirements();
 
     const createdChat = await this.handleChatCreation();
@@ -79,15 +80,22 @@ export abstract class ChatHandler {
     });
   }
 
-  protected createStreamTextConfig({
+  protected async createStreamTextConfig({
     systemPrompt,
   }: {
     systemPrompt: string;
-  }): StreamTextInput {
+  }): Promise<StreamTextInput> {
+    const modifiedMessages = await integrateAttachmentsIntoMessages(
+      this.request.messages,
+      this.request.attachments
+    );
+
+    let modelMessages = convertToModelMessages(modifiedMessages);
+
     return {
       model: this.config.modelId,
       system: systemPrompt,
-      messages: convertToModelMessages(this.request.messages),
+      messages: modelMessages,
       experimental_transform: smoothStream({
         chunking: "line",
       }),

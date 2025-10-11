@@ -16,12 +16,19 @@ export async function getMessageById({ messageId }: { messageId: string }) {
   return result[0];
 }
 
-export async function getMessagesByChatId({ chatId }: { chatId: string }) {
+export async function getMessagesByChatId({
+  chatId,
+  messageCount,
+}: {
+  chatId: string;
+  messageCount: number;
+}) {
   return await db
     .select()
     .from(messages)
     .where(eq(messages.chatId, chatId))
-    .orderBy(messages.createdAt);
+    .orderBy(desc(messages.createdAt))
+    .limit(messageCount);
 }
 
 export async function saveMessages({

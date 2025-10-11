@@ -3,6 +3,7 @@ import * as z from "zod";
 import { itemsPerPageSchema } from "@workspace/api-routes/schemas/items-per-page-schema.js";
 import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-schema.js";
 import { createUuidArrayParamSchema } from "@workspace/api-routes/schemas/uuid-array-param-schema.js";
+import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { files } from "@workspace/server/drizzle/schema.js";
@@ -13,6 +14,7 @@ import { validator } from "hono/validator";
 
 const querySchema = z
   .object({
+    bucketId: uuidSchema,
     courseIds: createUuidArrayParamSchema(20),
     pageNumber: pageNumberSchema,
     itemsPerPage: itemsPerPageSchema,
@@ -23,21 +25,23 @@ const app = new Hono().get(
   "/",
   validator("query", (value) => {
     return querySchema.parse({
+      bucketId: value.bucketId,
       courseIds: value.courseIds,
       pageNumber: Number(value.pageNumber),
       itemsPerPage: Number(value.itemsPerPage),
     });
   }),
   async (c) => {
-    const { courseIds, pageNumber, itemsPerPage } = c.req.valid("query");
+    const { bucketId, courseIds, pageNumber, itemsPerPage } =
+      c.req.valid("query");
     const user = c.get("user");
 
     const hasPermissions = userHasPermissions({
       userId: user.id,
-      metadata: (user as any).app_metadata,
-      bucketId: "something", // TODO: fix
-      courses: courseIds,
-      files: [],
+      filterBucketId: bucketId,
+      filterCourseIds: courseIds,
+      filterFileIds: [],
+      filterAttachments: [],
     });
 
     if (!hasPermissions) {

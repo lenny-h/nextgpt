@@ -3,7 +3,7 @@ PostgreSQL database operations for storing processed documents and chunks
 """
 
 import os
-from typing import List
+from typing import List, Optional
 import psycopg2
 from psycopg2.extras import execute_values
 from psycopg2.extensions import connection as Connection
@@ -41,7 +41,8 @@ def upload_to_postgres_db(
     course_id: str,
     filename: str,
     file_size: int,
-    processed_chunks: List[EmbeddedChunk]
+    processed_chunks: List[EmbeddedChunk],
+    page_count: Optional[int] = None,
 ) -> None:
     """
     Upload processed document chunks to PostgreSQL database.
@@ -55,6 +56,7 @@ def upload_to_postgres_db(
         filename: Name of the file
         file_size: Size of the file in bytes
         processed_chunks: List of embedded chunks to store
+        page_count: Optional total number of pages in the document (only available for PDFs)
     """
     conn = None
     inserted_file_id = None
@@ -78,10 +80,10 @@ def upload_to_postgres_db(
         # Insert file record
         cursor.execute(
             """
-            INSERT INTO files (id, course_id, name, size)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO files (id, course_id, name, size, page_count)
+            VALUES (%s, %s, %s, %s, %s)
             """,
-            (task_id, course_id, filename, file_size)
+            (task_id, course_id, filename, file_size, page_count)
         )
         inserted_file_id = task_id
 

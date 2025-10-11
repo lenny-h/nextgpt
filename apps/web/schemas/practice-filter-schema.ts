@@ -1,19 +1,18 @@
 import * as z from "zod";
 
 import { studyModeSchema } from "./study-mode-schema.js";
+import { uuidSchema } from "./uuid-schema.js";
 
 export const practiceFilterSchema = z
   .object({
-    bucketId: z.uuid({
-      version: "v4",
-      message: "Bucket ID must be a valid UUID",
+    bucket: z.object({
+      id: uuidSchema,
     }),
     courses: z
       .array(
-        z.uuid({
-          version: "v4",
-          message: "Course Ids must be valid UUIDs",
-        })
+        z.object({
+          id: uuidSchema,
+        }),
       )
       .max(5, {
         message: "You can only select up to 5 courses",
@@ -21,14 +20,15 @@ export const practiceFilterSchema = z
     files: z
       .array(
         z.object({
-          id: z.uuid({
-            version: "v4",
-            message: "File Ids must be valid UUIDs",
-          }),
-          chapters: z.array(z.number()).max(10, {
-            message: "You can only select up to 10 chapters",
-          }),
-        })
+          id: uuidSchema,
+          pageRange: z
+            .string()
+            .regex(/^\d+(-\d+)?(,\d+(-\d+)?)*$/, {
+              message:
+                "Page range must be a comma-separated list of numbers or ranges (e.g., '1,3-5,7')",
+            })
+            .optional(),
+        }),
       )
       .max(3, {
         message: "You can only select up to 3 files",

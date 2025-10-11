@@ -1,5 +1,7 @@
 import * as z from "zod";
 
+import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
+import { User } from "@workspace/server/drizzle/schema.js";
 import { validateUIMessages } from "ai";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -8,18 +10,21 @@ import { type Filter } from "../../schemas/filter-schema.js";
 import { metadataSchema } from "../../schemas/metadata-schema.js";
 import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
+import { getMessagesByChatId } from "../db/queries/messages.js";
 import { tools } from "../tools/index.js";
-import { User } from "@workspace/server/drizzle/schema.js";
 
 export class ChatRequest {
   public readonly id: string; // Chat ID
   public readonly messages: MyUIMessage[];
   public readonly lastMessage: MyUIMessage;
   public readonly filter: Filter | PracticeFilter; // Search filter
+  public readonly attachments: { url: string }[]; // Attachments in the last message
+
   public readonly selectedChatModelId: string;
   public readonly isTemporary: boolean; // Whether to save the chat or not
-  public readonly reasoningEnabled?: boolean;
   public readonly user: User;
+
+  public readonly reasoningEnabled?: boolean;
 
   constructor(
     id: string,
@@ -35,15 +40,18 @@ export class ChatRequest {
 
     if (!this.lastMessage.metadata?.filter) {
       throw new HTTPException(400, {
-        message: "Filter is required in the last message metadata",
+        message: "BAD_REQUEST",
       });
     }
 
     this.filter = this.lastMessage.metadata.filter;
+    this.attachments = this.lastMessage.metadata?.attachments || [];
+
     this.selectedChatModelId = selectedChatModelId;
     this.isTemporary = isTemporary;
-    this.reasoningEnabled = reasoningEnabled;
     this.user = user;
+
+    this.reasoningEnabled = reasoningEnabled;
   }
 
   static async fromRequest(
@@ -57,11 +65,20 @@ export class ChatRequest {
 
     const {
       id,
-      messages,
+      message,
       modelId: selectedChatModelId,
       temp: isTemporary,
       reasoning: reasoningEnabled,
+      messageCount,
     } = validatedPayload;
+
+    // For practice chats with lastStartMessageIndex, only retrieve messages after that index
+    const prevMessages = await getMessagesByChatId({
+      chatId: id,
+      messageCount: messageCount ? Math.min(messageCount, 12) : 12,
+    });
+
+    const messages = [...prevMessages, message];
 
     console.log("Messages:", messages);
 
@@ -71,6 +88,17 @@ export class ChatRequest {
       metadataSchema,
       tools,
     });
+
+    // Disallow file parts in chat messages
+    // File parts should be handled as attachments, not inline in messages
+    // Once the attachments are validated, they will be integrated into the last user message
+    const containsFilePart = validatedUIMessages.some((m) => {
+      return m.parts.some((p) => p.type === "file");
+    });
+
+    if (containsFilePart) {
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
+    }
 
     return new ChatRequest(
       id,
@@ -83,51 +111,23 @@ export class ChatRequest {
   }
 
   async validatePermissions(): Promise<void> {
-    const { userHasPermissions } = await import(
-      "../../utils/user-has-permissions.js"
-    );
-
-    let files = this.filter.files.map((file) =>
-      typeof file === "string" ? file : file.id
-    );
-
-    for (const message of this.messages) {
-      for (const part of message.parts) {
-        if (part.type !== "file") {
-          continue;
-        }
-
-        const expectedPrefix = `gs://${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket/`;
-        const rest = part.url.substring(expectedPrefix.length);
-
-        if (message.role === "user") {
-          if (!rest.startsWith(this.user.id)) {
-            throw new HTTPException(403, { message: "Forbidden" });
-          }
-        } else if (message.role === "assistant") {
-          const fileId = rest.split("/")[0];
-          files.push(fileId);
-        }
-      }
-    }
-
     const hasPermission = await userHasPermissions({
       userId: this.user.id,
-      metadata: (this.user as any).app_metadata, // TODO: fix
-      bucketId: this.filter.bucketId,
-      courses: this.filter.courses,
-      files,
+      filterBucketId: this.filter.bucket.id,
+      filterCourseIds: this.filter.courses.map((c) => c.id),
+      filterFileIds: this.filter.files.map((f) => f.id),
+      filterAttachments: this.attachments,
     });
 
     if (!hasPermission) {
-      throw new HTTPException(403, { message: "Forbidden" });
+      throw new HTTPException(403, { message: "FORBIDDEN" });
     }
   }
 
   validateUserMessage(): void {
     if (this.lastMessage.role !== "user") {
       throw new HTTPException(400, {
-        message: "Last message must be from user",
+        message: "BAD_REQUEST",
       });
     }
   }

@@ -52,15 +52,16 @@ export const BucketSwitcher = () => {
                       ? "An error occurred"
                       : data.length > 0
                         ? data.find(
-                            (bucket) => bucket.bucketId === filter.bucketId,
+                            (bucket) => bucket.bucketId === filter.bucket.id,
                           )?.name
                         : "No bucket"}
                 </span>
                 {!isLoading && !isError && data && data.length > 0 && (
                   <span className="truncate text-xs">
                     {
-                      data.find((bucket) => bucket.bucketId === filter.bucketId)
-                        ?.type
+                      data.find(
+                        (bucket) => bucket.bucketId === filter.bucket.id,
+                      )?.type
                     }
                   </span>
                 )}
@@ -82,7 +83,9 @@ export const BucketSwitcher = () => {
                 key={bucket.name}
                 onClick={() =>
                   setFilter({
-                    bucketId: bucket.bucketId,
+                    bucket: {
+                      id: bucket.bucketId,
+                    },
                     courses: [],
                     files: [],
                     documents: [],

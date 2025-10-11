@@ -2,6 +2,7 @@
 
 import { Dropzone } from "@/components/custom/dropzone";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -11,6 +12,7 @@ import {
   CommandList,
 } from "@workspace/ui/components/command";
 import { DatePicker } from "@workspace/ui/components/date-picker";
+import { Label } from "@workspace/ui/components/label";
 import {
   Popover,
   PopoverContent,
@@ -32,6 +34,14 @@ export default function UploadFilesPage() {
     undefined,
   );
 
+  // PDF Pipeline Options state (only for PDFs)
+  const [pdfPipelineOptions, setPdfPipelineOptions] = useState({
+    do_ocr: false,
+    do_code_enrichment: false,
+    do_formula_enrichment: false,
+    do_picture_description: false,
+  });
+
   const {
     data: coursesData,
     isPending,
@@ -44,7 +54,7 @@ export default function UploadFilesPage() {
     queryFn: ({ pageParam }) =>
       apiFetcher(
         (client) =>
-          client["courses"]["maintained"].$get({
+          client.courses.maintained.$get({
             query: {
               pageNumber: (pageParam ?? 0).toString(),
               itemsPerPage: "10",
@@ -87,7 +97,7 @@ export default function UploadFilesPage() {
           >
             <p className="flex-1 truncate text-left">
               {value
-                ? courses.find((course) => course.id === value)?.name
+                ? courses.find((c) => c.id === value)?.name
                 : "Select course..."}
             </p>
             <ChevronsUpDown className="opacity-50" />
@@ -99,20 +109,20 @@ export default function UploadFilesPage() {
             <CommandList>
               <CommandEmpty>No course found</CommandEmpty>
               <CommandGroup>
-                {courses.map((course) => (
+                {courses.map((c) => (
                   <CommandItem
-                    key={course.id}
-                    value={course.id}
+                    key={c.id}
+                    value={c.id}
                     onSelect={(currentValue) => {
                       setValue(currentValue === value ? "" : currentValue);
                       setCoursesPopoverOpen(false);
                     }}
                   >
-                    {course.name}
+                    {c.name}
                     <Check
                       className={cn(
                         "ml-auto",
-                        value === course.id ? "opacity-100" : "opacity-0",
+                        value === c.id ? "opacity-100" : "opacity-0",
                       )}
                     />
                   </CommandItem>
@@ -143,7 +153,95 @@ export default function UploadFilesPage() {
         />
       </div>
 
-      <Dropzone courseId={value} processingDate={processingDate} />
+      <div className="w-full max-w-2xl space-y-4 rounded-md border border-dashed p-4 shadow-sm">
+        <h2 className="text-lg font-semibold">
+          PDF Processing Options (PDFs only)
+        </h2>
+        <div className="grid gap-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="do_ocr"
+              checked={pdfPipelineOptions.do_ocr}
+              onCheckedChange={(checked) =>
+                setPdfPipelineOptions((prev) => ({
+                  ...prev,
+                  do_ocr: checked === true,
+                }))
+              }
+              disabled={!value}
+            />
+            <Label
+              htmlFor="do_ocr"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Enable OCR (Optical Character Recognition)
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="do_code_enrichment"
+              checked={pdfPipelineOptions.do_code_enrichment}
+              onCheckedChange={(checked) =>
+                setPdfPipelineOptions((prev) => ({
+                  ...prev,
+                  do_code_enrichment: checked === true,
+                }))
+              }
+              disabled={!value}
+            />
+            <Label
+              htmlFor="do_code_enrichment"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Enable code enrichment
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="do_formula_enrichment"
+              checked={pdfPipelineOptions.do_formula_enrichment}
+              onCheckedChange={(checked) =>
+                setPdfPipelineOptions((prev) => ({
+                  ...prev,
+                  do_formula_enrichment: checked === true,
+                }))
+              }
+              disabled={!value}
+            />
+            <Label
+              htmlFor="do_formula_enrichment"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Enable formula enrichment (extract LaTeX)
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="do_picture_description"
+              checked={pdfPipelineOptions.do_picture_description}
+              onCheckedChange={(checked) =>
+                setPdfPipelineOptions((prev) => ({
+                  ...prev,
+                  do_picture_description: checked === true,
+                }))
+              }
+              disabled={!value}
+            />
+            <Label
+              htmlFor="do_picture_description"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Enable picture description
+            </Label>
+          </div>
+        </div>
+      </div>
+
+      <Dropzone
+        courseId={value}
+        processingDate={processingDate}
+        pdfPipelineOptions={pdfPipelineOptions}
+      />
     </div>
   );
 }

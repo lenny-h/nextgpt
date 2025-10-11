@@ -1,37 +1,47 @@
 import * as z from "zod";
 
-import { prefixSchema } from "@workspace/api-routes/schemas/prefix-schema.js";
-import { createUuidArrayParamSchema } from "@workspace/api-routes/schemas/uuid-array-param-schema.js";
+import { getBucketIdByCourseId } from "@workspace/api-routes/lib/db/queries/courses.js";
+import { itemsPerPageSchema } from "@workspace/api-routes/schemas/items-per-page-schema.js";
+import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-schema.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { files } from "@workspace/server/drizzle/schema.js";
-import { and, desc, ilike, inArray, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 
+const paramSchema = z.object({ courseId: uuidSchema }).strict();
 const querySchema = z
   .object({
-    prefix: prefixSchema,
-    bucketId: uuidSchema,
-    courseIds: createUuidArrayParamSchema(20),
+    pageNumber: pageNumberSchema,
+    itemsPerPage: itemsPerPageSchema,
   })
   .strict();
 
 const app = new Hono().get(
   "/",
+  validator("param", (value) => {
+    return paramSchema.parse(value);
+  }),
   validator("query", (value) => {
-    return querySchema.parse(value);
+    return querySchema.parse({
+      pageNumber: Number(value.pageNumber),
+      itemsPerPage: Number(value.itemsPerPage),
+    });
   }),
   async (c) => {
-    const { prefix, bucketId, courseIds } = c.req.valid("query");
+    const { courseId } = c.req.valid("param");
+    const { pageNumber, itemsPerPage } = c.req.valid("query");
     const user = c.get("user");
+
+    const bucketId = await getBucketIdByCourseId({ courseId });
 
     const hasPermissions = userHasPermissions({
       userId: user.id,
       filterBucketId: bucketId,
-      filterCourseIds: courseIds,
+      filterCourseIds: [courseId],
       filterFileIds: [],
       filterAttachments: [],
     });
@@ -41,22 +51,11 @@ const app = new Hono().get(
     }
 
     const result = await db
-      .select({
-        id: files.id,
-        courseId: files.courseId,
-        name: files.name,
-        size: files.size,
-        createdAt: files.createdAt,
-      })
+      .select()
       .from(files)
-      .where(
-        and(
-          inArray(files.courseId, courseIds),
-          ilike(files.name, sql`${prefix} || '%'`)
-        )
-      )
-      .orderBy(desc(files.createdAt))
-      .limit(5);
+      .where(eq(files.courseId, courseId))
+      .limit(itemsPerPage)
+      .offset(pageNumber * itemsPerPage);
 
     return c.json({ items: result });
   }

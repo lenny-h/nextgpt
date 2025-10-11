@@ -38,10 +38,10 @@ export const LoadButton = memo(({ type }: LoadButtonProps) => {
   }, []);
 
   if (isLoading) {
-    return <Skeleton className="h-9 w-22 rounded-md" />;
+    return <Skeleton className="w-22 h-9 rounded-md" />;
   }
 
-  if (isError || !filter.bucketId) {
+  if (isError || !filter.bucket.id) {
     return null;
   }
 

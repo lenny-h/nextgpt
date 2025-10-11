@@ -3,7 +3,7 @@ import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
-import { FilterableList, ListItem } from "./filterable-list";
+import { FilterableList, type ListItem } from "./filterable-list";
 
 interface Props {
   open: boolean;
@@ -15,7 +15,7 @@ interface Props {
 interface File extends ListItem {
   id: string;
   name: string;
-  courseId: string;
+  pageCount: number;
 }
 
 export const FilesList = memo(({ open, inputValue, max }: Props) => {
@@ -46,6 +46,7 @@ export const FilesList = memo(({ open, inputValue, max }: Props) => {
           (client) =>
             client.files.$get({
               query: {
+                bucketId: filter.bucket.id,
                 courseIds: filter.courses.map((c) => c.id).join(","),
                 pageNumber: (pageParam ?? 0).toString(),
                 itemsPerPage: "10",
@@ -59,8 +60,9 @@ export const FilesList = memo(({ open, inputValue, max }: Props) => {
           (client) =>
             client.files.ilike.$get({
               query: {
-                courseIds: filter.courses.map((c) => c.id).join(","),
                 prefix,
+                bucketId: filter.bucket.id,
+                courseIds: filter.courses.map((c) => c.id).join(","),
               },
             }),
           sharedT.apiCodes,

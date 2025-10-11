@@ -39,7 +39,7 @@ export function FilterProvider({ children }: Props) {
   const { sharedT } = useSharedTranslations();
 
   const [filter, setFilter] = useState<FrontendFilter>({
-    bucketId: "",
+    bucket: { id: "" },
     courses: [],
     files: [],
     documents: [],
@@ -65,7 +65,7 @@ export function FilterProvider({ children }: Props) {
   useEffect(() => {
     if (buckets && buckets.length > 0 && buckets[0]) {
       setFilter({
-        bucketId: buckets[0].bucketId,
+        bucket: { id: buckets[0].bucketId },
         courses: [],
         files: [],
         documents: [],

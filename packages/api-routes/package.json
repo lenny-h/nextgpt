@@ -18,6 +18,7 @@
     "drizzle-orm": "^0.44.5",
     "hono": "^4.9.6",
     "papaparse": "^5.5.3",
+    "redis": "^5.8.3",
     "zod": "^4.1.11"
   },
   "devDependencies": {

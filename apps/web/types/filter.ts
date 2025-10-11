@@ -1,7 +1,9 @@
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 
 export interface FrontendFilter {
-  bucketId: string;
+  bucket: {
+    id: string;
+  };
   courses: {
     id: string;
     name: string;
@@ -9,7 +11,8 @@ export interface FrontendFilter {
   files: {
     id: string;
     name: string;
-    chapters?: Set<number>;
+    pageCount: number;
+    pageRange?: string;
   }[];
   documents: {
     id: string;

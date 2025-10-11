@@ -26,7 +26,8 @@ const app = new Hono().post(
   async (c) => {
     const { courseId } = c.req.valid("param");
 
-    const { filename, fileSize, processingDate } = c.req.valid("json");
+    const { filename, fileSize, fileType, processingDate, pdfPipelineOptions } =
+      c.req.valid("json");
     const user = c.get("user");
 
     const isMaintainer = await isCourseMaintainer({
@@ -75,7 +76,8 @@ const app = new Hono().post(
       bucket: bucketSizeInfo.bucketId,
       name: `${courseId}/${filename}`,
       size: fileSize,
-      contentType: "application/pdf",
+      contentType: fileType,
+      ...(pdfPipelineOptions && { pipelineOptions: pdfPipelineOptions }),
     };
 
     const queuePathParts = queuePath.split("/");
@@ -90,7 +92,11 @@ const app = new Hono().post(
       name: tasksClient.taskPath(projectId, location, queue, taskName),
       httpRequest: {
         httpMethod: "POST" as const,
-        url: processorUrl + "/process-pdf",
+        url:
+          processorUrl +
+          (fileType === "application/pdf"
+            ? "/process-pdf"
+            : "/process-document"),
         headers: {
           "Content-Type": "application/json",
         },

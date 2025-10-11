@@ -4,17 +4,35 @@ import { uuidSchema } from "./uuid-schema.js";
 
 export const practiceFilterSchema = z
   .object({
-    bucketId: uuidSchema,
-    courses: z.array(uuidSchema).max(5, {
-      message: "You can only select up to 5 courses",
+    bucket: z.object({
+      id: z.uuid({
+        version: "v4",
+        message: "Bucket ID must be a valid UUID",
+      }),
     }),
+    courses: z
+      .array(
+        z.object({
+          id: z.uuid({
+            version: "v4",
+            message: "Course Ids must be valid UUIDs",
+          }),
+        })
+      )
+      .max(5, {
+        message: "You can only select up to 5 courses",
+      }),
     files: z
       .array(
         z.object({
           id: uuidSchema,
-          chapters: z.array(z.number()).max(10, {
-            message: "You can only select up to 10 chapters",
-          }),
+          pageRange: z
+            .string()
+            .regex(/^\d+(-\d+)?(,\d+(-\d+)?)*$/, {
+              message:
+                "Page range must be a comma-separated list of numbers or ranges (e.g., '1,3-5,7')",
+            })
+            .optional(),
         })
       )
       .max(3, {

@@ -8,7 +8,11 @@ import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { processDataPart } from "@/lib/process-data-part";
-import { getMessagesAfterLastStart } from "@/lib/utils";
+import {
+  getMessageCountAfterLastStart,
+  getMessagesAfterLastStart,
+  stripFilter,
+} from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
@@ -58,7 +62,7 @@ export function Practice({
   const { sendMessage, messages, setMessages, status, stop, regenerate } =
     useChat<MyUIMessage>({
       id: chatId,
-      messages: getMessagesAfterLastStart(initialMessages),
+      messages: initialMessages,
       generateId: generateUUID,
       experimental_throttle: 100,
       onData: (dataPart) =>
@@ -86,17 +90,19 @@ export function Practice({
       transport: new DefaultChatTransport({
         api: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/practice`,
         credentials: "include",
-        prepareSendMessagesRequest: (options) => ({
-          ...options,
-          messages: getMessagesAfterLastStart(options.messages),
-          body: {
-            ...options.body,
-          },
-        }),
+        prepareSendMessagesRequest({ id, messages }) {
+          return {
+            id,
+            body: {
+              message: messages[messages.length - 1],
+              messageCount: getMessageCountAfterLastStart(messages),
+            },
+          };
+        },
       }),
     });
 
-  const { filter: frontendFilter, studyMode } = useFilter();
+  const { filter, studyMode } = useFilter();
   const { selectedChatModel } = useChatModel();
   const [isTemporary] = useIsTemporary();
 
@@ -104,7 +110,7 @@ export function Practice({
   const [showPreviousMessages, setShowPreviousMessages] = useState(false);
 
   const submitForm = useCallback(() => {
-    if (!frontendFilter.bucketId) {
+    if (!filter.bucket.id) {
       toast.error("Please select a bucket before submitting your question");
       return;
     }
@@ -117,15 +123,7 @@ export function Practice({
         role: "user",
         parts: [{ type: "text", text: "START" }],
         metadata: {
-          filter: {
-            bucketId: frontendFilter.bucketId,
-            courses: frontendFilter.courses.map((c) => c.id),
-            files: frontendFilter.files.map((f) => ({
-              id: f.id,
-              chapters: Array.from(f.chapters || []),
-            })),
-            studyMode,
-          },
+          filter: stripFilter(filter, true),
           isStartMessage: true,
         },
       },
@@ -140,7 +138,7 @@ export function Practice({
   }, [
     sendMessage,
     locale,
-    frontendFilter,
+    filter,
     chatId,
     selectedChatModel,
     isTemporary,
@@ -176,7 +174,7 @@ export function Practice({
 
         {messages.length > 0 && (
           <Button
-            disabled={status !== "ready" || frontendFilter.files.length === 0}
+            disabled={status !== "ready" || filter.files.length === 0}
             className="mx-auto mb-3 md:mb-4"
             onClick={() => {
               submitForm();

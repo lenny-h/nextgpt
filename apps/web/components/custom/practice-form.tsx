@@ -1,17 +1,35 @@
 "use client";
 
+import * as z from "zod";
+
 import { useFilter } from "@/contexts/filter-context";
-import { studyModes } from "@/lib/study-modes";
+import { studyModes, studyModeSchema } from "@/lib/study-modes";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible";
-import { Input } from "@workspace/ui/components/input";
-import { ChevronDown, File, Trash2 } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@workspace/ui/components/form";
+import { ChevronDown, File } from "lucide-react";
 import { memo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { FileSelector } from "./file-selector";
+import { PageRangeForm } from "./page-range-form";
+
+const practiceFormSchema = z.object({
+  studyMode: studyModeSchema,
+});
+
+type PracticeFormData = z.infer<typeof practiceFormSchema>;
 
 interface PracticeFormProps {
   submitForm: () => void;
@@ -22,19 +40,36 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
 
   const [expandedFiles, setExpandedFiles] = useState<string[]>([]);
 
-  const handleUpdateChapter = (fileId: string, chapterNumber: number) => {
+  const practiceForm = useForm<PracticeFormData>({
+    resolver: zodResolver(practiceFormSchema),
+    defaultValues: {
+      studyMode: studyMode,
+    },
+  });
+
+  // // Sync form with context when studyMode changes externally
+  // useEffect(() => {
+  //   practiceForm.setValue("studyMode", studyMode);
+  // }, [studyMode, practiceForm]);
+
+  const handleUpdatePageRange = (fileId: string, pageRange: string) => {
     setFilter((prev) => {
       const updatedFiles = prev.files.map((file) => {
         if (file.id === fileId) {
-          if (!file.chapters) {
-            return { ...file, chapters: new Set<number>([chapterNumber]) };
-          }
+          return { ...file, pageRange };
+        }
+        return file;
+      });
+      return { ...prev, files: updatedFiles };
+    });
+  };
 
-          const updatedChapters = file.chapters.has(chapterNumber)
-            ? new Set([...file.chapters].filter((num) => num !== chapterNumber))
-            : new Set([...file.chapters, chapterNumber]);
-
-          return { ...file, chapters: updatedChapters };
+  const handleClearPageRange = (fileId: string) => {
+    setFilter((prev) => {
+      const updatedFiles = prev.files.map((file) => {
+        if (file.id === fileId) {
+          const { pageRange, ...rest } = file;
+          return rest;
         }
         return file;
       });
@@ -57,7 +92,7 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
           <h1 className="text-2xl font-semibold">Let's practice! 🚀</h1>
           <p className="text-muted-foreground font-medium">
             Select the files whose content you want to practice. You can also
-            practice specific chapters of a file by adding them below.
+            practice specific page ranges of PDF files by adding them below.
           </p>
         </div>
 
@@ -91,50 +126,18 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="space-y-3 p-3 text-sm">
-                      <form
-                        className="flex items-center gap-2"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const formData = new FormData(e.currentTarget);
-                          const chapter = Number(formData.get("chapter"));
-                          if (chapter && !isNaN(chapter)) {
-                            handleUpdateChapter(file.id, chapter);
-                            e.currentTarget.reset();
-                          }
-                        }}
-                      >
-                        <Input
-                          type="number"
-                          name="chapter"
-                          placeholder="Add a chapter"
-                          className="max-w-[200px]"
-                          min={1}
-                          max={100}
-                          required
+                      {file.name.endsWith(".pdf") ? (
+                        <PageRangeForm
+                          fileId={file.id}
+                          currentPageRange={file.pageRange}
+                          onUpdate={handleUpdatePageRange}
+                          onClear={handleClearPageRange}
                         />
-                        <Button type="submit" variant="outline">
-                          Add
-                        </Button>
-                      </form>
-                      {file.chapters &&
-                        Array.from(file.chapters).map((chapter) => (
-                          <div
-                            key={chapter}
-                            className="bg-muted/30 hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md border px-2 py-1 transition-colors"
-                          >
-                            <span className="font-medium">
-                              Chapter {chapter}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              onClick={() =>
-                                handleUpdateChapter(file.id, chapter)
-                              }
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
-                        ))}
+                      ) : (
+                        <p className="text-muted-foreground italic">
+                          Page range selection is only available for PDF files.
+                        </p>
+                      )}
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
@@ -143,26 +146,49 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
           </div>
         </div>
 
-        <div className="w-full rounded-md border p-4">
-          <h2 className="mb-3 text-lg font-medium">Study Mode</h2>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {studyModes.map((mode) => (
-              <Button
-                key={mode.id}
-                variant="outline"
-                onClick={() => setStudyMode(mode.id)}
-                className={`h-auto justify-start px-3 py-2 text-left font-normal ${
-                  studyMode === mode.id
-                    ? "bg-muted border-primary shadow-sm"
-                    : ""
-                }`}
-              >
-                <span className="truncate">{mode.label}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
-        <Button onClick={submitForm}>Start</Button>
+        <Form {...practiceForm}>
+          <form onSubmit={practiceForm.handleSubmit(() => submitForm())}>
+            <div className="w-full rounded-md border p-4">
+              <FormField
+                control={practiceForm.control}
+                name="studyMode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-medium">
+                      Study Mode
+                    </FormLabel>
+                    <FormControl>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {studyModes.map((mode) => (
+                          <Button
+                            key={mode.id}
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              field.onChange(mode.id);
+                              setStudyMode(mode.id);
+                            }}
+                            className={`h-auto justify-start px-3 py-2 text-left font-normal ${
+                              field.value === mode.id
+                                ? "bg-muted border-primary shadow-sm"
+                                : ""
+                            }`}
+                          >
+                            <span className="truncate">{mode.label}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button type="submit" className="mt-8">
+              Start
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );

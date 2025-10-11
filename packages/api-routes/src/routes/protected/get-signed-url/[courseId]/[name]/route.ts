@@ -30,10 +30,10 @@ const app = new Hono().get(
 
     const hasPermission = await userHasPermissions({
       userId: user.id,
-      metadata: (user as any).app_metadata, // TODO: fix
-      bucketId,
-      courses: [courseId],
-      files: [],
+      filterBucketId: bucketId,
+      filterCourseIds: [courseId],
+      filterFileIds: [],
+      filterAttachments: [],
     });
 
     if (!hasPermission) {

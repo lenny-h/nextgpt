@@ -5,6 +5,7 @@ import { Header } from "@/components/custom/toggle-sidebars-header";
 import { useCSResults } from "@/contexts/classic-search-results";
 import { useFilter } from "@/contexts/filter-context";
 import { useVSResults } from "@/contexts/semantic-search-results";
+import { stripFilter } from "@/lib/utils";
 import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Input } from "@workspace/ui/components/input";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
@@ -66,12 +67,7 @@ export default function SearchPage() {
           client.search[":query"].$post({
             param: { query: encodeURI(query) },
             json: {
-              filter: {
-                ...filter,
-                courses: filter.courses.map((course) => course.id),
-                files: filter.files.map((file) => file.id),
-                documents: filter.documents.map((doc) => doc.id),
-              },
+              filter: stripFilter(filter, false),
               fts: searchMode === "keywords",
             },
           }),

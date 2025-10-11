@@ -45,7 +45,7 @@ const PureAgentMessage = ({
   const reasoningParts = message.parts.filter(
     (part) => part.type === "reasoning",
   );
-  const fileParts = message.parts.filter((part) => part.type === "file");
+  // const fileParts = message.parts.filter((part) => part.type === "file");
 
   const retrieveDocumentSourcesParts = message.parts.filter(
     (part) => part.type === "tool-retrieveDocumentSources",
@@ -123,21 +123,6 @@ const PureAgentMessage = ({
                 <Markdown sources={documentSources} parseSourceRefs={true}>
                   {parsedContent}
                 </Markdown>
-              )}
-
-              {fileParts.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  {fileParts.map((filePart, index) => (
-                    <div key={index} className="rounded-lg border p-3">
-                      <p className="text-muted-foreground text-sm">
-                        {filePart.filename || `File ${index + 1}`}
-                      </p>
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        {filePart.mediaType}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               )}
 
               {textContent && (

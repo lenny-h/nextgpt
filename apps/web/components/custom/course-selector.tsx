@@ -69,7 +69,7 @@ export const CourseSelector = memo(() => {
     return <Skeleton className="h-9 w-40 rounded-xl" />;
   }
 
-  if (isError || !filter.bucketId) {
+  if (isError || !filter.bucket.id) {
     return null;
   }
 

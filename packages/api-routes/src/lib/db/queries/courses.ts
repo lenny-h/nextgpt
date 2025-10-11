@@ -57,12 +57,12 @@ export async function isPrivate({ courseId }: { courseId: string }) {
 }
 
 export async function validateCoursesInBucket({
-  courseIds,
   bucketId,
+  courseIds,
   userId,
 }: {
-  courseIds: string[];
   bucketId: string;
+  courseIds: string[];
   userId: string;
 }) {
   if (courseIds.length === 0) return true;
@@ -76,8 +76,8 @@ export async function validateCoursesInBucket({
   if (coursesData.length !== courseIds.length) return false;
 
   const privateCourseIds = coursesData
-    .filter((course) => course.private)
-    .map((course) => course.id);
+    .filter((c) => c.private)
+    .map((c) => c.id);
 
   if (privateCourseIds.length > 0) {
     const courseUsersData = await db

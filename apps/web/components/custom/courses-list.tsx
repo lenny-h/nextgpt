@@ -94,12 +94,12 @@ export const CoursesList = memo(
       <FilterableList
         open={open}
         inputValue={inputValue}
-        queryKey={["courses", filter.bucketId]}
+        queryKey={["courses", filter.bucket.id]}
         queryFn={({ pageParam }) =>
           apiFetcher(
             (client) =>
               client["courses"][":bucketId"].$get({
-                param: { bucketId: filter.bucketId },
+                param: { bucketId: filter.bucket.id },
                 query: {
                   pageNumber: (pageParam ?? 0).toString(),
                   itemsPerPage: "10",
@@ -112,7 +112,7 @@ export const CoursesList = memo(
           apiFetcher(
             (client) =>
               client["courses"]["ilike"][":bucketId"].$get({
-                param: { bucketId: filter.bucketId },
+                param: { bucketId: filter.bucket.id },
                 query: {
                   prefix,
                 },
@@ -123,7 +123,7 @@ export const CoursesList = memo(
         selectedItems={filter.courses}
         onToggleItem={toggleCourse}
         disabledMessage="Please select a bucket first"
-        enabled={!!filter.bucketId}
+        enabled={!!filter.bucket.id}
         maxItems={max}
       />
     );

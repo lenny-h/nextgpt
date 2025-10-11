@@ -5,7 +5,7 @@ import { useFilter } from "@/contexts/filter-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
-import { getMessagesAfterLastStart } from "@/lib/utils";
+import { getMessageCountAfterLastStart, stripFilter } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
@@ -33,18 +33,20 @@ export const EditorFooter = memo(() => {
     transport: new DefaultChatTransport({
       api: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/practice`,
       credentials: "include",
-      prepareSendMessagesRequest: (options) => ({
-        ...options,
-        messages: getMessagesAfterLastStart(options.messages),
-        body: {
-          ...options.body,
-        },
-      }),
+      prepareSendMessagesRequest({ id, messages }) {
+        return {
+          id,
+          body: {
+            message: messages[messages.length - 1],
+            messageCount: getMessageCountAfterLastStart(messages),
+          },
+        };
+      },
     }),
   });
 
   const submitForm = (content: string) => {
-    if (!filter.bucketId) {
+    if (!filter.bucket.id) {
       toast.error("Please select a bucket before submitting your question");
       return;
     }
@@ -55,15 +57,7 @@ export const EditorFooter = memo(() => {
         role: "user",
         parts: [{ type: "text", text: content }],
         metadata: {
-          filter: {
-            bucketId: filter.bucketId,
-            courses: filter.courses.map((c) => c.id),
-            files: filter.files.map((f) => ({
-              id: f.id,
-              chapters: Array.from(f.chapters || []),
-            })),
-            studyMode,
-          },
+          filter: stripFilter(filter, true),
         },
       },
       {
@@ -71,6 +65,7 @@ export const EditorFooter = memo(() => {
           id: chatId,
           modelId: selectedChatModel.id,
           temp: isTemporary,
+          messageCount: getMessageCountAfterLastStart(messages),
         },
       },
     );

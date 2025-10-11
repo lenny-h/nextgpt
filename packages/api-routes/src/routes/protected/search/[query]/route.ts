@@ -27,10 +27,10 @@ const app = new Hono().post(
 
     const hasPermission = await userHasPermissions({
       userId: user.id,
-      metadata: (user as any).app_metadata, // TODO: fix
-      bucketId: filter.bucketId,
-      courses: filter.courses,
-      files: filter.files,
+      filterBucketId: filter.bucket.id,
+      filterCourseIds: filter.courses.map((c) => c.id),
+      filterFileIds: filter.files.map((f) => f.id),
+      filterAttachments: [],
     });
 
     if (!hasPermission) {

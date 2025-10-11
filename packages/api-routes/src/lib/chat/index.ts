@@ -12,7 +12,7 @@ export class ChatHandlerFactory {
     const chatRequest = await ChatRequest.fromRequest(c, chatPayloadSchema);
     const config = await ChatConfig.create(
       chatRequest.selectedChatModelId,
-      chatRequest.filter.bucketId,
+      chatRequest.filter.bucket.id,
       chatRequest.reasoningEnabled
     );
 
@@ -25,7 +25,7 @@ export class ChatHandlerFactory {
     const chatRequest = await ChatRequest.fromRequest(c, practicePayloadSchema);
     const config = await ChatConfig.create(
       chatRequest.selectedChatModelId,
-      chatRequest.filter.bucketId
+      chatRequest.filter.bucket.id
     );
 
     return new PracticeChatHandler(chatRequest, config);

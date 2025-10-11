@@ -31,16 +31,16 @@ export const ModelSelector = memo(() => {
   const [open, setOpen] = useState(false);
 
   const { data: modelsData } = useQuery({
-    queryKey: ["userModels", filter.bucketId],
+    queryKey: ["userModels", filter.bucket.id],
     queryFn: () =>
       apiFetcher(
         (client) =>
           client["models"][":bucketId"].$get({
-            param: { bucketId: filter.bucketId },
+            param: { bucketId: filter.bucket.id },
           }),
         sharedT.apiCodes,
       ),
-    enabled: !!filter.bucketId,
+    enabled: !!filter.bucket.id,
   });
 
   const userModels = modelsData?.items;

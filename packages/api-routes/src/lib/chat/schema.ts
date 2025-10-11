@@ -5,9 +5,7 @@ const basePayloadSchema = z.object({
   id: z.uuid({
     message: "Chat ID must be a valid UUID",
   }),
-  messages: z.array(z.any()).min(1, {
-    message: "At least one message is required",
-  }),
+  message: z.any(), // This will be validate with the ai.validateUIMessages function later
   modelId: z.union([
     z.enum(["chat-model-small", "chat-model-large"]),
     uuidSchema,
@@ -22,4 +20,8 @@ export const chatPayloadSchema = basePayloadSchema
   })
   .strict();
 
-export const practicePayloadSchema = basePayloadSchema.strict();
+export const practicePayloadSchema = basePayloadSchema
+  .extend({
+    messageCount: z.number().int().nonnegative().optional(),
+  })
+  .strict();
