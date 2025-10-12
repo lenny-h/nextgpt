@@ -10,7 +10,7 @@ import { createUuidArrayParamSchema } from "@workspace/api-routes/schemas/uuid-a
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
-  bucketUsers,
+  bucketUserRoles,
   user as profile,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
@@ -60,12 +60,12 @@ const app = new Hono()
 
       const users = await db
         .select({
-          id: bucketUsers.userId,
+          id: bucketUserRoles.userId,
           username: profile.username,
         })
-        .from(bucketUsers)
-        .innerJoin(profile, eq(bucketUsers.userId, profile.id))
-        .where(eq(bucketUsers.bucketId, bucketId))
+        .from(bucketUserRoles)
+        .innerJoin(profile, eq(bucketUserRoles.userId, profile.id))
+        .where(eq(bucketUserRoles.bucketId, bucketId))
         .limit(itemsPerPage)
         .offset(pageNumber * itemsPerPage);
 
@@ -131,11 +131,11 @@ const app = new Hono()
       }
 
       await db
-        .delete(bucketUsers)
+        .delete(bucketUserRoles)
         .where(
           and(
-            eq(bucketUsers.bucketId, bucketId),
-            inArray(bucketUsers.userId, userIds)
+            eq(bucketUserRoles.bucketId, bucketId),
+            inArray(bucketUserRoles.userId, userIds)
           )
         );
 

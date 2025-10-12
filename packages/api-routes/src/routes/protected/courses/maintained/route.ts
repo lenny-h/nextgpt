@@ -5,10 +5,10 @@ import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-sche
 import { db } from "@workspace/server/drizzle/db.js";
 import {
   buckets,
-  courseMaintainers,
   courses,
+  courseUserRoles,
 } from "@workspace/server/drizzle/schema.js";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 
@@ -38,10 +38,15 @@ const app = new Hono().get(
         createdAt: courses.createdAt,
         private: courses.private,
       })
-      .from(courseMaintainers)
-      .innerJoin(courses, eq(courseMaintainers.courseId, courses.id))
+      .from(courseUserRoles)
+      .innerJoin(courses, eq(courseUserRoles.courseId, courses.id))
       .innerJoin(buckets, eq(courses.bucketId, buckets.id))
-      .where(eq(courseMaintainers.userId, user.id))
+      .where(
+        and(
+          eq(courseUserRoles.userId, user.id),
+          eq(courseUserRoles.role, "maintainer")
+        )
+      )
       .orderBy(desc(courses.createdAt))
       .limit(itemsPerPage)
       .offset(pageNumber * itemsPerPage);

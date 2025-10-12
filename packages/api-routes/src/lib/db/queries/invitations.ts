@@ -1,11 +1,10 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import {
   bucketMaintainerInvitations,
-  bucketMaintainers,
   buckets,
-  bucketUsers,
+  bucketUserRoles,
   courseMaintainerInvitations,
-  courseMaintainers,
+  courseUserRoles,
   userInvitations,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, sql } from "drizzle-orm";
@@ -126,32 +125,37 @@ export async function acceptUserInvitation({
   targetUserId: string;
   bucketId: string;
 }) {
-  const bucket = await db
-    .select({ type: buckets.type, usersCount: buckets.usersCount })
-    .from(buckets)
-    .where(eq(buckets.id, bucketId))
+  // Verify the invitation exists
+  const invitation = await db
+    .select()
+    .from(userInvitations)
+    .where(
+      and(
+        eq(userInvitations.origin, originUserId),
+        eq(userInvitations.target, targetUserId),
+        eq(userInvitations.bucketId, bucketId)
+      )
+    )
     .limit(1);
 
-  if (bucket.length === 0) {
-    throw new HTTPException(404, { message: "NOT_FOUND" });
+  if (invitation.length === 0) {
+    throw new HTTPException(404, {
+      message: "NOT_FOUND",
+    });
   }
 
-  if (bucket[0].usersCount >= maxUserCounts[bucket[0].type]) {
-    throw new HTTPException(400, { message: "BUCKET_USER_LIMIT_EXCEEDED" });
-  }
+  // If desired, limit the number of users in a bucket here
+  // const userCount = await db
+  //   .select({ count: sql<number>`count(*)` })
+  //   .from(bucketUserRoles)
+  //   .where(eq(bucketUserRoles.bucketId, bucketId));
 
   await db.transaction(async (tx) => {
     // Insert the user into bucket_users if not exists
     await tx
-      .insert(bucketUsers)
+      .insert(bucketUserRoles)
       .values({ bucketId, userId: targetUserId })
       .onConflictDoNothing();
-
-    // Increase the bucket user count
-    await tx
-      .update(buckets)
-      .set({ usersCount: sql`${buckets.usersCount} + 1` })
-      .where(eq(buckets.id, bucketId));
 
     // Delete the invitation
     await tx
@@ -175,10 +179,34 @@ export async function acceptCourseMaintainerInvitation({
   targetUserId: string;
   courseId: string;
 }) {
+  // Verify the invitation exists
+  const invitation = await db
+    .select()
+    .from(courseMaintainerInvitations)
+    .where(
+      and(
+        eq(courseMaintainerInvitations.origin, originUserId),
+        eq(courseMaintainerInvitations.target, targetUserId),
+        eq(courseMaintainerInvitations.courseId, courseId)
+      )
+    )
+    .limit(1);
+
+  if (invitation.length === 0) {
+    throw new HTTPException(404, {
+      message: "NOT_FOUND",
+    });
+  }
+
   const maintainerCount = await db
     .select({ count: sql<number>`count(*)` })
-    .from(courseMaintainers)
-    .where(eq(courseMaintainers.courseId, courseId));
+    .from(courseUserRoles)
+    .where(
+      and(
+        eq(courseUserRoles.courseId, courseId),
+        eq(courseUserRoles.role, "maintainer")
+      )
+    );
 
   if (maintainerCount[0].count >= 20) {
     throw new HTTPException(400, {
@@ -187,11 +215,16 @@ export async function acceptCourseMaintainerInvitation({
   }
 
   await db.transaction(async (tx) => {
-    // Insert the user as a course maintainer if not exists
+    // Insert the user as a course maintainer
     await tx
-      .insert(courseMaintainers)
-      .values({ courseId, userId: targetUserId })
-      .onConflictDoNothing();
+      .insert(courseUserRoles)
+      .values({ courseId, userId: targetUserId, role: "maintainer" })
+      .onConflictDoUpdate({
+        target: [courseUserRoles.courseId, courseUserRoles.userId],
+        set: {
+          role: "maintainer",
+        },
+      });
 
     // Delete the invitation
     await tx
@@ -215,10 +248,34 @@ export async function acceptBucketMaintainerInvitation({
   targetUserId: string;
   bucketId: string;
 }) {
+  // Verify the invitation exists
+  const invitation = await db
+    .select()
+    .from(bucketMaintainerInvitations)
+    .where(
+      and(
+        eq(bucketMaintainerInvitations.origin, originUserId),
+        eq(bucketMaintainerInvitations.target, targetUserId),
+        eq(bucketMaintainerInvitations.bucketId, bucketId)
+      )
+    )
+    .limit(1);
+
+  if (invitation.length === 0) {
+    throw new HTTPException(404, {
+      message: "NOT_FOUND",
+    });
+  }
+
   const maintainerCount = await db
     .select({ count: sql<number>`count(*)` })
-    .from(bucketMaintainers)
-    .where(eq(bucketMaintainers.bucketId, bucketId));
+    .from(bucketUserRoles)
+    .where(
+      and(
+        eq(bucketUserRoles.bucketId, bucketId),
+        eq(bucketUserRoles.role, "maintainer")
+      )
+    );
 
   if (maintainerCount[0].count >= 20) {
     throw new HTTPException(400, {
@@ -229,9 +286,14 @@ export async function acceptBucketMaintainerInvitation({
   await db.transaction(async (tx) => {
     // Insert the user as a bucket maintainer if not exists
     await tx
-      .insert(bucketMaintainers)
-      .values({ bucketId, userId: targetUserId })
-      .onConflictDoNothing();
+      .insert(bucketUserRoles)
+      .values({ bucketId, userId: targetUserId, role: "maintainer" })
+      .onConflictDoUpdate({
+        target: [bucketUserRoles.bucketId, bucketUserRoles.userId],
+        set: {
+          role: "maintainer",
+        },
+      });
 
     // Delete the invitation
     await tx

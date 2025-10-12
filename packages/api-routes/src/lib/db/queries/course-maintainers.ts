@@ -1,5 +1,5 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import { courseMaintainers } from "@workspace/server/drizzle/schema.js";
+import { courseUserRoles } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
 
 export async function isCourseMaintainer({
@@ -11,16 +11,16 @@ export async function isCourseMaintainer({
 }) {
   const result = await db
     .select()
-    .from(courseMaintainers)
+    .from(courseUserRoles)
     .where(
       and(
-        eq(courseMaintainers.userId, userId),
-        eq(courseMaintainers.courseId, courseId)
+        eq(courseUserRoles.userId, userId),
+        eq(courseUserRoles.courseId, courseId)
       )
     )
     .limit(1);
 
-  return result.length > 0;
+  return result.length > 0 && result[0].role === "maintainer";
 }
 
 export async function removeCourseMaintainer({
@@ -31,11 +31,12 @@ export async function removeCourseMaintainer({
   courseId: string;
 }) {
   await db
-    .delete(courseMaintainers)
+    .delete(courseUserRoles)
     .where(
       and(
-        eq(courseMaintainers.userId, userId),
-        eq(courseMaintainers.courseId, courseId)
+        eq(courseUserRoles.userId, userId),
+        eq(courseUserRoles.courseId, courseId),
+        eq(courseUserRoles.role, "maintainer")
       )
     );
 }
@@ -48,11 +49,12 @@ export async function removeCourseMaintainersBatch({
   courseId: string;
 }) {
   await db
-    .delete(courseMaintainers)
+    .delete(courseUserRoles)
     .where(
       and(
-        eq(courseMaintainers.courseId, courseId),
-        inArray(courseMaintainers.userId, userIds)
+        eq(courseUserRoles.courseId, courseId),
+        inArray(courseUserRoles.userId, userIds),
+        eq(courseUserRoles.role, "maintainer")
       )
     );
 }
@@ -65,12 +67,13 @@ export async function filterNonExistingCourseMaintainers({
   userIds: string[];
 }) {
   const existingMaintainers = await db
-    .select({ userId: courseMaintainers.userId })
-    .from(courseMaintainers)
+    .select({ userId: courseUserRoles.userId })
+    .from(courseUserRoles)
     .where(
       and(
-        eq(courseMaintainers.courseId, courseId),
-        inArray(courseMaintainers.userId, userIds)
+        eq(courseUserRoles.courseId, courseId),
+        inArray(courseUserRoles.userId, userIds),
+        eq(courseUserRoles.role, "maintainer")
       )
     );
 

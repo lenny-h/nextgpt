@@ -7,6 +7,7 @@ import bucketMaintainersRoute from "./bucket-maintainers/[bucketId]/route.js";
 import bucketUsersRoute from "./bucket-users/[bucketId]/route.js";
 import bucketUsersIlikeRoute from "./bucket-users/ilike/[bucketId]/route.js";
 import bucketsDeleteRoute from "./buckets/[bucketId]/route.js";
+import bucketsUserCountRoute from "./buckets/[bucketId]/user-count/route.js";
 import bucketsMaintainedRoute from "./buckets/maintained/route.js";
 import bucketsRoute from "./buckets/route.js";
 import bucketsUsedRoute from "./buckets/used/route.js";
@@ -76,6 +77,7 @@ const protectedApiRouter = new Hono()
   .route("/buckets/used", bucketsUsedRoute)
   .route("/buckets/maintained", bucketsMaintainedRoute)
   .route("/buckets/:bucketId", bucketsDeleteRoute)
+  .route("/buckets/:bucketId/user-count", bucketsUserCountRoute)
 
   // Chat
   .route("/chat", chatRoute)

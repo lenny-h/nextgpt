@@ -1,5 +1,5 @@
 {
-  "id": "ddfcf26f-a4f7-4901-a496-13490bfba536",
+  "id": "9699e622-3cb5-4aeb-8bbd-0847b789fa11",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -203,66 +203,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bucket_maintainers": {
-      "name": "bucket_maintainers",
-      "schema": "",
-      "columns": {
-        "bucket_id": {
-          "name": "bucket_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "bucket_maintainers_bucket_id_buckets_id_fk": {
-          "name": "bucket_maintainers_bucket_id_buckets_id_fk",
-          "tableFrom": "bucket_maintainers",
-          "tableTo": "buckets",
-          "columnsFrom": [
-            "bucket_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "bucket_maintainers_user_id_user_id_fk": {
-          "name": "bucket_maintainers_user_id_user_id_fk",
-          "tableFrom": "bucket_maintainers",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "bucket_maintainers_bucket_id_user_id_pk": {
-          "name": "bucket_maintainers_bucket_id_user_id_pk",
-          "columns": [
-            "bucket_id",
-            "user_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.bucket_users": {
       "name": "bucket_users",
       "schema": "",
@@ -278,9 +218,90 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'user'"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_bucket_users_bucket_id": {
+          "name": "idx_bucket_users_bucket_id",
+          "columns": [
+            {
+              "expression": "bucket_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_bucket_users_user_id": {
+          "name": "idx_bucket_users_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_bucket_users_user_id_role": {
+          "name": "idx_bucket_users_user_id_role",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_bucket_users_bucket_id_role": {
+          "name": "idx_bucket_users_bucket_id_role",
+          "columns": [
+            {
+              "expression": "bucket_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "bucket_users_bucket_id_buckets_id_fk": {
           "name": "bucket_users_bucket_id_buckets_id_fk",
@@ -365,13 +386,6 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "users_count": {
-          "name": "users_count",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
         },
         "subscription_id": {
           "name": "subscription_id",
@@ -617,66 +631,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.course_maintainers": {
-      "name": "course_maintainers",
-      "schema": "",
-      "columns": {
-        "course_id": {
-          "name": "course_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "course_maintainers_course_id_courses_id_fk": {
-          "name": "course_maintainers_course_id_courses_id_fk",
-          "tableFrom": "course_maintainers",
-          "tableTo": "courses",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "course_maintainers_user_id_user_id_fk": {
-          "name": "course_maintainers_user_id_user_id_fk",
-          "tableFrom": "course_maintainers",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "course_maintainers_course_id_user_id_pk": {
-          "name": "course_maintainers_course_id_user_id_pk",
-          "columns": [
-            "course_id",
-            "user_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.course_users": {
       "name": "course_users",
       "schema": "",
@@ -692,9 +646,90 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'user'"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_course_users_course_id": {
+          "name": "idx_course_users_course_id",
+          "columns": [
+            {
+              "expression": "course_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_course_users_user_id": {
+          "name": "idx_course_users_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_course_users_user_id_role": {
+          "name": "idx_course_users_user_id_role",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_course_users_course_id_role": {
+          "name": "idx_course_users_course_id_role",
+          "columns": [
+            {
+              "expression": "course_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "course_users_course_id_courses_id_fk": {
           "name": "course_users_course_id_courses_id_fk",
@@ -1776,6 +1811,14 @@
         "processing",
         "failed",
         "finished"
+      ]
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "user",
+        "maintainer"
       ]
     }
   },

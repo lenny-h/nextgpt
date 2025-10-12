@@ -17,11 +17,6 @@ export default function BucketUsersPage() {
   const searchParams = useSearchParams();
   const bucketId = searchParams.get("bucketId");
   const bucketName = searchParams.get("bucketName");
-  const usersCount = searchParams.get("usersCount");
-
-  if (!bucketId || !bucketName || !usersCount || isNaN(parseInt(usersCount))) {
-    notFound();
-  }
 
   const {
     data: currentBucketUsersData,
@@ -33,7 +28,7 @@ export default function BucketUsersPage() {
       apiFetcher(
         (client) =>
           client["bucket-users"][":bucketId"].$get({
-            param: { bucketId },
+            param: { bucketId: bucketId as string },
             query: {
               pageNumber: "0",
               itemsPerPage: "10",
@@ -41,11 +36,36 @@ export default function BucketUsersPage() {
           }),
         sharedT.apiCodes,
       ),
+    enabled: !!bucketId,
   });
 
   const currentBucketUsers = currentBucketUsersData?.items;
 
-  if (isPending) {
+  // Fetch user count for the bucket
+  const {
+    data: userCountData,
+    isPending: isUserCountPending,
+    isError: isUserCountError,
+  } = useQuery({
+    queryKey: ["user-count", bucketId],
+    queryFn: () =>
+      apiFetcher(
+        (client) =>
+          client["buckets"][":bucketId"]["user-count"].$get({
+            param: { bucketId: bucketId as string },
+          }),
+        sharedT.apiCodes,
+      ),
+    enabled: !!bucketId,
+  });
+
+  const userCount = userCountData?.userCount;
+
+  if (!bucketId || !bucketName) {
+    notFound();
+  }
+
+  if (isPending || isUserCountPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">Loading bucket users...</h1>
@@ -53,7 +73,7 @@ export default function BucketUsersPage() {
     );
   }
 
-  if (isError || !currentBucketUsers) {
+  if (isError || !currentBucketUsers || isUserCountError || !userCount) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
@@ -68,13 +88,11 @@ export default function BucketUsersPage() {
       <h1 className="text-2xl font-semibold">{bucketName}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold">
-            Current Users ({usersCount})
-          </h2>
+          <h2 className="text-xl font-semibold">Current Users ({userCount})</h2>
           <CurrentBucketUsers
             currentUser={user}
             currentBucketUsers={currentBucketUsers}
-            usersCount={parseInt(usersCount)}
+            userCount={userCount}
           />
         </div>
         <div className="space-y-3">

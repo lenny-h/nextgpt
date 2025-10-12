@@ -1,9 +1,5 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import {
-  bucketMaintainers,
-  buckets,
-  bucketUsers,
-} from "@workspace/server/drizzle/schema.js";
+import { buckets, bucketUserRoles } from "@workspace/server/drizzle/schema.js";
 import { and, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
@@ -46,9 +42,9 @@ export async function getBucketName({ bucketId }: { bucketId: string }) {
 
 export async function getUserBuckets({ userId }: { userId: string }) {
   return await db
-    .select({ bucketId: bucketUsers.bucketId })
-    .from(bucketUsers)
-    .where(eq(bucketUsers.userId, userId));
+    .select({ bucketId: bucketUserRoles.bucketId })
+    .from(bucketUserRoles)
+    .where(eq(bucketUserRoles.userId, userId));
 }
 
 export async function isBucketUser({
@@ -59,10 +55,13 @@ export async function isBucketUser({
   bucketId: string;
 }) {
   const result = await db
-    .select({ bucketId: bucketUsers.bucketId })
-    .from(bucketUsers)
+    .select({ bucketId: bucketUserRoles.bucketId })
+    .from(bucketUserRoles)
     .where(
-      and(eq(bucketUsers.bucketId, bucketId), eq(bucketUsers.userId, userId))
+      and(
+        eq(bucketUserRoles.bucketId, bucketId),
+        eq(bucketUserRoles.userId, userId)
+      )
     )
     .limit(1);
 
@@ -107,21 +106,15 @@ export async function createBucket({
         owner: userId,
         name,
         type,
-        usersCount: 1,
         maxSize,
       })
       .returning({ id: buckets.id });
 
-    // Insert bucket maintainer
-    await tx.insert(bucketMaintainers).values({
+    // Register user as maintainer
+    await tx.insert(bucketUserRoles).values({
       bucketId: bucket.id,
       userId,
-    });
-
-    // Insert bucket user
-    await tx.insert(bucketUsers).values({
-      bucketId: bucket.id,
-      userId,
+      role: "maintainer",
     });
 
     return bucket.id;

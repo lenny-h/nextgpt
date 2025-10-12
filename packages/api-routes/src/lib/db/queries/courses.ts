@@ -2,9 +2,8 @@ import { db } from "@workspace/server/drizzle/db.js";
 import {
   buckets,
   courseKeys,
-  courseMaintainers,
   courses,
-  courseUsers,
+  courseUserRoles,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
@@ -81,12 +80,12 @@ export async function validateCoursesInBucket({
 
   if (privateCourseIds.length > 0) {
     const courseUsersData = await db
-      .select({ courseId: courseUsers.courseId })
-      .from(courseUsers)
+      .select({ courseId: courseUserRoles.courseId })
+      .from(courseUserRoles)
       .where(
         and(
-          inArray(courseUsers.courseId, privateCourseIds),
-          eq(courseUsers.userId, userId)
+          inArray(courseUserRoles.courseId, privateCourseIds),
+          eq(courseUserRoles.userId, userId)
         )
       );
 
@@ -133,9 +132,10 @@ export async function createCourse({
       .returning({ id: courses.id });
 
     // Insert maintainer
-    await tx.insert(courseMaintainers).values({
+    await tx.insert(courseUserRoles).values({
       courseId: course.id,
       userId,
+      role: "maintainer",
     });
 
     // Insert encrypted key if provided

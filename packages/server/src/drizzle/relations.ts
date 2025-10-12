@@ -2,15 +2,13 @@ import { relations } from "drizzle-orm";
 import {
   account,
   bucketMaintainerInvitations,
-  bucketMaintainers,
+  bucketUserRoles,
   buckets,
-  bucketUsers,
   chats,
   courseKeys,
   courseMaintainerInvitations,
-  courseMaintainers,
+  courseUserRoles,
   courses,
-  courseUsers,
   documents,
   feedback,
   files,
@@ -28,11 +26,9 @@ export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
   ownedBuckets: many(buckets),
-  bucketMaintainerships: many(bucketMaintainers),
-  bucketMemberships: many(bucketUsers),
+  bucketMemberships: many(bucketUserRoles),
   chats: many(chats),
-  courseMaintainerships: many(courseMaintainers),
-  courseMemberships: many(courseUsers),
+  courseMemberships: many(courseUserRoles),
   documents: many(documents),
   feedback: many(feedback),
   userInvitations: many(userInvitations),
@@ -60,38 +56,26 @@ export const bucketsRelations = relations(buckets, ({ one, many }) => ({
     fields: [buckets.owner],
     references: [user.id],
   }),
-  users: many(bucketUsers),
-  maintainers: many(bucketMaintainers),
+  users: many(bucketUserRoles),
   courses: many(courses),
   userInvitations: many(userInvitations),
   bucketMaintainerInvitations: many(bucketMaintainerInvitations),
   models: many(models),
 }));
 
-export const bucketMaintainersRelations = relations(
-  bucketMaintainers,
+export const bucketUserRolesRelations = relations(
+  bucketUserRoles,
   ({ one }) => ({
     bucket: one(buckets, {
-      fields: [bucketMaintainers.bucketId],
+      fields: [bucketUserRoles.bucketId],
       references: [buckets.id],
     }),
     user: one(user, {
-      fields: [bucketMaintainers.userId],
+      fields: [bucketUserRoles.userId],
       references: [user.id],
     }),
   })
 );
-
-export const bucketUsersRelations = relations(bucketUsers, ({ one }) => ({
-  bucket: one(buckets, {
-    fields: [bucketUsers.bucketId],
-    references: [buckets.id],
-  }),
-  user: one(user, {
-    fields: [bucketUsers.userId],
-    references: [user.id],
-  }),
-}));
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
   user: one(user, {
@@ -113,8 +97,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     fields: [courses.bucketId],
     references: [buckets.id],
   }),
-  users: many(courseUsers),
-  maintainers: many(courseMaintainers),
+  users: many(courseUserRoles),
   keys: many(courseKeys),
   files: many(files),
   pages: many(pages),
@@ -122,33 +105,15 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   tasks: many(tasks),
 }));
 
-export const courseUsersRelations = relations(courseUsers, ({ one }) => ({
-  course: one(courses, {
-    fields: [courseUsers.courseId],
-    references: [courses.id],
-  }),
-  user: one(user, {
-    fields: [courseUsers.userId],
-    references: [user.id],
-  }),
-}));
-
-export const courseKeysRelations = relations(courseKeys, ({ one }) => ({
-  course: one(courses, {
-    fields: [courseKeys.courseId],
-    references: [courses.id],
-  }),
-}));
-
-export const courseMaintainersRelations = relations(
-  courseMaintainers,
+export const courseUserRolesRelations = relations(
+  courseUserRoles,
   ({ one }) => ({
     course: one(courses, {
-      fields: [courseMaintainers.courseId],
+      fields: [courseUserRoles.courseId],
       references: [courses.id],
     }),
     user: one(user, {
-      fields: [courseMaintainers.userId],
+      fields: [courseUserRoles.userId],
       references: [user.id],
     }),
   })

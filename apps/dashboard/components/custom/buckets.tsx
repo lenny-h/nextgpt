@@ -41,6 +41,24 @@ export const Buckets = memo(({ locale }: Props) => {
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
 
+  // Fetch user count for selected bucket
+  const {
+    data: userCountData,
+    isPending: isUserCountPending,
+    isError: isUserCountError,
+  } = useQuery({
+    queryKey: ["user-count", selectedBucket?.id],
+    queryFn: () =>
+      apiFetcher(
+        (client) =>
+          client["buckets"][":bucketId"]["user-count"].$get({
+            param: { bucketId: selectedBucket!.id },
+          }),
+        sharedT.apiCodes,
+      ),
+    enabled: !!selectedBucket,
+  });
+
   if (isPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
@@ -137,14 +155,22 @@ export const Buckets = memo(({ locale }: Props) => {
                       </span>
                     </div>
                   ))}
+                <div className="flex space-x-4 font-medium">
+                  <span className="text-primary">usersCount:</span>
+                  <span>
+                    {isUserCountPending
+                      ? "Loading..."
+                      : isUserCountError
+                        ? "Error loading count"
+                        : userCountData.userCount}
+                  </span>
+                </div>
                 <div className="mt-2 flex w-full justify-end gap-2">
                   <Button asChild>
                     <Link
                       href={`/${locale}/buckets/users?bucketId=${
                         selectedBucket.id
-                      }&bucketName=${encodeURIComponent(
-                        selectedBucket.name,
-                      )}&usersCount=${selectedBucket.usersCount}`}
+                      }&bucketName=${encodeURIComponent(selectedBucket.name)}`}
                     >
                       {dashboardT.buckets.manageUsers}
                     </Link>

@@ -12,10 +12,10 @@ import { addBucketMaintainerInvitationsBatch } from "@workspace/api-routes/lib/d
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
-  bucketMaintainers,
+  bucketUserRoles,
   user as profile,
 } from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -44,12 +44,17 @@ const app = new Hono()
 
       const maintainers = await db
         .select({
-          id: bucketMaintainers.userId,
+          id: bucketUserRoles.userId,
           username: profile.username,
         })
-        .from(bucketMaintainers)
-        .innerJoin(profile, eq(bucketMaintainers.userId, profile.id))
-        .where(eq(bucketMaintainers.bucketId, bucketId));
+        .from(bucketUserRoles)
+        .innerJoin(profile, eq(bucketUserRoles.userId, profile.id))
+        .where(
+          and(
+            eq(bucketUserRoles.bucketId, bucketId),
+            eq(bucketUserRoles.role, "maintainer")
+          )
+        );
 
       return c.json({ maintainers });
     }

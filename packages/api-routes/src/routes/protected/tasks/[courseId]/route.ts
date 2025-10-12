@@ -4,7 +4,7 @@ import { itemsPerPageSchema } from "@workspace/api-routes/schemas/items-per-page
 import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-schema.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
-import { courseMaintainers, tasks } from "@workspace/server/drizzle/schema.js";
+import { courseUserRoles, tasks } from "@workspace/server/drizzle/schema.js";
 import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
@@ -43,14 +43,14 @@ const app = new Hono().get(
         pubDate: tasks.pubDate,
       })
       .from(tasks)
-      .innerJoin(
-        courseMaintainers,
+      .innerJoin(courseUserRoles, eq(courseUserRoles.courseId, tasks.courseId))
+      .where(
         and(
-          eq(courseMaintainers.courseId, tasks.courseId),
-          eq(courseMaintainers.userId, user.id)
+          eq(tasks.courseId, courseId),
+          eq(courseUserRoles.userId, user.id),
+          eq(courseUserRoles.role, "maintainer")
         )
       )
-      .where(eq(tasks.courseId, courseId))
       .orderBy(desc(tasks.createdAt))
       .limit(itemsPerPage)
       .offset(pageNumber * itemsPerPage);

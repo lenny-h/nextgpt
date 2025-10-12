@@ -1,6 +1,6 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import { bucketMaintainers } from "@workspace/server/drizzle/schema.js";
-import { and, count, eq, inArray } from "drizzle-orm";
+import { bucketUserRoles } from "@workspace/server/drizzle/schema.js";
+import { and, eq, inArray } from "drizzle-orm";
 
 export async function isBucketMaintainer({
   userId,
@@ -10,16 +10,17 @@ export async function isBucketMaintainer({
   bucketId: string;
 }) {
   const result = await db
-    .select({ count: count() })
-    .from(bucketMaintainers)
+    .select()
+    .from(bucketUserRoles)
     .where(
       and(
-        eq(bucketMaintainers.userId, userId),
-        eq(bucketMaintainers.bucketId, bucketId)
+        eq(bucketUserRoles.userId, userId),
+        eq(bucketUserRoles.bucketId, bucketId)
       )
-    );
+    )
+    .limit(1);
 
-  return result[0].count > 0;
+  return result.length > 0 && result[0].role === "maintainer";
 }
 
 export async function removeBucketMaintainer({
@@ -30,11 +31,12 @@ export async function removeBucketMaintainer({
   bucketId: string;
 }) {
   await db
-    .delete(bucketMaintainers)
+    .delete(bucketUserRoles)
     .where(
       and(
-        eq(bucketMaintainers.userId, userId),
-        eq(bucketMaintainers.bucketId, bucketId)
+        eq(bucketUserRoles.userId, userId),
+        eq(bucketUserRoles.bucketId, bucketId),
+        eq(bucketUserRoles.role, "maintainer")
       )
     );
 }
@@ -47,11 +49,12 @@ export async function removeBucketMaintainersBatch({
   bucketId: string;
 }) {
   await db
-    .delete(bucketMaintainers)
+    .delete(bucketUserRoles)
     .where(
       and(
-        eq(bucketMaintainers.bucketId, bucketId),
-        inArray(bucketMaintainers.userId, userIds)
+        eq(bucketUserRoles.bucketId, bucketId),
+        inArray(bucketUserRoles.userId, userIds),
+        eq(bucketUserRoles.role, "maintainer")
       )
     );
 }
@@ -63,19 +66,20 @@ export async function filterNonExistingBucketMaintainers({
   bucketId: string;
   userIds: string[];
 }) {
-  // Get users that ARE already maintainers of the bucket
+  // Get users that are already maintainers of the bucket
   const existingMaintainers = await db
-    .select({ userId: bucketMaintainers.userId })
-    .from(bucketMaintainers)
+    .select({ userId: bucketUserRoles.userId })
+    .from(bucketUserRoles)
     .where(
       and(
-        eq(bucketMaintainers.bucketId, bucketId),
-        inArray(bucketMaintainers.userId, userIds)
+        eq(bucketUserRoles.bucketId, bucketId),
+        inArray(bucketUserRoles.userId, userIds),
+        eq(bucketUserRoles.role, "maintainer")
       )
     );
 
   const existingMaintainerIds = existingMaintainers.map((row) => row.userId);
 
-  // Return only users that are NOT maintainers of the bucket
+  // Return only users that are not maintainers of the bucket
   return userIds.filter((userId) => !existingMaintainerIds.includes(userId));
 }

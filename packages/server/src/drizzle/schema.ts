@@ -96,6 +96,9 @@ export type BucketType = "small" | "medium" | "large" | "org";
 export const roleEnum = pgEnum("role", ["user", "assistant", "system"]);
 export type Role = "user" | "assistant" | "system";
 
+export const userRoleEnum = pgEnum("user_role", ["user", "maintainer"]);
+export type UserRole = "user" | "maintainer";
+
 export const documentKindEnum = pgEnum("document_kind", ["code", "text"]);
 export type DocumentKind = "code" | "text";
 
@@ -119,7 +122,6 @@ export const buckets = pgTable(
     size: bigint("size", { mode: "number" }).notNull().default(0),
     maxSize: bigint("max_size", { mode: "number" }).notNull(),
     type: bucketTypeEnum("type").notNull(),
-    usersCount: smallint("users_count").notNull().default(0),
     subscriptionId: varchar("subscription_id", { length: 128 })
       .notNull()
       .default(""),
@@ -132,24 +134,8 @@ export const buckets = pgTable(
 
 export type Bucket = InferSelectModel<typeof buckets>;
 
-// Bucket maintainers table
-export const bucketMaintainers = pgTable(
-  "bucket_maintainers",
-  {
-    bucketId: uuid("bucket_id")
-      .notNull()
-      .references(() => buckets.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.bucketId, table.userId] })]
-);
-
-export type BucketMaintainer = InferSelectModel<typeof bucketMaintainers>;
-
 // Bucket users table
-export const bucketUsers = pgTable(
+export const bucketUserRoles = pgTable(
   "bucket_users",
   {
     bucketId: uuid("bucket_id")
@@ -158,11 +144,22 @@ export const bucketUsers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    role: userRoleEnum("role").notNull().default("user"),
   },
-  (table) => [primaryKey({ columns: [table.bucketId, table.userId] })]
+  (table) => [
+    primaryKey({ columns: [table.bucketId, table.userId] }),
+    // index for queries by bucketId
+    index("idx_bucket_users_bucket_id").on(table.bucketId),
+    // index for queries by userId
+    index("idx_bucket_users_user_id").on(table.userId),
+    // composite index for queries by (userId, role)
+    index("idx_bucket_users_user_id_role").on(table.userId, table.role),
+    // composite index for queries by (bucketId, role)
+    index("idx_bucket_users_bucket_id_role").on(table.bucketId, table.role),
+  ]
 );
 
-export type BucketUser = InferSelectModel<typeof bucketUsers>;
+export type BucketUserRole = InferSelectModel<typeof bucketUserRoles>;
 
 // Chats table
 export const chats = pgTable("chats", {
@@ -210,7 +207,7 @@ export const courses = pgTable(
 export type Course = InferSelectModel<typeof courses>;
 
 // Course users table
-export const courseUsers = pgTable(
+export const courseUserRoles = pgTable(
   "course_users",
   {
     courseId: uuid("course_id")
@@ -219,11 +216,22 @@ export const courseUsers = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    role: userRoleEnum("role").notNull().default("user"),
   },
-  (table) => [primaryKey({ columns: [table.courseId, table.userId] })]
+  (table) => [
+    primaryKey({ columns: [table.courseId, table.userId] }),
+    // index for queries by courseId
+    index("idx_course_users_course_id").on(table.courseId),
+    // index for queries by userId
+    index("idx_course_users_user_id").on(table.userId),
+    // composite index for queries by (userId, role)
+    index("idx_course_users_user_id_role").on(table.userId, table.role),
+    // composite index for queries by (courseId, role)
+    index("idx_course_users_course_id_role").on(table.courseId, table.role),
+  ]
 );
 
-export type CourseUser = InferSelectModel<typeof courseUsers>;
+export type CourseUserRole = InferSelectModel<typeof courseUserRoles>;
 
 // Course keys table
 export const courseKeys = pgTable(
@@ -236,22 +244,6 @@ export const courseKeys = pgTable(
 );
 
 export type CourseKey = InferSelectModel<typeof courseKeys>;
-
-// Course maintainers table
-export const courseMaintainers = pgTable(
-  "course_maintainers",
-  {
-    courseId: uuid("course_id")
-      .notNull()
-      .references(() => courses.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.courseId, table.userId] })]
-);
-
-export type CourseMaintainer = InferSelectModel<typeof courseMaintainers>;
 
 // Documents table
 export const documents = pgTable(

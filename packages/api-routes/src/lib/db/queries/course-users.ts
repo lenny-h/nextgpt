@@ -1,5 +1,5 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import { courseUsers } from "@workspace/server/drizzle/schema.js";
+import { courseUserRoles } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 
 export async function addUserToCourse({
@@ -10,7 +10,7 @@ export async function addUserToCourse({
   userId: string;
 }) {
   await db
-    .insert(courseUsers)
+    .insert(courseUserRoles)
     .values({
       courseId,
       userId,
@@ -27,9 +27,12 @@ export async function checkUserCourseAccess({
 }) {
   const result = await db
     .select()
-    .from(courseUsers)
+    .from(courseUserRoles)
     .where(
-      and(eq(courseUsers.courseId, courseId), eq(courseUsers.userId, userId))
+      and(
+        eq(courseUserRoles.courseId, courseId),
+        eq(courseUserRoles.userId, userId)
+      )
     )
     .limit(1);
 

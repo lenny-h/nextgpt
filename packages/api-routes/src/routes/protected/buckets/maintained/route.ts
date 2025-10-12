@@ -1,9 +1,6 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import {
-  bucketMaintainers,
-  buckets,
-} from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { buckets, bucketUserRoles } from "@workspace/server/drizzle/schema.js";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 const app = new Hono().get("/", async (c) => {
@@ -17,13 +14,17 @@ const app = new Hono().get("/", async (c) => {
       size: buckets.size,
       maxSize: buckets.maxSize,
       type: buckets.type,
-      usersCount: buckets.usersCount,
       subscriptionId: buckets.subscriptionId,
       createdAt: buckets.createdAt,
     })
-    .from(bucketMaintainers)
-    .innerJoin(buckets, eq(bucketMaintainers.bucketId, buckets.id))
-    .where(eq(bucketMaintainers.userId, user.id));
+    .from(bucketUserRoles)
+    .innerJoin(buckets, eq(bucketUserRoles.bucketId, buckets.id))
+    .where(
+      and(
+        eq(bucketUserRoles.userId, user.id),
+        eq(bucketUserRoles.role, "maintainer")
+      )
+    );
 
   return c.json({ items: maintainedBuckets });
 });

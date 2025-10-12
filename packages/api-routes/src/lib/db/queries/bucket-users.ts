@@ -1,5 +1,5 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import { bucketUsers } from "@workspace/server/drizzle/schema.js";
+import { bucketUserRoles } from "@workspace/server/drizzle/schema.js";
 import { and, eq, inArray } from "drizzle-orm";
 
 export async function filterNonExistingBucketUsers({
@@ -9,19 +9,19 @@ export async function filterNonExistingBucketUsers({
   bucketId: string;
   userIds: string[];
 }) {
-  // Get users that ARE already in the bucket
+  // Get users that are already in the bucket
   const existingUsers = await db
-    .select({ userId: bucketUsers.userId })
-    .from(bucketUsers)
+    .select({ userId: bucketUserRoles.userId })
+    .from(bucketUserRoles)
     .where(
       and(
-        eq(bucketUsers.bucketId, bucketId),
-        inArray(bucketUsers.userId, userIds)
+        eq(bucketUserRoles.bucketId, bucketId),
+        inArray(bucketUserRoles.userId, userIds)
       )
     );
 
   const existingUserIds = existingUsers.map((row) => row.userId);
 
-  // Return only users that are NOT in the bucket
+  // Return only users that are not in the bucket
   return userIds.filter((userId) => !existingUserIds.includes(userId));
 }

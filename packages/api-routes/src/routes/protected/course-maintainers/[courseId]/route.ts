@@ -13,10 +13,10 @@ import { addCourseMaintainerInvitationsBatch } from "@workspace/api-routes/lib/d
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
-  courseMaintainers,
+  courseUserRoles,
   user as profile,
 } from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -48,12 +48,17 @@ const app = new Hono()
 
       const maintainers = await db
         .select({
-          id: courseMaintainers.userId,
+          id: courseUserRoles.userId,
           username: profile.username,
         })
-        .from(courseMaintainers)
-        .innerJoin(profile, eq(courseMaintainers.userId, profile.id))
-        .where(eq(courseMaintainers.courseId, courseId));
+        .from(courseUserRoles)
+        .innerJoin(profile, eq(courseUserRoles.userId, profile.id))
+        .where(
+          and(
+            eq(courseUserRoles.courseId, courseId),
+            eq(courseUserRoles.role, "maintainer")
+          )
+        );
 
       return c.json({ items: maintainers });
     }

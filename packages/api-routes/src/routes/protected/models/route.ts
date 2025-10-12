@@ -7,11 +7,11 @@ import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-sche
 import { encryptApiKey } from "@workspace/api-routes/utils/encryption.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
-  bucketMaintainers,
   buckets,
+  bucketUserRoles,
   models,
 } from "@workspace/server/drizzle/schema.js";
-import { desc, eq } from "drizzle-orm"; // Remove inArray, add eq
+import { and, desc, eq } from "drizzle-orm"; // Remove inArray, add eq
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -50,10 +50,15 @@ const app = new Hono()
         .from(models)
         .innerJoin(buckets, eq(models.bucketId, buckets.id))
         .innerJoin(
-          bucketMaintainers,
-          eq(models.bucketId, bucketMaintainers.bucketId)
+          bucketUserRoles,
+          eq(models.bucketId, bucketUserRoles.bucketId)
         )
-        .where(eq(bucketMaintainers.userId, user.id))
+        .where(
+          and(
+            eq(bucketUserRoles.userId, user.id),
+            eq(bucketUserRoles.role, "maintainer")
+          )
+        )
         .orderBy(desc(models.createdAt))
         .limit(itemsPerPage)
         .offset(pageNumber * itemsPerPage);

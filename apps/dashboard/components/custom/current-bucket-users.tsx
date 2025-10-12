@@ -8,12 +8,12 @@ import { type User } from "./autocomplete";
 interface Props {
   currentUser: AuthenticatedUser;
   currentBucketUsers: User[];
-  usersCount: number;
+  userCount: number;
 }
 
 export const CurrentBucketUsers = memo(
-  ({ currentUser, currentBucketUsers, usersCount }: Props) => {
-    const remainingCount = usersCount - currentBucketUsers.length;
+  ({ currentUser, currentBucketUsers, userCount }: Props) => {
+    const remainingCount = userCount - currentBucketUsers.length;
 
     return (
       <div className="w-full rounded-md border p-2">
