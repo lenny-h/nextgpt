@@ -15,4 +15,5 @@ class DocumentUploadEvent(BaseModel):
     name: str
     size: str
     contentType: str
+    pageNumberOffset: int
     pipelineOptions: Optional[PdfPipelineOptions] = None

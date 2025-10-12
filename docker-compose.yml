@@ -7,7 +7,7 @@ services:
   # PostgreSQL Database (replaces Cloud SQL)
   postgres:
     container_name: postgres
-    image: supabase/postgres:17.6.1.004
+    image: postgres:17.6
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -71,7 +71,42 @@ services:
     networks:
       - database_network
 
-  # The services below need not be run in Docker; it is better to run them using `pnpm run dev` due to hot-reloading
+  # Document processor - Convert various files to Markdown
+  document-processor:
+    container_name: document-processor
+    build:
+      context: .
+      dockerfile: apps/document-processor/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3006:8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      ENVIRONMENT: development
+      PORT: 8080
+      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+    networks:
+      - database_network
+
+  # The services below need not be run in Docker
+  # It is better to run them using `pnpm run dev` due to hot-reloading
+
   # Custom API Service
   api:
     container_name: api
@@ -103,17 +138,22 @@ services:
       NODE_ENV: development
       PORT: 8080
       ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
-      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
-      GOOGLE_VERTEX_LOCATION: ${REGION}
-      SUPABASE_URL: http://kong:8000
-      SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
       R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
-      REDIS_URL: redis://redis:6379
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+      CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
+      PROCESSOR_URL: http://localhost:3006
+      TASK_QUEUE_PATH: ${TASK_QUEUE_PATH}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      PROCESSOR_URL: http://document-processor:8080
+      ATTACHMENT_URL_PREFIX: ${ATTACHMENT_URL_PREFIX}
       USE_LOCAL_TASKS: "true"
     networks:
       - database_network
@@ -144,100 +184,58 @@ services:
       retries: 3
       start_period: 30s
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 8080
       ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
-      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
+      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
     networks:
       - database_network
 
-  # Document processor - Convert various files to Markdown
-  document-processor:
-    container_name: docling
+  # Web interface (Next.js)
+  web:
+    container_name: web
     build:
       context: .
-      dockerfile: apps/document-processor/Dockerfile
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3000
+        NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
+        NEXT_PUBLIC_API_URL: http://localhost:3004
+        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+
+        NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+        NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
+
+        NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
     restart: unless-stopped
     ports:
-      - "3006:8080"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      PORT: 8080
-      GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
-      GOOGLE_VERTEX_LOCATION: ${REGION}
-      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
-      SUPABASE_URL: http://kong:8000
-      SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-      REDIS_URL: redis://redis:6379
-    networks:
-      - database_network
+      - "3000:3000"
+    depends_on:
+      kong:
+        condition: service_healthy
 
-  # # Web interface (Next.js)
-  # web:
-  #   container_name: web
-  #   build:
-  #     context: .
-  #     dockerfile: apps/web/Dockerfile
-  #     args:
-  #       NEXT_PUBLIC_BASE_URL: ${SITE_URL}
-  #       NEXT_PUBLIC_DASHBOARD_URL: ${DASHBOARD_URL}
-  #       NEXT_PUBLIC_API_URL: http://localhost:3004
-  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  # Dashboard interface (Next.js)
+  dashboard:
+    container_name: dashboard
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3001
+        NEXT_PUBLIC_CHAT_URL: http://localhost:3000
+        NEXT_PUBLIC_API_URL: http://localhost:3004
+        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
 
-  #       NEXT_PUBLIC_SUPABASE_URL: http://${HOST_IP}:8080
-  #       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+        NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+        NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
 
-  #       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
-  #       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
-
-  #       NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     kong:
-  #       condition: service_healthy
-
-  # # Dashboard interface (Next.js)
-  # dashboard:
-  #   container_name: dashboard
-  #   build:
-  #     context: .
-  #     dockerfile: apps/dashboard/Dockerfile
-  #     args:
-  #       NEXT_PUBLIC_BASE_URL: ${DASHBOARD_URL}
-  #       NEXT_PUBLIC_CHAT_URL: ${SITE_URL}
-  #       NEXT_PUBLIC_API_URL: http://localhost:3004
-  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-
-  #       NEXT_PUBLIC_SUPABASE_URL: http://${HOST_IP}:8080
-  #       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
-
-  #       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${PROJECT_ID}
-  #       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
-
-  #       NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3001:3000"
-  #   depends_on:
-  #     kong:
-  #       condition: service_healthy
+        NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    depends_on:
+      kong:
+        condition: service_healthy
 
 volumes:
   db-config:

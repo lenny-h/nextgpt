@@ -4,6 +4,7 @@ PostgreSQL database operations for storing processed documents and chunks
 
 import os
 from typing import List, Optional
+
 import psycopg2
 from psycopg2.extras import execute_values
 from psycopg2.extensions import connection as Connection
@@ -15,16 +16,16 @@ class EmbeddedChunk:
     def __init__(
         self,
         page_id: str,
+        chunk_index: int,
         page_index: int,
         embedding: List[float],
         content: str,
-        page_number: int
     ):
         self.page_id = page_id
+        self.chunk_index = chunk_index
         self.page_index = page_index
         self.embedding = embedding
         self.content = content
-        self.page_number = page_number
 
 
 def get_db_connection() -> Connection:
@@ -42,6 +43,7 @@ def upload_to_postgres_db(
     filename: str,
     file_size: int,
     processed_chunks: List[EmbeddedChunk],
+    page_number_offset: int,
     page_count: Optional[int] = None,
 ) -> None:
     """
@@ -104,9 +106,8 @@ def upload_to_postgres_db(
                     course_name,
                     chunk_data.embedding,
                     chunk_data.content,
-                    chunk_data.page_index,
-                    chunk_data.page_number if chunk_data.page_number != 0 and isinstance(
-                        chunk_data.page_number, int) else chunk_data.page_index + 1
+                    chunk_data.chunk_index,
+                    max(0, chunk_data.page_index + 1 - page_number_offset)
                 )
                 pages_to_insert.append(row)
 

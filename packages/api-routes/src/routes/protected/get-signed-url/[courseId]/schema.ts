@@ -4,7 +4,7 @@ import {
 } from "@workspace/api-routes/schemas/filename-schema.js";
 import * as z from "zod";
 
-export const getSignedUrlSchema = z
+export const getSignedUrlBaseSchema = z
   .object({
     filename: filenameWithExtensionSchema,
     fileSize: z
@@ -17,7 +17,19 @@ export const getSignedUrlSchema = z
     fileType: z.enum(allowedMimeTypes, {
       message: "File type is not allowed",
     }),
+  })
+  .strict();
+
+export const getSignedUrlSchema = getSignedUrlBaseSchema
+  .extend({
     processingDate: z.string().optional(),
+    // Page number offset (where the first page with number "1" is located)
+    pageNumberOffset: z
+      .number()
+      .int()
+      .positive()
+      .max(1000, { message: "Page number offset must be at most 1000" })
+      .default(0),
     // PDF pipeline options (only applicable for PDF files)
     pdfPipelineOptions: z
       .object({

@@ -1,12 +1,12 @@
 import { getSignedUrlForUpload } from "@workspace/api-routes/utils/access-clients/google-storage-client.js";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { getSignedUrlSchema } from "../../get-signed-url/[courseId]/schema.js";
+import { getSignedUrlBaseSchema } from "../../get-signed-url/[courseId]/schema.js";
 
 const app = new Hono().post(
   "/",
   validator("json", async (value) => {
-    return getSignedUrlSchema.parse(value);
+    return getSignedUrlBaseSchema.parse(value);
   }),
   async (c) => {
     const { filename, fileSize } = c.req.valid("json");

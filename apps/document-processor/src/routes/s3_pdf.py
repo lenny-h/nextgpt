@@ -13,8 +13,10 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
-from app_state import converter, get_tokenizer
-from routes.shared_utils import create_embedded_chunk, handle_processing_error
+from app_state import converter
+
+from utils.tokenizer import get_tokenizer
+from utils.utils import create_embedded_chunk, handle_processing_error
 
 from models.requests import DocumentUploadEvent
 from models.responses import (
@@ -55,7 +57,7 @@ def _create_converter_with_options(pipeline_options: Optional[object]) -> Docume
 
 def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[dict]]:
     """Extract page number and bounding box from chunk."""
-    page_number = doc_chunk.meta.doc_items[0].prov[0].page_no
+    page_index = doc_chunk.meta.doc_items[0].prov[0].page_no
 
     bbox_obj = BoundingBox.enclosing_bbox(
         [prov_item.bbox for item in doc_chunk.meta.doc_items for prov_item in item.prov]
@@ -66,7 +68,7 @@ def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[dict]]:
         x0, y0, x1, y1 = bbox_obj.as_tuple()
         bbox_dict = {"x0": x0, "y0": y0, "x1": x1, "y1": y1}
 
-    return page_number, bbox_dict
+    return page_index, bbox_dict
 
 
 @router.post("/convert-pdf-from-s3")
@@ -107,12 +109,12 @@ async def _convert_pdf_to_chunks(
     for idx, chunk in enumerate(chunk_iter):
         contextualized_text = chunker.contextualize(chunk=chunk)
         doc_chunk = DocChunk.model_validate(chunk)
-        page_number, bbox_dict = _extract_chunk_metadata(doc_chunk)
+        page_index, bbox_dict = _extract_chunk_metadata(doc_chunk)
 
         chunks.append(PdfChunkData(
             contextualized_content=contextualized_text,
             chunk_index=idx,
-            page_number=page_number,
+            page_index=page_index,
             bbox=bbox_dict
         ))
 
@@ -150,7 +152,8 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
 
         upload_to_postgres_db(
             task_id, course_id, shortened_filename,
-            int(event.size), embedded_chunks, page_count
+            int(event.size), embedded_chunks, event.pageNumberOffset,
+            page_count
         )
 
         update_status_to_finished(task_id)

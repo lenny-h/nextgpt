@@ -54,7 +54,7 @@ resource "google_cloud_run_v2_service" "api" {
       }
       env {
         name  = "TASK_QUEUE_PATH"
-        value = "projects/${var.project_id}/locations/${var.region}/queues/pdf-processing-queue"
+        value = "projects/${var.project_id}/locations/${var.region}/queues/document-processing-queue"
       }
       env {
         name  = "ENCRYPTION_KEY"
@@ -226,9 +226,9 @@ resource "google_cloud_run_v2_service" "document_processor" {
 }
 
 # Allow the PDF processor service account to be invoked by Cloud Tasks
-resource "google_cloud_run_v2_service_iam_member" "pdf_processor_invoker" {
-  name     = google_cloud_run_v2_service.pdf_processor.name
-  location = google_cloud_run_v2_service.pdf_processor.location
+resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker" {
+  name     = google_cloud_run_v2_service.document_processor.name
+  location = google_cloud_run_v2_service.document_processor.location
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.cloud_tasks_sa.email}"
 }

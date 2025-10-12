@@ -17,7 +17,7 @@ class PdfChunkData(BaseModel):
     """Individual chunk of PDF content with positioning metadata"""
     contextualized_content: str
     chunk_index: int
-    page_number: Optional[int] = None
+    page_index: int
     bbox: Optional[Dict[str, float]] = None  # {x0, y0, x1, y1} coordinates
 
 

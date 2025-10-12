@@ -3,6 +3,7 @@
 import { Dropzone } from "@/components/custom/dropzone";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
+import { Input } from "@workspace/ui/components/input";
 import {
   Command,
   CommandEmpty,
@@ -33,6 +34,9 @@ export default function UploadFilesPage() {
   const [processingDate, setProcessingDate] = useState<Date | undefined>(
     undefined,
   );
+
+  // Page number offset state (where page "1" actually starts in the document)
+  const [pageNumberOffset, setPageNumberOffset] = useState<number>(1);
 
   // PDF Pipeline Options state (only for PDFs)
   const [pdfPipelineOptions, setPdfPipelineOptions] = useState({
@@ -154,6 +158,36 @@ export default function UploadFilesPage() {
       </div>
 
       <div className="w-full max-w-2xl space-y-4 rounded-md border border-dashed p-4 shadow-sm">
+        <div className="space-y-2">
+          <Label htmlFor="pageNumberOffset" className="text-lg font-semibold">
+            Page Number Offset (Optional)
+          </Label>
+          <p className="text-muted-foreground text-sm">
+            Specfies how many unnumbered pages are at the start of the document.
+            For example, if your document has a title page and the page numbered
+            "1" is the second page in the PDF, set this to 1. The llm will use
+            this offet to find the correct pages when asked about specific page
+            numbers.
+          </p>
+          <Input
+            id="pageNumberOffset"
+            type="number"
+            min={1}
+            max={1000}
+            value={pageNumberOffset}
+            onChange={(e) => {
+              const val = parseInt(e.target.value, 10);
+              if (!isNaN(val) && val >= 0 && val <= 1000) {
+                setPageNumberOffset(val);
+              }
+            }}
+            disabled={!value}
+            className="w-32"
+          />
+        </div>
+      </div>
+
+      <div className="w-full max-w-2xl space-y-4 rounded-md border border-dashed p-4 shadow-sm">
         <h2 className="text-lg font-semibold">
           PDF Processing Options (PDFs only)
         </h2>
@@ -240,6 +274,7 @@ export default function UploadFilesPage() {
       <Dropzone
         courseId={value}
         processingDate={processingDate}
+        pageNumberOffset={pageNumberOffset}
         pdfPipelineOptions={pdfPipelineOptions}
       />
     </div>

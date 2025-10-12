@@ -5,8 +5,8 @@ resource "google_project_service" "cloud_tasks" {
 }
 
 # Create a Cloud Tasks
-resource "google_cloud_tasks_queue" "pdf_processing_queue" {
-  name     = "pdf-processing-queue"
+resource "google_cloud_tasks_queue" "document_processing_queue" {
+  name     = "document-processing-queue"
   location = var.region
 
   rate_limits {

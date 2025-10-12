@@ -8,6 +8,7 @@ import { UploadList } from "./upload-list";
 interface Props {
   courseId: string;
   processingDate?: Date;
+  pageNumberOffset: number;
   pdfPipelineOptions?: {
     do_ocr: boolean;
     do_code_enrichment: boolean;
@@ -17,9 +18,9 @@ interface Props {
 }
 
 export const Dropzone = memo(
-  ({ courseId, processingDate, pdfPipelineOptions }: Props) => {
+  ({ courseId, processingDate, pageNumberOffset, pdfPipelineOptions }: Props) => {
     const { getRootProps, getInputProps, isDragActive, uploads } =
-      useDropzoneHook({ courseId, processingDate, pdfPipelineOptions });
+      useDropzoneHook({ courseId, processingDate, pageNumberOffset, pdfPipelineOptions });
 
   return (
     <div className="flex w-full max-w-2xl flex-col items-center space-y-6">

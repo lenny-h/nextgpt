@@ -26,8 +26,14 @@ const app = new Hono().post(
   async (c) => {
     const { courseId } = c.req.valid("param");
 
-    const { filename, fileSize, fileType, processingDate, pdfPipelineOptions } =
-      c.req.valid("json");
+    const {
+      filename,
+      fileSize,
+      fileType,
+      processingDate,
+      pageNumberOffset,
+      pdfPipelineOptions,
+    } = c.req.valid("json");
     const user = c.get("user");
 
     const isMaintainer = await isCourseMaintainer({
@@ -77,6 +83,7 @@ const app = new Hono().post(
       name: `${courseId}/${filename}`,
       size: fileSize,
       contentType: fileType,
+      pageNumberOffset,
       ...(pdfPipelineOptions && { pipelineOptions: pdfPipelineOptions }),
     };
 

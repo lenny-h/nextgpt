@@ -7,8 +7,10 @@ from botocore.exceptions import ClientError
 from docling_core.types.io import DocumentStream
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 
-from app_state import converter, get_tokenizer
-from routes.shared_utils import create_embedded_chunk, handle_processing_error
+from app_state import converter
+
+from utils.tokenizer import get_tokenizer
+from utils.utils import create_embedded_chunk, handle_processing_error
 
 from models.requests import DocumentUploadEvent
 from models.responses import (
@@ -103,7 +105,7 @@ async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
 
         upload_to_postgres_db(
             task_id, course_id, shortened_filename,
-            int(event.size), embedded_chunks
+            int(event.size), embedded_chunks, event.pageNumberOffset
         )
 
         update_status_to_finished(task_id)

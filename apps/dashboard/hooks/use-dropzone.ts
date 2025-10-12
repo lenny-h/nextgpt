@@ -5,6 +5,7 @@ import { useBaseDropzone } from "./use-base-dropzone";
 interface Props {
   courseId: string;
   processingDate?: Date;
+  pageNumberOffset: number;
   pdfPipelineOptions?: {
     do_ocr: boolean;
     do_code_enrichment: boolean;
@@ -16,6 +17,7 @@ interface Props {
 export function useDropzoneHook({
   courseId,
   processingDate,
+  pageNumberOffset,
   pdfPipelineOptions,
 }: Props) {
   const { sharedT } = useSharedTranslations();
@@ -35,6 +37,7 @@ export function useDropzoneHook({
             fileSize: file.size,
             fileType: file.type,
             processingDate: processingDate?.toISOString(),
+            pageNumberOffset: pageNumberOffset,
             ...(hasAnyOptionEnabled && { pdfPipelineOptions }),
           },
         }),

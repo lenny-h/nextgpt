@@ -13,15 +13,15 @@ def create_embedded_chunk(
     embedding: List[float]
 ) -> EmbeddedChunk:
     """Create an EmbeddedChunk from a chunk (PDF or Document) and its embedding."""
-    page_number = chunk.page_number if isinstance(
-        chunk, PdfChunkData) and chunk.page_number else 0
+    page_index = chunk.page_index if isinstance(
+        chunk, PdfChunkData) and chunk.page_index else 0
 
     return EmbeddedChunk(
         page_id=str(uuid4()),
-        page_index=chunk.chunk_index,
+        chunk_index=chunk.chunk_index,
+        page_index=page_index,
         embedding=embedding,
         content=chunk.contextualized_content,
-        page_number=page_number
     )
 
 
