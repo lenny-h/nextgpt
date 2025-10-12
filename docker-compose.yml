@@ -1,55 +1,39 @@
-# Docker Compose configuration for testing Cloud Run Supabase services locally
-# Based on cloud_run_supabase.tf configuration
+# Docker Compose configuration for local development
+# Includes PostgreSQL with pgvector extension and Redis
+# See DOCKER_SETUP.md for detailed documentation
 
 name: supabase
 
 services:
-  # PostgreSQL Database (replaces Cloud SQL)
+  # PostgreSQL Database with pgvector extension for Drizzle ORM
   postgres:
     container_name: postgres
-    image: postgres:17.6
+    image: pgvector/pgvector:pg17
     restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:
-      - ./apps/supabase/volumes/db/init/049_remote_schema.sql:/docker-entrypoint-initdb.d/migrations/49-remote_schema.sql:Z
-      - ./apps/supabase/volumes/db/init/050_init.sql:/docker-entrypoint-initdb.d/migrations/50-init.sql:Z
-      - ./apps/supabase/volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
-      - ./apps/supabase/volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
-      - ./apps/supabase/volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
-      - ./apps/supabase/volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
-      - ./apps/supabase/volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
-      - ./apps/supabase/volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
-      - ./apps/supabase/volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
-      - db-config:/etc/postgresql-custom
+      - ./packages/server/src/drizzle/000_init_extensions.sql:/docker-entrypoint-initdb.d/000-extensions.sql:ro
+      - ./packages/server/src/drizzle/0000_broken_makkari.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
     environment:
-      POSTGRES_HOST: /var/run/postgresql
-      PGPORT: 5432
-      POSTGRES_PORT: 5432
-      PGPASSWORD: ${DB_PASSWORD}
-      PGBOUNCER_PASSWORD: ${DB_PASSWORD}
-      SUPABASE_AUTH_ADMIN_PASSWORD: ${DB_PASSWORD}
-      SUPABASE_FUNCTIONS_ADMIN_PASSWORD: ${DB_PASSWORD}
-      SUPABASE_STORAGE_ADMIN_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      PGDATABASE: postgres
-      POSTGRES_DB: postgres
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXP: ${JWT_EXP}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "-E UTF8"
     command:
-      [
-        "postgres",
-        "-c",
-        "config_file=/etc/postgresql/postgresql.conf",
-        "-c",
-        "log_min_messages=fatal",
-      ]
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=vector"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
     networks:
       - database_network
 
@@ -72,173 +56,166 @@ services:
       - database_network
 
   # Document processor - Convert various files to Markdown
-  document-processor:
-    container_name: document-processor
-    build:
-      context: .
-      dockerfile: apps/document-processor/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3006:8080"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      ENVIRONMENT: development
-      PORT: 8080
-      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-    networks:
-      - database_network
+  # document-processor:
+  #   container_name: document-processor
+  #   build:
+  #     context: .
+  #     dockerfile: apps/document-processor/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3006:8080"
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "python",
+  #         "-c",
+  #         "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     ENVIRONMENT: development
+  #     PORT: 8080
+  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+  #     R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+  #   networks:
+  #     - database_network
 
   # The services below need not be run in Docker
   # It is better to run them using `pnpm run dev` due to hot-reloading
 
-  # Custom API Service
-  api:
-    container_name: api
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3004:8080"
-    depends_on:
-      kong:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/capi/public/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      NODE_ENV: development
-      PORT: 8080
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
-      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-      BETTER_AUTH_URL: http://localhost:3000
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
-      CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
-      PROCESSOR_URL: http://localhost:3006
-      TASK_QUEUE_PATH: ${TASK_QUEUE_PATH}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      ATTACHMENT_URL_PREFIX: ${ATTACHMENT_URL_PREFIX}
-      USE_LOCAL_TASKS: "true"
-    networks:
-      - database_network
+  # # Custom API Service
+  # api:
+  #   container_name: api
+  #   build:
+  #     context: .
+  #     dockerfile: apps/api/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3004:8080"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--spider",
+  #         "http://localhost:8080/capi/public/health",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 8080
+  #     ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
+  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+  #     BETTER_AUTH_URL: http://localhost:3000
+  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  #     DATABASE_URL: ${DATABASE_URL}
+  #     REDIS_URL: ${REDIS_URL}
+  #     R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+  #     CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
+  #     PROCESSOR_URL: http://localhost:3006
+  #     TASK_QUEUE_PATH: ${TASK_QUEUE_PATH}
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  #     ATTACHMENT_URL_PREFIX: ${ATTACHMENT_URL_PREFIX}
+  #     USE_LOCAL_TASKS: "true"
+  #   networks:
+  #     - database_network
 
-  # PDF Exporter Service
-  pdf-exporter:
-    container_name: pdf-exporter
-    build:
-      context: .
-      dockerfile: apps/pdf-exporter/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3005:8080"
-    depends_on:
-      api:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/pdf-exporter/public/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      NODE_ENV: development
-      PORT: 8080
-      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
-      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-    networks:
-      - database_network
+  # # PDF Exporter Service
+  # pdf-exporter:
+  #   container_name: pdf-exporter
+  #   build:
+  #     context: .
+  #     dockerfile: apps/pdf-exporter/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3005:8080"
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--spider",
+  #         "http://localhost:8080/pdf-exporter/public/health",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 8080
+  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #   networks:
+  #     - database_network
 
-  # Web interface (Next.js)
-  web:
-    container_name: web
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3000
-        NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
-        NEXT_PUBLIC_API_URL: http://localhost:3004
-        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  # # Web interface (Next.js)
+  # web:
+  #   container_name: web
+  #   build:
+  #     context: .
+  #     dockerfile: apps/web/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: http://localhost:3000
+  #       NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
 
-        NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-        NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
+  #       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
 
-        NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    depends_on:
-      kong:
-        condition: service_healthy
+  #       NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
 
-  # Dashboard interface (Next.js)
-  dashboard:
-    container_name: dashboard
-    build:
-      context: .
-      dockerfile: apps/dashboard/Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3001
-        NEXT_PUBLIC_CHAT_URL: http://localhost:3000
-        NEXT_PUBLIC_API_URL: http://localhost:3004
-        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  # # Dashboard interface (Next.js)
+  # dashboard:
+  #   container_name: dashboard
+  #   build:
+  #     context: .
+  #     dockerfile: apps/dashboard/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: http://localhost:3001
+  #       NEXT_PUBLIC_CHAT_URL: http://localhost:3000
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
 
-        NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-        NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
+  #       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
 
-        NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-    restart: unless-stopped
-    ports:
-      - "3001:3000"
-    depends_on:
-      kong:
-        condition: service_healthy
+  #       NEXT_PUBLIC_R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
 
 volumes:
-  db-config:
   postgres-data:
   redis-data:
 
