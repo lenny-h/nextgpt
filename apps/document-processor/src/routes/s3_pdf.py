@@ -13,7 +13,7 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
-from app_state import converter
+from app_state import get_converter
 
 from utils.tokenizer import get_tokenizer
 from utils.utils import create_embedded_chunk, handle_processing_error
@@ -25,13 +25,12 @@ from models.responses import (
     ProcessingResponse
 )
 
-from s3.client import get_object_bytes
+from access_clients import get_object_bytes, embed_content
 from db.postgres import (
     upload_to_postgres_db,
     update_status_to_processing,
     update_status_to_finished
 )
-from embeddings.vertex_ai import embed_content
 
 router = APIRouter()
 
@@ -39,7 +38,7 @@ router = APIRouter()
 def _create_converter_with_options(pipeline_options: Optional[object]) -> DocumentConverter:
     """Create a DocumentConverter with custom pipeline options if provided."""
     if not pipeline_options:
-        return converter
+        return get_converter()
 
     custom_options = PdfPipelineOptions()
     option_attrs = ("do_ocr", "do_formula_enrichment", "do_code_enrichment",
@@ -132,7 +131,7 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
     course_id, shortened_filename = event.name.split("/")
 
     try:
-        update_status_to_processing(task_id)
+        await update_status_to_processing(task_id)
 
         chunks_response, page_count = await _convert_pdf_to_chunks(
             event.bucket, event.name, event.pipelineOptions
@@ -150,13 +149,13 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
             for idx, chunk in enumerate(chunks_response.chunks)
         ]
 
-        upload_to_postgres_db(
+        await upload_to_postgres_db(
             task_id, course_id, shortened_filename,
             int(event.size), embedded_chunks, event.pageNumberOffset,
             page_count
         )
 
-        update_status_to_finished(task_id)
+        await update_status_to_finished(task_id)
 
         return ProcessingResponse(
             success=True,
@@ -165,5 +164,5 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        handle_processing_error(event, error)
+        await handle_processing_error(event, error)
         raise error

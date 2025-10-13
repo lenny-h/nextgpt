@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from models.responses import PdfChunkData, DocumentChunkData
 from db.postgres import EmbeddedChunk
-from s3.client import delete_file_from_s3
+from access_clients import delete_file_from_s3
 from db.postgres import update_status_to_failed
 from models.requests import DocumentUploadEvent
 
@@ -25,7 +25,7 @@ def create_embedded_chunk(
     )
 
 
-def handle_processing_error(event: DocumentUploadEvent, error: Exception):
+async def handle_processing_error(event: DocumentUploadEvent, error: Exception):
     """Handle errors during document/PDF processing with cleanup."""
     try:
         delete_file_from_s3(event.bucket, event.name)
@@ -33,7 +33,7 @@ def handle_processing_error(event: DocumentUploadEvent, error: Exception):
         print(f"Failed to clean up source file: {e}")
 
     try:
-        update_status_to_failed(event.taskId, event.bucket)
+        await update_status_to_failed(event.taskId, event.bucket)
     except Exception as e:
         print(f"Failed to update task status: {e}")
 

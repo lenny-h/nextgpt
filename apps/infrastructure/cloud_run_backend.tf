@@ -9,7 +9,7 @@ resource "google_cloud_run_v2_service" "api" {
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/api:latest"
       ports {
-        container_port = 8000
+        container_port = 8080
       }
       env {
         name  = "ALLOWED_ORIGINS"
@@ -25,16 +25,8 @@ resource "google_cloud_run_v2_service" "api" {
       }
 
       env {
-        name  = "SUPABASE_URL"
-        value = "http://supabase-kong.${var.region}.internal"
-      }
-      env {
-        name  = "SUPABASE_ANON_KEY"
-        value = var.anon_key
-      }
-      env {
-        name  = "SUPABASE_SERVICE_ROLE_KEY"
-        value = var.service_role_key
+        name = "DATABASE_URL"
+
       }
       env {
         name  = "R2_ENDPOINT"
@@ -63,59 +55,6 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "PROCESSOR_URL"
         value = "http://document-processor.${var.region}.internal"
-      }
-      resources {
-        limits = {
-          cpu    = "1"
-          memory = "512Mi"
-        }
-      }
-    }
-
-    max_instance_request_concurrency = 30
-    timeout                          = "30s"
-
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 5
-    }
-  }
-
-  traffic {
-    percent = 100
-    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image,
-    ]
-  }
-
-  depends_on          = [google_project_service.run_api]
-  deletion_protection = false
-}
-
-# PDF Exporter Service
-resource "google_cloud_run_v2_service" "pdf_exporter" {
-  name     = "pdf-exporter"
-  location = var.region
-  project  = var.project_id
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
-
-  template {
-    containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/pdf-exporter:latest"
-      ports {
-        container_port = 8080
-      }
-      env {
-        name  = "ALLOWED_ORIGINS"
-        value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
-      }
-      env {
-        name  = "GOOGLE_VERTEX_PROJECT"
-        value = var.project_id
       }
       resources {
         limits = {
@@ -183,16 +122,7 @@ resource "google_cloud_run_v2_service" "document_processor" {
         value = var.cloudflare_r2_secret_access_key
       }
       env {
-        name  = "SUPABASE_URL"
-        value = "http://supabase-kong.${var.region}.internal"
-      }
-      env {
-        name  = "SUPABASE_ANON_KEY"
-        value = var.anon_key
-      }
-      env {
-        name  = "SUPABASE_SERVICE_ROLE_KEY"
-        value = var.service_role_key
+        name = "DATABASE_URL"
       }
       env {
         name  = "EMBEDDINGS_MODEL"
@@ -213,6 +143,59 @@ resource "google_cloud_run_v2_service" "document_processor" {
       min_instance_count = 0
       max_instance_count = 5
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
+  }
+
+  depends_on          = [google_project_service.run_api]
+  deletion_protection = false
+}
+
+# PDF Exporter Service
+resource "google_cloud_run_v2_service" "pdf_exporter" {
+  name     = "pdf-exporter"
+  location = var.region
+  project  = var.project_id
+  ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+
+  template {
+    containers {
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/pdf-exporter:latest"
+      ports {
+        container_port = 8080
+      }
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
+      }
+      env {
+        name  = "GOOGLE_VERTEX_PROJECT"
+        value = var.project_id
+      }
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "512Mi"
+        }
+      }
+    }
+
+    max_instance_request_concurrency = 30
+    timeout                          = "30s"
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 5
+    }
+  }
+
+  traffic {
+    percent = 100
+    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
   }
 
   lifecycle {

@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from docling_core.types.io import DocumentStream
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 
-from app_state import converter
+from app_state import get_converter
 
 from utils.tokenizer import get_tokenizer
 from utils.utils import create_embedded_chunk, handle_processing_error
@@ -19,13 +19,12 @@ from models.responses import (
     ProcessingResponse
 )
 
-from s3.client import get_object_bytes
+from access_clients import get_object_bytes, embed_content
 from db.postgres import (
     upload_to_postgres_db,
     update_status_to_processing,
     update_status_to_finished
 )
-from embeddings.vertex_ai import embed_content
 
 router = APIRouter()
 
@@ -55,10 +54,14 @@ async def _convert_document_to_chunks(
     """Convert document to chunks without full processing."""
     file_content = get_object_bytes(bucketId, key)
 
-    file_extension = key.split(".")[-1].lower() if "." in key else "docx"
+    if "." in key:
+        file_extension = key.split(".")[-1].lower()
+    else:
+        raise ValueError("File key does not contain an extension")
     buf = io.BytesIO(file_content)
     source = DocumentStream(name=f"document.{file_extension}", stream=buf)
 
+    converter = get_converter()
     result = converter.convert(source)
 
     chunker = HybridChunker(tokenizer=get_tokenizer())
@@ -87,7 +90,7 @@ async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
     course_id, shortened_filename = event.name.split("/")
 
     try:
-        update_status_to_processing(task_id)
+        await update_status_to_processing(task_id)
 
         chunks_response = await _convert_document_to_chunks(event.bucket, event.name)
 
@@ -103,12 +106,12 @@ async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
             for idx, chunk in enumerate(chunks_response.chunks)
         ]
 
-        upload_to_postgres_db(
+        await upload_to_postgres_db(
             task_id, course_id, shortened_filename,
             int(event.size), embedded_chunks, event.pageNumberOffset
         )
 
-        update_status_to_finished(task_id)
+        await update_status_to_finished(task_id)
 
         return ProcessingResponse(
             success=True,
@@ -117,5 +120,5 @@ async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        handle_processing_error(event, error)
+        await handle_processing_error(event, error)
         raise error

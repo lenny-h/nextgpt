@@ -4,7 +4,8 @@ from fastapi import APIRouter, HTTPException
 from docling_core.types.io import DocumentStream
 from models.responses import ConversionResponse
 
-from app_state import converter, storage_client
+from app_state import get_converter
+from access_clients import get_storage_client
 
 router = APIRouter()
 
@@ -37,6 +38,7 @@ async def convert_file(gcs_url: str):
         bucket_name, blob_path = parse_gcs_url(gcs_url)
 
         # Get the file from GCS
+        storage_client = get_storage_client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_path)
 
@@ -54,6 +56,7 @@ async def convert_file(gcs_url: str):
         source = DocumentStream(name=blob_path, stream=buf)
 
         # Convert to markdown using Docling
+        converter = get_converter()
         result = converter.convert(source)
 
         # Export to markdown

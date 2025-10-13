@@ -57,7 +57,7 @@ resource "google_storage_bucket" "correction_bucket" {
 
   # Add CORS configuration
   cors {
-    origin          = ["http://localhost:3000", "http://localhost:3001", "http://docker-desktop:3000", "http://docker-desktop:3001", "https://app.${var.site_url}", "https://dashboard.${var.site_url}"] // TODO: Remove localhost and docker-desktop in production
+    origin          = ["http://localhost:3000", "http://localhost:3001", "https://app.${var.site_url}", "https://dashboard.${var.site_url}"] // TODO: Remove localhost and docker-desktop in production
     method          = ["GET", "POST", "DELETE", "PUT", "HEAD"]
     response_header = ["*"]
     max_age_seconds = 3600
