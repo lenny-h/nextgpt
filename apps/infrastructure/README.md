@@ -1,3 +1,5 @@
+TODO: Modify this
+
 # Infrastructure Deployment Guide
 
 This Terraform configuration deploys a complete cloud infrastructure including:
@@ -34,15 +36,6 @@ This Terraform configuration deploys a complete cloud infrastructure including:
 | Variable      | Description       | Recommendations                                                               |
 | ------------- | ----------------- | ----------------------------------------------------------------------------- |
 | `db_password` | Database password | **Required**: Use strong password (min 8 chars, mixed case, numbers, symbols) |
-
-### Supabase Configuration
-
-| Variable          | Description                    | How to Set                                     |
-| ----------------- | ------------------------------ | ---------------------------------------------- |
-| `studio_password` | Supabase dashboard password    | **Required**: Strong password for admin access |
-| `jwt_exp`         | JWT token expiration (seconds) | Default: 3600 (1 hour)                         |
-| `site_url`        | Your application's main URL    | Your domain (e.g., yourdomain.com)             |
-| `disable_signup`  | Disable new user registration  | "true" or "false" (default: false)             |
 
 ### Email Configuration (Optional but Recommended)
 

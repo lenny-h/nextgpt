@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-# Usage: bash build_and_push_images.sh <region> <project_id>
+# Usage: bash build_and_push_images.sh <project_id> <region>
 PROJECT_ID=$1
 REGION=$2
 REPO="$REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository"
 
-if [ -z "$REGION" ] || [ -z "$PROJECT_ID" ]; then
-  echo "Usage: bash build_and_push_images.sh <region> <project_id>"
+if [ -z "$PROJECT_ID" ] || [ -z "$REGION" ]; then
+  echo "Usage: bash build_and_push_images.sh <project_id> <region>"
   exit 1
 fi
 
