@@ -7,7 +7,7 @@ import { defineConfig } from "vitest/config";
 config({ path: ".env.test" });
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react()],
+  plugins: [react(), tsconfigPaths()],
   test: {
     environment: "jsdom",
   },

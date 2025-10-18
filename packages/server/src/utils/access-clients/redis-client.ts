@@ -22,7 +22,7 @@ export async function getRedisClient(): Promise<
       try {
         await redisClientInstance.quit();
       } catch (error) {
-        console.error("Error closing Redis client:", error);
+        console.error("[Redis Client]: Error closing Redis client:", error);
       }
       redisClientInstance = null;
       isConnecting = false;
@@ -33,7 +33,7 @@ export async function getRedisClient(): Promise<
     });
 
     redisClientInstance.on("error", (err: Error) => {
-      console.error("Redis Client Error", err);
+      console.error("[Redis Client]: Redis Client Error", err);
     });
 
     isConnecting = true;

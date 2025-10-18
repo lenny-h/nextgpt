@@ -1,13 +1,13 @@
-import { HTTPException } from "hono/http-exception";
-import { isBucketUser } from "../lib/db/queries/buckets.js";
-import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
-import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
 import {
   getRedisClient,
   getUserPermissionsCacheKey,
   PERMISSIONS_CACHE_TTL,
   type UserPermissionsCache,
-} from "./access-clients/redis-client.js";
+} from "@workspace/server/utils/access-clients/redis-client.js";
+import { HTTPException } from "hono/http-exception";
+import { isBucketUser } from "../lib/db/queries/buckets.js";
+import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
+import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
 
 export async function userHasPermissions({
   userId,

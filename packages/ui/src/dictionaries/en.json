@@ -9,6 +9,7 @@
     "RATE_LIMIT": "The rate limit has been exceeded",
     "INTERNAL_SERVER_ERROR": "An error occurred. Please try again later",
     "UPSTREAM_ERROR": "Some upstream services are not responding",
+    "INVALID_EMAIL_DOMAIN": "Your email domain is not allowed to sign up",
     "FALLBACK_ERROR": "An error occurred. Please try again later.",
     "LOAD_MORE_ERROR": "Failed to load more items",
     "ABORT_ERROR": "The request was aborted",

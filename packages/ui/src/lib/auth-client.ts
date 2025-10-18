@@ -1,19 +1,26 @@
+import { ssoClient } from "@better-auth/sso/client";
 import {
+  adminClient,
   inferAdditionalFields,
-  oneTapClient,
+  lastLoginMethodClient,
+  usernameClient,
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { toast } from "sonner";
 
 export const client = createAuthClient({
-  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/auth`,
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/capi/auth`,
   plugins: [
-    oneTapClient({
-      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      promptOptions: {
-        maxAttempts: 1,
-      },
-    }),
+    usernameClient(),
+    adminClient(),
+    ssoClient(),
+    lastLoginMethodClient(),
+    // oneTapClient({
+    //   clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+    //   promptOptions: {
+    //     maxAttempts: 1,
+    //   },
+    // }),
     inferAdditionalFields({
       user: {
         username: {

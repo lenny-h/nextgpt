@@ -9,6 +9,7 @@
     "RATE_LIMIT": "Das Ratenlimit wurde überschritten",
     "INTERNAL_SERVER_ERROR": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut",
     "UPSTREAM_ERROR": "Einige Upstream-Dienste reagieren nicht",
+    "INVALID_EMAIL_DOMAIN": "Ihre E-Mail-Domain ist nicht für die Anmeldung erlaubt",
     "FALLBACK_ERROR": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
     "LOAD_MORE_ERROR": "Fehler beim Laden weiterer Elemente",
     "ABORT_ERROR": "Die Anfrage wurde abgebrochen",

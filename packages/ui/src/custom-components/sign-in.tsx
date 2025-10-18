@@ -26,19 +26,19 @@ export const SignIn = memo(() => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    client.oneTap({
-      fetchOptions: {
-        onError: ({ error }) => {
-          toast.error(error.message || "An error occurred");
-        },
-        onSuccess: () => {
-          toast.success("Successfully signed in");
-          router.push(`/${locale}`);
-        },
-      },
-    });
-  }, []);
+  // useEffect(() => {
+  //   client.oneTap({
+  //     fetchOptions: {
+  //       onError: ({ error }) => {
+  //         toast.error(error.message || "An error occurred");
+  //       },
+  //       onSuccess: () => {
+  //         toast.success("Successfully signed in");
+  //         router.push(`/${locale}`);
+  //       },
+  //     },
+  //   });
+  // }, []);
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInFormSchema),

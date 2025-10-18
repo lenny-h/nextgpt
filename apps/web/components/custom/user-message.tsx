@@ -41,7 +41,6 @@ function PureUserMessage({
   message,
   setMessages,
   regenerate,
-  isPractice = false,
 }: UserMessageProps) {
   console.log("Rendering UserMessage");
 
@@ -111,10 +110,8 @@ function PureUserMessage({
                   </TooltipTrigger>
                   <TooltipContent>Edit message</TooltipContent>
                 </Tooltip>
-                <div className="bg-muted max-w-3/4 w-fit rounded-2xl px-4 py-2">
-                  <Markdown sources={[]} parseSourceRefs={false}>
-                    {textContent}
-                  </Markdown>
+                <div className="bg-muted max-w-3/4 w-fit whitespace-pre-wrap rounded-2xl px-4 py-2">
+                  {textContent}
                 </div>
               </>
             ) : (
