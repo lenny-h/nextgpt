@@ -4,6 +4,7 @@ import { SendButton } from "./send-button";
 import { StopButton } from "./stop-button";
 import { ModelSelector } from "./model-selector";
 import { ReasoningButton } from "./reasoning-button";
+import { MicrophoneButton } from "./microphone-button";
 
 interface TextAreaControlProps {
   input: string;
@@ -12,6 +13,7 @@ interface TextAreaControlProps {
   stop: () => void;
   submitForm: () => void;
   uploadQueue: Array<string>;
+  onVoiceInput: (text: string) => void;
 }
 
 export const TextAreaControl: React.FC<TextAreaControlProps> = ({
@@ -21,6 +23,7 @@ export const TextAreaControl: React.FC<TextAreaControlProps> = ({
   stop,
   submitForm,
   uploadQueue,
+  onVoiceInput,
 }) => {
   return (
     <div className="flex items-center justify-between gap-2 px-2 pb-2">
@@ -30,6 +33,7 @@ export const TextAreaControl: React.FC<TextAreaControlProps> = ({
       </div>
 
       <div className="flex items-center space-x-2">
+        <MicrophoneButton isLoading={isLoading} onTranscript={onVoiceInput} />
         <AttachmentsButton isLoading={isLoading} onFileChange={onFileChange} />
         {isLoading ? (
           <StopButton stop={stop} />

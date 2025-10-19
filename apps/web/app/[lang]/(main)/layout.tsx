@@ -37,6 +37,12 @@ export default function MainLayout({
   const [defaultLeftOpen, setDefaultLeftOpen] = useState(false);
 
   useEffect(() => {
+    if (!isPending && !data?.user) {
+      router.push(`/${locale}/sign-in`);
+    }
+  }, [data, isPending, locale]);
+
+  useEffect(() => {
     const match = document.cookie
       .split("; ")
       .find((c) => c.startsWith("sidebar_left="));
@@ -46,17 +52,13 @@ export default function MainLayout({
     }
   }, []);
 
-  console.log("Layout user data:", data);
-
-  if (isPending) {
+  if (isPending || !data?.user) {
     return <CentralLoadingScreen />;
   }
 
-  const user = data?.user;
+  console.log("Layout user data:", data);
 
-  if (!user) {
-    router.push(`/${locale}/sign-in`);
-  }
+  const user = data?.user;
 
   return (
     <UserProvider user={user as User}>

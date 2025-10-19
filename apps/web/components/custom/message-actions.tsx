@@ -14,8 +14,16 @@ import { useSharedTranslations } from "@workspace/ui/contexts/shared-translation
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn, resizeEditor } from "@workspace/ui/lib/utils";
 import type { ChatRequestOptions } from "ai";
-import { Copy, Pencil, RefreshCcw, ThumbsDown, ThumbsUp } from "lucide-react";
-import { memo, useState } from "react";
+import {
+  Copy,
+  Pencil,
+  RefreshCcw,
+  ThumbsDown,
+  ThumbsUp,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { memo, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 
@@ -24,7 +32,13 @@ interface MessageActionsProps {
   content: string;
   role: string;
   isLoading: boolean;
-  regenerate?: (chatRequestOptions?: ChatRequestOptions) => Promise<void>;
+  regenerate: (
+    chatRequestOptions?: {
+      messageId?: string | undefined;
+    } & ChatRequestOptions,
+  ) => Promise<void>;
+  messageId: string;
+  previousMessageId: string;
   isPractice?: boolean;
 }
 
@@ -35,6 +49,8 @@ export const MessageActions = memo(
     role,
     isLoading,
     regenerate,
+    messageId,
+    previousMessageId,
     isPractice = false,
   }: MessageActionsProps) => {
     const { sharedT } = useSharedTranslations();
@@ -42,12 +58,38 @@ export const MessageActions = memo(
     const { selectedChatModel, reasoningEnabled } = useChatModel();
     const [isTemporary] = useIsTemporary();
 
-    const [_, copyToClipboard] = useCopyToClipboard();
-    const [liked, setLiked] = useState<null | boolean>(null);
-
     const { panelRef } = useRefs();
     const [, setEditorMode] = useEditor();
     const { setTextEditorContent } = useTextEditorContent();
+
+    const [_, copyToClipboard] = useCopyToClipboard();
+    const [liked, setLiked] = useState<null | boolean>(null);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
+    const handleReadAloud = useCallback(() => {
+      if (isSpeaking) {
+        // Stop current speech
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        return;
+      }
+
+      // Clean the content (remove math delimiters, citations)
+      const cleanContent = content
+        .replace(/\$\$(.*?)\$\$/gs, "$1")
+        .replace(/£(\d+(?:,\s?\d+)*)£/g, "");
+
+      const utterance = new SpeechSynthesisUtterance(cleanContent);
+
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        toast.error("Failed to read message");
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }, [content, isSpeaking]);
 
     if (isLoading) return null;
     if (role === "user") return null;
@@ -71,52 +113,65 @@ export const MessageActions = memo(
             <TooltipContent>Copy message</TooltipContent>
           </Tooltip>
 
-          {regenerate !== undefined && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  className="size-4"
-                  variant="ghost"
-                  onClick={async () => {
-                    try {
-                      await apiFetcher(
-                        (client) =>
-                          client.messages["delete-last-message"][
-                            ":chatId"
-                          ].$delete({
-                            param: { chatId },
-                          }),
-                        sharedT.apiCodes,
-                      );
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="size-4"
+                variant="ghost"
+                onClick={handleReadAloud}
+              >
+                {isSpeaking ? <VolumeX /> : <Volume2 />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isSpeaking ? "Stop reading" : "Read aloud"}
+            </TooltipContent>
+          </Tooltip>
 
-                      await regenerate({
-                        body: {
-                          id: chatId,
-                          modelId: selectedChatModel.id,
-                          temp: isTemporary,
-                          ...(isPractice
-                            ? {}
-                            : {
-                                reasoning:
-                                  selectedChatModel.reasoning &&
-                                  reasoningEnabled,
-                              }),
-                        },
-                      });
-                    } catch (error) {
-                      console.error("Error during retry:", error);
-                      toast.error(
-                        "Failed to process retry operation. Please try again.",
-                      );
-                    }
-                  }}
-                >
-                  <RefreshCcw />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Retry</TooltipContent>
-            </Tooltip>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="size-4"
+                variant="ghost"
+                onClick={async () => {
+                  try {
+                    await apiFetcher(
+                      (client) =>
+                        client.messages["delete-trailing"][
+                          ":messageId"
+                        ].$delete({
+                          param: { messageId: previousMessageId },
+                        }),
+                      sharedT.apiCodes,
+                    );
+
+                    await regenerate({
+                      messageId,
+                      body: {
+                        id: chatId,
+                        modelId: selectedChatModel.id,
+                        temp: isTemporary,
+                        ...(isPractice
+                          ? {}
+                          : {
+                              reasoning:
+                                selectedChatModel.reasoning && reasoningEnabled,
+                            }),
+                      },
+                    });
+                  } catch (error) {
+                    console.error("Error during retry:", error);
+                    toast.error(
+                      "Failed to process retry operation. Please try again.",
+                    );
+                  }
+                }}
+              >
+                <RefreshCcw />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Retry</TooltipContent>
+          </Tooltip>
 
           <div className="flex flex-row items-center space-x-2">
             <Tooltip>

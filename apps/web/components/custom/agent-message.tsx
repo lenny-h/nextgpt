@@ -21,6 +21,21 @@ const MessageReasoning = dynamic(() =>
   import("./reasoning").then((mod) => mod.MessageReasoning),
 );
 
+interface AgentMessageProps {
+  chatId: string;
+  message: MyUIMessage;
+  regenerate: (
+    options?: {
+      messageId?: string | undefined;
+    } & ChatRequestOptions,
+  ) => Promise<void>;
+  isLoading: boolean;
+  isThinking: boolean;
+  isLastMessage: boolean;
+  previousMessageId: string;
+  isPractice?: boolean;
+}
+
 const loadFeatures = () => import("@/lib/features").then((res) => res.default);
 
 const PureAgentMessage = ({
@@ -30,16 +45,9 @@ const PureAgentMessage = ({
   isLoading,
   isThinking,
   isLastMessage,
+  previousMessageId,
   isPractice = false,
-}: {
-  chatId: string;
-  message: MyUIMessage;
-  regenerate?: (chatRequestOptions?: ChatRequestOptions) => Promise<void>;
-  isLoading: boolean;
-  isThinking: boolean;
-  isLastMessage: boolean;
-  isPractice?: boolean;
-}) => {
+}: AgentMessageProps) => {
   // Extract different part types
   const textParts = message.parts.filter((part) => part.type === "text");
   const reasoningParts = message.parts.filter(
@@ -131,7 +139,9 @@ const PureAgentMessage = ({
                   content={parsedContent}
                   role={message.role}
                   isLoading={isLoading}
-                  regenerate={isLastMessage ? regenerate : undefined}
+                  regenerate={regenerate}
+                  messageId={message.id}
+                  previousMessageId={previousMessageId}
                   isPractice={isPractice}
                 />
               )}

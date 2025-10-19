@@ -13,7 +13,11 @@ interface MessagesProps {
     messages: MyUIMessage[] | ((messages: MyUIMessage[]) => MyUIMessage[]),
   ) => void;
   status: "error" | "ready" | "submitted" | "streaming";
-  regenerate: (chatRequestOptions?: ChatRequestOptions) => Promise<void>;
+  regenerate: (
+    chatRequestOptions?: {
+      messageId?: string | undefined;
+    } & ChatRequestOptions,
+  ) => Promise<void>;
 }
 
 function PureMessages({
@@ -49,6 +53,7 @@ function PureMessages({
             isLoading={status === "streaming" && messages.length - 1 === index}
             isThinking={false}
             isLastMessage={messages.length - 1 === index}
+            previousMessageId={index > 0 ? messages[index - 1].id : ""}
           />
         ),
       )}
@@ -65,6 +70,7 @@ function PureMessages({
           isLoading={false}
           isThinking={true}
           isLastMessage={true}
+          previousMessageId=""
         />
       )}
 

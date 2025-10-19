@@ -34,6 +34,11 @@ export function RemoveBucketUsers({ bucketId }: Props) {
   }
 
   function submitList() {
+    if (!bucketId) {
+      toast.error("Bucket ID is required");
+      return;
+    }
+
     setSubmitLoading(true);
 
     const removeBucketUsers = async () => {

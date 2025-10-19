@@ -13,7 +13,6 @@ import { type ChatRequestOptions } from "ai";
 import equal from "fast-deep-equal";
 import { Copy, Pencil } from "lucide-react";
 import { LazyMotion } from "motion/react";
-import dynamic from "next/dynamic";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
@@ -22,17 +21,17 @@ import { MessageEditor } from "./message-editor";
 
 const loadFeatures = () => import("@/lib/features").then((res) => res.default);
 
-const Markdown = dynamic(() =>
-  import("./markdown").then((mod) => mod.Markdown),
-);
-
 interface UserMessageProps {
   chatId: string;
   message: MyUIMessage;
   setMessages: (
     messages: MyUIMessage[] | ((messages: MyUIMessage[]) => MyUIMessage[]),
   ) => void;
-  regenerate: (chatRequestOptions?: ChatRequestOptions) => Promise<void>;
+  regenerate: (
+    chatRequestOptions?: {
+      messageId?: string | undefined;
+    } & ChatRequestOptions,
+  ) => Promise<void>;
   isPractice?: boolean;
 }
 

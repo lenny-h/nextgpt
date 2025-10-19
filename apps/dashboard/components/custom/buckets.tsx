@@ -78,7 +78,7 @@ export const Buckets = memo(({ locale }: Props) => {
   if (isError || !buckets) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-center text-2xl font-semibold">
+        <h1 className="text-muted-foreground text-center text-xl font-medium">
           {dashboardT.buckets.errorLoading}
         </h1>
       </div>
@@ -88,7 +88,7 @@ export const Buckets = memo(({ locale }: Props) => {
   if (buckets.length === 0) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-center text-2xl font-semibold">
+        <h1 className="text-muted-foreground text-center text-xl font-medium">
           {dashboardT.buckets.noBuckets}
         </h1>
         <Button asChild>

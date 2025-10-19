@@ -46,7 +46,6 @@ import incomingInvitationsRoute from "./invitations/incoming/route.js";
 import outgoingInvitationsRoute from "./invitations/outgoing/route.js";
 import rejectInvitationRoute from "./invitations/reject/route.js";
 import messagesRoute from "./messages/[chatId]/route.js";
-import lastMessageRoute from "./messages/delete-last-message/[chatId]/route.js";
 import trailingMessagesRoute from "./messages/delete-trailing/[messageId]/route.js";
 import modelsByBucketRoute from "./models/[bucketId]/route.js";
 import modelDeleteRoute from "./models/[modelId]/route.js";
@@ -137,7 +136,6 @@ const protectedApiRouter = new Hono()
 
   // Messages
   .route("/messages/:chatId", messagesRoute)
-  .route("/messages/delete-last-message/:chatId", lastMessageRoute)
   .route("/messages/delete-trailing/:messageId", trailingMessagesRoute)
 
   // Models

@@ -47,7 +47,7 @@ export const Models = ({ locale }: Props) => {
   if (modelsError || !models) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-center text-2xl font-semibold">
+        <h1 className="text-muted-foreground text-center text-xl font-medium">
           Models could not be loaded. Please try again later.
         </h1>
       </div>
@@ -57,7 +57,7 @@ export const Models = ({ locale }: Props) => {
   if (models.length === 0) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-center text-2xl font-semibold">
+        <h1 className="text-muted-foreground text-center text-xl font-medium">
           Looks like there are no models yet
         </h1>
         <Button asChild>

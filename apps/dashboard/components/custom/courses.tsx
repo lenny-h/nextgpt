@@ -55,7 +55,7 @@ export const Courses = ({ locale }: Props) => {
   if (coursesError || !courses) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-center text-2xl font-semibold">
+        <h1 className="text-muted-foreground text-center text-xl font-medium">
           {dashboardT.courses.errorLoading}
         </h1>
       </div>
@@ -65,7 +65,7 @@ export const Courses = ({ locale }: Props) => {
   if (courses.length === 0) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-center text-2xl font-semibold">
+        <h1 className="text-muted-foreground text-center text-xl font-medium">
           {dashboardT.courses.noCourses}
         </h1>
         <Button asChild>

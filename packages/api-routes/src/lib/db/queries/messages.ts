@@ -1,7 +1,7 @@
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { chats, messages } from "@workspace/server/drizzle/schema.js";
-import { and, desc, eq, gte } from "drizzle-orm";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 export async function getMessageById({ messageId }: { messageId: string }) {
@@ -86,18 +86,18 @@ export async function isChatOwner({
   return result[0].userId === userId;
 }
 
-export async function deleteLastMessage({ chatId }: { chatId: string }) {
-  // Get the last message first
-  const lastMessage = await db
-    .select({ id: messages.id })
+export async function deleteLastMessagePair({ chatId }: { chatId: string }) {
+  // Delete the last two messages in the chat
+  const lastTwoMessages = await db
+    .select()
     .from(messages)
     .where(eq(messages.chatId, chatId))
     .orderBy(desc(messages.createdAt))
-    .limit(1);
+    .limit(2);
 
-  if (lastMessage.length > 0) {
-    await db.delete(messages).where(eq(messages.id, lastMessage[0].id));
-  }
+  const messageIdsToDelete = lastTwoMessages.map((msg) => msg.id);
+
+  await db.delete(messages).where(inArray(messages.id, messageIdsToDelete));
 }
 
 export async function getMessageWithChatOwnership({

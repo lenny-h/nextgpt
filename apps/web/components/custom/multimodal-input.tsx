@@ -102,6 +102,18 @@ const PureMultimodalInput = ({
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const handleVoiceInput = useCallback(
+    (transcript: string) => {
+      const newValue = input ? input + transcript : transcript;
+
+      setInput(newValue);
+      setLocalStorageInput(newValue);
+
+      textareaRef.current?.focus();
+    },
+    [input, setInput, setLocalStorageInput],
+  );
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -252,6 +264,7 @@ const PureMultimodalInput = ({
         stop={stop}
         submitForm={submitForm}
         uploadQueue={uploadQueue}
+        onVoiceInput={handleVoiceInput}
       />
     </div>
   );

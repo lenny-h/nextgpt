@@ -11,6 +11,10 @@ export const CSVUploader = ({ bucketId }: Props) => {
   const { sharedT } = useSharedTranslations();
 
   const handleSubmit = async (file: File) => {
+    if (!bucketId) {
+      throw new Error("Bucket ID is required");
+    }
+
     const result = await apiFetcher(
       (client) =>
         client["process-csv"][":bucketId"].$post({

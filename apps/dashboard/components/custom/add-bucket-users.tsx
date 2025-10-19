@@ -17,6 +17,11 @@ export const AddBucketUsers = memo(({ bucketId }: Props) => {
   const [submitLoading, setSubmitLoading] = useState(false);
 
   const submitList = async () => {
+    if (!bucketId) {
+      toast.error("Bucket ID is required");
+      return;
+    }
+
     setSubmitLoading(true);
 
     const inviteUsers = async () => {

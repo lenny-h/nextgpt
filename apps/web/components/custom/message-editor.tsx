@@ -24,7 +24,11 @@ export type MessageEditorProps = {
     messages: MyUIMessage[] | ((messages: MyUIMessage[]) => MyUIMessage[]),
   ) => void;
   setMode: Dispatch<SetStateAction<"view" | "edit">>;
-  regenerate: (chatRequestOptions?: ChatRequestOptions) => Promise<void>;
+  regenerate: (
+    chatRequestOptions?: {
+      messageId?: string | undefined;
+    } & ChatRequestOptions,
+  ) => Promise<void>;
 };
 
 const PureMessageEditor = ({
@@ -58,25 +62,30 @@ const PureMessageEditor = ({
         sharedT.apiCodes,
       );
 
+      setIsSubmitting(false);
+      setMode("view");
+
       setMessages((messages) => {
         const index = messages.findIndex((m) => m.id === message.id);
 
-        if (index !== -1) {
+        if (index !== -1 && index < messages.length - 1) {
           const updatedMessage = {
             ...message,
             parts: [{ type: "text", text: draftContent }, ...fileParts],
           } as MyUIMessage;
 
-          return [...messages.slice(0, index), updatedMessage];
+          return [
+            ...messages.slice(0, index),
+            updatedMessage,
+            messages[index + 1],
+          ];
         }
 
         return messages;
       });
 
-      setIsSubmitting(false);
-      setMode("view");
-
       await regenerate({
+        messageId: message.id,
         body: {
           id: chatId,
           modelId: selectedChatModel.id,

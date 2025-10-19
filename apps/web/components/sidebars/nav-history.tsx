@@ -252,7 +252,7 @@ export const NavHistory = memo(() => {
     );
   };
 
-  if (isPendingChats || isPendingFavourites || !chats || !favouriteChats) {
+  if (isPendingChats || isPendingFavourites) {
     return (
       <SidebarGroup>
         <div className="text-sidebar-foreground/50 px-2 py-1 text-xs">
@@ -283,7 +283,7 @@ export const NavHistory = memo(() => {
     );
   }
 
-  if (chats.length === 0) {
+  if (!chats || chats.length === 0) {
     return (
       <SidebarGroup>
         <SidebarGroupContent>
@@ -306,7 +306,7 @@ export const NavHistory = memo(() => {
         type="chat"
       />
 
-      {favouriteChats.length > 0 && (
+      {favouriteChats && favouriteChats.length > 0 && (
         <SidebarGroup>
           <SidebarGroupLabel>Favorites</SidebarGroupLabel>
           <SidebarMenu>
