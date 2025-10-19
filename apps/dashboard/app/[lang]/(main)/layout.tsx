@@ -1,5 +1,6 @@
 import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { SidebarLeft } from "@/components/sidebar/sidebar-left";
+import { type User } from "@workspace/server/drizzle/schema";
 import {
   SidebarInset,
   SidebarProvider,
@@ -33,7 +34,7 @@ export default async function MainLayout({
   const defaultLeftOpen = cookieStore.get("sidebar_left")?.value === "true";
 
   return (
-    <UserProvider user={user}>
+    <UserProvider user={user as User}>
       <SidebarProvider defaultOpen={defaultLeftOpen}>
         <SidebarLeft />
         <SidebarInset>

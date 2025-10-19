@@ -5,89 +5,89 @@
 name: mono
 
 services:
-#   # PostgreSQL Database with pgvector extension
-#   postgres:
-#     container_name: postgres
-#     image: pgvector/pgvector:pg17
-#     restart: unless-stopped
-#     ports:
-#       - "5432:5432"
-#     volumes:
-#       - ./packages/server/src/drizzle/000_init_extensions.sql:/docker-entrypoint-initdb.d/000-extensions.sql:ro
-#       - ./packages/server/src/drizzle/0000_broken_makkari.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
-#       - postgres-data:/var/lib/postgresql/data
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U postgres"]
-#       interval: 5s
-#       timeout: 5s
-#       retries: 10
-#     environment:
-#       POSTGRES_USER: postgres
-#       POSTGRES_PASSWORD: ${DB_PASSWORD}
-#       POSTGRES_DB: ${POSTGRES_DB}
-#       POSTGRES_INITDB_ARGS: "-E UTF8"
-#     command:
-#       - "postgres"
-#       - "-c"
-#       - "shared_preload_libraries=vector"
-#       # - "-c"
-#       # - "max_connections=100" # Default is 100, adjust as needed
-#       # - "-c"
-#       # - "shared_buffers=128MB" # Default is 128MB, adjust as needed
-#     networks:
-#       - database_network
-
-#   # Redis Cache
-#   redis:
-#     container_name: redis
-#     image: redis:7.2.11-alpine
-#     restart: unless-stopped
-#     ports:
-#       - "6379:6379"
-#     healthcheck:
-#       test: ["CMD", "redis-cli", "ping"]
-#       interval: 5s
-#       timeout: 3s
-#       retries: 5
-#     command: redis-server --appendonly yes
-#     volumes:
-#       - redis-data:/data
-#     networks:
-#       - database_network
-
-  # Document processor - Convert various files to Markdown
-  document-processor:
-    container_name: document-processor
-    build:
-      context: .
-      dockerfile: apps/document-processor/Dockerfile
+  # PostgreSQL Database with pgvector extension
+  postgres:
+    container_name: postgres
+    image: pgvector/pgvector:pg17
     restart: unless-stopped
     ports:
-      - "3006:8080"
+      - "5432:5432"
+    volumes:
+      - ./packages/server/src/drizzle/000_init_extensions.sql:/docker-entrypoint-initdb.d/000-extensions.sql:ro
+      - ./packages/server/src/drizzle/0000_broken_makkari.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
-      ENVIRONMENT: development
-      PORT: 8080
-      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@localhost:5432/${POSTGRES_DB}
-      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=vector"
+      # - "-c"
+      # - "max_connections=100" # Default is 100, adjust as needed
+      # - "-c"
+      # - "shared_buffers=128MB" # Default is 128MB, adjust as needed
     networks:
       - database_network
+
+  # Redis Cache
+  redis:
+    container_name: redis
+    image: redis:7.2.11-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - database_network
+
+  # # Document processor - Convert various files to Markdown
+  # document-processor:
+  #   container_name: document-processor
+  #   build:
+  #     context: .
+  #     dockerfile: apps/document-processor/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3006:8080"
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "python",
+  #         "-c",
+  #         "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     ENVIRONMENT: development
+  #     PORT: 8080
+  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+  #     DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@localhost:5432/${POSTGRES_DB}
+  #     R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+  #   networks:
+  #     - database_network
 
   # The services below need not be run in Docker
   # It is better to run them using `pnpm run dev` due to hot-reloading

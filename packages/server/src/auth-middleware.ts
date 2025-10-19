@@ -1,6 +1,7 @@
 import { type Context, type Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { auth } from "./auth-server.js";
+import { type User } from "./drizzle/schema.js";
 
 export const authMiddleware = async (c: Context, next: Next) => {
   try {
@@ -10,7 +11,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
       throw new HTTPException(401, { message: "UNAUTHORIZED" });
     }
 
-    c.set("user", session.user);
+    c.set("user", session.user as User);
 
     return next();
   } catch (error) {

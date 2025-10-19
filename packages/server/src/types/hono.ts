@@ -1,7 +1,7 @@
-import type { auth } from "@workspace/server/auth-server.js";
+import { type User } from "../drizzle/schema.js";
 
 declare module "hono" {
   interface ContextVariableMap {
-    user: typeof auth.$Infer.Session.user;
+    user: User;
   }
 }

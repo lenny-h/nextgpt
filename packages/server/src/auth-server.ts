@@ -2,7 +2,7 @@ import { sso } from "@better-auth/sso";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
-import { admin, lastLoginMethod, username } from "better-auth/plugins";
+import { admin, lastLoginMethod } from "better-auth/plugins";
 import { HTTPException } from "hono/http-exception";
 import { db } from "./drizzle/db.js";
 import {
@@ -80,7 +80,13 @@ export const auth = betterAuth({
       maxAge: 10 * 60, // Cache duration in seconds
     },
   },
-  plugins: [username(), admin(), sso(), lastLoginMethod()],
+  plugins: [
+    admin(),
+    sso(),
+    lastLoginMethod({
+      storeInDatabase: true,
+    }),
+  ],
   secondaryStorage: {
     get: async (key) => {
       const redis = await getRedisClient();

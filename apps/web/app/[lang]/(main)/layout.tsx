@@ -10,6 +10,7 @@ import { ChatModelProvider } from "@/contexts/selected-chat-model";
 import { VSResultsProvider } from "@/contexts/semantic-search-results";
 import { TempChatProvider } from "@/contexts/temporary-chat-context";
 import { TextEditorContentProvider } from "@/contexts/text-editor-content-context";
+import { type User } from "@workspace/server/drizzle/schema";
 import {
   SidebarInset,
   SidebarProvider,
@@ -43,7 +44,7 @@ export default async function MainLayout({
   const defaultLeftOpen = cookieStore.get("sidebar_left")?.value === "true";
 
   return (
-    <UserProvider user={user}>
+    <UserProvider user={user as User}>
       <RefsProvider>
         <EditorProvider>
           <TextEditorContentProvider>

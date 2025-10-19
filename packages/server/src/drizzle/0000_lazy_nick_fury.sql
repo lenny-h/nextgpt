@@ -1,3 +1,11 @@
+-- Enable pgvector extension
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Enable other useful extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+-- Main schema creation
 CREATE TYPE "public"."bucket_type" AS ENUM('small', 'medium', 'large', 'org');--> statement-breakpoint
 CREATE TYPE "public"."document_kind" AS ENUM('code', 'text');--> statement-breakpoint
 CREATE TYPE "public"."role" AS ENUM('user', 'assistant', 'system');--> statement-breakpoint
@@ -156,16 +164,16 @@ CREATE TABLE "prompts" (
 	"content" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "session" (
+CREATE TABLE "sso_provider" (
 	"id" text PRIMARY KEY NOT NULL,
-	"expires_at" timestamp NOT NULL,
-	"token" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp NOT NULL,
-	"ip_address" text,
-	"user_agent" text,
-	"user_id" text NOT NULL,
-	CONSTRAINT "session_token_unique" UNIQUE("token")
+	"issuer" text NOT NULL,
+	"oidc_config" text,
+	"saml_config" text,
+	"user_id" text,
+	"provider_id" text NOT NULL,
+	"organization_id" text,
+	"domain" text NOT NULL,
+	CONSTRAINT "sso_provider_provider_id_unique" UNIQUE("provider_id")
 );
 --> statement-breakpoint
 CREATE TABLE "tasks" (
@@ -187,6 +195,11 @@ CREATE TABLE "user" (
 	"image" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"role" text,
+	"banned" boolean DEFAULT false,
+	"ban_reason" text,
+	"ban_expires" timestamp,
+	"last_login_method" text,
 	"is_public" boolean DEFAULT true NOT NULL,
 	CONSTRAINT "user_username_unique" UNIQUE("username"),
 	CONSTRAINT "user_email_unique" UNIQUE("email")
@@ -232,7 +245,7 @@ ALTER TABLE "models" ADD CONSTRAINT "models_bucket_id_buckets_id_fk" FOREIGN KEY
 ALTER TABLE "pages" ADD CONSTRAINT "pages_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pages" ADD CONSTRAINT "pages_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prompts" ADD CONSTRAINT "prompts_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sso_provider" ADD CONSTRAINT "sso_provider_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_invitations" ADD CONSTRAINT "user_invitations_origin_user_id_fk" FOREIGN KEY ("origin") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_invitations" ADD CONSTRAINT "user_invitations_target_user_id_fk" FOREIGN KEY ("target") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

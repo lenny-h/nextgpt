@@ -3,7 +3,6 @@ import {
   adminClient,
   inferAdditionalFields,
   lastLoginMethodClient,
-  usernameClient,
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { toast } from "sonner";
@@ -11,7 +10,6 @@ import { toast } from "sonner";
 export const client = createAuthClient({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL}/capi/auth`,
   plugins: [
-    usernameClient(),
     adminClient(),
     ssoClient(),
     lastLoginMethodClient(),

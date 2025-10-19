@@ -4,7 +4,7 @@ import { CodeEditorContentProvider } from "@/contexts/code-editor-content-contex
 import { EditorProvider } from "@/contexts/editor-context";
 import { RefsProvider } from "@/contexts/refs-context";
 import { TextEditorContentProvider } from "@/contexts/text-editor-content-context";
-import { auth } from "@workspace/server/auth-server";
+import { type User } from "@workspace/server/drizzle/schema";
 import {
   SidebarInset,
   SidebarProvider,
@@ -12,7 +12,7 @@ import {
 import { UserProvider } from "@workspace/ui/contexts/user-context";
 import { client } from "@workspace/ui/lib/auth-client";
 import { type Locale } from "@workspace/ui/lib/i18n.config";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function DocumentsLayout({
@@ -38,7 +38,7 @@ export default async function DocumentsLayout({
   const defaultLeftOpen = cookieStore.get("sidebar_left")?.value === "true";
 
   return (
-    <UserProvider user={user}>
+    <UserProvider user={user as User}>
       <RefsProvider>
         <EditorProvider>
           <TextEditorContentProvider>
