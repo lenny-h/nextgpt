@@ -96,11 +96,11 @@ export const ProfileForm = memo(() => {
                 <FormItem>
                   <div className="flex items-center justify-between">
                     <FormLabel htmlFor="name">Name</FormLabel>
-                    <div className="hidden items-center space-x-2 md:flex">
+                    <div className="hidden items-center space-x-1 md:flex">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Info className="text-primary size-5" />
+                            <Info className="text-primary size-4" />
                           </TooltipTrigger>
                           <TooltipContent>
                             The name is only used to address you inside the app.
@@ -124,11 +124,11 @@ export const ProfileForm = memo(() => {
                 <FormItem>
                   <div className="flex items-center justify-between">
                     <FormLabel htmlFor="username">Username</FormLabel>
-                    <div className="hidden items-center space-x-2 md:flex">
+                    <div className="hidden items-center space-x-1 md:flex">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Info className="text-primary size-5" />
+                            <Info className="text-primary size-4" />
                           </TooltipTrigger>
                           <TooltipContent>
                             The username is visible to other users. This is

@@ -125,7 +125,7 @@ export const Files = ({ locale }: Props) => {
         </div>
       ) : filesPending ? (
         <Skeleton className="mx-auto h-96 w-full max-w-4xl rounded-md" />
-      ) : filesError ? (
+      ) : filesError || !files ? (
         <h1 className="mt-8 text-center text-2xl font-semibold">
           Could not fetch the files of this course. Please try again later.
         </h1>

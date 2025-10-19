@@ -127,7 +127,7 @@ export const Tasks = ({ locale }: Props) => {
         </div>
       ) : tasksPending ? (
         <Skeleton className="mx-auto h-96 w-full max-w-4xl rounded-md" />
-      ) : tasksError ? (
+      ) : tasksError || !tasks ? (
         <h1 className="mt-8 text-center text-2xl font-semibold">
           Could not fetch the tasks of this course. Please try again later.
         </h1>

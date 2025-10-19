@@ -57,7 +57,7 @@ export const FilterableList = memo(
       enabled: open && enabled,
     });
 
-    const items = itemsData.items;
+    const items = itemsData?.items;
     const itemsToDisplay = inputValue.trim().length > 1 ? ilikeItems : items;
 
     useEffect(() => {
@@ -158,7 +158,7 @@ export const FilterableList = memo(
       );
     }
 
-    if (error || !items) {
+    if (error || !items || !itemsToDisplay) {
       return (
         <div className="max-h-80 space-y-1 overflow-y-auto pr-1">
           <p className="text-muted-foreground py-8 text-center text-sm">

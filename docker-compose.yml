@@ -13,8 +13,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./packages/server/src/drizzle/000_init_extensions.sql:/docker-entrypoint-initdb.d/000-extensions.sql:ro
-      - ./packages/server/src/drizzle/0000_broken_makkari.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ./packages/server/src/drizzle/0000_romantic_outlaw_kid.sql:/docker-entrypoint-initdb.d/0000_romantic_outlaw_kid.sql:ro
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -113,7 +112,7 @@ services:
   #         "wget",
   #         "--no-verbose",
   #         "--spider",
-  #         "http://localhost:8080/capi/public/health",
+  #         "http://localhost:8080/api/public/health",
   #       ]
   #     interval: 30s
   #     timeout: 10s

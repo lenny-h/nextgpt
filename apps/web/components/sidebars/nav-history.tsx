@@ -252,7 +252,7 @@ export const NavHistory = memo(() => {
     );
   };
 
-  if (isPendingChats || isPendingFavourites) {
+  if (isPendingChats || isPendingFavourites || !chats || !favouriteChats) {
     return (
       <SidebarGroup>
         <div className="text-sidebar-foreground/50 px-2 py-1 text-xs">

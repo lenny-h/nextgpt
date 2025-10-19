@@ -78,7 +78,7 @@ export function Chat({
         }),
       onError: () => toast.error(webT.chat.errorOccurred),
       transport: new DefaultChatTransport({
-        api: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/chat`,
+        api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/chat`,
         credentials: "include",
         prepareSendMessagesRequest({ id, messages }) {
           return {

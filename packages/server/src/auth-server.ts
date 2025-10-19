@@ -12,7 +12,7 @@ import {
 import { getRedisClient } from "./utils/access-clients/redis-client.js";
 
 export const auth = betterAuth({
-  basePath: process.env.BETTER_AUTH_URL,
+  baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
@@ -35,7 +35,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url, token }, request) => {
       await sendPasswordResetEmail({
         to: user.email,
-        url,
+        token,
       });
     },
   },
@@ -45,7 +45,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url, token }, request) => {
       await sendVerificationEmail({
         to: user.email,
-        url,
+        token,
       });
     },
   },
@@ -127,9 +127,17 @@ export const auth = betterAuth({
     storage: "secondary-storage",
   },
   advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
-      domain: "nextgpt.cloud", // your domain
+    database: {
+      generateId: false,
     },
+    // crossSubDomainCookies: {
+    //   enabled: true,
+    //   domain: "nextgpt.cloud", // your domain
+    // },
+  },
+  logger: {
+    disabled: false,
+    disableColors: process.env.NODE_ENV !== "development",
+    level: process.env.NODE_ENV === "development" ? "debug" : "error",
   },
 });

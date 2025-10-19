@@ -8,7 +8,7 @@ import { createAuthClient } from "better-auth/react";
 import { toast } from "sonner";
 
 export const client = createAuthClient({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/capi/auth`,
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/auth`,
   plugins: [
     adminClient(),
     ssoClient(),

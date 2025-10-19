@@ -108,7 +108,7 @@ resource "google_compute_url_map" "url_map" {
     default_service = google_compute_backend_service.api_backend.id # Default for api.mydomain.com
 
     path_rule {
-      paths   = ["/capi/*"]
+      paths   = ["/api/*"]
       service = google_compute_backend_service.api_backend.id
     }
 

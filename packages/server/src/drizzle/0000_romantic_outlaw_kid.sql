@@ -12,10 +12,10 @@ CREATE TYPE "public"."role" AS ENUM('user', 'assistant', 'system');--> statement
 CREATE TYPE "public"."task_status" AS ENUM('scheduled', 'processing', 'failed', 'finished');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('user', 'maintainer');--> statement-breakpoint
 CREATE TABLE "account" (
-	"id" text PRIMARY KEY NOT NULL,
-	"account_id" text NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+	"account_id" uuid NOT NULL,
 	"provider_id" text NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"access_token" text,
 	"refresh_token" text,
 	"id_token" text,
@@ -165,13 +165,13 @@ CREATE TABLE "prompts" (
 );
 --> statement-breakpoint
 CREATE TABLE "sso_provider" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 	"issuer" text NOT NULL,
 	"oidc_config" text,
 	"saml_config" text,
-	"user_id" text,
+	"user_id" uuid,
 	"provider_id" text NOT NULL,
-	"organization_id" text,
+	"organization_id" uuid,
 	"domain" text NOT NULL,
 	CONSTRAINT "sso_provider_provider_id_unique" UNIQUE("provider_id")
 );
@@ -187,7 +187,7 @@ CREATE TABLE "tasks" (
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 	"name" text NOT NULL,
 	"username" text NOT NULL,
 	"email" text NOT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE "user_invitations" (
 );
 --> statement-breakpoint
 CREATE TABLE "verification" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp NOT NULL,

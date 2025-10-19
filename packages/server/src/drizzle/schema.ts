@@ -20,7 +20,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
-  id: text("id").primaryKey(),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuid_generate_v4()`),
   name: text("name").notNull(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
@@ -42,10 +44,12 @@ export const user = pgTable("user", {
 export type User = InferSelectModel<typeof user>;
 
 export const account = pgTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("account_id").notNull(),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuid_generate_v4()`),
+  accountId: uuid("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
@@ -62,7 +66,9 @@ export const account = pgTable("account", {
 });
 
 export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuid_generate_v4()`),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -74,13 +80,15 @@ export const verification = pgTable("verification", {
 });
 
 export const ssoProvider = pgTable("sso_provider", {
-  id: text("id").primaryKey(),
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuid_generate_v4()`),
   issuer: text("issuer").notNull(),
   oidcConfig: text("oidc_config"),
   samlConfig: text("saml_config"),
-  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").references(() => user.id, { onDelete: "cascade" }),
   providerId: text("provider_id").notNull().unique(),
-  organizationId: text("organization_id"),
+  organizationId: uuid("organization_id"),
   domain: text("domain").notNull(),
 });
 

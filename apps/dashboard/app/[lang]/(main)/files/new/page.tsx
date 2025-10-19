@@ -68,7 +68,7 @@ export default function UploadFilesPage() {
       ),
   });
 
-  const courses = coursesData.items;
+  const courses = coursesData?.items;
 
   if (isPending) {
     return (

@@ -63,7 +63,7 @@ export function InvitationsDialog({
     enabled: open,
   });
 
-  const invitations = invitationsData.items;
+  const invitations = invitationsData?.items;
 
   const acceptInvitation = async (invitation: Invitation) => {
     try {

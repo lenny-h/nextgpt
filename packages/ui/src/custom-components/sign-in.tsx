@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -25,20 +25,34 @@ export const SignIn = memo(() => {
   const { locale } = useSharedTranslations();
 
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // useEffect(() => {
-  //   client.oneTap({
-  //     fetchOptions: {
-  //       onError: ({ error }) => {
-  //         toast.error(error.message || "An error occurred");
-  //       },
-  //       onSuccess: () => {
-  //         toast.success("Successfully signed in");
-  //         router.push(`/${locale}`);
-  //       },
-  //     },
-  //   });
-  // }, []);
+  useEffect(() => {
+    const token = searchParams.get("token");
+
+    if (token) {
+      const verifyEmail = async () => {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-email?token=${token}`
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.error("Email verification failed:", error);
+          throw new Error("Failed to verify email");
+        }
+
+        // Remove token from URL
+        router.replace(`/${locale}/sign-in`);
+      };
+
+      toast.promise(verifyEmail(), {
+        loading: "Verifying email...",
+        success: "Email verified successfully",
+        error: "Failed to verify email",
+      });
+    }
+  }, [searchParams]);
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInFormSchema),
@@ -49,20 +63,26 @@ export const SignIn = memo(() => {
   });
 
   async function onSubmit(values: SignInFormData) {
-    const signInPromise = signIn
-      .email({
+    const signInPromise = signIn.email(
+      {
         email: values.email,
         password: values.password,
         rememberMe: true,
-      })
-      .then(async () => {
-        router.push(`/${locale}`);
-      });
+      },
+      {
+        onSuccess() {
+          router.push(`/${locale}/`);
+        },
+        onError(context) {
+          throw new Error(context.error.message);
+        },
+      }
+    );
 
     toast.promise(signInPromise, {
       loading: "Signing in...",
       success: "Successfully signed in",
-      error: "Something went wrong. Please try again.",
+      error: (error) => error.message || "Failed to sign in",
     });
   }
 

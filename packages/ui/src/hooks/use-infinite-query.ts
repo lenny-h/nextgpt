@@ -14,7 +14,7 @@ interface UseInfiniteQueryProps<T> {
 }
 
 interface InfiniteQueryResult<T> {
-  data: T;
+  data: T | undefined;
   isPending: boolean;
   error: Error | null;
   fetchNextPage: (

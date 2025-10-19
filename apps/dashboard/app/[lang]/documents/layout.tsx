@@ -1,3 +1,5 @@
+"use client";
+
 import { SidebarLeft } from "@/components/sidebar/sidebar-left";
 import { AutocompleteProvider } from "@/contexts/autocomplete-context";
 import { CodeEditorContentProvider } from "@/contexts/code-editor-content-context";
@@ -9,33 +11,46 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
+import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";
 import { client } from "@workspace/ui/lib/auth-client";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default async function DocumentsLayout({
+export default function DocumentsLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ lang: Locale }>;
 }) {
-  const lang = (await params).lang;
+  const { data, isPending } = client.useSession();
+  const { locale } = useSharedTranslations();
 
-  const { data } = await client.getSession();
+  const router = useRouter();
 
-  const user = data?.user
-    ? { ...data.user, image: data.user.image ?? null }
-    : null;
+  const [defaultLeftOpen, setDefaultLeftOpen] = useState(false);
 
-  if (!user) {
-    return redirect(`/${lang}/sign-in`);
+  useEffect(() => {
+    const match = document.cookie
+      .split("; ")
+      .find((c) => c.startsWith("sidebar_left="));
+
+    if (match) {
+      setDefaultLeftOpen(match.split("=")[1] === "true");
+    }
+  }, []);
+
+  console.log("Layout user data:", data);
+
+  if (isPending) {
+    return <CentralLoadingScreen />;
   }
 
-  const cookieStore = await cookies();
-  const defaultLeftOpen = cookieStore.get("sidebar_left")?.value === "true";
+  const user = data?.user;
+
+  if (!user) {
+    router.push(`/${locale}/sign-in`);
+  }
 
   return (
     <UserProvider user={user as User}>

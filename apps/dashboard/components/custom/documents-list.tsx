@@ -53,8 +53,7 @@ export const DocumentsList = ({
       ),
   });
 
-  const documents = documentsData.items;
-  const documentsToDisplay = isSearching ? ilikeDocuments : documents;
+  const documents = documentsData?.items;
 
   const onClickDocument = async (
     documentId: string,
@@ -119,6 +118,8 @@ export const DocumentsList = ({
       </div>
     );
   }
+
+  const documentsToDisplay = isSearching ? ilikeDocuments : documents;
 
   if (documentsToDisplay.length === 0) {
     return (

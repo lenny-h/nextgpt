@@ -12,7 +12,7 @@ import { type ClientResponse, hc } from "hono/client";
 //   errorDictionary: ErrorDictionary
 // ) => {
 //   const response = await fetch(
-//     `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/${url}`,
+//     `${process.env.NEXT_PUBLIC_API_URL}/api/protected/${url}`,
 //     init
 //   );
 //   checkResponse(response, errorDictionary);
@@ -21,7 +21,7 @@ import { type ClientResponse, hc } from "hono/client";
 
 export function createProtectedApiClient() {
   return hc<ProtectedApiType>(
-    `${process.env.NEXT_PUBLIC_API_URL}/capi/protected`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/protected`,
     {
       fetch: (input: RequestInfo | URL, init?: RequestInit) => {
         return fetch(input, {

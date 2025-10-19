@@ -88,7 +88,7 @@ export function Practice({
         }),
       onError: () => toast.error("An error occurred, please try again!"),
       transport: new DefaultChatTransport({
-        api: `${process.env.NEXT_PUBLIC_API_URL}/capi/protected/practice`,
+        api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/practice`,
         credentials: "include",
         prepareSendMessagesRequest({ id, messages }) {
           return {

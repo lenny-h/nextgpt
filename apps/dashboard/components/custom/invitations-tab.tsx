@@ -38,7 +38,7 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
       ),
   });
 
-  const incomingInvitations = incomingInvitationsData.items;
+  const incomingInvitations = incomingInvitationsData?.items;
 
   const {
     data: outgoingInvitationsData,
@@ -63,7 +63,7 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
       ),
   });
 
-  const outgoingInvitations = outgoingInvitationsData.items;
+  const outgoingInvitations = outgoingInvitationsData?.items;
 
   return (
     <div className="flex flex-col space-y-6">
