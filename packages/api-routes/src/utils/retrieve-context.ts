@@ -35,7 +35,7 @@ export async function retrieveDocumentSources({
   pageNumbers?: number[];
   chapter?: number;
   matchThreshold?: number;
-}): Promise<{ documentSources: DocumentSource[] }> {
+}): Promise<DocumentSource[]> {
   const queries = [];
 
   if (embedding) {
@@ -78,5 +78,5 @@ export async function retrieveDocumentSources({
     }
   }
 
-  return { documentSources: Array.from(uniqueResultsMap.values()) };
+  return Array.from(uniqueResultsMap.values());
 }

@@ -23,7 +23,7 @@ const app = new Hono()
       return c.json(undefined);
     }
 
-    return c.json({ item: result[0] });
+    return c.json(result[0]);
   })
   .patch(
     "/",

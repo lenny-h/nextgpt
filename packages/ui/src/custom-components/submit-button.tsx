@@ -15,7 +15,12 @@ export const SubmitButton = ({
   ...props
 }: Props) => {
   return (
-    <Button type="submit" disabled={isPending} {...props}>
+    <Button
+      className="w-fit mx-auto"
+      type="submit"
+      disabled={isPending}
+      {...props}
+    >
       {isPending ? pendingText : children}
     </Button>
   );

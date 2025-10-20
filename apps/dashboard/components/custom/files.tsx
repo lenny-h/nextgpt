@@ -2,6 +2,7 @@
 
 import { type Locale } from "@workspace/ui/lib/i18n.config";
 
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
@@ -19,6 +20,7 @@ interface Props {
 
 export const Files = ({ locale }: Props) => {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
@@ -44,13 +46,13 @@ export const Files = ({ locale }: Props) => {
       ),
   });
 
-  const courses = coursesData?.items.map((c) => ({
+  const courses = coursesData?.map((c) => ({
     ...c,
     createdAt: new Date(c.createdAt),
   }));
 
   const {
-    data: filesData,
+    data: files,
     isPending: filesPending,
     error: filesError,
     fetchNextPage: fetchNextFiles,
@@ -74,12 +76,10 @@ export const Files = ({ locale }: Props) => {
     enabled: !!selectedCourseId,
   });
 
-  const files = filesData?.items;
-
   if (coursesPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-2xl font-semibold">Loading courses...</h1>
+        <h1 className="text-2xl font-semibold">{dashboardT.courses.loading}</h1>
         <Skeleton className="mx-auto h-96 w-full max-w-4xl" />
       </div>
     );
@@ -89,7 +89,7 @@ export const Files = ({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-muted-foreground text-center text-xl font-medium">
-          Courses could not be loaded. Please try again later.
+          {dashboardT.courses.errorLoading}
         </h1>
       </div>
     );
@@ -99,10 +99,12 @@ export const Files = ({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-muted-foreground text-center text-xl font-medium">
-          Looks like there are no courses yet
+          {dashboardT.files.noCourses}
         </h1>
         <Button asChild>
-          <Link href={`/${locale}/courses/new`}>Create a course</Link>
+          <Link href={`/${locale}/courses/new`}>
+            {dashboardT.courses.createCourse}
+          </Link>
         </Button>
       </div>
     );
@@ -121,13 +123,13 @@ export const Files = ({ locale }: Props) => {
       />
       {!selectedCourseId ? (
         <div className="mt-8 text-center text-lg font-semibold">
-          Please select a course to view its files
+          {dashboardT.files.selectCourse}
         </div>
       ) : filesPending ? (
         <Skeleton className="mx-auto h-96 w-full max-w-4xl rounded-md" />
       ) : filesError || !files ? (
         <h1 className="mt-8 text-center text-2xl font-semibold">
-          Could not fetch the files of this course. Please try again later.
+          {dashboardT.files.errorLoading}
         </h1>
       ) : (
         <InfiniteDataTable

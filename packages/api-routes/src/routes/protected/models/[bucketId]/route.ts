@@ -38,7 +38,7 @@ const app = new Hono().get(
       .from(models)
       .where(eq(models.bucketId, bucketId));
 
-    return c.json({ items: result });
+    return c.json(result);
   }
 );
 

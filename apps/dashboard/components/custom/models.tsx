@@ -18,7 +18,7 @@ export const Models = ({ locale }: Props) => {
   const { sharedT } = useSharedTranslations();
 
   const {
-    data: modelsData,
+    data: models,
     isLoading: modelsLoading,
     error: modelsError,
   } = useQuery({
@@ -32,8 +32,6 @@ export const Models = ({ locale }: Props) => {
         sharedT.apiCodes,
       ),
   });
-
-  const models = modelsData?.items;
 
   if (modelsLoading) {
     return (

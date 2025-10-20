@@ -51,7 +51,7 @@ const app = new Hono().get(
       .limit(itemsPerPage)
       .offset(pageNumber * itemsPerPage);
 
-    return c.json({ items: maintainedCourses });
+    return c.json(maintainedCourses);
   }
 );
 

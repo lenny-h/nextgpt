@@ -20,7 +20,7 @@ export const Courses = ({ locale }: Props) => {
   const { dashboardT } = useDashboardTranslations();
 
   const {
-    data: coursesData,
+    data: courses,
     isPending,
     error: coursesError,
     fetchNextPage,
@@ -41,7 +41,7 @@ export const Courses = ({ locale }: Props) => {
       ),
   });
 
-  const courses = coursesData?.items;
+  console.log("Courses data:", courses);
 
   if (isPending) {
     return (

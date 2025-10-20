@@ -32,7 +32,7 @@ export const DocumentsList = ({
   const { setCodeEditorContent } = useCodeEditorContent();
 
   const {
-    data: documentsData,
+    data: documents,
     isPending,
     error,
     inViewRef,
@@ -53,14 +53,12 @@ export const DocumentsList = ({
       ),
   });
 
-  const documents = documentsData?.items;
-
   const onClickDocument = async (
     documentId: string,
     documentTitle: string,
     documentKind: "text" | "code",
   ) => {
-    const { item: fullDocument } = await apiFetcher(
+    const fullDocument = await apiFetcher(
       (client) =>
         client.documents[":documentId"].$get({
           param: { documentId },

@@ -32,7 +32,7 @@ const app = new Hono()
         throw new HTTPException(404, { message: "NOT_FOUND" });
       }
 
-      return c.json({ item: result[0] });
+      return c.json(result[0]);
     }
   )
   .delete(

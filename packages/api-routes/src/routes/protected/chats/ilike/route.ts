@@ -24,7 +24,7 @@ const app = new Hono().get(
       .where(and(eq(chats.userId, user.id), ilike(chats.title, `%${prefix}%`)))
       .limit(5);
 
-    return c.json({ items: result });
+    return c.json(result);
   }
 );
 

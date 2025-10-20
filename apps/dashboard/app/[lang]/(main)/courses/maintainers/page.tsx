@@ -3,6 +3,7 @@
 import { AddMaintainers } from "@/components/custom/add-maintainers";
 import { CurrentMaintainers } from "@/components/custom/current-maintainers";
 import { RemoveMaintainers } from "@/components/custom/remove-maintainers";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useUser } from "@workspace/ui/contexts/user-context";
@@ -11,7 +12,7 @@ import { notFound, useSearchParams } from "next/navigation";
 
 export default function CourseMaintainersPage() {
   const { sharedT } = useSharedTranslations();
-
+  const { dashboardT } = useDashboardTranslations();
   const user = useUser();
 
   const searchParams = useSearchParams();
@@ -24,7 +25,7 @@ export default function CourseMaintainersPage() {
   }
 
   const {
-    data: currentMaintainersData,
+    data: currentMaintainers,
     isPending,
     isError,
   } = useQuery({
@@ -39,12 +40,12 @@ export default function CourseMaintainersPage() {
       ),
   });
 
-  const currentMaintainers = currentMaintainersData?.items;
-
   if (isPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-2xl font-semibold">Loading maintainers...</h1>
+        <h1 className="text-2xl font-semibold">
+          {dashboardT.maintainers.loading}
+        </h1>
       </div>
     );
   }
@@ -53,7 +54,7 @@ export default function CourseMaintainersPage() {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
-          Maintainers could not be loaded. Please try again later.
+          {dashboardT.maintainers.errorLoading}
         </h1>
       </div>
     );
@@ -64,7 +65,9 @@ export default function CourseMaintainersPage() {
       <h1 className="text-2xl font-semibold">{courseName}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Current Maintainers</h2>
+          <h2 className="text-xl font-semibold">
+            {dashboardT.maintainers.currentMaintainers}
+          </h2>
           <CurrentMaintainers
             currentUser={user}
             currentMaintainers={currentMaintainers}
@@ -72,20 +75,22 @@ export default function CourseMaintainersPage() {
         </div>
         <div className="space-y-3">
           <div className="max-w-lg">
-            <h2 className="text-xl font-semibold">Add maintainers</h2>
+            <h2 className="text-xl font-semibold">
+              {dashboardT.maintainers.addMaintainers}
+            </h2>
             <p className="text-muted-foreground text-sm">
-              Maintainer can manage the course by adding and deleting course
-              content. They can also delete the course. There is a maximum of 20
-              maintainers by course.
+              {dashboardT.maintainers.addCourseMaintainersDescription}
             </p>
           </div>
           <AddMaintainers bucketId={bucketId} courseId={courseId} />
         </div>
         <div className="space-y-3">
           <div className="max-w-lg">
-            <h2 className="text-xl font-semibold">Remove maintainers</h2>
+            <h2 className="text-xl font-semibold">
+              {dashboardT.maintainers.removeMaintainers}
+            </h2>
             <p className="text-muted-foreground text-sm">
-              Course maintainers can only be removed by bucket maintainers.
+              {dashboardT.maintainers.removeCourseMaintainersDescription}
             </p>
           </div>
           <RemoveMaintainers

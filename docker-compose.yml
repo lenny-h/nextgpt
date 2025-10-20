@@ -54,39 +54,42 @@ services:
     networks:
       - database_network
 
-  # # Document processor - Convert various files to Markdown
-  # document-processor:
-  #   container_name: document-processor
-  #   build:
-  #     context: .
-  #     dockerfile: apps/document-processor/Dockerfile
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3006:8080"
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD",
-  #         "python",
-  #         "-c",
-  #         "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
-  #       ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   environment:
-  #     ENVIRONMENT: development
-  #     PORT: 8080
-  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-  #     DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@localhost:5432/${POSTGRES_DB}
-  #     R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
-  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
-  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-  #   networks:
-  #     - database_network
+  # Document processor - Convert various files to Markdown
+  document-processor:
+    container_name: document-processor
+    build:
+      context: .
+      dockerfile: apps/document-processor/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3006:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      ENVIRONMENT: development
+      PORT: 8080
+      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@postgres:5432/${POSTGRES_DB} # Careful: localhost does not work since it's inside Docker
+      R2_ENDPOINT: https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+    networks:
+      - database_network
 
   # The services below need not be run in Docker
   # It is better to run them using `pnpm run dev` due to hot-reloading

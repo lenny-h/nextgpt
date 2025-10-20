@@ -24,7 +24,7 @@ export const Buckets = memo(({ locale }: Props) => {
   const { dashboardT } = useDashboardTranslations();
 
   const {
-    data: bucketsData,
+    data: buckets,
     isPending,
     isError,
   } = useQuery({
@@ -35,8 +35,6 @@ export const Buckets = memo(({ locale }: Props) => {
         sharedT.apiCodes,
       ),
   });
-
-  const buckets = bucketsData?.items;
 
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
   const [deleteDialog, setDeleteDialog] = useState(false);

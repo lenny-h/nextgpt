@@ -37,13 +37,11 @@ export const NavUser = memo(() => {
 
   const [invitationsOpen, setInvitationsOpen] = useState(false);
 
-  const { data: profileData, isLoading } = useQuery({
+  const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: () =>
       apiFetcher((client) => client.profiles.$get(), sharedT.apiCodes),
   });
-
-  const profile = profileData?.item;
 
   const username = profile?.username;
 

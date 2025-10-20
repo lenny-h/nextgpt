@@ -26,7 +26,7 @@ const app = new Hono().get("/", async (c) => {
       )
     );
 
-  return c.json({ items: maintainedBuckets });
+  return c.json(maintainedBuckets);
 });
 
 export default app;

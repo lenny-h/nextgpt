@@ -36,13 +36,12 @@ export const ProfileForm = memo(() => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: profileData, isPending } = useQuery({
+  const { data: profile, isPending } = useQuery({
     queryKey: ["profile"],
     queryFn: () =>
       apiFetcher((client) => client.profiles.$get(), sharedT.apiCodes),
   });
 
-  const profile = profileData?.item;
   const name = profile?.name;
   const username = profile?.username;
 

@@ -47,7 +47,7 @@ export default function UploadFilesPage() {
   });
 
   const {
-    data: coursesData,
+    data: courses,
     isPending,
     error: coursesError,
     hasNextPage,
@@ -67,8 +67,6 @@ export default function UploadFilesPage() {
         sharedT.apiCodes,
       ),
   });
-
-  const courses = coursesData?.items;
 
   if (isPending) {
     return (

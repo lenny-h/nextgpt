@@ -52,9 +52,7 @@ const app = new Hono().post(
       pageNumbers: [],
     });
 
-    return c.json({
-      items: sources,
-    });
+    return c.json(sources);
   }
 );
 

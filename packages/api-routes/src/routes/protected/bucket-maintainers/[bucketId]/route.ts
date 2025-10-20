@@ -56,7 +56,7 @@ const app = new Hono()
           )
         );
 
-      return c.json({ maintainers });
+      return c.json(maintainers);
     }
   )
   .post(

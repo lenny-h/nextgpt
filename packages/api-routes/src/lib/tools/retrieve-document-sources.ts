@@ -25,12 +25,14 @@ export const retrieveDocumentSourcesTool = ({
     execute: async ({ keywords, questions, pageNumbers }) => {
       const embedding = await retrieveEmbedding(questions.join(" "));
 
-      return await retrieveDocumentSources({
+      const sources = await retrieveDocumentSources({
         filter,
         retrieveContent,
         embedding,
         ftsQuery: keywords.join(" "),
         pageNumbers,
       });
+
+      return { documentSources: sources };
     },
   });

@@ -51,14 +51,10 @@ const app = new Hono().post(
     }
 
     if (failedFiles.length > 0) {
-      return c.json({
-        failedFiles,
-      });
+      return c.json(failedFiles);
     }
 
-    return c.json({
-      failedFiles: [],
-    });
+    return c.json([]);
   }
 );
 

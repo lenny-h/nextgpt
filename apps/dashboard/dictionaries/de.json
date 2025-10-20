@@ -9,6 +9,17 @@
     "adding": "Maintainer werden hinzugefügt...",
     "success": "Maintainer erfolgreich eingeladen 🎉"
   },
+  "maintainers": {
+    "loading": "Maintainer werden geladen...",
+    "errorLoading": "Maintainer konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "currentMaintainers": "Aktuelle Maintainer",
+    "addMaintainers": "Maintainer hinzufügen",
+    "addBucketMaintainersDescription": "Maintainer können den Bucket verwalten, indem sie Kurse und die entsprechenden Kurs-Maintainer hinzufügen. Es gibt maximal 10 Maintainer pro Bucket.",
+    "addCourseMaintainersDescription": "Maintainer können den Kurs verwalten, indem sie Kursinhalte hinzufügen und löschen. Sie können den Kurs auch löschen. Es gibt maximal 20 Maintainer pro Kurs.",
+    "removeMaintainers": "Maintainer entfernen",
+    "removeBucketMaintainersDescription": "Maintainer können nur vom Bucket-Besitzer entfernt werden.",
+    "removeCourseMaintainersDescription": "Kurs-Maintainer können nur von Bucket-Maintainern entfernt werden."
+  },
   "courses": {
     "loading": "Kurse werden geladen...",
     "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
@@ -16,6 +27,11 @@
     "createCourse": "Kurs erstellen",
     "title": "Kurse",
     "filterLabel": "Kursname"
+  },
+  "files": {
+    "noCourses": "Keine Kurse verfügbar. Erstellen Sie einen, um die entsprechenden Dateien hier zu sehen.",
+    "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Dateien anzuzeigen",
+    "errorLoading": "Die Dateien dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
   },
   "correction": {
     "title": "Korrekturen",

@@ -31,7 +31,7 @@ export default function CreateCoursePage() {
   const router = useRouter();
 
   const {
-    data: bucketsData,
+    data: buckets,
     error: bucketsError,
     isLoading: bucketsLoading,
   } = useQuery({
@@ -42,8 +42,6 @@ export default function CreateCoursePage() {
         sharedT.apiCodes,
       ),
   });
-
-  const buckets = bucketsData?.items;
 
   const form = useForm<z.infer<typeof createCourseFormSchema>>({
     resolver: zodResolver(createCourseFormSchema),

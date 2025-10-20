@@ -13,6 +13,7 @@ import {
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
+import { HTTPException } from "hono/http-exception";
 
 const querySchema = z
   .object({
@@ -82,9 +83,11 @@ const app = new Hono().get(
         .orderBy(desc(bucketMaintainerInvitations.createdAt))
         .limit(itemsPerPage)
         .offset(offset);
+    } else {
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
 
-    return c.json({ items: result });
+    return c.json(result);
   }
 );
 

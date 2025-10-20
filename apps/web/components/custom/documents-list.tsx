@@ -27,7 +27,7 @@ export const DocumentsList = ({
   const { handleDocumentClick } = useDocumentHandler();
 
   const {
-    data: documentsData,
+    data: documents,
     isPending,
     error,
     inViewRef,
@@ -47,8 +47,6 @@ export const DocumentsList = ({
         sharedT.apiCodes,
       ),
   });
-
-  const documents = documentsData?.items;
 
   if (isPending) {
     return (

@@ -23,7 +23,7 @@ export const CurrentBucketUsers = memo(
               <Badge key={user.id} className="h-6">
                 {user.username}
                 {currentUser.id === user.id && (
-                  <span className="text-primary ml-2">(You)</span>
+                  <span className="ml-1">(You)</span>
                 )}
               </Badge>
             );

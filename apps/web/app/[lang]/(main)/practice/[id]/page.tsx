@@ -27,7 +27,7 @@ export default function PracticePage() {
   }
 
   const {
-    data: messagesData,
+    data: messages,
     isPending,
     isError,
   } = useQuery({
@@ -43,8 +43,6 @@ export default function PracticePage() {
     enabled: !!id,
   });
 
-  const messages = messagesData?.messages;
-
   if (isPending) {
     return <ChatSkeleton />;
   }
@@ -54,6 +52,9 @@ export default function PracticePage() {
   }
 
   return (
-    <Practice chatId={chatId} initialMessages={messages as MyUIMessage[]} />
+    <Practice
+      chatId={chatId}
+      initialMessages={messages as unknown as MyUIMessage[]}
+    />
   );
 }

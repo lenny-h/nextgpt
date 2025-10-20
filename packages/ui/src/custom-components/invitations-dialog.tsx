@@ -40,7 +40,7 @@ export function InvitationsDialog({
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const {
-    data: invitationsData,
+    data: invitations,
     isPending,
     error,
     inViewRef,
@@ -62,8 +62,6 @@ export function InvitationsDialog({
       ),
     enabled: open,
   });
-
-  const invitations = invitationsData?.items;
 
   const acceptInvitation = async (invitation: Invitation) => {
     try {

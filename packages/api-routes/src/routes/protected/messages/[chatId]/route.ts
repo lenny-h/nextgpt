@@ -8,6 +8,8 @@ import { asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
+import { MyUIMetadata } from "@workspace/api-routes/types/custom-ui-metadata.js";
+import { MyUIMessage } from "@workspace/api-routes/types/custom-ui-message.js";
 
 const paramSchema = z.object({ chatId: uuidSchema }).strict();
 
@@ -37,7 +39,7 @@ const app = new Hono().get(
       .where(eq(messages.chatId, chatId))
       .orderBy(asc(messages.createdAt));
 
-    return c.json({ messages: result });
+    return c.json(result);
   }
 );
 

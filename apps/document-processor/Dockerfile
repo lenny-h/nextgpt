@@ -9,9 +9,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /app/src
+ENV PYTHONPATH=/app/src
 
-# Create a non-root user ahead of time so we can --chown on COPY
 RUN useradd -m -u 1000 appuser
 
 # Install Python deps first for better layer caching

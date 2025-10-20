@@ -40,7 +40,7 @@ export const Correction = memo(() => {
   const [isPending, setIsPending] = useState(false);
 
   const {
-    data: promptsData,
+    data: prompts,
     isLoading: promptsLoading,
     error: promptsError,
   } = useQuery({
@@ -48,8 +48,6 @@ export const Correction = memo(() => {
     queryFn: () =>
       apiFetcher((client) => client["prompts"].$get(), sharedT.apiCodes),
   });
-
-  const prompts = promptsData?.items;
 
   const canStartCorrection = () => {
     const successfulSolutionFiles = Object.values(solutionUploads).filter(
@@ -77,7 +75,7 @@ export const Correction = memo(() => {
     try {
       setIsPending(true);
 
-      const { failedFiles } = await apiFetcher(
+      const failedFiles = await apiFetcher(
         (client) =>
           client.correction.$post({
             json: {

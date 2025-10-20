@@ -18,8 +18,8 @@ interface FilterableListProps<T extends ListItem> {
   open: boolean;
   inputValue: string;
   queryKey: string[];
-  queryFn: (params: { pageParam?: number }) => Promise<{ items: T[] }>;
-  ilikeQueryFn: (prefix: string) => Promise<{ items: T[] }>;
+  queryFn: (params: { pageParam?: number }) => Promise<T[]>;
+  ilikeQueryFn: (prefix: string) => Promise<T[]>;
   selectedItems: T[];
   onToggleItem: (item: T) => void;
   disabledMessage?: string;
@@ -45,7 +45,7 @@ export const FilterableList = memo(
     const listRef = useRef<HTMLDivElement>(null);
 
     const {
-      data: itemsData,
+      data: items,
       isPending,
       error,
       inViewRef,
@@ -57,7 +57,6 @@ export const FilterableList = memo(
       enabled: open && enabled,
     });
 
-    const items = itemsData?.items;
     const itemsToDisplay = inputValue.trim().length > 1 ? ilikeItems : items;
 
     useEffect(() => {
@@ -130,9 +129,9 @@ export const FilterableList = memo(
         return;
       }
 
-      const data = await ilikeQueryFn(prefix);
+      const items = await ilikeQueryFn(prefix);
 
-      setIlikeItems(data.items);
+      setIlikeItems(items);
     };
 
     if (!enabled && disabledMessage) {

@@ -43,7 +43,7 @@ export const Tasks = ({ locale }: Props) => {
       ),
   });
 
-  const courses = coursesData?.items.map((c) => ({
+  const courses = coursesData?.map((c) => ({
     ...c,
     createdAt: new Date(c.createdAt),
   }));
@@ -73,9 +73,9 @@ export const Tasks = ({ locale }: Props) => {
     enabled: !!selectedCourseId,
   });
 
-  const tasks = tasksData?.items.map((task) => ({
-    ...task,
-    pubDate: task.pubDate ?? "",
+  const tasks = tasksData?.map((t) => ({
+    ...t,
+    pubDate: t.pubDate ?? "",
   }));
 
   if (coursesPending) {

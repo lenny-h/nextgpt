@@ -4,29 +4,8 @@ resource "google_project_service" "storage" {
   service = "storage.googleapis.com"
 }
 
-resource "google_storage_bucket" "pages_bucket" {
-  name     = "${var.project_id}-pages-bucket"
-  location = var.region
-
-  # Prevent public access
-  public_access_prevention = "enforced"
-
-  # Enable uniform bucket-level access
-  uniform_bucket_level_access = true
-
-  # Disable object versioning
-  versioning {
-    enabled = false
-  }
-
-  # Disable soft delete
-  soft_delete_policy {
-    retention_duration_seconds = 0
-  }
-}
-
-resource "google_storage_bucket" "correction_bucket" {
-  name     = "${var.project_id}-correction-bucket"
+resource "google_storage_bucket" "temporary_files_bucket" {
+  name     = "${var.project_id}-temporary-files-bucket"
   location = var.region
 
   # Prevent public access

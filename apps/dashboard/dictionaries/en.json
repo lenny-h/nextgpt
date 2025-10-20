@@ -9,6 +9,17 @@
     "adding": "Adding maintainers...",
     "success": "Maintainers invited successfully 🎉"
   },
+  "maintainers": {
+    "loading": "Loading maintainers...",
+    "errorLoading": "Maintainers could not be loaded. Please try again later.",
+    "currentMaintainers": "Current Maintainers",
+    "addMaintainers": "Add maintainers",
+    "addBucketMaintainersDescription": "Maintainer can manage the bucket by adding courses and the corresponding course maintainers. There is a maximum of 10 maintainers per bucket.",
+    "addCourseMaintainersDescription": "Maintainer can manage the course by adding and deleting course content. They can also delete the course. There is a maximum of 20 maintainers by course.",
+    "removeMaintainers": "Remove maintainers",
+    "removeBucketMaintainersDescription": "Maintainers can only be removed by the bucket owner.",
+    "removeCourseMaintainersDescription": "Course maintainers can only be removed by bucket maintainers."
+  },
   "courses": {
     "loading": "Loading courses...",
     "errorLoading": "Courses could not be loaded. Please try again later.",
@@ -16,6 +27,11 @@
     "createCourse": "Create a course",
     "title": "Courses",
     "filterLabel": "course name"
+  },
+  "files": {
+    "noCourses": "No courses available. Create one to see the corresponding files here.",
+    "selectCourse": "Please select a course to view its files",
+    "errorLoading": "Could not fetch the files of this course. Please try again later."
   },
   "correction": {
     "title": "Corrections",

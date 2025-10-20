@@ -30,7 +30,7 @@ export const ModelSelector = memo(() => {
 
   const [open, setOpen] = useState(false);
 
-  const { data: modelsData } = useQuery({
+  const { data: userModels } = useQuery({
     queryKey: ["userModels", filter.bucket.id],
     queryFn: () =>
       apiFetcher(
@@ -42,8 +42,6 @@ export const ModelSelector = memo(() => {
       ),
     enabled: !!filter.bucket.id,
   });
-
-  const userModels = modelsData?.items;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

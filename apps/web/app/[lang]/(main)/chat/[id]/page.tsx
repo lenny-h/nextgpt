@@ -27,7 +27,7 @@ export default function ChatPage() {
   }
 
   const {
-    data: messagesData,
+    data: messages,
     isPending,
     isError,
   } = useQuery({
@@ -43,8 +43,6 @@ export default function ChatPage() {
     enabled: !!id,
   });
 
-  const messages = messagesData?.messages;
-
   if (isPending) {
     return <ChatSkeleton />;
   }
@@ -53,5 +51,10 @@ export default function ChatPage() {
     router.push(`/${locale}`);
   }
 
-  return <Chat chatId={chatId} initialMessages={messages as MyUIMessage[]} />;
+  return (
+    <Chat
+      chatId={chatId}
+      initialMessages={messages as unknown as MyUIMessage[]}
+    />
+  );
 }

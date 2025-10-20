@@ -17,7 +17,7 @@ interface Props {
   children: React.ReactNode;
   selectedUsers: User[];
   setSelectedUsers: (users: User[] | ((prev: User[]) => User[])) => void;
-  userFetcher: (prefix: string) => Promise<{ items: User[] }>;
+  userFetcher: (prefix: string) => Promise<User[]>;
   shortcut?: string;
   selection?: User[];
 }
@@ -91,11 +91,11 @@ export const Autocomplete = memo(
     const fetchUsers = async (prefix: string) => {
       setIsLoading(true);
 
-      const usersData = await userFetcher(prefix);
+      const users = await userFetcher(prefix);
 
       setIsLoading(false);
 
-      setUsers(usersData.items);
+      setUsers(users);
     };
 
     return (

@@ -20,7 +20,7 @@ export const CurrentMaintainers = memo(
               <Badge key={maintainer.id} className="h-6">
                 {maintainer.username}
                 {currentUser.id === maintainer.id && (
-                  <span className="text-primary ml-2">(You)</span>
+                  <span className="ml-1">(You)</span>
                 )}
               </Badge>
             );

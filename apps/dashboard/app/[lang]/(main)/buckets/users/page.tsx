@@ -19,7 +19,7 @@ export default function BucketUsersPage() {
   const bucketName = searchParams.get("bucketName");
 
   const {
-    data: currentBucketUsersData,
+    data: currentBucketUsers,
     isPending,
     isError,
   } = useQuery({
@@ -38,8 +38,6 @@ export default function BucketUsersPage() {
       ),
     enabled: !!bucketId,
   });
-
-  const currentBucketUsers = currentBucketUsersData?.items;
 
   // Fetch user count for the bucket
   const {

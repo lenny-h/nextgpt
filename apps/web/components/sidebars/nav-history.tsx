@@ -57,7 +57,7 @@ export const NavHistory = memo(() => {
   const [currentTitle, setCurrentTitle] = useState("");
 
   const {
-    data: chatsData,
+    data: chats,
     isPending: isPendingChats,
     error: chatsError,
     hasNextPage: hasNextPageChats,
@@ -78,10 +78,8 @@ export const NavHistory = memo(() => {
       ),
   });
 
-  const chats = chatsData?.items;
-
   const {
-    data: favouriteChatsData,
+    data: favouriteChats,
     isPending: isPendingFavourites,
     error: favouriteUserChatError,
     fetchNextPage: fetchNextPageFavourites,
@@ -101,8 +99,6 @@ export const NavHistory = memo(() => {
         sharedT.apiCodes,
       ),
   });
-
-  const favouriteChats = favouriteChatsData?.items;
 
   const updateChat = async (chatId: string, isFavourite: boolean) => {
     await apiFetcher(

@@ -16,7 +16,7 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
   const { sharedT } = useSharedTranslations();
 
   const {
-    data: incomingInvitationsData,
+    data: incomingInvitations,
     isPending: incomingPending,
     error: incomingError,
     fetchNextPage: fetchNextIncoming,
@@ -38,10 +38,8 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
       ),
   });
 
-  const incomingInvitations = incomingInvitationsData?.items;
-
   const {
-    data: outgoingInvitationsData,
+    data: outgoingInvitations,
     isPending: outgoingPending,
     error: outgoingError,
     fetchNextPage: fetchNextOutgoing,
@@ -62,8 +60,6 @@ export function InvitationsTab({ type }: InvitationsTabProps) {
         sharedT.apiCodes,
       ),
   });
-
-  const outgoingInvitations = outgoingInvitationsData?.items;
 
   return (
     <div className="flex flex-col space-y-6">

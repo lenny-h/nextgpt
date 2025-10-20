@@ -34,7 +34,7 @@ const app = new Hono().get(
       .limit(itemsPerPage)
       .offset(pageNumber * itemsPerPage);
 
-    return c.json({ items: userChats });
+    return c.json(userChats);
   }
 );
 

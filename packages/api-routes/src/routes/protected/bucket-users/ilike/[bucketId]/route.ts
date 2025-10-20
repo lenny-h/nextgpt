@@ -53,7 +53,7 @@ const app = new Hono().get(
       )
       .limit(5);
 
-    return c.json({ items: users });
+    return c.json(users);
   }
 );
 

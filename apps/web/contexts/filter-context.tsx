@@ -48,7 +48,7 @@ export function FilterProvider({ children }: Props) {
   const [studyMode, setStudyMode] = useState<StudyMode>("facts");
 
   const {
-    data: bucketsData,
+    data: buckets,
     isLoading,
     isError,
   } = useQuery({
@@ -59,8 +59,6 @@ export function FilterProvider({ children }: Props) {
         sharedT.apiCodes,
       ),
   });
-
-  const buckets = bucketsData?.items;
 
   useEffect(() => {
     if (buckets && buckets.length > 0 && buckets[0]) {

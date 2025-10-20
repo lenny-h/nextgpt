@@ -47,7 +47,7 @@ const app = new Hono().get(
       )
       .limit(5);
 
-    return c.json({ items: result });
+    return c.json(result);
   }
 );
 

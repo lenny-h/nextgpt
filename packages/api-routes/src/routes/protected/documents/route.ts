@@ -34,7 +34,9 @@ const app = new Hono()
         .select({
           id: documents.id,
           title: documents.title,
-          content: sql`SUBSTRING(${documents.content}, 1, 50)`.as("content"),
+          content: sql<string>`SUBSTRING(${documents.content}, 1, 50)`.as(
+            "content"
+          ),
           kind: documents.kind,
           createdAt: documents.createdAt,
         })
@@ -43,7 +45,7 @@ const app = new Hono()
         .limit(itemsPerPage)
         .offset(pageNumber * itemsPerPage);
 
-      return c.json({ items: result });
+      return c.json(result);
     }
   )
   .post(

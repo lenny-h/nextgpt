@@ -13,9 +13,6 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
-# Terraform variables
-variables.tf
-
 # dependencies
 node_modules/
 .pnp/

@@ -17,7 +17,7 @@ export function useDocumentHandler() {
   const { codeEditorContent, setCodeEditorContent } = useCodeEditorContent();
 
   const retrieveFullDocument = useCallback(async (documentId: string) => {
-    const data = await apiFetcher(
+    const document = await apiFetcher(
       (client) =>
         client["documents"][":documentId"].$get({
           param: { documentId },
@@ -25,7 +25,7 @@ export function useDocumentHandler() {
       sharedT.apiCodes,
     );
 
-    return data.item;
+    return document;
   }, []);
 
   const handleDocumentClick = useCallback(

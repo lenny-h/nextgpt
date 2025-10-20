@@ -22,7 +22,9 @@ const app = new Hono().get(
       .select({
         id: documents.id,
         title: documents.title,
-        content: sql`SUBSTRING(${documents.content}, 1, 50)`.as("content"),
+        content: sql<string>`SUBSTRING(${documents.content}, 1, 50)`.as(
+          "content"
+        ),
         kind: documents.kind,
         createdAt: documents.createdAt,
       })
@@ -35,7 +37,7 @@ const app = new Hono().get(
       )
       .limit(5);
 
-    return c.json({ items: result });
+    return c.json(result);
   }
 );
 
