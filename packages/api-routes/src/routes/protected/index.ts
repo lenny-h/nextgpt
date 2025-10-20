@@ -60,6 +60,8 @@ import searchRoute from "./search/[query]/route.js";
 import tasksByCourseRoute from "./tasks/[courseId]/route.js";
 import tasksDeleteRoute from "./tasks/[taskId]/route.js";
 
+// Important: Move routes with slugs to the end to prevent route conflicts
+
 const protectedApiRouter = new Hono()
   // Attachments
   .route("/attachments/get-signed-url", attachmentsGetSignedUrlRoute)
@@ -68,13 +70,13 @@ const protectedApiRouter = new Hono()
   .route("/bucket-maintainers/:bucketId", bucketMaintainersRoute)
 
   // Bucket users
-  .route("/bucket-users/:bucketId", bucketUsersRoute)
   .route("/bucket-users/ilike/:bucketId", bucketUsersIlikeRoute)
+  .route("/bucket-users/:bucketId", bucketUsersRoute)
 
   // Buckets
   .route("/buckets", bucketsRoute)
-  .route("/buckets/used", bucketsUsedRoute)
   .route("/buckets/maintained", bucketsMaintainedRoute)
+  .route("/buckets/used", bucketsUsedRoute)
   .route("/buckets/:bucketId", bucketsDeleteRoute)
   .route("/buckets/:bucketId/user-count", bucketsUserCountRoute)
 
@@ -83,11 +85,11 @@ const protectedApiRouter = new Hono()
 
   // Chats
   .route("/chats", chatsRoute)
-  .route("/chats/ilike", chatsIlike)
   .route("/chats/favourites", chatsFavourites)
-  .route("/chats/:chatId", chatsByIdRoute)
+  .route("/chats/ilike", chatsIlike)
   .route("/chats/is-favourite/:chatId", chatsIsFavouriteRoute)
   .route("/chats/title/:chatId", chatsTitleRoute)
+  .route("/chats/:chatId", chatsByIdRoute)
 
   // Completion
   .route("/completion", completionRoute)
@@ -101,19 +103,19 @@ const protectedApiRouter = new Hono()
 
   // Courses
   .route("/courses", courseRoute)
-  .route("/courses/:bucketId", coursesByBucketRoute)
-  .route("/courses/:courseId", courseDeleteRoute)
   .route("/courses/ilike/:bucketId", coursesIlikeRoute)
   .route("/courses/maintained", coursesMaintainedRoute)
   .route("/courses/request-access", requestAccessRoute)
   .route("/courses/validate-access", validateAccessRoute)
+  .route("/courses/:bucketId", coursesByBucketRoute)
+  .route("/courses/:courseId", courseDeleteRoute)
 
   // Documents
   .route("/documents", documentsRoute)
-  .route("/documents/:documentId", documentByIdRoute)
   .route("/documents/content/:documentId", documentContentRoute)
   .route("/documents/ilike", documentsIlike)
   .route("/documents/title/:documentId/:title", documentsTitleRoute)
+  .route("/documents/:documentId", documentByIdRoute)
 
   // Feedback
   .route("/feedback", feedbackRoute)
@@ -135,8 +137,8 @@ const protectedApiRouter = new Hono()
   .route("/invitations/reject", rejectInvitationRoute)
 
   // Messages
-  .route("/messages/:chatId", messagesRoute)
   .route("/messages/delete-trailing/:messageId", trailingMessagesRoute)
+  .route("/messages/:chatId", messagesRoute)
 
   // Models
   .route("/models", modelsRoute)

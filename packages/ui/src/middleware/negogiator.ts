@@ -41,7 +41,7 @@ export function negotiatorMiddleware(middleware: CustomMiddleware) {
         event,
         NextResponse.redirect(
           new URL(
-            `/${locale}${!pathname || pathname.startsWith("/") ? "" : "/"}${pathname}`,
+            `/${locale}${!pathname || pathname.startsWith("/") ? "" : "/"}${pathname}${request.nextUrl.search}`,
             request.url
           )
         )

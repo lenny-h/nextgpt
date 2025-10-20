@@ -135,7 +135,7 @@ export const FilterableList = memo(
       setIlikeItems(data.items);
     };
 
-    if (disabledMessage && !enabled) {
+    if (!enabled && disabledMessage) {
       return (
         <div className="max-h-80 space-y-1 overflow-y-auto pr-1">
           <p className="text-muted-foreground py-8 text-center text-sm">
