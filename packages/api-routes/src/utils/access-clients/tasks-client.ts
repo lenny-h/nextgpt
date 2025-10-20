@@ -21,7 +21,7 @@ class LocalTasksClient {
    * Mock implementation for local development
    * Executes tasks immediately or after delay
    */
-  async createTask(task: Task) {
+  async createTask({ parent, task }: { parent: string; task: Task }) {
     const delay = task.scheduleTime
       ? Math.max(0, task.scheduleTime.seconds * 1000 - Date.now())
       : 0;

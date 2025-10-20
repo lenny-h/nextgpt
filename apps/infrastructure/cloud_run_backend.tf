@@ -12,8 +12,24 @@ resource "google_cloud_run_v2_service" "api" {
         container_port = 8080
       }
       env {
+        name  = "BASE_URL"
+        value = "https://app.${var.site_url}"
+      }
+      env {
         name  = "ALLOWED_ORIGINS"
         value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
+      }
+      env {
+        name  = "ALLOWED_EMAIL_DOMAINS"
+        value = var.allowed_email_domains
+      }
+      env {
+        name  = "RESEND_API_KEY"
+        value = var.resend_api_key
+      }
+      env {
+        name  = "RESEND_SENDER_EMAIL"
+        value = var.resend_sender_email
       }
       env {
         name  = "GOOGLE_VERTEX_PROJECT"
@@ -23,10 +39,21 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "GOOGLE_VERTEX_LOCATION"
         value = var.region
       }
-
       env {
-        name = "DATABASE_URL"
-
+        name  = "BETTER_AUTH_URL"
+        value = "https://api.${var.site_url}"
+      }
+      env {
+        name  = "BETTER_AUTH_SECRET"
+        value = var.better_auth_secret
+      }
+      env {
+        name  = "DATABASE_URL"
+        value = "postgresql://postgres:${var.db_password}@${google_sql_database_instance.postgres.ip_address[0].ip_address}/postgres"
+      }
+      env {
+        name  = "REDIS_URL"
+        value = "redis://${google_redis_instance.redis.host}:${google_redis_instance.redis.port}"
       }
       env {
         name  = "R2_ENDPOINT"
@@ -45,6 +72,10 @@ resource "google_cloud_run_v2_service" "api" {
         value = google_service_account.cloud_tasks_sa.email
       }
       env {
+        name  = "PROCESSOR_URL"
+        value = "http://document-processor.${var.region}.internal"
+      }
+      env {
         name  = "TASK_QUEUE_PATH"
         value = "projects/${var.project_id}/locations/${var.region}/queues/document-processing-queue"
       }
@@ -53,8 +84,12 @@ resource "google_cloud_run_v2_service" "api" {
         value = var.encryption_key
       }
       env {
-        name  = "PROCESSOR_URL"
-        value = "http://document-processor.${var.region}.internal"
+        name  = "ATTACHMENT_URL_PREFIX"
+        value = "https://storage.googleapis.com/${var.project_id}-temporary-files-bucket/"
+      }
+      env {
+        name  = "EMBEDDINGS_MODEL"
+        value = var.embeddings_model
       }
       resources {
         limits = {
@@ -64,13 +99,20 @@ resource "google_cloud_run_v2_service" "api" {
       }
     }
 
-    max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    vpc_access {
+      network_interfaces {
+        network    = google_compute_network.private_network.id
+        subnetwork = google_compute_subnetwork.private_subnet.id
+      }
+    }
 
     scaling {
       min_instance_count = 0
       max_instance_count = 5
     }
+
+    max_instance_request_concurrency = 30
+    timeout                          = "30s"
   }
 
   traffic {
@@ -110,6 +152,10 @@ resource "google_cloud_run_v2_service" "document_processor" {
         value = var.region
       }
       env {
+        name  = "DATABASE_URL"
+        value = "postgresql://postgres:${var.db_password}@${google_sql_database_instance.postgres.ip_address[0].ip_address}/postgres"
+      }
+      env {
         name  = "R2_ENDPOINT"
         value = "https://${var.cloudflare_account_id}.r2.cloudflarestorage.com"
       }
@@ -120,9 +166,6 @@ resource "google_cloud_run_v2_service" "document_processor" {
       env {
         name  = "CLOUDFLARE_SECRET_ACCESS_KEY"
         value = var.cloudflare_r2_secret_access_key
-      }
-      env {
-        name = "DATABASE_URL"
       }
       env {
         name  = "EMBEDDINGS_MODEL"
@@ -136,13 +179,20 @@ resource "google_cloud_run_v2_service" "document_processor" {
       }
     }
 
-    max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    vpc_access {
+      network_interfaces {
+        network    = google_compute_network.private_network.id
+        subnetwork = google_compute_subnetwork.private_subnet.id
+      }
+    }
 
     scaling {
       min_instance_count = 0
       max_instance_count = 5
     }
+
+    max_instance_request_concurrency = 30
+    timeout                          = "30s"
   }
 
   lifecycle {
@@ -208,7 +258,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
   deletion_protection = false
 }
 
-# Allow the PDF processor service account to be invoked by Cloud Tasks
+# Allow the document processor service account to be invoked by Cloud Tasks
 resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker" {
   name     = google_cloud_run_v2_service.document_processor.name
   location = google_cloud_run_v2_service.document_processor.location

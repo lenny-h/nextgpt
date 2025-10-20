@@ -24,7 +24,7 @@ export function cspMiddleware(middleware: CustomMiddleware) {
         font-src 'self';
         object-src 'self';
         frame-src 'self' blob: data: ${cloudflareConnectionUrl};
-        connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL} ${process.env.NEXT_PUBLIC_PDF_EXPORTER_URL} ${process.env.NEXT_PUBLIC_SUPABASE_URL} ${process.env.NEXT_PUBLIC_GOOGLE_STORAGE_URL};
+        connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL} ${process.env.NEXT_PUBLIC_PDF_EXPORTER_URL} ${cloudflareConnectionUrl} ${process.env.NEXT_PUBLIC_GOOGLE_STORAGE_URL};
         base-uri 'self';
         form-action 'self';
         frame-ancestors 'self';

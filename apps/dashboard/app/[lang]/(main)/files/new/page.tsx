@@ -161,11 +161,11 @@ export default function UploadFilesPage() {
             Page Number Offset (Optional)
           </Label>
           <p className="text-muted-foreground text-sm">
-            Specfies how many unnumbered pages are at the start of the document.
-            For example, if your document has a title page and the page numbered
-            "1" is the second page in the PDF, set this to 1. The llm will use
-            this offet to find the correct pages when asked about specific page
-            numbers.
+            Specifies how many unnumbered pages are at the start of the
+            document. For example, if your document has a title page and the
+            page numbered "1" is the second page in the PDF, set this to 1. The
+            llm will use this offet to find the correct pages when asked about
+            specific page numbers.
           </p>
           <Input
             id="pageNumberOffset"

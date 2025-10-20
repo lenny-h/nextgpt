@@ -42,15 +42,6 @@ resource "google_compute_region_network_endpoint_group" "pdf_exporter_neg" {
   }
 }
 
-resource "google_compute_region_network_endpoint_group" "kong_neg" {
-  name                  = "kong-neg"
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-  cloud_run {
-    service = google_cloud_run_v2_service.kong.name
-  }
-}
-
 # Backend services --------------------------------------------------------------------------------
 
 resource "google_compute_backend_service" "api_backend" {
@@ -75,17 +66,6 @@ resource "google_compute_backend_service" "pdf_exporter_backend" {
   security_policy = google_compute_security_policy.armor_policy.name
 }
 
-resource "google_compute_backend_service" "kong_backend" {
-  name                  = "kong-backend"
-  protocol              = "HTTP"
-  port_name             = "http"
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-  backend {
-    group = google_compute_region_network_endpoint_group.kong_neg.id
-  }
-  security_policy = google_compute_security_policy.armor_policy.name
-}
-
 # URL map -----------------------------------------------------------------------------------------
 
 resource "google_compute_url_map" "url_map" {
@@ -96,11 +76,6 @@ resource "google_compute_url_map" "url_map" {
   host_rule {
     hosts        = ["api.${var.site_url}"]
     path_matcher = "api-path-matcher"
-  }
-
-  host_rule {
-    hosts        = ["kong.${var.site_url}"]
-    path_matcher = "kong-path-matcher"
   }
 
   path_matcher {
@@ -117,11 +92,6 @@ resource "google_compute_url_map" "url_map" {
       service = google_compute_backend_service.pdf_exporter_backend.id
     }
   }
-
-  path_matcher {
-    name            = "kong-path-matcher"
-    default_service = google_compute_backend_service.kong_backend.id
-  }
 }
 
 # HTTPS Load Balancer -----------------------------------------------------------------------------
@@ -135,7 +105,7 @@ resource "google_compute_global_address" "lb_ip" {
 resource "google_compute_managed_ssl_certificate" "ssl_certificate" {
   name = "managed-cert"
   managed {
-    domains = ["api.${var.site_url}", "kong.${var.site_url}"]
+    domains = ["api.${var.site_url}"]
   }
 }
 
@@ -205,15 +175,3 @@ resource "google_cloud_run_v2_service_iam_binding" "pdf_exporter_lb_invoker" {
     "serviceAccount:service-${var.project_id}@gcp-gae-service.iam.gserviceaccount.com",
   ]
 }
-
-# Allow Cloud Load Balancing to invoke Kong service
-resource "google_cloud_run_v2_service_iam_binding" "kong_lb_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = google_cloud_run_v2_service.kong.name
-  role     = "roles/run.invoker"
-  members = [
-    "serviceAccount:service-${var.project_id}@gcp-gae-service.iam.gserviceaccount.com",
-  ]
-}
-

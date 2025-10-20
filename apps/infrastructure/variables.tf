@@ -43,50 +43,12 @@ variable "disable_signup" {
 variable "enable_email_signup" {
   description = "Enable email signup"
   type        = string
-  default     = "true"
-}
-
-variable "enable_email_autoconfirm" {
-  description = "Enable email autoconfirm"
-  type        = string
   default     = "false"
 }
 
-variable "smtp_admin_email" {
-  description = "SMTP admin email"
+variable "allowed_email_domains" {
+  description = "Allowed email domains for authentication. Leave empty to allow all domains."
   type        = string
-  default     = ""
-}
-
-variable "smtp_host" {
-  description = "SMTP host"
-  type        = string
-  default     = ""
-}
-
-variable "smtp_port" {
-  description = "SMTP port"
-  type        = string
-  default     = "587"
-}
-
-variable "smtp_user" {
-  description = "SMTP user"
-  type        = string
-  default     = ""
-}
-
-variable "smtp_pass" {
-  description = "SMTP password"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "smtp_sender_name" {
-  description = "SMTP sender name"
-  type        = string
-  default     = ""
 }
 
 # Cloudflare Configuration
@@ -115,6 +77,23 @@ variable "cloudflare_r2_access_key_id" {
 
 variable "cloudflare_r2_secret_access_key" {
   description = "Cloudflare R2 secret access key"
+  type        = string
+  sensitive   = true
+}
+
+variable "resend_api_key" {
+  description = "Resend API key for email"
+  type        = string
+  sensitive   = true
+}
+
+variable "resend_sender_email" {
+  description = "Resend sender email"
+  type        = string
+}
+
+variable "better_auth_secret" {
+  description = "Better Auth secret"
   type        = string
   sensitive   = true
 }

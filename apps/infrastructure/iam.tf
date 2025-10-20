@@ -33,23 +33,23 @@ resource "google_storage_bucket_iam_member" "api_pages_bucket_deleter" {
   member = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
-# IAM Binding to allow api service account to read from correction_bucket
-resource "google_storage_bucket_iam_member" "api_correction_bucket_viewer" {
-  bucket = google_storage_bucket.correction_bucket.name
+# IAM Binding to allow api service account to read from temporary_files_bucket
+resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_viewer" {
+  bucket = google_storage_bucket.temporary_files_bucket.name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
-# IAM Binding to allow api service account to write to correction_bucket
-resource "google_storage_bucket_iam_member" "api_correction_bucket_writer" {
-  bucket = google_storage_bucket.correction_bucket.name
+# IAM Binding to allow api service account to write to temporary_files_bucket
+resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_writer" {
+  bucket = google_storage_bucket.temporary_files_bucket.name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
-# IAM Binding to allow api service account to delete files from correction_bucket
-resource "google_storage_bucket_iam_member" "api_correction_bucket_deleter" {
-  bucket = google_storage_bucket.correction_bucket.name
+# IAM Binding to allow api service account to delete files from temporary_files_bucket
+resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_deleter" {
+  bucket = google_storage_bucket.temporary_files_bucket.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.api_sa.email}"
 }
@@ -81,19 +81,21 @@ resource "google_service_account" "document_processor_sa" {
   display_name = "document Processor Service Account"
 }
 
-# IAM Binding to allow document_processor to write to pages_bucket
-resource "google_storage_bucket_iam_member" "document_processor_pages_bucket_writer" {
-  bucket = google_storage_bucket.pages_bucket.name
-  role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${google_service_account.document_processor_sa.email}"
-}
+# # Uncomment if not using cloudflare r2 for file storage
+# # IAM Binding to allow document_processor to write to files_bucket
+# resource "google_storage_bucket_iam_member" "document_processor_files_bucket_writer" {
+#   bucket = google_storage_bucket.files_bucket.name
+#   role   = "roles/storage.objectCreator"
+#   member = "serviceAccount:${google_service_account.document_processor_sa.email}"
+# }
 
-# IAM Binding to allow document_processor to delete files from pages_bucket
-resource "google_storage_bucket_iam_member" "document_processor_pages_bucket_deleter" {
-  bucket = google_storage_bucket.pages_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.document_processor_sa.email}"
-}
+# # Uncomment if not using cloudflare r2 for file storage
+# # IAM Binding to allow document_processor to delete files from files_bucket
+# resource "google_storage_bucket_iam_member" "document_processor_files_bucket_deleter" {
+#   bucket = google_storage_bucket.files_bucket.name
+#   role   = "roles/storage.objectAdmin"
+#   member = "serviceAccount:${google_service_account.document_processor_sa.email}"
+# }
 
 # IAM Binding to allow document_processor to use vertex AI API
 resource "google_project_iam_member" "document_processor_vertex_ai_user" {
@@ -149,7 +151,7 @@ resource "google_service_account_iam_member" "ci_cd_act_as_api_sa" {
   member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
-# Allow CI/CD SA to act as Pdf processor service account
+# Allow CI/CD SA to act as document processor service account
 resource "google_service_account_iam_member" "ci_cd_act_as_document_processor_sa" {
   service_account_id = google_service_account.document_processor_sa.name
   role               = "roles/iam.serviceAccountUser"

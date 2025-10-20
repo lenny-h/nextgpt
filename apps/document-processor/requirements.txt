@@ -16,7 +16,7 @@ boto3==1.40.42
 botocore==1.40.42
 
 # PostgreSQL database
-psycopg[pool]==3.2.9
+psycopg[binary,pool]==3.2.9
 
 # Google Vertex AI for embeddings
 google-genai==1.41.0

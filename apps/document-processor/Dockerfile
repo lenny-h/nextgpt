@@ -9,7 +9,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app/src
+WORKDIR /app
 ENV PYTHONPATH=/app/src
 
 RUN useradd -m -u 1000 appuser

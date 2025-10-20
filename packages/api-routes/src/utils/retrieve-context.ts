@@ -10,7 +10,7 @@ import { type DocumentSource } from "../types/document-source.js";
 
 export async function retrieveEmbedding(text: string): Promise<number[]> {
   const { embeddings } = await vertex
-    .textEmbeddingModel("text-embedding-004")
+    .textEmbeddingModel(process.env.EMBEDDINGS_MODEL!)
     .doEmbed({ values: [text] });
 
   if (!embeddings || embeddings.length === 0) {
