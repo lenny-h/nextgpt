@@ -6,7 +6,6 @@ export default defineConfig({
   schema: "./src/drizzle/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: "postgresql://postgres:Indacloudby50$@localhost:5432/postgres",
-    // process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL!,
   },
 });

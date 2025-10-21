@@ -45,9 +45,6 @@ jobs:
       NEXT_PUBLIC_BASE_URL: app.${{ vars.SITE_URL }}
       NEXT_PUBLIC_DASHBOARD_URL: dashboard.${{ vars.SITE_URL }}
       NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_PDF_EXPORTER_URL: pdf-exporter.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_SUPABASE_URL: kong.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${{ vars.PROJECT_ID }}
       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
       NEXT_PUBLIC_R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
@@ -98,8 +95,6 @@ jobs:
       NEXT_PUBLIC_CHAT_URL: app.${{ vars.SITE_URL }}
       NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
       NEXT_PUBLIC_PDF_EXPORTER_URL: pdf-exporter.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_SUPABASE_URL: kong.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${{ vars.PROJECT_ID }}
       NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
       NEXT_PUBLIC_R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
@@ -136,5 +131,4 @@ jobs:
             NEXT_PUBLIC_R2_ENDPOINT
             NEXT_PUBLIC_API_URL
             NEXT_PUBLIC_PDF_EXPORTER_URL
-            NEXT_PUBLIC_SUPABASE_URL
             NEXT_PUBLIC_GOOGLE_STORAGE_URL

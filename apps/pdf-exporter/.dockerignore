@@ -1,24 +1,10 @@
-# Node.js dependencies and logs
-node_modules
-npm-debug.log
-
-# Docker related
-Dockerfile
-.dockerignore
-
-# Version control
+# Git and CI/CD
 .git
 .github
 .gitignore
 
-# Environment and configuration
-.env
-
-# Dev entry point
-src/dev.ts
-
-# Build outputs and artifacts
-dist
+# Dependencies
+node_modules
 
 # Testing
 __tests__
@@ -27,9 +13,18 @@ vitest.config.*
 *.test.ts
 *.spec.ts
 
-# Editor directories and files
+# Development
+.env
+.env.local
 .vscode
 .idea
 
-# Documentation
-README.md
+# Docker files
+Dockerfile
+.dockerignore
+
+# Markdown files
+*.md
+
+# Dev entry point
+src/dev.ts

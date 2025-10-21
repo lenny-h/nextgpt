@@ -5,20 +5,17 @@ on:
   # push:
   #   branches: main
   #   paths:
-  #     - "apps/supabase/volumes/db/migrations/**"
+  #     - "packages/server/src/drizzle/**"
 
 env:
   PROJECT_ID: ${{ vars.PROJECT_ID }}
-  DB_CONNECTION_NAME: ${{ secrets.DB_CONNECTION_NAME }}
-  DB_NAME: ${{ secrets.DB_NAME }}
-  DB_USER: ${{ secrets.DB_USER }}
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  JWT_EXP: ${{ secrets.JWT_EXP }}
+  REGION: ${{ vars.REGION }}
+  REGISTRY: ${{ vars.REGION }}-docker.pkg.dev
+  REPOSITORY: app-artifact-repository
 
 jobs:
-  apply-migrations:
-    name: Apply database migrations
+  build-and-deploy-migration-job:
+    name: Build and deploy migration Cloud Run job
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
@@ -35,34 +32,79 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Check and enable public IP on Cloud SQL instance if needed
+      - name: Configure Docker for Artifact Registry
         run: |
-          if ! gcloud sql instances describe $DB_CONNECTION_NAME --project $PROJECT_ID --format="value(ipAddresses[].type)" | grep -q "PRIMARY"; then
-            gcloud sql instances patch $DB_NAME --project $PROJECT_ID --assign-ip
-          fi
+          gcloud auth configure-docker ${{ env.REGISTRY }}
 
-      - name: Install Cloud SQL Proxy
+      - name: Build and push Docker image
         run: |
-          curl -o cloud_sql_proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.18.2/cloud-sql-proxy.linux.amd64
-          chmod +x cloud_sql_proxy
-          sudo mv cloud_sql_proxy /usr/local/bin/
+          docker build \
+            -f apps/db-migrator/Dockerfile \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/db-migrator:latest \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/db-migrator:${{ github.sha }} \
+            .
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/db-migrator:latest
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/db-migrator:${{ github.sha }}
 
-      - name: Install PostgreSQL client
+      - name: Deploy Cloud Run Job
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          gcloud run jobs update db-migrator \
+            --image=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/db-migrator:latest \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }}
 
-      - name: Run database migrations
-        run: |
-          chmod +x ./apps/infrastructure/scripts/migrate_gcloud_database.sh
-          ./apps/infrastructure/scripts/migrate_gcloud_database.sh \
-            "$DB_CONNECTION_NAME" \
-            "$DB_NAME" \
-            "$DB_USER" \
-            "$DB_PASSWORD" \
-            "$JWT_SECRET" \
-            "$JWT_EXP"
+  run-migrations:
+    name: Execute database migrations
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-migration-job
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
 
-      - name: Disable public IP on Cloud SQL instance
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Execute migration job
         run: |
-          gcloud sql instances patch $DB_NAME --project $PROJECT_ID --no-assign-ip
+          echo "Starting migration job execution..."
+          gcloud run jobs execute db-migrator \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --wait
+
+      - name: Check migration job status
+        run: |
+          EXECUTION=$(gcloud run jobs executions list \
+            --job=db-migrator \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --limit=1 \
+            --format="value(name)")
+
+          echo "Latest execution: $EXECUTION"
+
+          gcloud run jobs executions describe $EXECUTION \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Get migration logs
+        if: always()
+        run: |
+          EXECUTION=$(gcloud run jobs executions list \
+            --job=db-migrator \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --limit=1 \
+            --format="value(name)")
+
+          echo "Fetching logs for execution: $EXECUTION"
+
+          gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=db-migrator AND resource.labels.location=${{ env.REGION }}" \
+            --limit=100 \
+            --format=json \
+            --project=${{ env.PROJECT_ID }}

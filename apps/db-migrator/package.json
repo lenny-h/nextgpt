@@ -1,0 +1,6 @@
+{
+  "name": "@workspace/db-migrator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cloud Run job for database migrations using Drizzle Kit"
+}

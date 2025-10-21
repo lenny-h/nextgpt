@@ -3,14 +3,6 @@
 .github
 .gitignore
 
-# Next.js and build output
-.next
-.open-next
-.turbo
-.wrangler
-out
-dist
-
 # Dependencies
 node_modules
 
@@ -30,3 +22,6 @@ vitest.config.*
 # Docker files
 Dockerfile
 .dockerignore
+
+# Markdown files
+*.md

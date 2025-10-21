@@ -16,14 +16,13 @@ import {
   models,
   pages,
   prompts,
-  session,
+  ssoProvider,
   tasks,
   user,
   userInvitations,
 } from "./schema.js";
 
 export const userRelations = relations(user, ({ many, one }) => ({
-  sessions: many(session),
   accounts: many(account),
   ownedBuckets: many(buckets),
   bucketMemberships: many(bucketUserRoles),
@@ -35,18 +34,19 @@ export const userRelations = relations(user, ({ many, one }) => ({
   bucketMaintainerInvitations: many(bucketMaintainerInvitations),
   courseMaintainerInvitations: many(courseMaintainerInvitations),
   prompts: many(prompts),
-}));
-
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
+  ssoProviders: many(ssoProvider),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+
+export const ssoProviderRelations = relations(ssoProvider, ({ one }) => ({
+  user: one(user, {
+    fields: [ssoProvider.userId],
     references: [user.id],
   }),
 }));
@@ -224,5 +224,12 @@ export const modelsRelations = relations(models, ({ one }) => ({
   bucket: one(buckets, {
     fields: [models.bucketId],
     references: [buckets.id],
+  }),
+}));
+
+export const courseKeysRelations = relations(courseKeys, ({ one }) => ({
+  course: one(courses, {
+    fields: [courseKeys.courseId],
+    references: [courses.id],
   }),
 }));

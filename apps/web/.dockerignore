@@ -14,15 +14,18 @@ dist
 # Dependencies
 node_modules
 
-# IDE
-.vscode
-.idea
-
-# Testing and development
+# Testing
 __tests__
 coverage
 vitest.config.*
-lib/db/migrations
+*.test.ts
+*.spec.ts
+
+# Development
+.env
+.env.local
+.vscode
+.idea
 
 # Docker files
 Dockerfile
