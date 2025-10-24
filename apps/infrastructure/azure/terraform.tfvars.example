@@ -1,0 +1,32 @@
+# Azure Configuration
+subscription_id      = "your-azure-subscription-id"
+location             = "eastus"
+resource_group_name  = "nextgpt-rg"
+
+# Domain Configuration
+site_url = "yourdomain.com" (or subdomain)
+
+# Database Configuration
+db_password = "your-secure-password"
+
+# Authentication Configuration
+better_auth_secret = "your-better-auth-secret"
+
+# Email Configuration
+resend_api_key       = "your-resend-api-key"
+resend_sender_email  = "noreply@yourdomain.com"
+
+# Cloudflare Configuration
+cloudflare_api_token              = "your-cloudflare-api-token"
+cloudflare_account_id            = "your-cloudflare-account-id"
+cloudflare_r2_access_key_id      = "your-r2-access-key"
+cloudflare_r2_secret_access_key  = "your-r2-secret-key"
+r2_location                      = "auto"
+
+# Encryption Configuration
+encryption_key = "your-encryption-key"
+
+# Other Configuration
+allowed_email_domains = ""
+embeddings_model     = "text-embedding-004"
+enable_email_signup  = "false"

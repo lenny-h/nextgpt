@@ -13,14 +13,14 @@ output "vpc_subnet_name" {
   value       = google_compute_subnetwork.private_subnet.name
 }
 
-output "database_instance_connection_name" {
-  description = "The connection name of the Cloud SQL instance"
-  value       = google_sql_database_instance.postgres.connection_name
-}
-
 output "database_private_ip" {
   description = "The private IP address of the Cloud SQL instance"
   value       = google_sql_database_instance.postgres.private_ip_address
+}
+
+output "database_instance_connection_name" {
+  description = "The connection name of the Cloud SQL instance"
+  value       = google_sql_database_instance.postgres.connection_name
 }
 
 output "load_balancer_ip" {

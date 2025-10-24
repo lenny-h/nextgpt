@@ -4,7 +4,7 @@ resource "google_project_service" "redis" {
   service = "redis.googleapis.com"
 }
 
-# Redis Instance (modify if desired)
+# Redis Instance
 resource "google_redis_instance" "redis" {
   name           = "redis"
   tier           = "BASIC"

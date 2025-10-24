@@ -6,91 +6,156 @@ resource "google_cloud_run_v2_service" "api" {
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
+    service_account = google_service_account.api_sa.email
+
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/api:latest"
       ports {
         container_port = 8080
       }
+
+      # Non-sensitive environment variables
       env {
         name  = "BASE_URL"
         value = "https://app.${var.site_url}"
       }
+
       env {
         name  = "ALLOWED_ORIGINS"
         value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
       }
+
       env {
         name  = "ALLOWED_EMAIL_DOMAINS"
         value = var.allowed_email_domains
       }
-      env {
-        name  = "RESEND_API_KEY"
-        value = var.resend_api_key
-      }
+
       env {
         name  = "RESEND_SENDER_EMAIL"
         value = var.resend_sender_email
       }
+
       env {
         name  = "GOOGLE_VERTEX_PROJECT"
         value = var.project_id
       }
+
       env {
         name  = "GOOGLE_VERTEX_LOCATION"
         value = var.region
       }
+
       env {
         name  = "BETTER_AUTH_URL"
         value = "https://api.${var.site_url}"
       }
-      env {
-        name  = "BETTER_AUTH_SECRET"
-        value = var.better_auth_secret
-      }
-      env {
-        name  = "DATABASE_URL"
-        value = "postgresql://postgres:${var.db_password}@${google_sql_database_instance.postgres.ip_address[0].ip_address}/postgres"
-      }
+
       env {
         name  = "REDIS_URL"
         value = "redis://${google_redis_instance.redis.host}:${google_redis_instance.redis.port}"
       }
+
       env {
         name  = "R2_ENDPOINT"
         value = "https://${var.cloudflare_account_id}.r2.cloudflarestorage.com"
       }
-      env {
-        name  = "CLOUDFLARE_ACCESS_KEY_ID"
-        value = var.cloudflare_r2_access_key_id
-      }
-      env {
-        name  = "CLOUDFLARE_SECRET_ACCESS_KEY"
-        value = var.cloudflare_r2_secret_access_key
-      }
+
       env {
         name  = "CLOUD_TASKS_SA"
         value = google_service_account.cloud_tasks_sa.email
       }
+
       env {
         name  = "PROCESSOR_URL"
         value = "http://document-processor.${var.region}.internal"
       }
+
       env {
         name  = "TASK_QUEUE_PATH"
         value = "projects/${var.project_id}/locations/${var.region}/queues/document-processing-queue"
       }
-      env {
-        name  = "ENCRYPTION_KEY"
-        value = var.encryption_key
-      }
+
       env {
         name  = "ATTACHMENT_URL_PREFIX"
         value = "https://storage.googleapis.com/${var.project_id}-temporary-files-bucket/"
       }
+
+      env {
+        name  = "DATABASE_HOST"
+        value = google_sql_database_instance.postgres.ip_address[0].ip_address
+      }
+
       env {
         name  = "EMBEDDINGS_MODEL"
         value = var.embeddings_model
       }
+
+      env {
+        name  = "LLM_MODELS"
+        value = var.llm_models
+      }
+
+      # Sensitive secrets from Secret Manager
+      env {
+        name = "DATABASE_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.db_password.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "RESEND_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.resend_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "BETTER_AUTH_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.better_auth_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "CLOUDFLARE_ACCESS_KEY_ID"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "CLOUDFLARE_SECRET_ACCESS_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "ENCRYPTION_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.encryption_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       resources {
         limits = {
           cpu    = "1"
@@ -138,43 +203,70 @@ resource "google_cloud_run_v2_service" "document_processor" {
   ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
+    service_account = google_service_account.document_processor_sa.email
+
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/document-processor:latest"
       ports {
         container_port = 8080
       }
+
+      # Non-sensitive environment variables
       env {
         name  = "GOOGLE_VERTEX_PROJECT"
         value = var.project_id
       }
+
       env {
         name  = "GOOGLE_VERTEX_LOCATION"
         value = var.region
       }
-      env {
-        name  = "DATABASE_URL"
-        value = "postgresql://postgres:${var.db_password}@${google_sql_database_instance.postgres.ip_address[0].ip_address}/postgres"
-      }
+
       env {
         name  = "R2_ENDPOINT"
         value = "https://${var.cloudflare_account_id}.r2.cloudflarestorage.com"
       }
-      env {
-        name  = "CLOUDFLARE_ACCESS_KEY_ID"
-        value = var.cloudflare_r2_access_key_id
-      }
-      env {
-        name  = "CLOUDFLARE_SECRET_ACCESS_KEY"
-        value = var.cloudflare_r2_secret_access_key
-      }
+
       env {
         name  = "EMBEDDINGS_MODEL"
         value = var.embeddings_model
       }
+
+      # Sensitive secrets from Secret Manager
+      env {
+        name = "DATABASE_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.db_password.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "CLOUDFLARE_ACCESS_KEY_ID"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "CLOUDFLARE_SECRET_ACCESS_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       resources {
         limits = {
-          cpu    = "1"
-          memory = "512Mi"
+          cpu    = "2"
+          memory = "4Gi"
         }
       }
     }
@@ -213,19 +305,19 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
+    service_account = google_service_account.pdf_exporter_sa.email
+
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/pdf-exporter:latest"
       ports {
         container_port = 8080
       }
+
       env {
         name  = "ALLOWED_ORIGINS"
         value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
       }
-      env {
-        name  = "GOOGLE_VERTEX_PROJECT"
-        value = var.project_id
-      }
+
       resources {
         limits = {
           cpu    = "1"

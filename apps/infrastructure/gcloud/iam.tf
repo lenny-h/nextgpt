@@ -4,7 +4,9 @@ resource "google_service_account" "cloud_tasks_sa" {
   display_name = "Cloud Tasks Service Account"
 }
 
-# IAM for Api Service Account -----------------------------------------------------------------------------
+# ===================================
+# API Cloud Run App IAM
+# ===================================
 
 # Create Service Account for App
 resource "google_service_account" "api_sa" {
@@ -75,7 +77,46 @@ resource "google_service_account_key" "api_sa_key" {
   service_account_id = google_service_account.api_sa.name
 }
 
-# IAM for Document Processor -----------------------------------------------------------------------------------
+# IAM Binding to allow API service account to access secrets
+resource "google_secret_manager_secret_iam_member" "api_db_password_accessor" {
+  secret_id = google_secret_manager_secret.db_password.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_better_auth_secret_accessor" {
+  secret_id = google_secret_manager_secret.better_auth_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_resend_api_key_accessor" {
+  secret_id = google_secret_manager_secret.resend_api_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_r2_access_key_accessor" {
+  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_r2_secret_key_accessor" {
+  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_encryption_key_accessor" {
+  secret_id = google_secret_manager_secret.encryption_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+# ===================================
+# Document Processor Cloud Run App IAM
+# ===================================
 
 # Create Service Account for Document Processor
 resource "google_service_account" "document_processor_sa" {
@@ -106,7 +147,28 @@ resource "google_project_iam_member" "document_processor_vertex_ai_user" {
   member  = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
-# IAM for PDF Exporter ------------------------------------------------------------------------------------
+# IAM Binding to allow Document Processor service account to access secrets
+resource "google_secret_manager_secret_iam_member" "document_processor_db_password_accessor" {
+  secret_id = google_secret_manager_secret.db_password.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "document_processor_r2_access_key_accessor" {
+  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "document_processor_r2_secret_key_accessor" {
+  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
+}
+
+# ===================================
+# Pdf Exporter Cloud Run App IAM
+# ===================================
 
 # Create Service Account for PDF Exporter
 resource "google_service_account" "pdf_exporter_sa" {
@@ -114,7 +176,9 @@ resource "google_service_account" "pdf_exporter_sa" {
   display_name = "pdf Exporter Service Account"
 }
 
-# IAM for CI/CD -------------------------------------------------------------------------------------------
+# ===================================
+# CI/CD User-Assigned Managed Identity
+# ===================================
 
 # Create Service Account for CI/CD
 resource "google_service_account" "ci_cd_sa" {

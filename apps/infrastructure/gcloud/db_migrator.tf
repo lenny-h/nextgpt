@@ -30,9 +30,20 @@ resource "google_cloud_run_v2_job" "db_migrator" {
           name  = "NODE_ENV"
           value = "production"
         }
+
         env {
-          name  = "DATABASE_URL"
-          value = "postgresql://${google_sql_user.postgres_user.name}:${var.db_password}@${google_sql_database_instance.postgres.private_ip_address}:5432/postgres"
+          name = "DATABASE_PASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.db_password.secret_id
+              version = "latest"
+            }
+          }
+        }
+
+        env {
+          name  = "DATABASE_HOST"
+          value = google_sql_database_instance.postgres.ip_address[0].ip_address
         }
 
         resources {

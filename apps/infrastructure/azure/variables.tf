@@ -5,25 +5,38 @@ variable "site_url" {
   type        = string
 }
 
-variable "project_id" {
-  description = "The GCP project ID"
+variable "subscription_id" {
+  description = "Azure subscription ID"
   type        = string
 }
 
-variable "region" {
-  description = "The GCP region"
+variable "location" {
+  description = "Azure region"
   type        = string
-  default     = "us-central1"
+  default     = "eastus"
 }
 
-variable "zone" {
-  description = "The GCP zone"
+variable "resource_group_name" {
+  description = "Resource group name"
   type        = string
-  default     = "us-central1-a"
+  default     = "nextgpt-rg"
+}
+
+# Email configuration
+variable "enable_email_signup" {
+  description = "Enable email signup"
+  type        = string
+  default     = "false"
 }
 
 variable "allowed_email_domains" {
   description = "Allowed email domains for authentication. Leave empty to allow all domains."
+  type        = string
+}
+
+# Resend email service configuration
+variable "resend_sender_email" {
+  description = "Resend sender email"
   type        = string
 }
 
@@ -33,17 +46,14 @@ variable "resend_api_key" {
   sensitive   = true
 }
 
-variable "resend_sender_email" {
-  description = "Resend sender email"
-  type        = string
-}
-
+# Better Auth configuration
 variable "better_auth_secret" {
   description = "Better Auth secret"
   type        = string
   sensitive   = true
 }
 
+# Database configuration
 variable "db_password" {
   description = "The database password"
   type        = string
@@ -80,22 +90,23 @@ variable "cloudflare_r2_secret_access_key" {
   sensitive   = true
 }
 
+# Database Encryption Key
 variable "encryption_key" {
   description = "The encryption key for the database"
   type        = string
   sensitive   = true
 }
 
+# Embeddings Model
 variable "embeddings_model" {
   description = "The embeddings model to use"
   type        = string
   default     = "text-embedding-004"
 }
 
-# Email configuration
-variable "enable_email_signup" {
-  description = "Enable email signup"
+# LLM Models
+variable "llm_models" {
+  description = "The LLM models to use"
   type        = string
-  default     = "false"
+  default     = "gpt-4o,gpt-5-mini,gpt-5"
 }
-

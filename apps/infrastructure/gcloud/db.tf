@@ -60,11 +60,6 @@ resource "google_sql_database_instance" "postgres" {
       value = "100"
     }
 
-    # database_flags {
-    #   name  = "maintenance_work_mem"
-    #   value = "32768"
-    # }
-
     database_flags {
       name  = "log_min_messages"
       value = "warning"
