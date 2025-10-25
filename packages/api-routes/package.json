@@ -11,7 +11,6 @@
     "@aws-sdk/client-s3": "^3.901.0",
     "@aws-sdk/client-scheduler": "^3.917.0",
     "@aws-sdk/s3-request-presigner": "^3.901.0",
-    "@azure/storage-blob": "^12.29.1",
     "@google-cloud/storage": "^7.17.0",
     "@google-cloud/tasks": "^6.2.0",
     "@hono/node-server": "^1.19.1",

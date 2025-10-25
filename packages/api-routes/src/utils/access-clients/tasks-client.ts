@@ -1,6 +1,5 @@
 import { ITasksClient } from "./interfaces/tasks-client.interface.js";
 import { AwsTasksClient } from "./tasks/aws-tasks-client.js";
-import { AzureTasksClient } from "./tasks/azure-tasks-client.js";
 import { GoogleTasksClient } from "./tasks/google-tasks-client.js";
 import { LocalTasksClient } from "./tasks/local-tasks-client.js";
 
@@ -32,7 +31,10 @@ export function getTasksClient(): ITasksClient {
       break;
 
     case "azure":
-      tasksClientInstance = new AzureTasksClient();
+      console.warn(
+        "[TasksClient] Azure is currently not supported. Using local mock implementation instead."
+      );
+      tasksClientInstance = new LocalTasksClient();
       break;
 
     case "aws":
@@ -41,7 +43,7 @@ export function getTasksClient(): ITasksClient {
 
     default:
       // Default to local tasks client if not specified
-      console.log(
+      console.warn(
         "[TasksClient] No CLOUD_PROVIDER specified, using local mock implementation"
       );
       tasksClientInstance = new LocalTasksClient();

@@ -1,8 +1,7 @@
 import { IStorageClient } from "./interfaces/storage-client.interface.js";
-import { GoogleStorageClient } from "./storage/google-storage-client.js";
-import { AzureStorageClient } from "./storage/azure-storage-client.js";
 import { AwsStorageClient } from "./storage/aws-storage-client.js";
 import { CloudflareStorageClient } from "./storage/cloudflare-storage-client.js";
+import { GoogleStorageClient } from "./storage/google-storage-client.js";
 import { LocalStorageClient } from "./storage/local-storage-client.js";
 
 let storageClientInstance: IStorageClient | null = null;
@@ -43,8 +42,10 @@ export function getStorageClient(): IStorageClient {
       break;
 
     case "azure":
-      console.log("[StorageClient] Using Azure Blob Storage");
-      storageClientInstance = new AzureStorageClient();
+      console.warn(
+        "[StorageClient] Azure Storage is currently not supported. Using Local MinIO storage instead."
+      );
+      storageClientInstance = new LocalStorageClient();
       break;
 
     case "aws":
