@@ -21,6 +21,11 @@ export interface IStorageClient {
   }): Promise<string>;
 
   /**
+   * Download a file from storage and return its content
+   */
+  downloadFile(params: { bucket: string; key: string }): Promise<Buffer>;
+
+  /**
    * Delete a file from storage
    */
   deleteFile(params: { bucket: string; key: string }): Promise<void>;

@@ -77,42 +77,6 @@ class GoogleStorageClient(IStorageClient):
         blob = client.bucket(bucket_prefix + bucket).blob(key)
         return blob.download_as_bytes()
 
-    def get_object_response(self, bucket: str, key: str) -> Dict[str, Any]:
-        """
-        Retrieve full object response for advanced use.
-        Returns blob metadata and content.
-
-        Args:
-            bucket: GCS bucket name
-            key: Object key (path) in the bucket
-
-        Returns:
-            Dict[str, Any]: Response containing blob metadata and content
-
-        Raises:
-            google.cloud.exceptions.NotFound: If object doesn't exist
-            Exception: If the storage operation fails
-        """
-        bucket_prefix = os.getenv("GOOGLE_VERTEX_PROJECT")
-
-        if not bucket_prefix:
-            raise ValueError(
-                "Environment variable 'GOOGLE_VERTEX_PROJECT' is not set.")
-
-        client = self._get_client()
-        blob = client.bucket(bucket_prefix + bucket).blob(key)
-
-        # Reload to get latest metadata
-        blob.reload()
-
-        return {
-            "Body": blob.download_as_bytes(),
-            "ContentType": blob.content_type,
-            "ContentLength": blob.size,
-            "Metadata": blob.metadata or {},
-            "LastModified": blob.updated,
-        }
-
     def delete_file(self, bucket: str, key: str) -> None:
         """
         Delete a file from GCS storage.

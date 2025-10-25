@@ -96,6 +96,34 @@ export class LocalStorageClient implements IStorageClient {
     });
   }
 
+  async downloadFile({
+    bucket,
+    key,
+  }: {
+    bucket: string;
+    key: string;
+  }): Promise<Buffer> {
+    const s3Client = this.getS3Client();
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+    
+    if (!response.Body) {
+      throw new Error(`File not found: ${bucket}/${key}`);
+    }
+
+    // Convert the stream to a Buffer
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+    
+    return Buffer.concat(chunks);
+  }
+
   async deleteFile({
     bucket,
     key,

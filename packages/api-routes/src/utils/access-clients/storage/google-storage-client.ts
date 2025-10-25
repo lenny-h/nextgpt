@@ -78,6 +78,22 @@ export class GoogleStorageClient implements IStorageClient {
     return signedUrl;
   }
 
+  async downloadFile({
+    bucket,
+    key,
+  }: {
+    bucket: string;
+    key: string;
+  }): Promise<Buffer> {
+    const storage = this.getStorageClient();
+    const blob = storage
+      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .file(key);
+
+    const [content] = await blob.download();
+    return content;
+  }
+
   async deleteFile({
     bucket,
     key,

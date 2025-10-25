@@ -14,7 +14,6 @@ router = APIRouter()
 async def convert_file(key):
     """
     Convert a file from cloud storage to Markdown.
-    Supports Google Cloud Storage (gs://), AWS S3 (s3://), and Cloudflare R2 (r2://).
     """
     try:
         storage_client = get_storage_client()

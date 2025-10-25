@@ -76,29 +76,6 @@ class AwsStorageClient(IStorageClient):
         response = client.get_object(Bucket=bucket_prefix + bucket, Key=key)
         return response["Body"].read()
 
-    def get_object_response(self, bucket: str, key: str) -> Dict[str, Any]:
-        """
-        Retrieve full boto3 get_object response for advanced use.
-
-        Args:
-            bucket: S3 bucket name
-            key: Object key (path) in the bucket
-
-        Returns:
-            Dict[str, Any]: Full boto3 get_object response
-
-        Raises:
-            ClientError: If the S3 operation fails
-        """
-        bucket_prefix = os.getenv("AWS_PROJECT_NAME")
-
-        if not bucket_prefix:
-            raise ValueError(
-                "Environment variable 'AWS_PROJECT_NAME' is not set.")
-
-        client = self._get_client()
-        return client.get_object(Bucket=bucket_prefix + bucket, Key=key)
-
     def delete_file(self, bucket: str, key: str) -> None:
         """
         Delete a file from S3 storage.

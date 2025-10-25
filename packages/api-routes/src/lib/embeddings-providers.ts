@@ -1,14 +1,20 @@
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
-import { EmbeddingModel } from "ai";
+import { EmbeddingModel, JSONValue } from "ai";
 
 export const getEmbeddingModel = async (): Promise<{
   model: EmbeddingModel;
+  providerOptions: Record<string, JSONValue | undefined>;
 }> => {
   if (process.env.USE_OPENAI_API === "true") {
     const { openai } = await import("@ai-sdk/openai");
 
     return {
       model: openai.textEmbeddingModel(process.env.EMBEDDINGS_MODEL!),
+      providerOptions: {
+        openai: {
+          dimensions: 768,
+        },
+      },
     };
   }
 
@@ -17,6 +23,13 @@ export const getEmbeddingModel = async (): Promise<{
 
     return {
       model: vertex.textEmbeddingModel(process.env.EMBEDDINGS_MODEL!),
+      providerOptions: {
+        google: {
+          outputDimensionality: 768,
+          taskType: "SEMANTIC_SIMILARITY", // optional, specifies the task type for generating embeddings
+          autoTruncate: false,
+        },
+      },
     };
   }
 
@@ -30,6 +43,11 @@ export const getEmbeddingModel = async (): Promise<{
 
     return {
       model: bedrock.textEmbeddingModel(process.env.EMBEDDINGS_MODEL!),
+      providerOptions: {
+        bedrock: {
+          dimensions: 768,
+        },
+      },
     };
   }
 

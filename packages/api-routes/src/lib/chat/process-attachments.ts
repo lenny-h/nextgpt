@@ -1,14 +1,14 @@
+import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema.js";
 import {
   MyUIMessage,
   MyUIMessagePart,
 } from "@workspace/api-routes/types/custom-ui-message.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 
-function getFileType(url: string): string {
-  const urlLower = url.toLowerCase();
-
-  if (urlLower.endsWith(".pdf")) return "application/pdf";
-  if (urlLower.endsWith(".png")) return "image/png";
-  if (urlLower.endsWith(".jpg") || urlLower.endsWith(".jpeg"))
+function getFileType(filename: string): string {
+  if (filename.endsWith(".pdf")) return "application/pdf";
+  if (filename.endsWith(".png")) return "image/png";
+  if (filename.endsWith(".jpg") || filename.endsWith(".jpeg"))
     return "image/jpeg";
 
   // For all other file types, we'll need to convert them
@@ -23,11 +23,11 @@ function canDirectlyAttach(mediaType: string): boolean {
   );
 }
 
-async function convertToMarkdown(gcsUrl: string): Promise<string> {
+async function convertToMarkdown(key: string): Promise<string> {
   const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
 
   const response = await fetch(
-    `${processorUrl}/convert?gcs_url=${encodeURIComponent(gcsUrl)}`,
+    `${processorUrl}/convert?key=${encodeURIComponent(key)}`,
     {
       method: "POST",
     }
@@ -49,33 +49,52 @@ async function convertToMarkdown(gcsUrl: string): Promise<string> {
   return result.markdown;
 }
 
+async function downloadFileContent(key: string): Promise<Buffer> {
+  const storageClient = getStorageClient();
+
+  return await storageClient.downloadFile({
+    bucket: "temporary-files-bucket",
+    key,
+  });
+}
+
 export async function processAttachments(
-  attachments: { url: string }[]
+  attachments: Attachment[]
 ): Promise<MyUIMessagePart[]> {
   const parts: MyUIMessagePart[] = [];
 
   for (const attachment of attachments) {
-    const fileType = getFileType(attachment.url);
+    const fileType = getFileType(attachment.filename);
 
     if (canDirectlyAttach(fileType)) {
+      // Download the file content from storage
+      const fileContent = await downloadFileContent(attachment.filename);
+
+      // Convert to data URL
+      const base64Data = fileContent.toString("base64");
+      const dataUrl = `data:${fileType};base64,${base64Data}`;
+
       parts.push({
         type: "file",
-        url: attachment.url,
+        url: dataUrl,
         mediaType: fileType,
       });
     } else {
       // For other formats - convert to markdown via document-processor
       try {
-        const markdown = await convertToMarkdown(attachment.url);
+        const markdown = await convertToMarkdown(attachment.filename);
         parts.push({
           type: "text",
-          text: markdown,
+          text: "Parsed content of the uploaded attachment: " + markdown,
         });
       } catch (error) {
-        console.error(`Failed to process attachment ${attachment.url}:`, error);
+        console.error(
+          `Failed to process attachment ${attachment.filename}:`,
+          error
+        );
 
         throw new Error(
-          `Failed to process attachment. Please ensure the file format is supported.`
+          "Failed to process attachment. Please ensure the file format is supported."
         );
       }
     }
@@ -86,7 +105,7 @@ export async function processAttachments(
 
 export async function integrateAttachmentsIntoMessages(
   messages: MyUIMessage[],
-  attachments: { url: string }[]
+  attachments: Attachment[]
 ): Promise<MyUIMessage[]> {
   if (attachments.length === 0 || messages.length === 0) {
     return messages;

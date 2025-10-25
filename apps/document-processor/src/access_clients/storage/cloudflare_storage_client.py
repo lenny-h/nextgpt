@@ -89,23 +89,6 @@ class CloudflareStorageClient(IStorageClient):
         response = client.get_object(Bucket=bucket, Key=key)
         return response["Body"].read()
 
-    def get_object_response(self, bucket: str, key: str) -> Dict[str, Any]:
-        """
-        Retrieve full boto3 get_object response for advanced use.
-
-        Args:
-            bucket: R2 bucket name
-            key: Object key (path) in the bucket
-
-        Returns:
-            Dict[str, Any]: Full boto3 get_object response
-
-        Raises:
-            ClientError: If the R2 operation fails
-        """
-        client = self._get_client()
-        return client.get_object(Bucket=bucket, Key=key)
-
     def delete_file(self, bucket: str, key: str) -> None:
         """
         Delete a file from R2 storage.
