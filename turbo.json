@@ -1,18 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "PORT",
-    "BASE_URL",
-    "DASHBOARD_URL",
-    "API_URL",
-    "PDF_EXPORTER_URL",
-    "SUPABASE_URL",
-    "SUPABASE_ANON_KEY",
-    "GOOGLE_VERTEX_PROJECT",
-    "GOOGLE_STORAGE_URL",
-    "R2_ENDPOINT"
-  ],
+  "globalEnv": ["PORT", "BASE_URL", "ALLOWED_ORIGINS"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

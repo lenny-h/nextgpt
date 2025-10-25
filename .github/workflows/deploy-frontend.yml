@@ -46,9 +46,7 @@ jobs:
       NEXT_PUBLIC_DASHBOARD_URL: dashboard.${{ vars.SITE_URL }}
       NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
       NEXT_PUBLIC_PDF_EXPORTER_URL: api.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${{ vars.PROJECT_ID }}
-      NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
-      NEXT_PUBLIC_R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+      NEXT_PUBLIC_CSP_ENDPOINTS: ${{ vars.CSP_ENDPOINTS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -73,8 +71,8 @@ jobs:
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           workingDirectory: apps/web
           command: deploy
           secrets: |
@@ -82,9 +80,7 @@ jobs:
             NEXT_PUBLIC_DASHBOARD_URL
             NEXT_PUBLIC_API_URL
             NEXT_PUBLIC_PDF_EXPORTER_URL
-            NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT
-            NEXT_PUBLIC_GOOGLE_STORAGE_URL
-            NEXT_PUBLIC_R2_ENDPOINT
+            NEXT_PUBLIC_CSP_ENDPOINTS
 
   # Deploy Dashboard App to Cloudflare Workers
   deploy-dashboard:
@@ -97,9 +93,7 @@ jobs:
       NEXT_PUBLIC_CHAT_URL: app.${{ vars.SITE_URL }}
       NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
       NEXT_PUBLIC_PDF_EXPORTER_URL: api.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT: ${{ vars.PROJECT_ID }}
-      NEXT_PUBLIC_GOOGLE_STORAGE_URL: https://storage.googleapis.com
-      NEXT_PUBLIC_R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+      NEXT_PUBLIC_CSP_ENDPOINTS: ${{ vars.CSP_ENDPOINTS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -124,8 +118,8 @@ jobs:
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           workingDirectory: apps/dashboard
           command: deploy
           secrets: |
@@ -133,6 +127,4 @@ jobs:
             NEXT_PUBLIC_CHAT_URL
             NEXT_PUBLIC_API_URL
             NEXT_PUBLIC_PDF_EXPORTER_URL
-            NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT
-            NEXT_PUBLIC_GOOGLE_STORAGE_URL
-            NEXT_PUBLIC_R2_ENDPOINT
+            NEXT_PUBLIC_CSP_ENDPOINTS

@@ -8,10 +8,7 @@ import { type CustomMiddleware } from "./stack-handler";
 export function cspMiddleware(middleware: CustomMiddleware) {
   return async (request: NextRequest, event: NextFetchEvent) => {
     const env = process.env.NODE_ENV;
-
-    const cloudflareConnectionUrl = `https://${
-      process.env.NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT
-    }-files-bucket.${process.env.NEXT_PUBLIC_R2_ENDPOINT!.replace(/^https?:\/\//, "")}`;
+    const cspEndpoints = process.env.NEXT_PUBLIC_CSP_ENDPOINTS || "";
 
     const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
     const cspHeader = `
@@ -23,8 +20,8 @@ export function cspMiddleware(middleware: CustomMiddleware) {
         img-src 'self';
         font-src 'self';
         object-src 'self';
-        frame-src 'self' blob: data: ${cloudflareConnectionUrl};
-        connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL} ${process.env.NEXT_PUBLIC_PDF_EXPORTER_URL} ${cloudflareConnectionUrl} ${process.env.NEXT_PUBLIC_GOOGLE_STORAGE_URL};
+        frame-src 'self' blob: data: ${cspEndpoints};
+        connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL} ${process.env.NEXT_PUBLIC_PDF_EXPORTER_URL} ${cspEndpoints};
         base-uri 'self';
         form-action 'self';
         frame-ancestors 'self';
