@@ -70,7 +70,7 @@ resource "aws_iam_role" "api_task" {
   }
 }
 
-# Policy for API to access S3, SQS, and Bedrock
+# Policy for API to access S3, SQS, EventBridge Scheduler, and Bedrock
 resource "aws_iam_role_policy" "api_task" {
   name = "${var.project_name}-api-task-policy"
   role = aws_iam_role.api_task.id
@@ -94,7 +94,7 @@ resource "aws_iam_role_policy" "api_task" {
         ]
         Resource = aws_s3_bucket.temporary_files.arn
       },
-      # # Uncomment if not using cloudflare r2 for file storage
+      # # Activate if not using cloudflare r2 for file storage
       # {
       #   Effect = "Allow"
       #   Action = [
@@ -118,6 +118,27 @@ resource "aws_iam_role_policy" "api_task" {
           "sqs:GetQueueUrl"
         ]
         Resource = aws_sqs_queue.document_processing.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "scheduler:CreateSchedule",
+          "scheduler:DeleteSchedule",
+          "scheduler:GetSchedule"
+        ]
+        Resource = "arn:aws:scheduler:${var.aws_region}:*:schedule/${var.project_name}-task-schedules/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole"
+        ]
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "iam:PassedToService" = "scheduler.amazonaws.com"
+          }
+        }
       },
       {
         Effect = "Allow"

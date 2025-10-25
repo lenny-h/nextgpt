@@ -81,7 +81,7 @@ const PureMultimodalInput = ({
   );
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
   const isLoading = status === "submitted" || status === "streaming";

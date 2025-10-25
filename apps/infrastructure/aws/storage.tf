@@ -1,70 +1,72 @@
-# S3 Bucket for temporary files
-resource "aws_s3_bucket" "temporary_files" {
-  bucket = "${var.project_name}-temporary-files"
+# # Activate if not using cloudflare r2 for file storage
 
-  tags = {
-    Name = "${var.project_name}-temporary-files"
-  }
-}
+# # S3 Bucket for temporary files
+# resource "aws_s3_bucket" "temporary_files" {
+#   bucket = "${var.project_name}-temporary-files"
 
-# Block public access
-resource "aws_s3_bucket_public_access_block" "temporary_files" {
-  bucket = aws_s3_bucket.temporary_files.id
+#   tags = {
+#     Name = "${var.project_name}-temporary-files"
+#   }
+# }
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+# # Block public access
+# resource "aws_s3_bucket_public_access_block" "temporary_files" {
+#   bucket = aws_s3_bucket.temporary_files.id
 
-# Enable versioning
-resource "aws_s3_bucket_versioning" "temporary_files" {
-  bucket = aws_s3_bucket.temporary_files.id
+#   block_public_acls       = true
+#   block_public_policy     = true
+#   ignore_public_acls      = true
+#   restrict_public_buckets = true
+# }
 
-  versioning_configuration {
-    status = "Disabled"
-  }
-}
+# # Enable versioning
+# resource "aws_s3_bucket_versioning" "temporary_files" {
+#   bucket = aws_s3_bucket.temporary_files.id
 
-# CORS configuration
-resource "aws_s3_bucket_cors_configuration" "temporary_files" {
-  bucket = aws_s3_bucket.temporary_files.id
+#   versioning_configuration {
+#     status = "Disabled"
+#   }
+# }
 
-  cors_rule {
-    allowed_headers = ["*"]
-    allowed_methods = ["GET", "POST", "DELETE", "PUT", "HEAD"]
-    allowed_origins = ["http://localhost:3000", "http://localhost:3001", "https://app.${var.site_url}", "https://dashboard.${var.site_url}"]
-    expose_headers  = ["ETag"]
-    max_age_seconds = 3600
-  }
-}
+# # CORS configuration
+# resource "aws_s3_bucket_cors_configuration" "temporary_files" {
+#   bucket = aws_s3_bucket.temporary_files.id
 
-# Lifecycle policy to delete objects after 1 day
-resource "aws_s3_bucket_lifecycle_configuration" "temporary_files" {
-  bucket = aws_s3_bucket.temporary_files.id
+#   cors_rule {
+#     allowed_headers = ["*"]
+#     allowed_methods = ["GET", "POST", "DELETE", "PUT", "HEAD"]
+#     allowed_origins = ["https://app.${var.site_url}", "https://dashboard.${var.site_url}"]
+#     expose_headers  = ["ETag"]
+#     max_age_seconds = 3600
+#   }
+# }
 
-  rule {
-    id     = "delete-after-1-day"
-    status = "Enabled"
+# # Lifecycle policy to delete objects after 1 day
+# resource "aws_s3_bucket_lifecycle_configuration" "temporary_files" {
+#   bucket = aws_s3_bucket.temporary_files.id
 
-    expiration {
-      days = 1
-    }
-  }
-}
+#   rule {
+#     id     = "delete-after-1-day"
+#     status = "Enabled"
 
-# Server-side encryption
-resource "aws_s3_bucket_server_side_encryption_configuration" "temporary_files" {
-  bucket = aws_s3_bucket.temporary_files.id
+#     expiration {
+#       days = 1
+#     }
+#   }
+# }
 
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
+# # Server-side encryption
+# resource "aws_s3_bucket_server_side_encryption_configuration" "temporary_files" {
+#   bucket = aws_s3_bucket.temporary_files.id
 
-# # Uncomment if not using cloudflare r2 for file storage
+#   rule {
+#     apply_server_side_encryption_by_default {
+#       sse_algorithm = "AES256"
+#     }
+#   }
+# }
+
+
 # # S3 Bucket for permanent files
 # resource "aws_s3_bucket" "files" {
 #   bucket = "${var.project_name}-files"
@@ -100,7 +102,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "temporary_files" 
 #   cors_rule {
 #     allowed_headers = ["*"]
 #     allowed_methods = ["GET", "POST", "DELETE", "PUT", "HEAD"]
-#     allowed_origins = ["http://localhost:3000", "http://localhost:3001", "https://app.${var.site_url}", "https://dashboard.${var.site_url}"]
+#     allowed_origins = ["https://app.${var.site_url}", "https://dashboard.${var.site_url}"]
 #     expose_headers  = ["ETag"]
 #     max_age_seconds = 3600
 #   }

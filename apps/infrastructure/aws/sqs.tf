@@ -31,5 +31,3 @@ resource "aws_sqs_queue_policy" "document_processing" {
     ]
   })
 }
-
-# TODO: Enable task delaying by adding event bridge rule and target to delay messages before they reach the queue

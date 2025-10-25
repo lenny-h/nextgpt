@@ -95,6 +95,18 @@ resource "aws_ecs_task_definition" "api" {
         value = aws_sqs_queue.document_processing.url
       },
       {
+        name  = "AWS_SCHEDULER_TARGET_ARN"
+        value = aws_sqs_queue.document_processing.arn
+      },
+      {
+        name  = "AWS_SCHEDULER_ROLE_ARN"
+        value = aws_iam_role.eventbridge_scheduler.arn
+      },
+      {
+        name  = "AWS_SCHEDULER_GROUP"
+        value = aws_scheduler_schedule_group.tasks.name
+      },
+      {
         name  = "ATTACHMENT_URL_PREFIX"
         value = "https://${aws_s3_bucket.temporary_files.bucket}.s3.${var.aws_region}.amazonaws.com/"
       },

@@ -9,10 +9,8 @@ import {
   deleteFile,
   getCourseFiles,
 } from "@workspace/api-routes/lib/db/queries/files.js";
-import { getFilePages } from "@workspace/api-routes/lib/db/queries/pages.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
-import { getPagesBucket } from "@workspace/api-routes/utils/access-clients/google-storage-client.js";
-import { deleteFileFromS3 } from "@workspace/api-routes/utils/access-clients/s3-client.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { pages } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
@@ -57,26 +55,18 @@ const app = new Hono().delete(
       return c.json({ name: deletedCourse });
     }
 
-    const pagesBucket = getPagesBucket();
+    const storageClient = getStorageClient();
 
     for (const file of files) {
-      const filePages = await getFilePages({
-        fileId: file.id,
-      });
-
-      for (const filePage of filePages) {
-        const pageName = filePage.id + ".pdf";
-        await pagesBucket.file(pageName).delete(); // Delete from GCS
-        await db.delete(pages).where(eq(pages.id, filePage.id)); // Delete from postgres
-      }
-
-      await deleteFileFromS3({
-        bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
-        key: `${courseId}/${file.name}`,
-      });
+      await db.delete(pages).where(eq(pages.fileId, file.id)); // Delete page records from the database
       await deleteFile({
         bucketId,
         fileId: file.id,
+      });
+
+      await storageClient.deleteFile({
+        bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
+        key: `${courseId}/${file.name}`,
       });
     }
 

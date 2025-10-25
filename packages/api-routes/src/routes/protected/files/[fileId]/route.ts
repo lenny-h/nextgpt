@@ -6,10 +6,8 @@ import {
   deleteFile,
   getFileDetails,
 } from "@workspace/api-routes/lib/db/queries/files.js";
-import { getFilePages } from "@workspace/api-routes/lib/db/queries/pages.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
-import { getPagesBucket } from "@workspace/api-routes/utils/access-clients/google-storage-client.js";
-import { deleteFileFromS3 } from "@workspace/api-routes/utils/access-clients/s3-client.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { pages } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
@@ -43,25 +41,17 @@ const app = new Hono().delete(
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
 
-    const pagesBucket = getPagesBucket();
+    const storageClient = getStorageClient();
 
-    const filePages = await getFilePages({
-      fileId,
-    });
-
-    for (const filePage of filePages) {
-      const pageName = filePage.id + ".pdf";
-      await pagesBucket.file(pageName).delete();
-      await db.delete(pages).where(eq(pages.id, filePage.id));
-    }
-
-    await deleteFileFromS3({
-      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
-      key: `${courseId}/${name}`,
-    });
+    await db.delete(pages).where(eq(pages.fileId, fileId)); // Delete page records from the database
     await deleteFile({
       bucketId,
       fileId,
+    });
+
+    await storageClient.deleteFile({
+      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
+      key: `${courseId}/${name}`,
     });
 
     return c.json({ name });

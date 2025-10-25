@@ -6,11 +6,11 @@ import {
   getTaskDetails,
 } from "@workspace/api-routes/lib/db/queries/tasks.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
-import { deleteFileFromS3 } from "@workspace/api-routes/utils/access-clients/s3-client.js";
 import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 
 const paramSchema = z.object({ taskId: uuidSchema }).strict();
 
@@ -48,7 +48,7 @@ const app = new Hono().delete(
 
     const queuePathParts = taskQueuePath.split("/");
     const location = queuePathParts[3];
-    const queue = queuePathParts.pop() || "";
+    const queue = queuePathParts.pop()!;
 
     const taskName = `pdf-process-${taskId}`;
     const formattedTaskName = tasksClient.taskPath(
@@ -64,7 +64,9 @@ const app = new Hono().delete(
       taskId,
     });
 
-    await deleteFileFromS3({
+    const storageClient = getStorageClient();
+
+    await storageClient.deleteFile({
       bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
       key: `${courseId}/${name}`,
     });

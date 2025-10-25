@@ -15,7 +15,7 @@ const app = new Hono().post(
     const newFilename = user.id + "/" + filename;
 
     const signedUrl = await getSignedUrlForUpload({
-      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket`,
+      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-temporary-files-bucket`,
       filename: newFilename,
       contentType: fileType,
       contentLength: fileSize,

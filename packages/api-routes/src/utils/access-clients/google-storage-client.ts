@@ -54,14 +54,14 @@ export async function getSignedUrlForUpload({
   return signedUrl;
 }
 
-export function getCorrectionBucket() {
+export function getTemporaryFilesBucket() {
   const storage = getStorageClient();
   return storage.bucket(
-    `${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket`
+    `${process.env.GOOGLE_VERTEX_PROJECT}-temporary-files-bucket`
   );
 }
 
-export function getPagesBucket() {
+export function getFilesBucket() {
   const storage = getStorageClient();
-  return storage.bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-pages-bucket`);
+  return storage.bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`);
 }

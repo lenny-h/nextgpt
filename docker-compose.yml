@@ -1,5 +1,5 @@
 # Docker Compose configuration for local development
-# Includes PostgreSQL with pgvector extension and Redis
+# Includes PostgreSQL with pgvector extension, Redis, and MinIO
 # See DOCKER_SETUP.md for detailed documentation
 
 name: mono
@@ -36,7 +36,7 @@ services:
     networks:
       - database_network
 
-  # Redis Cache
+  # Redis Cache for local development
   redis:
     container_name: redis
     image: redis:7.2.11-alpine
@@ -51,6 +51,28 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - redis-data:/data
+    networks:
+      - database_network
+
+  # MinIO - S3-compatible object storage for local development
+  minio:
+    container_name: minio
+    image: minio/minio:RELEASE.2025-07-23T15-54-02Z
+    restart: unless-stopped
+    ports:
+      - "9000:9000"  # API port
+      - "9001:9001"  # Console port
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - database_network
 
@@ -221,6 +243,7 @@ services:
 volumes:
   postgres-data:
   redis-data:
+  minio-data:
 
 networks:
   database_network:

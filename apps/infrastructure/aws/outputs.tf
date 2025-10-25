@@ -48,6 +48,21 @@ output "sqs_queue_url" {
   value       = aws_sqs_queue.document_processing.url
 }
 
+output "sqs_queue_arn" {
+  description = "The ARN of the SQS queue for document processing"
+  value       = aws_sqs_queue.document_processing.arn
+}
+
+output "eventbridge_scheduler_group" {
+  description = "The name of the EventBridge Scheduler group"
+  value       = aws_scheduler_schedule_group.tasks.name
+}
+
+output "eventbridge_scheduler_role_arn" {
+  description = "The ARN of the IAM role for EventBridge Scheduler"
+  value       = aws_iam_role.eventbridge_scheduler.arn
+}
+
 output "ecs_cluster_name" {
   description = "The name of the ECS cluster"
   value       = aws_ecs_cluster.main.name

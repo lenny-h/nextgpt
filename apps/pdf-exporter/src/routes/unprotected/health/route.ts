@@ -5,7 +5,7 @@ export const healthRouter = new Hono();
 
 export async function GET(c: Context) {
   try {
-    const requiredEnvVars = ["GOOGLE_VERTEX_PROJECT"];
+    const requiredEnvVars = ["ALLOWED_ORIGINS"];
 
     const missingVars = requiredEnvVars.filter(
       (varName) => !process.env[varName]
