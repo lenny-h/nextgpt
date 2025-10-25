@@ -54,7 +54,7 @@ export class AwsStorageClient implements IStorageClient {
       ContentLength: contentLength,
     });
 
-    return getSignedUrl(s3Client, command, { expiresIn: 65 });
+    return getSignedUrl(s3Client, command, { expiresIn: 65 }); // 65 seconds
   }
 
   async getSignedUrlForDownload({

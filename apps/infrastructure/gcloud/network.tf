@@ -15,7 +15,7 @@ resource "google_compute_network" "private_network" {
 resource "google_compute_subnetwork" "private_subnet" {
   name          = "backend-subnet"
   project       = var.project_id
-  region        = var.region
+  region        = var.gcp_region
   network       = google_compute_network.private_network.id
   ip_cidr_range = "10.0.0.0/24"
 }

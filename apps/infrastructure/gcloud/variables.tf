@@ -10,23 +10,20 @@ variable "project_id" {
   type        = string
 }
 
-variable "region" {
+variable "gcp_region" {
   description = "The GCP region"
   type        = string
-  default     = "us-central1"
 }
 
-variable "zone" {
-  description = "The GCP zone"
+variable "gcp_zone" {
+  description = "Availability zone within the GCP region"
   type        = string
-  default     = "us-central1-a"
 }
 
 # Email configuration
 variable "enable_email_signup" {
   description = "Enable email signup"
   type        = string
-  default     = "false"
 }
 
 variable "allowed_email_domains" {
@@ -53,11 +50,35 @@ variable "better_auth_secret" {
   sensitive   = true
 }
 
+variable "google_client_id" {
+  description = "Google OAuth client ID"
+  type        = string
+}
+
+variable "google_client_secret" {
+  description = "Google OAuth client secret"
+  type        = string
+  sensitive   = true
+}
+
 # Database configuration
 variable "db_password" {
   description = "The database password"
   type        = string
   sensitive   = true
+}
+
+# Database Encryption Key
+variable "encryption_key" {
+  description = "The encryption key for the database"
+  type        = string
+  sensitive   = true
+}
+
+# Storage Configuration
+variable "use_cloudflare_r2" {
+  description = "Whether to use Cloudflare R2 for storage"
+  type        = string
 }
 
 # Cloudflare Configuration
@@ -90,23 +111,14 @@ variable "cloudflare_r2_secret_access_key" {
   sensitive   = true
 }
 
-# Database Encryption Key
-variable "encryption_key" {
-  description = "The encryption key for the database"
-  type        = string
-  sensitive   = true
-}
-
 # Embeddings Model
 variable "embeddings_model" {
   description = "The embeddings model to use"
   type        = string
-  default     = "text-embedding-004"
 }
 
 # LLM Models
 variable "llm_models" {
   description = "The LLM models to use"
   type        = string
-  default     = "gemini-2.5-flash,gemini-2.5-pro"
 }

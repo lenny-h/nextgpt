@@ -10,7 +10,7 @@ resource "google_redis_instance" "redis" {
   tier           = "BASIC"
   memory_size_gb = 1
   project        = var.project_id
-  region         = var.region
+  region         = var.gcp_region
   redis_version  = "REDIS_7_X"
 
   authorized_network = google_compute_network.private_network.id

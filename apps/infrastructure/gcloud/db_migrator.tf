@@ -13,7 +13,7 @@ resource "google_service_account" "db_migrator_sa" {
 # Cloud Run Job for database migrations
 resource "google_cloud_run_v2_job" "db_migrator" {
   name     = "db-migrator"
-  location = var.region
+  location = var.gcp_region
   project  = var.project_id
 
   depends_on = [
@@ -23,14 +23,22 @@ resource "google_cloud_run_v2_job" "db_migrator" {
 
   template {
     template {
-      containers {
-        image = "${var.region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/db-migrator:latest"
+      service_account = google_service_account.db_migrator_sa.email
 
+      containers {
+        image = "${var.gcp_region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/db-migrator:latest"
+
+        # Non-sensitive environment variables
         env {
           name  = "NODE_ENV"
           value = "production"
         }
+        env {
+          name  = "DATABASE_HOST"
+          value = google_sql_database_instance.postgres.private_ip_address
+        }
 
+        # Sensitive secrets from Secret Manager
         env {
           name = "DATABASE_PASSWORD"
           value_source {
@@ -39,11 +47,6 @@ resource "google_cloud_run_v2_job" "db_migrator" {
               version = "latest"
             }
           }
-        }
-
-        env {
-          name  = "DATABASE_HOST"
-          value = google_sql_database_instance.postgres.ip_address[0].ip_address
         }
 
         resources {
@@ -61,8 +64,6 @@ resource "google_cloud_run_v2_job" "db_migrator" {
         }
         egress = "PRIVATE_RANGES_ONLY"
       }
-
-      service_account = google_service_account.db_migrator_sa.email
 
       timeout = "600s"
     }

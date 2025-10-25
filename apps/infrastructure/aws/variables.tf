@@ -5,22 +5,19 @@ variable "site_url" {
   type        = string
 }
 
-variable "project_name" {
+variable "aws_project_name" {
   description = "Project name used for resource naming"
   type        = string
-  default     = "nextgpt"
 }
 
 variable "aws_region" {
   description = "AWS region"
   type        = string
-  default     = "us-east-1"
 }
 
-variable "availability_zones" {
+variable "aws_zones" {
   description = "Availability zones to use"
   type        = list(string)
-  default     = ["us-east-1a"]
 }
 
 # Email configuration
@@ -54,11 +51,35 @@ variable "better_auth_secret" {
   sensitive   = true
 }
 
+variable "google_client_id" {
+  description = "Google OAuth client ID"
+  type        = string
+}
+
+variable "google_client_secret" {
+  description = "Google OAuth client secret"
+  type        = string
+  sensitive   = true
+}
+
 # Database configuration
 variable "db_password" {
   description = "The database password"
   type        = string
   sensitive   = true
+}
+
+# Database Encryption Key
+variable "encryption_key" {
+  description = "The encryption key for the database"
+  type        = string
+  sensitive   = true
+}
+
+# Storage Configuration
+variable "use_cloudflare_r2" {
+  description = "Whether to use Cloudflare R2 for storage"
+  type        = string
 }
 
 # Cloudflare Configuration
@@ -91,23 +112,14 @@ variable "cloudflare_r2_secret_access_key" {
   sensitive   = true
 }
 
-# Database Encryption Key
-variable "encryption_key" {
-  description = "The encryption key for the database"
-  type        = string
-  sensitive   = true
-}
-
 # Embeddings Model
 variable "embeddings_model" {
   description = "The embeddings model to use"
   type        = string
-  default     = "text-embedding-004"
 }
 
 # LLM Models
 variable "llm_models" {
   description = "The LLM models to use"
   type        = string
-  default     = "amazon.nova-pro-v1:0,anthropic.claude-sonnet-4-5-20250929-v1:0"
 }

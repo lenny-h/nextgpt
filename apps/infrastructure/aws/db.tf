@@ -1,16 +1,16 @@
 # DB Subnet Group
 resource "aws_db_subnet_group" "main" {
-  name       = "${var.project_name}-db-subnet-group"
+  name       = "${var.aws_project_name}-db-subnet-group"
   subnet_ids = aws_subnet.private[*].id
 
   tags = {
-    Name = "${var.project_name}-db-subnet-group"
+    Name = "${var.aws_project_name}-db-subnet-group"
   }
 }
 
 # RDS PostgreSQL Instance
 resource "aws_db_instance" "postgres" {
-  identifier     = "${var.project_name}-postgres"
+  identifier     = "${var.aws_project_name}-postgres"
   engine         = "postgres"
   engine_version = "18"
   instance_class = "db.t3.micro"
@@ -40,6 +40,6 @@ resource "aws_db_instance" "postgres" {
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   tags = {
-    Name = "${var.project_name}-postgres"
+    Name = "${var.aws_project_name}-postgres"
   }
 }

@@ -7,7 +7,7 @@ resource "google_project_service" "cloud_tasks" {
 # Create a Cloud Tasks
 resource "google_cloud_tasks_queue" "document_processing_queue" {
   name     = "document-processing-queue"
-  location = var.region
+  location = var.gcp_region
 
   rate_limits {
     max_concurrent_dispatches = 10

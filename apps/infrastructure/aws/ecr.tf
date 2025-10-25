@@ -1,6 +1,6 @@
 # ECR Repositories
 resource "aws_ecr_repository" "api" {
-  name                 = "${var.project_name}/api"
+  name                 = "${var.aws_project_name}/api"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -8,12 +8,12 @@ resource "aws_ecr_repository" "api" {
   }
 
   tags = {
-    Name = "${var.project_name}-api"
+    Name = "${var.aws_project_name}-api"
   }
 }
 
 resource "aws_ecr_repository" "document_processor" {
-  name                 = "${var.project_name}/document-processor"
+  name                 = "${var.aws_project_name}/document-processor"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -21,12 +21,12 @@ resource "aws_ecr_repository" "document_processor" {
   }
 
   tags = {
-    Name = "${var.project_name}-document-processor"
+    Name = "${var.aws_project_name}-document-processor"
   }
 }
 
 resource "aws_ecr_repository" "pdf_exporter" {
-  name                 = "${var.project_name}/pdf-exporter"
+  name                 = "${var.aws_project_name}/pdf-exporter"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -34,7 +34,7 @@ resource "aws_ecr_repository" "pdf_exporter" {
   }
 
   tags = {
-    Name = "${var.project_name}-pdf-exporter"
+    Name = "${var.aws_project_name}-pdf-exporter"
   }
 }
 

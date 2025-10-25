@@ -8,7 +8,7 @@ resource "google_project_service" "sqladmin" {
 resource "google_sql_database_instance" "postgres" {
   name                = "postgres"
   project             = var.project_id
-  region              = var.region
+  region              = var.gcp_region
   database_version    = "POSTGRES_18"
   deletion_protection = false
 
@@ -22,7 +22,7 @@ resource "google_sql_database_instance" "postgres" {
     backup_configuration {
       enabled                        = true
       start_time                     = "02:00"
-      location                       = var.region
+      location                       = var.gcp_region
       point_in_time_recovery_enabled = true
       transaction_log_retention_days = 7
       backup_retention_settings {

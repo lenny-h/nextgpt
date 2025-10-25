@@ -5,7 +5,7 @@
 export interface TaskRequest {
   name: string;
   httpRequest: {
-    httpMethod: string;
+    httpMethod: "POST";
     url: string;
     headers: Record<string, string>;
     body: string;
@@ -22,15 +22,12 @@ export interface ITasksClient {
   /**
    * Create a task in the queue
    */
-  createTask(params: {
-    parent: string;
-    task: TaskRequest;
-  }): Promise<{ name: string }>;
+  createTask(params: { parent: string; task: TaskRequest }): Promise<void>;
 
   /**
    * Delete a task from the queue
    */
-  deleteTask(params: { name: string }): Promise<{ name: string }>;
+  deleteTask(params: { name: string }): Promise<void>;
 
   /**
    * Generate a task path/name

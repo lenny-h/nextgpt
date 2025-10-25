@@ -1,6 +1,6 @@
 # SQS Queue for document processing
 resource "aws_sqs_queue" "document_processing" {
-  name                       = "${var.project_name}-document-processing-queue"
+  name                       = "${var.aws_project_name}-document-processing-queue"
   delay_seconds              = 0
   max_message_size           = 262144
   message_retention_seconds  = 600
@@ -8,7 +8,7 @@ resource "aws_sqs_queue" "document_processing" {
   visibility_timeout_seconds = 30
 
   tags = {
-    Name = "${var.project_name}-document-processing-queue"
+    Name = "${var.aws_project_name}-document-processing-queue"
   }
 }
 

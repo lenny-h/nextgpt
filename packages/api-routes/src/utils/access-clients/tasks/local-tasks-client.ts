@@ -16,7 +16,7 @@ export class LocalTasksClient implements ITasksClient {
   }: {
     parent: string;
     task: TaskRequest;
-  }): Promise<{ name: string }> {
+  }): Promise<void> {
     const delay = Math.max(0, task.scheduleTime.seconds * 1000 - Date.now());
 
     console.log(`[LocalTasksClient] Task scheduled with delay: ${delay}ms`);
@@ -61,11 +61,9 @@ export class LocalTasksClient implements ITasksClient {
 
     // Store the timeout
     this.scheduledTasks.set(task.name, timeout);
-
-    return { name: task.name };
   }
 
-  async deleteTask({ name }: { name: string }): Promise<{ name: string }> {
+  async deleteTask({ name }: { name: string }): Promise<void> {
     console.log(`[LocalTasksClient] Deleting task: ${name}`);
 
     if (this.scheduledTasks.has(name)) {
@@ -77,8 +75,6 @@ export class LocalTasksClient implements ITasksClient {
         `[LocalTasksClient] Task not found or already executed: ${name}`
       );
     }
-
-    return { name };
   }
 
   taskPath(

@@ -27,7 +27,7 @@ resource "google_compute_security_policy" "armor_policy" {
 resource "google_compute_region_network_endpoint_group" "api_neg" {
   name                  = "api-neg"
   network_endpoint_type = "SERVERLESS"
-  region                = var.region
+  region                = var.gcp_region
   cloud_run {
     service = google_cloud_run_v2_service.api.name
   }
@@ -36,7 +36,7 @@ resource "google_compute_region_network_endpoint_group" "api_neg" {
 resource "google_compute_region_network_endpoint_group" "pdf_exporter_neg" {
   name                  = "pdf-exporter-neg"
   network_endpoint_type = "SERVERLESS"
-  region                = var.region
+  region                = var.gcp_region
   cloud_run {
     service = google_cloud_run_v2_service.pdf_exporter.name
   }
@@ -157,7 +157,7 @@ resource "google_compute_global_forwarding_rule" "http_forwarding_rule" {
 # Allow Cloud Load Balancing to invoke API service
 resource "google_cloud_run_v2_service_iam_binding" "api_lb_invoker" {
   project  = var.project_id
-  location = var.region
+  location = var.gcp_region
   name     = google_cloud_run_v2_service.api.name
   role     = "roles/run.invoker"
   members = [
@@ -168,7 +168,7 @@ resource "google_cloud_run_v2_service_iam_binding" "api_lb_invoker" {
 # Allow Cloud Load Balancing to invoke PDF Exporter service
 resource "google_cloud_run_v2_service_iam_binding" "pdf_exporter_lb_invoker" {
   project  = var.project_id
-  location = var.region
+  location = var.gcp_region
   name     = google_cloud_run_v2_service.pdf_exporter.name
   role     = "roles/run.invoker"
   members = [

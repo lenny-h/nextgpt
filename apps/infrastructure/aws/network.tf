@@ -5,7 +5,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "${var.project_name}-vpc"
+    Name = "${var.aws_project_name}-vpc"
   }
 }
 
@@ -14,42 +14,42 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-igw"
+    Name = "${var.aws_project_name}-igw"
   }
 }
 
 # Public Subnets
 resource "aws_subnet" "public" {
-  count                   = length(var.availability_zones)
+  count                   = length(var.aws_zones)
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.${count.index}.0/24"
-  availability_zone       = var.availability_zones[count.index]
+  availability_zone       = var.aws_zones[count.index]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.project_name}-public-subnet-${count.index + 1}"
+    Name = "${var.aws_project_name}-public-subnet-${count.index + 1}"
   }
 }
 
 # Private Subnets
 resource "aws_subnet" "private" {
-  count             = length(var.availability_zones)
+  count             = length(var.aws_zones)
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.${count.index + 10}.0/24"
-  availability_zone = var.availability_zones[count.index]
+  availability_zone = var.aws_zones[count.index]
 
   tags = {
-    Name = "${var.project_name}-private-subnet-${count.index + 1}"
+    Name = "${var.aws_project_name}-private-subnet-${count.index + 1}"
   }
 }
 
 # Elastic IPs for NAT Gateways
 resource "aws_eip" "nat" {
-  count  = length(var.availability_zones)
+  count  = length(var.aws_zones)
   domain = "vpc"
 
   tags = {
-    Name = "${var.project_name}-nat-eip-${count.index + 1}"
+    Name = "${var.aws_project_name}-nat-eip-${count.index + 1}"
   }
 
   depends_on = [aws_internet_gateway.main]
@@ -57,12 +57,12 @@ resource "aws_eip" "nat" {
 
 # NAT Gateways
 resource "aws_nat_gateway" "main" {
-  count         = length(var.availability_zones)
+  count         = length(var.aws_zones)
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-    Name = "${var.project_name}-nat-gw-${count.index + 1}"
+    Name = "${var.aws_project_name}-nat-gw-${count.index + 1}"
   }
 
   depends_on = [aws_internet_gateway.main]
@@ -78,20 +78,20 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.project_name}-public-rt"
+    Name = "${var.aws_project_name}-public-rt"
   }
 }
 
 # Public Route Table Associations
 resource "aws_route_table_association" "public" {
-  count          = length(var.availability_zones)
+  count          = length(var.aws_zones)
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
 # Private Route Tables
 resource "aws_route_table" "private" {
-  count  = length(var.availability_zones)
+  count  = length(var.aws_zones)
   vpc_id = aws_vpc.main.id
 
   route {
@@ -100,13 +100,13 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "${var.project_name}-private-rt-${count.index + 1}"
+    Name = "${var.aws_project_name}-private-rt-${count.index + 1}"
   }
 }
 
 # Private Route Table Associations
 resource "aws_route_table_association" "private" {
-  count          = length(var.availability_zones)
+  count          = length(var.aws_zones)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[count.index].id
 }

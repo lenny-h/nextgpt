@@ -1,6 +1,6 @@
 # Application Load Balancer
 resource "aws_lb" "main" {
-  name               = "${var.project_name}-alb"
+  name               = "${var.aws_project_name}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -10,13 +10,13 @@ resource "aws_lb" "main" {
   enable_http2               = true
 
   tags = {
-    Name = "${var.project_name}-alb"
+    Name = "${var.aws_project_name}-alb"
   }
 }
 
 # Target Group for API
 resource "aws_lb_target_group" "api" {
-  name        = "${var.project_name}-api-tg"
+  name        = "${var.aws_project_name}-api-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -37,13 +37,13 @@ resource "aws_lb_target_group" "api" {
   deregistration_delay = 30
 
   tags = {
-    Name = "${var.project_name}-api-tg"
+    Name = "${var.aws_project_name}-api-tg"
   }
 }
 
 # Target Group for Document Processor
 resource "aws_lb_target_group" "document_processor" {
-  name        = "${var.project_name}-doc-proc-tg"
+  name        = "${var.aws_project_name}-doc-proc-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -64,13 +64,13 @@ resource "aws_lb_target_group" "document_processor" {
   deregistration_delay = 30
 
   tags = {
-    Name = "${var.project_name}-doc-proc-tg"
+    Name = "${var.aws_project_name}-doc-proc-tg"
   }
 }
 
 # Target Group for PDF Exporter
 resource "aws_lb_target_group" "pdf_exporter" {
-  name        = "${var.project_name}-pdf-exp-tg"
+  name        = "${var.aws_project_name}-pdf-exp-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -91,7 +91,7 @@ resource "aws_lb_target_group" "pdf_exporter" {
   deregistration_delay = 30
 
   tags = {
-    Name = "${var.project_name}-pdf-exp-tg"
+    Name = "${var.aws_project_name}-pdf-exp-tg"
   }
 }
 
@@ -105,7 +105,7 @@ resource "aws_acm_certificate" "main" {
   }
 
   tags = {
-    Name = "${var.project_name}-cert"
+    Name = "${var.aws_project_name}-cert"
   }
 }
 
@@ -123,7 +123,7 @@ resource "aws_lb_listener" "https" {
   }
 
   tags = {
-    Name = "${var.project_name}-https-listener"
+    Name = "${var.aws_project_name}-https-listener"
   }
 }
 
@@ -144,7 +144,7 @@ resource "aws_lb_listener_rule" "pdf_exporter" {
   }
 
   tags = {
-    Name = "${var.project_name}-pdf-exporter-rule"
+    Name = "${var.aws_project_name}-pdf-exporter-rule"
   }
 }
 
@@ -165,6 +165,6 @@ resource "aws_lb_listener" "http" {
   }
 
   tags = {
-    Name = "${var.project_name}-http-listener"
+    Name = "${var.aws_project_name}-http-listener"
   }
 }

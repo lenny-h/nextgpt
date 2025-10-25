@@ -61,6 +61,24 @@ resource "google_secret_manager_secret_version" "resend_api_key" {
   depends_on = [google_project_service.secretmanager_api]
 }
 
+# Google Client Secret
+resource "google_secret_manager_secret" "google_client_secret" {
+  project   = var.project_id
+  secret_id = "google-client-secret"
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager_api]
+}
+
+resource "google_secret_manager_secret_version" "google_client_secret" {
+  secret      = google_secret_manager_secret.google_client_secret.id
+  secret_data = var.google_client_secret
+
+  depends_on = [google_project_service.secretmanager_api]
+}
+
 # Cloudflare R2 access key ID
 resource "google_secret_manager_secret" "cloudflare_r2_access_key_id" {
   project   = var.project_id

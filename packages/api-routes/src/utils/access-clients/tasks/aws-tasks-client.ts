@@ -44,7 +44,7 @@ export class AwsTasksClient implements ITasksClient {
   }: {
     parent: string;
     task: TaskRequest;
-  }): Promise<{ name: string }> {
+  }): Promise<void> {
     const schedulerClient = this.getSchedulerClient();
 
     // Extract queue/schedule group from parent
@@ -52,11 +52,11 @@ export class AwsTasksClient implements ITasksClient {
 
     // Convert schedule time to ISO 8601 format
     const scheduleTime = new Date(task.scheduleTime.seconds * 1000);
-    const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`;
+    const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`; // AWS requires no milliseconds
 
     // Get target ARN
-    const targetArn = process.env.AWS_SCHEDULER_TARGET_ARN;
-    const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN;
+    const targetArn = process.env.AWS_SCHEDULER_TARGET_ARN; // Target Amazon Resource Name
+    const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN; // IAM Role ARN with permissions to invoke the target
 
     if (!targetArn || !roleArn) {
       throw new Error(
@@ -64,11 +64,8 @@ export class AwsTasksClient implements ITasksClient {
       );
     }
 
-    // Create a unique schedule name (sanitize task name for AWS)
-    const scheduleName = this.sanitizeScheduleName(task.name);
-
     const command = new CreateScheduleCommand({
-      Name: scheduleName,
+      Name: task.name,
       GroupName: scheduleGroup,
       ScheduleExpression: scheduleExpression,
       FlexibleTimeWindow: {
@@ -90,16 +87,14 @@ export class AwsTasksClient implements ITasksClient {
     });
 
     await schedulerClient.send(command);
-
-    return { name: scheduleName };
   }
 
-  async deleteTask({ name }: { name: string }): Promise<{ name: string }> {
+  async deleteTask({ name }: { name: string }): Promise<void> {
     const schedulerClient = this.getSchedulerClient();
     const scheduleGroup = process.env.AWS_SCHEDULER_GROUP || "default";
 
     const command = new DeleteScheduleCommand({
-      Name: this.sanitizeScheduleName(name),
+      Name: name,
       GroupName: scheduleGroup,
     });
 
@@ -114,8 +109,6 @@ export class AwsTasksClient implements ITasksClient {
         throw error;
       }
     }
-
-    return { name };
   }
 
   taskPath(
@@ -133,11 +126,5 @@ export class AwsTasksClient implements ITasksClient {
     const parts = parent.split("/");
     const queueName = parts[parts.length - 1];
     return queueName || process.env.AWS_SCHEDULER_GROUP || "default";
-  }
-
-  private sanitizeScheduleName(name: string): string {
-    // AWS EventBridge Scheduler names must match: ^[0-9a-zA-Z-_.]+$
-    // Replace any invalid characters with underscores
-    return name.replace(/[^0-9a-zA-Z-_.]/g, "_");
   }
 }

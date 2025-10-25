@@ -20,18 +20,15 @@ export class GoogleTasksClient implements ITasksClient {
   }: {
     parent: string;
     task: TaskRequest;
-  }): Promise<{ name: string }> {
-    const [response] = await this.client.createTask({
+  }): Promise<void> {
+    await this.client.createTask({
       parent,
       task,
     });
-
-    return { name: response.name || task.name };
   }
 
-  async deleteTask({ name }: { name: string }): Promise<{ name: string }> {
+  async deleteTask({ name }: { name: string }): Promise<void> {
     await this.client.deleteTask({ name });
-    return { name };
   }
 
   taskPath(

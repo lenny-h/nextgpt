@@ -1,11 +1,11 @@
-output "vpc_network_name" {
-  description = "The name of the VPC network"
-  value       = google_compute_network.private_network.name
-}
-
 output "vpc_network_id" {
   description = "The ID of the VPC network"
   value       = google_compute_network.private_network.id
+}
+
+output "vpc_network_name" {
+  description = "The name of the VPC network"
+  value       = google_compute_network.private_network.name
 }
 
 output "vpc_subnet_name" {

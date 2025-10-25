@@ -1,8 +1,8 @@
 # Provider configuration
 provider "google" {
   project = var.project_id
-  region  = var.region
-  zone    = var.zone
+  region  = var.gcp_region
+  zone    = var.gcp_zone
 }
 
 # Cloudflare provider

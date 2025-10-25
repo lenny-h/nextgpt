@@ -1,6 +1,6 @@
 # IAM Role for ECS Task Execution (pulling images, writing logs)
 resource "aws_iam_role" "ecs_task_execution" {
-  name = "${var.project_name}-ecs-task-execution-role"
+  name = "${var.aws_project_name}-ecs-task-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -14,7 +14,7 @@ resource "aws_iam_role" "ecs_task_execution" {
   })
 
   tags = {
-    Name = "${var.project_name}-ecs-task-execution-role"
+    Name = "${var.aws_project_name}-ecs-task-execution-role"
   }
 }
 
@@ -26,7 +26,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
 
 # Policy for ECS task execution to access Secrets Manager
 resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
-  name = "${var.project_name}-ecs-task-execution-secrets-policy"
+  name = "${var.aws_project_name}-ecs-task-execution-secrets-policy"
   role = aws_iam_role.ecs_task_execution.id
 
   policy = jsonencode({
@@ -52,7 +52,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
 
 # IAM Role for API Task (application permissions)
 resource "aws_iam_role" "api_task" {
-  name = "${var.project_name}-api-task-role"
+  name = "${var.aws_project_name}-api-task-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -66,13 +66,13 @@ resource "aws_iam_role" "api_task" {
   })
 
   tags = {
-    Name = "${var.project_name}-api-task-role"
+    Name = "${var.aws_project_name}-api-task-role"
   }
 }
 
 # Policy for API to access S3, SQS, EventBridge Scheduler, and Bedrock
 resource "aws_iam_role_policy" "api_task" {
-  name = "${var.project_name}-api-task-policy"
+  name = "${var.aws_project_name}-api-task-policy"
   role = aws_iam_role.api_task.id
 
   policy = jsonencode({
@@ -126,7 +126,7 @@ resource "aws_iam_role_policy" "api_task" {
           "scheduler:DeleteSchedule",
           "scheduler:GetSchedule"
         ]
-        Resource = "arn:aws:scheduler:${var.aws_region}:*:schedule/${var.project_name}-task-schedules/*"
+        Resource = "arn:aws:scheduler:${var.aws_region}:*:schedule/${var.aws_project_name}-task-schedules/*"
       },
       {
         Effect = "Allow"
@@ -143,7 +143,8 @@ resource "aws_iam_role_policy" "api_task" {
       {
         Effect = "Allow"
         Action = [
-          "bedrock:InvokeModel"
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
         ]
         Resource = "*"
       }
@@ -153,7 +154,7 @@ resource "aws_iam_role_policy" "api_task" {
 
 # IAM Role for Document Processor Task
 resource "aws_iam_role" "document_processor_task" {
-  name = "${var.project_name}-document-processor-task-role"
+  name = "${var.aws_project_name}-document-processor-task-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -167,13 +168,13 @@ resource "aws_iam_role" "document_processor_task" {
   })
 
   tags = {
-    Name = "${var.project_name}-document-processor-task-role"
+    Name = "${var.aws_project_name}-document-processor-task-role"
   }
 }
 
 # Policy for Document Processor to access SQS and Bedrock
 resource "aws_iam_role_policy" "document_processor_task" {
-  name = "${var.project_name}-document-processor-task-policy"
+  name = "${var.aws_project_name}-document-processor-task-policy"
   role = aws_iam_role.document_processor_task.id
 
   policy = jsonencode({
@@ -208,7 +209,8 @@ resource "aws_iam_role_policy" "document_processor_task" {
       {
         Effect = "Allow"
         Action = [
-          "bedrock:InvokeModel"
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
         ]
         Resource = "*"
       }
@@ -218,7 +220,7 @@ resource "aws_iam_role_policy" "document_processor_task" {
 
 # IAM Role for PDF Exporter Task
 resource "aws_iam_role" "pdf_exporter_task" {
-  name = "${var.project_name}-pdf-exporter-task-role"
+  name = "${var.aws_project_name}-pdf-exporter-task-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -232,6 +234,6 @@ resource "aws_iam_role" "pdf_exporter_task" {
   })
 
   tags = {
-    Name = "${var.project_name}-pdf-exporter-task-role"
+    Name = "${var.aws_project_name}-pdf-exporter-task-role"
   }
 }

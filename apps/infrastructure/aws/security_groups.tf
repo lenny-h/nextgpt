@@ -1,6 +1,6 @@
 # Security Group for ALB
 resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-alb-sg"
+  name        = "${var.aws_project_name}-alb-sg"
   description = "Security group for Application Load Balancer"
   vpc_id      = aws_vpc.main.id
 
@@ -29,13 +29,13 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "${var.project_name}-alb-sg"
+    Name = "${var.aws_project_name}-alb-sg"
   }
 }
 
 # Security Group for ECS Tasks
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.project_name}-ecs-tasks-sg"
+  name        = "${var.aws_project_name}-ecs-tasks-sg"
   description = "Security group for ECS tasks"
   vpc_id      = aws_vpc.main.id
 
@@ -64,13 +64,13 @@ resource "aws_security_group" "ecs_tasks" {
   }
 
   tags = {
-    Name = "${var.project_name}-ecs-tasks-sg"
+    Name = "${var.aws_project_name}-ecs-tasks-sg"
   }
 }
 
 # Security Group for RDS
 resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-rds-sg"
+  name        = "${var.aws_project_name}-rds-sg"
   description = "Security group for RDS PostgreSQL"
   vpc_id      = aws_vpc.main.id
 
@@ -91,13 +91,13 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "${var.project_name}-rds-sg"
+    Name = "${var.aws_project_name}-rds-sg"
   }
 }
 
 # Security Group for Redis
 resource "aws_security_group" "redis" {
-  name        = "${var.project_name}-redis-sg"
+  name        = "${var.aws_project_name}-redis-sg"
   description = "Security group for ElastiCache Redis"
   vpc_id      = aws_vpc.main.id
 
@@ -118,6 +118,6 @@ resource "aws_security_group" "redis" {
   }
 
   tags = {
-    Name = "${var.project_name}-redis-sg"
+    Name = "${var.aws_project_name}-redis-sg"
   }
 }
