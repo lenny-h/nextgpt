@@ -22,7 +22,7 @@ def embed_content(contents: List[str]) -> List[List[float]]:
         Exception: If the API call fails
     """
     api_url = os.getenv("API_URL")
-    internal_secret = os.getenv("INTERNAL_API_SECRET")
+    internal_secret = os.getenv("ENCRYPTION_KEY")
 
     if not api_url:
         raise ValueError("API_URL environment variable not set")

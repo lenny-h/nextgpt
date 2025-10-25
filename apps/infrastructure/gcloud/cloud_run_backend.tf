@@ -258,6 +258,15 @@ resource "google_cloud_run_v2_service" "document_processor" {
         }
       }
       env {
+        name = "ENCRYPTION_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.encryption_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
         name = "CLOUDFLARE_ACCESS_KEY_ID"
         value_source {
           secret_key_ref {

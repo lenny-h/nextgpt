@@ -253,6 +253,10 @@ resource "aws_ecs_task_definition" "document_processor" {
         valueFrom = aws_secretsmanager_secret.db_password.arn
       },
       {
+        name      = "ENCRYPTION_KEY"
+        valueFrom = aws_secretsmanager_secret.encryption_key.arn
+      },
+      {
         name      = "CLOUDFLARE_ACCESS_KEY_ID"
         valueFrom = aws_secretsmanager_secret.cloudflare_r2_access_key_id.arn
       },
