@@ -24,7 +24,7 @@ function canDirectlyAttach(mediaType: string): boolean {
 }
 
 async function convertToMarkdown(gcsUrl: string): Promise<string> {
-  const processorUrl = process.env.PROCESSOR_URL;
+  const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
 
   const response = await fetch(
     `${processorUrl}/convert?gcs_url=${encodeURIComponent(gcsUrl)}`,

@@ -44,21 +44,9 @@ const app = new Hono().delete(
     }
 
     const tasksClient = getTasksClient();
-    const taskQueuePath = process.env.TASK_QUEUE_PATH!;
 
-    const queuePathParts = taskQueuePath.split("/");
-    const location = queuePathParts[3];
-    const queue = queuePathParts.pop()!;
-
-    const taskName = `pdf-process-${taskId}`;
-    const formattedTaskName = tasksClient.taskPath(
-      process.env.GOOGLE_VERTEX_PROJECT!,
-      location,
-      queue,
-      taskName
-    );
-
-    await tasksClient.deleteTask({ name: formattedTaskName });
+    // Cancel the scheduled task using cloud-agnostic interface
+    await tasksClient.cancelTask({ taskId });
 
     await deleteTask({
       taskId,

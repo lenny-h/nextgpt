@@ -2,38 +2,28 @@ import { type JSONValue, type LanguageModel } from "ai";
 
 export class ChatConfig {
   public readonly modelId: LanguageModel;
-  public readonly isDefaultModel: boolean;
   public readonly providerOptions: {
-    [model: string]: Record<string, JSONValue>;
+    [model: string]: Record<string, JSONValue | undefined>;
   };
 
   constructor(
     modelId: LanguageModel,
-    isDefaultModel: boolean,
-    providerOptions: { [model: string]: Record<string, JSONValue> } = {}
+    providerOptions: {
+      [model: string]: Record<string, JSONValue | undefined>;
+    } = {}
   ) {
     this.modelId = modelId;
-    this.isDefaultModel = isDefaultModel;
     this.providerOptions = providerOptions;
   }
 
   static async create(
     selectedChatModel: string,
-    bucketId: string,
     reasoningEnabled?: boolean
   ): Promise<ChatConfig> {
-    const { getModel } = await import("../providers/index.js");
+    const { getModel } = await import("../providers.js");
 
-    const config = await getModel(
-      selectedChatModel,
-      bucketId,
-      reasoningEnabled
-    );
+    const config = await getModel(selectedChatModel, reasoningEnabled);
 
-    return new ChatConfig(
-      config.model,
-      config.isDefaultModel,
-      config.providerOptions
-    );
+    return new ChatConfig(config.model, config.providerOptions);
   }
 }

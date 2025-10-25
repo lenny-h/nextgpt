@@ -6,7 +6,8 @@ import {
 } from "@aws-sdk/client-scheduler";
 import {
   ITasksClient,
-  TaskRequest,
+  ScheduleProcessingTaskParams,
+  CancelTaskParams,
 } from "../interfaces/tasks-client.interface.js";
 
 /**
@@ -38,25 +39,16 @@ export class AwsTasksClient implements ITasksClient {
     return this.client;
   }
 
-  async createTask({
-    parent,
-    task,
-  }: {
-    parent: string;
-    task: TaskRequest;
-  }): Promise<void> {
+  async scheduleProcessingTask(
+    params: ScheduleProcessingTaskParams
+  ): Promise<void> {
+    const { taskId, processorUrl, endpoint, payload, scheduleTime } = params;
+
     const schedulerClient = this.getSchedulerClient();
 
-    // Extract queue/schedule group from parent
-    const scheduleGroup = this.extractScheduleGroup(parent);
-
-    // Convert schedule time to ISO 8601 format
-    const scheduleTime = new Date(task.scheduleTime.seconds * 1000);
-    const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`; // AWS requires no milliseconds
-
-    // Get target ARN
-    const targetArn = process.env.AWS_SCHEDULER_TARGET_ARN; // Target Amazon Resource Name
-    const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN; // IAM Role ARN with permissions to invoke the target
+    const scheduleGroup = process.env.AWS_SCHEDULER_GROUP || "default";
+    const targetArn = process.env.AWS_SCHEDULER_TARGET_ARN;
+    const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN;
 
     if (!targetArn || !roleArn) {
       throw new Error(
@@ -64,8 +56,13 @@ export class AwsTasksClient implements ITasksClient {
       );
     }
 
+    // Convert schedule time to ISO 8601 format
+    const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`; // AWS requires no milliseconds
+
+    const taskName = `process-${taskId}`;
+
     const command = new CreateScheduleCommand({
-      Name: task.name,
+      Name: taskName,
       GroupName: scheduleGroup,
       ScheduleExpression: scheduleExpression,
       FlexibleTimeWindow: {
@@ -75,11 +72,13 @@ export class AwsTasksClient implements ITasksClient {
         Arn: targetArn,
         RoleArn: roleArn,
         Input: JSON.stringify({
-          name: task.name,
-          url: task.httpRequest.url,
-          method: task.httpRequest.httpMethod,
-          headers: task.httpRequest.headers,
-          body: task.httpRequest.body,
+          name: taskName,
+          url: `${processorUrl}${endpoint}`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: Buffer.from(JSON.stringify(payload)).toString("base64"),
         }),
       },
       // Delete schedule after execution
@@ -89,12 +88,16 @@ export class AwsTasksClient implements ITasksClient {
     await schedulerClient.send(command);
   }
 
-  async deleteTask({ name }: { name: string }): Promise<void> {
+  async cancelTask(params: CancelTaskParams): Promise<void> {
+    const { taskId } = params;
+
     const schedulerClient = this.getSchedulerClient();
     const scheduleGroup = process.env.AWS_SCHEDULER_GROUP || "default";
 
+    const taskName = `process-${taskId}`;
+
     const command = new DeleteScheduleCommand({
-      Name: name,
+      Name: taskName,
       GroupName: scheduleGroup,
     });
 
@@ -103,28 +106,11 @@ export class AwsTasksClient implements ITasksClient {
     } catch (error: any) {
       if (error.name === "ResourceNotFoundException") {
         console.warn(
-          `[AwsTasksClient] Schedule not found: ${name}. It may have already been executed or deleted.`
+          `[AwsTasksClient] Schedule not found: ${taskName}. It may have already been executed or deleted.`
         );
       } else {
         throw error;
       }
     }
-  }
-
-  taskPath(
-    project: string,
-    location: string,
-    queue: string,
-    task: string
-  ): string {
-    return `projects/${project}/locations/${location}/queues/${queue}/tasks/${task}`;
-  }
-
-  private extractScheduleGroup(parent: string): string {
-    // Extract schedule group from parent path
-    // Expected format: projects/{project}/locations/{location}/queues/{queue}
-    const parts = parent.split("/");
-    const queueName = parts[parts.length - 1];
-    return queueName || process.env.AWS_SCHEDULER_GROUP || "default";
   }
 }

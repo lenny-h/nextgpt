@@ -2,40 +2,35 @@
  * Base interface for task queue clients
  * All task client implementations must implement these methods
  */
-export interface TaskRequest {
-  name: string;
-  httpRequest: {
-    httpMethod: "POST";
-    url: string;
-    headers: Record<string, string>;
-    body: string;
-    oidcToken?: {
-      serviceAccountEmail: string;
-    };
-  };
-  scheduleTime: {
-    seconds: number;
-  };
+
+/**
+ * Parameters for scheduling a processing task
+ */
+export interface ScheduleProcessingTaskParams {
+  taskId: string;
+  processorUrl: string;
+  endpoint: string; // e.g., "/process-pdf" or "/process-document"
+  payload: Record<string, any>;
+  scheduleTime: Date;
+}
+
+/**
+ * Parameters for canceling a scheduled task
+ */
+export interface CancelTaskParams {
+  taskId: string;
 }
 
 export interface ITasksClient {
   /**
-   * Create a task in the queue
+   * Schedule a processing task with high-level abstraction
+   * Each implementation handles cloud-provider-specific details internally
    */
-  createTask(params: { parent: string; task: TaskRequest }): Promise<void>;
+  scheduleProcessingTask(params: ScheduleProcessingTaskParams): Promise<void>;
 
   /**
-   * Delete a task from the queue
+   * Cancel a scheduled task
+   * Each implementation handles cloud-provider-specific task identification
    */
-  deleteTask(params: { name: string }): Promise<void>;
-
-  /**
-   * Generate a task path/name
-   */
-  taskPath(
-    project: string,
-    location: string,
-    queue: string,
-    task: string
-  ): string;
+  cancelTask(params: CancelTaskParams): Promise<void>;
 }

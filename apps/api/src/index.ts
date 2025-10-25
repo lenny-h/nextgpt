@@ -4,6 +4,7 @@ import { serve } from "@hono/node-server";
 import { protectedApiRouter } from "@workspace/api-routes/routes/protected/index.js";
 import { unprotectedApiRouter } from "@workspace/api-routes/routes/unprotected/index.js";
 import { authMiddleware } from "@workspace/server/auth-middleware.js";
+import { internalAuthMiddleware } from "@workspace/server/internal-auth-middleware.js";
 import { auth } from "@workspace/server/auth-server.js";
 import { errorHandler } from "@workspace/server/error-handler.js";
 import { Hono } from "hono";
@@ -12,6 +13,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
+import { internalApiRouter } from "@workspace/api-routes/routes/internal/index.js";
 
 // Create Hono application
 const app = new Hono();
@@ -50,6 +52,12 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 
 // Authentication middleware for protected routes
 app.use("/api/protected/*", authMiddleware);
+
+// Internal secret middleware for internal routes
+app.use("/api/internal/*", internalAuthMiddleware);
+
+// Internal routes
+app.route("/api/internal", internalApiRouter);
 
 // Unprotected routes
 app.route("/api/public", unprotectedApiRouter);

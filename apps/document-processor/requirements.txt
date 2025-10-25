@@ -21,6 +21,9 @@ psycopg[binary,pool]==3.2.9
 # Google Vertex AI for embeddings
 google-genai==1.41.0
 
+# HTTP client for API requests
+httpx==0.28.1
+
 # Additional utilities
 pydantic==2.11.9
 pydantic-settings==2.10.1

@@ -1,7 +1,5 @@
 import * as z from "zod";
 
-//TODO:
-
 import { increaseBucketSize } from "@workspace/api-routes/lib/db/queries/buckets.js";
 import { isCourseMaintainer } from "@workspace/api-routes/lib/db/queries/course-maintainers.js";
 import { getBucketSizeByCourseId } from "@workspace/api-routes/lib/db/queries/courses.js";
@@ -61,15 +59,16 @@ const app = new Hono().post(
 
     await increaseBucketSize({ bucketId: bucketSizeInfo.bucketId, fileSize });
 
-    const projectId = process.env.GOOGLE_VERTEX_PROJECT!;
-    const serviceAccountEmail = process.env.CLOUD_TASKS_SA!;
-    const processorUrl = process.env.PROCESSOR_URL;
-    const queuePath = process.env.TASK_QUEUE_PATH!;
+    const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
+    if (!processorUrl) {
+      throw new HTTPException(500, {
+        message: "DOCUMENT_PROCESSOR_URL not configured",
+      });
+    }
 
     const tasksClient = getTasksClient();
 
     const taskId = generateUUID();
-    const taskName = `pdf-process-${taskId}`;
 
     await addTask({
       id: taskId,
@@ -79,49 +78,26 @@ const app = new Hono().post(
       pubDate: processingDate ? new Date(processingDate) : undefined,
     });
 
-    const file = {
-      taskId,
-      bucket: bucketSizeInfo.bucketId,
-      name: `${courseId}/${filename}`,
-      size: fileSize,
-      contentType: fileType,
-      pageNumberOffset,
-      ...(pdfPipelineOptions && { pipelineOptions: pdfPipelineOptions }),
-    };
-
-    const queuePathParts = queuePath.split("/");
-    const location = queuePathParts[3];
-    const queue = queuePathParts.pop() || "";
-
     const scheduleTime = processingDate
       ? new Date(processingDate)
-      : new Date(Date.now() + 60 * 1000); // 60 seconds from now
+      : new Date(Date.now() + 70 * 1000); // 70 seconds from now
 
-    const task = {
-      name: tasksClient.taskPath(projectId, location, queue, taskName),
-      httpRequest: {
-        httpMethod: "POST" as const,
-        url:
-          processorUrl +
-          (fileType === "application/pdf"
-            ? "/process-pdf"
-            : "/process-document"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: Buffer.from(JSON.stringify(file)).toString("base64"),
-        oidcToken: {
-          serviceAccountEmail: serviceAccountEmail,
-        },
+    // Schedule the processing task with cloud-agnostic interface
+    await tasksClient.scheduleProcessingTask({
+      taskId,
+      processorUrl,
+      endpoint:
+        fileType === "application/pdf" ? "/process-pdf" : "/process-document",
+      payload: {
+        taskId,
+        bucket: bucketSizeInfo.bucketId,
+        name: `${courseId}/${filename}`,
+        size: fileSize,
+        contentType: fileType,
+        pageNumberOffset,
+        ...(pdfPipelineOptions && { pipelineOptions: pdfPipelineOptions }),
       },
-      scheduleTime: {
-        seconds: Math.floor(scheduleTime.getTime() / 1000),
-      },
-    };
-
-    await tasksClient.createTask({
-      parent: queuePath,
-      task,
+      scheduleTime,
     });
 
     const extFilename = `${courseId}/${filename}`;

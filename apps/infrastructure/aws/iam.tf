@@ -41,6 +41,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
           aws_secretsmanager_secret.db_password.arn,
           aws_secretsmanager_secret.better_auth_secret.arn,
           aws_secretsmanager_secret.resend_api_key.arn,
+          aws_secretsmanager_secret.google_client_secret.arn,
           aws_secretsmanager_secret.cloudflare_r2_access_key_id.arn,
           aws_secretsmanager_secret.cloudflare_r2_secret_access_key.arn,
           aws_secretsmanager_secret.encryption_key.arn

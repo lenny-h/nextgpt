@@ -1,6 +1,7 @@
 import {
   ITasksClient,
-  TaskRequest,
+  ScheduleProcessingTaskParams,
+  CancelTaskParams,
 } from "../interfaces/tasks-client.interface.js";
 
 /**
@@ -10,36 +11,35 @@ import {
 export class LocalTasksClient implements ITasksClient {
   private scheduledTasks: Map<string, NodeJS.Timeout> = new Map();
 
-  async createTask({
-    parent,
-    task,
-  }: {
-    parent: string;
-    task: TaskRequest;
-  }): Promise<void> {
-    const delay = Math.max(0, task.scheduleTime.seconds * 1000 - Date.now());
+  async scheduleProcessingTask(
+    params: ScheduleProcessingTaskParams
+  ): Promise<void> {
+    const { taskId, processorUrl, endpoint, payload, scheduleTime } = params;
+
+    const delay = Math.max(0, scheduleTime.getTime() - Date.now());
+    const url = `${processorUrl}${endpoint}`;
+    const taskName = `process-${taskId}`;
 
     console.log(`[LocalTasksClient] Task scheduled with delay: ${delay}ms`);
-    console.log(`[LocalTasksClient] Target URL: ${task.httpRequest.url}`);
-    console.log(`[LocalTasksClient] Queue: ${parent}`);
+    console.log(`[LocalTasksClient] Target URL: ${url}`);
+    console.log(`[LocalTasksClient] Task ID: ${taskId}`);
 
     // Clear any existing timeout with the same name
-    if (this.scheduledTasks.has(task.name)) {
-      clearTimeout(this.scheduledTasks.get(task.name)!);
+    if (this.scheduledTasks.has(taskName)) {
+      clearTimeout(this.scheduledTasks.get(taskName)!);
     }
 
     // Execute after delay
     const timeout = setTimeout(async () => {
       try {
-        const body = Buffer.from(task.httpRequest.body, "base64").toString(
-          "utf-8"
-        );
-        console.log(`[LocalTasksClient] Executing task: ${task.name}`);
+        console.log(`[LocalTasksClient] Executing task: ${taskName}`);
 
-        const response = await fetch(task.httpRequest.url, {
-          method: task.httpRequest.httpMethod,
-          headers: task.httpRequest.headers,
-          body: body,
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -55,35 +55,29 @@ export class LocalTasksClient implements ITasksClient {
         console.error(`[LocalTasksClient] Task execution error:`, error);
       } finally {
         // Remove from scheduled tasks
-        this.scheduledTasks.delete(task.name);
+        this.scheduledTasks.delete(taskName);
       }
     }, delay);
 
     // Store the timeout
-    this.scheduledTasks.set(task.name, timeout);
+    this.scheduledTasks.set(taskName, timeout);
   }
 
-  async deleteTask({ name }: { name: string }): Promise<void> {
-    console.log(`[LocalTasksClient] Deleting task: ${name}`);
+  async cancelTask(params: CancelTaskParams): Promise<void> {
+    const { taskId } = params;
+    const taskName = `process-${taskId}`;
 
-    if (this.scheduledTasks.has(name)) {
-      clearTimeout(this.scheduledTasks.get(name)!);
-      this.scheduledTasks.delete(name);
-      console.log(`[LocalTasksClient] Task deleted successfully`);
+    console.log(`[LocalTasksClient] Canceling task: ${taskName}`);
+
+    if (this.scheduledTasks.has(taskName)) {
+      clearTimeout(this.scheduledTasks.get(taskName)!);
+      this.scheduledTasks.delete(taskName);
+      console.log(`[LocalTasksClient] Task canceled successfully`);
     } else {
       console.warn(
-        `[LocalTasksClient] Task not found or already executed: ${name}`
+        `[LocalTasksClient] Task not found or already executed: ${taskName}`
       );
     }
-  }
-
-  taskPath(
-    project: string,
-    location: string,
-    queue: string,
-    task: string
-  ): string {
-    return `projects/${project}/locations/${location}/queues/${queue}/tasks/${task}`;
   }
 
   /**
