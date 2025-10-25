@@ -25,12 +25,13 @@ from models.responses import (
     ProcessingResponse
 )
 
-from access_clients import get_object_bytes, embed_content
+from access_clients import get_storage_client
 from db.postgres import (
     upload_to_postgres_db,
     update_status_to_processing,
     update_status_to_finished
 )
+from embeddings.embeddings_client import embed_content
 
 router = APIRouter()
 
@@ -70,62 +71,25 @@ def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[dict]]:
     return page_index, bbox_dict
 
 
-@router.post("/convert-pdf-from-s3")
-async def convert_pdf_from_s3(event: DocumentUploadEvent):
-    """Convert a PDF from S3/R2 to chunks with page numbers and bounding boxes."""
+@router.post("/process-pdf")
+async def process_pdf(event: DocumentUploadEvent):
+    """Process a PDF from cloud storage to chunks with page numbers and bounding boxes."""
     try:
-        return await _process_pdf(event)
+        return await _convert_pdf(event)
     except ClientError as e:
         error_code = e.response.get("Error", {}).get("Code", "Unknown")
         if error_code == "NoSuchKey":
             raise HTTPException(
                 status_code=404,
-                detail=f"File not found: {event.bucket}/{event.name}"
+                detail=f"File not found: {event.bucketId}/{event.name}"
             )
-        raise HTTPException(status_code=500, detail=f"S3 error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to convert PDF: {str(e)}")
 
 
-async def _convert_pdf_to_chunks(
-    bucketId: str,
-    key: str,
-    pipeline_options: Optional[object] = None
-) -> Tuple[PdfChunkedConversionResponse, int]:
-    """Convert PDF to chunks without full processing and return page count."""
-    file_content = get_object_bytes(bucketId, key)
-    buf = io.BytesIO(file_content)
-    source = DocumentStream(name="document.pdf", stream=buf)
-
-    doc_converter = _create_converter_with_options(pipeline_options)
-    result = doc_converter.convert(source)
-
-    chunker = HybridChunker(tokenizer=get_tokenizer())
-    chunk_iter = chunker.chunk(dl_doc=result.document)
-
-    chunks: List[PdfChunkData] = []
-    for idx, chunk in enumerate(chunk_iter):
-        contextualized_text = chunker.contextualize(chunk=chunk)
-        doc_chunk = DocChunk.model_validate(chunk)
-        page_index, bbox_dict = _extract_chunk_metadata(doc_chunk)
-
-        chunks.append(PdfChunkData(
-            contextualized_content=contextualized_text,
-            chunk_index=idx,
-            page_index=page_index,
-            bbox=bbox_dict
-        ))
-
-    return PdfChunkedConversionResponse(
-        chunks=chunks,
-        total_chunks=len(chunks),
-        success=True,
-        message=f"Successfully converted and chunked PDF {key}"
-    ), result.document.num_pages()
-
-
-async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
+async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full PDF processing workflow with embeddings and database storage."""
     task_id = event.taskId
     course_id, shortened_filename = event.name.split("/")
@@ -134,7 +98,7 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         await update_status_to_processing(task_id)
 
         chunks_response, page_count = await _convert_pdf_to_chunks(
-            event.bucket, event.name, event.pipelineOptions
+            "files-bucket", event.bucketId + "/" + event.name, event.pipelineOptions
         )
 
         if not chunks_response.chunks:
@@ -164,5 +128,44 @@ async def _process_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        await handle_processing_error(event, error)
+        await handle_processing_error("files-bucket", event, error)
         raise error
+
+
+async def _convert_pdf_to_chunks(
+    bucket: str,
+    key: str,
+    pipeline_options: Optional[object] = None
+) -> Tuple[PdfChunkedConversionResponse, int]:
+    """Convert PDF to chunks without full processing and return page count."""
+    storage_client = get_storage_client()
+    file_content = storage_client.get_object_bytes(bucket, key)
+
+    buf = io.BytesIO(file_content)
+    source = DocumentStream(name="document.pdf", stream=buf)
+
+    doc_converter = _create_converter_with_options(pipeline_options)
+    result = doc_converter.convert(source)
+
+    chunker = HybridChunker(tokenizer=get_tokenizer())
+    chunk_iter = chunker.chunk(dl_doc=result.document)
+
+    chunks: List[PdfChunkData] = []
+    for idx, chunk in enumerate(chunk_iter):
+        contextualized_text = chunker.contextualize(chunk=chunk)
+        doc_chunk = DocChunk.model_validate(chunk)
+        page_index, bbox_dict = _extract_chunk_metadata(doc_chunk)
+
+        chunks.append(PdfChunkData(
+            contextualized_content=contextualized_text,
+            chunk_index=idx,
+            page_index=page_index,
+            bbox=bbox_dict
+        ))
+
+    return PdfChunkedConversionResponse(
+        chunks=chunks,
+        total_chunks=len(chunks),
+        success=True,
+        message=f"Successfully converted and chunked PDF {key}"
+    ), result.document.num_pages()

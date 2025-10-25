@@ -28,6 +28,8 @@ The services are exposed on the following local ports:
 | ------------------ | ---------- | -------------- |
 | PostgreSQL         | 5432       | 5432           |
 | Redis              | 6379       | 6379           |
+| MinIO              | 9000       | 9000           |
+| MinIO Console      | 9001       | 9001           |
 | App                | 3000       | 8080           |
 | Dashboard          | 3001       | 8080           |
 | API                | 3004       | 8080           |
@@ -56,6 +58,11 @@ The `.env` file in the root directory contains all the necessary environment var
 - **Port**: `6379`
 - **Persistence**: Enabled with AOF (Append Only File)
 
+### MinIO
+
+- **Image**: `minio/minio:RELEASE.2025-07-23T15-54-02Z`
+- **Ports**: `9000` (API), `9001` (Console)
+
 ## Quick Start
 
 1. **Copy the environment file**:
@@ -65,9 +72,7 @@ The `.env` file in the root directory contains all the necessary environment var
    ```
 
 2. **Update the `.env` file** with your configuration. At minimum, set:
-   - `DB_PASSWORD`: PostgreSQL password (default: `postgres`)
-   - `POSTGRES_DB`: Database name (default: `postgres`)
-   - `DATABASE_URL`: Full connection string
+   - `DB_PASSWORD`: PostgreSQL password
 
 3. **Start the services**:
 

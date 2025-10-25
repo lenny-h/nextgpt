@@ -4,6 +4,7 @@ Uses lazy initialization to avoid creating the client at import time.
 Thread-safe using double-checked locking pattern.
 """
 
+import os
 import threading
 from typing import Optional, Dict, Any
 
@@ -66,8 +67,14 @@ class GoogleStorageClient(IStorageClient):
             google.cloud.exceptions.NotFound: If object doesn't exist
             Exception: If the storage operation fails
         """
+        bucket_prefix = os.getenv("GOOGLE_VERTEX_PROJECT")
+
+        if not bucket_prefix:
+            raise ValueError(
+                "Environment variable 'GOOGLE_VERTEX_PROJECT' is not set.")
+
         client = self._get_client()
-        blob = client.bucket(bucket).blob(key)
+        blob = client.bucket(bucket_prefix + bucket).blob(key)
         return blob.download_as_bytes()
 
     def get_object_response(self, bucket: str, key: str) -> Dict[str, Any]:
@@ -86,8 +93,14 @@ class GoogleStorageClient(IStorageClient):
             google.cloud.exceptions.NotFound: If object doesn't exist
             Exception: If the storage operation fails
         """
+        bucket_prefix = os.getenv("GOOGLE_VERTEX_PROJECT")
+
+        if not bucket_prefix:
+            raise ValueError(
+                "Environment variable 'GOOGLE_VERTEX_PROJECT' is not set.")
+
         client = self._get_client()
-        blob = client.bucket(bucket).blob(key)
+        blob = client.bucket(bucket_prefix + bucket).blob(key)
 
         # Reload to get latest metadata
         blob.reload()
@@ -112,6 +125,12 @@ class GoogleStorageClient(IStorageClient):
             google.cloud.exceptions.NotFound: If object doesn't exist
             Exception: If the storage operation fails
         """
+        bucket_prefix = os.getenv("GOOGLE_VERTEX_PROJECT")
+
+        if not bucket_prefix:
+            raise ValueError(
+                "Environment variable 'GOOGLE_VERTEX_PROJECT' is not set.")
+
         client = self._get_client()
-        blob = client.bucket(bucket).blob(key)
+        blob = client.bucket(bucket_prefix + bucket).blob(key)
         blob.delete()

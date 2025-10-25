@@ -90,7 +90,7 @@ const app = new Hono().post(
         fileType === "application/pdf" ? "/process-pdf" : "/process-document",
       payload: {
         taskId,
-        bucket: bucketSizeInfo.bucketId,
+        bucketId: bucketSizeInfo.bucketId,
         name: `${courseId}/${filename}`,
         size: fileSize,
         contentType: fileType,

@@ -4,6 +4,7 @@ Uses lazy initialization to avoid creating the client at import time.
 Thread-safe using double-checked locking pattern.
 """
 
+import os
 import threading
 from typing import Optional, Dict, Any
 
@@ -65,8 +66,14 @@ class AwsStorageClient(IStorageClient):
         Raises:
             ClientError: If the S3 operation fails
         """
+        bucket_prefix = os.getenv("AWS_PROJECT_NAME")
+
+        if not bucket_prefix:
+            raise ValueError(
+                "Environment variable 'AWS_PROJECT_NAME' is not set.")
+
         client = self._get_client()
-        response = client.get_object(Bucket=bucket, Key=key)
+        response = client.get_object(Bucket=bucket_prefix + bucket, Key=key)
         return response["Body"].read()
 
     def get_object_response(self, bucket: str, key: str) -> Dict[str, Any]:
@@ -83,8 +90,14 @@ class AwsStorageClient(IStorageClient):
         Raises:
             ClientError: If the S3 operation fails
         """
+        bucket_prefix = os.getenv("AWS_PROJECT_NAME")
+
+        if not bucket_prefix:
+            raise ValueError(
+                "Environment variable 'AWS_PROJECT_NAME' is not set.")
+
         client = self._get_client()
-        return client.get_object(Bucket=bucket, Key=key)
+        return client.get_object(Bucket=bucket_prefix + bucket, Key=key)
 
     def delete_file(self, bucket: str, key: str) -> None:
         """
@@ -97,5 +110,11 @@ class AwsStorageClient(IStorageClient):
         Raises:
             ClientError: If the S3 operation fails
         """
+        bucket_prefix = os.getenv("AWS_PROJECT_NAME")
+
+        if not bucket_prefix:
+            raise ValueError(
+                "Environment variable 'AWS_PROJECT_NAME' is not set.")
+
         client = self._get_client()
-        client.delete_object(Bucket=bucket, Key=key)
+        client.delete_object(Bucket=bucket_prefix + bucket, Key=key)

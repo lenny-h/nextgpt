@@ -9,7 +9,7 @@
 export interface ScheduleProcessingTaskParams {
   taskId: string;
   processorUrl: string;
-  endpoint: string; // e.g., "/process-pdf" or "/process-document"
+  endpoint: string; // "/process-pdf" or "/process-document"
   payload: Record<string, any>;
   scheduleTime: Date;
 }

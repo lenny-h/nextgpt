@@ -55,10 +55,10 @@ export function getStorageClient(): IStorageClient {
 
     default:
       // Default to Google Cloud Storage if not specified
-      console.log(
-        "[StorageClient] No CLOUD_PROVIDER specified, defaulting to Google Cloud Storage"
+      console.error(
+        `[StorageClient] Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`
       );
-      storageClientInstance = new GoogleStorageClient();
+      throw new Error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
   }
 
   return storageClientInstance;

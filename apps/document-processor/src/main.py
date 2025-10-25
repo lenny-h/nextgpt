@@ -1,8 +1,9 @@
 """
 Docling Microservice
 Converts various file formats to Markdown using IBM's Docling library.
-Reads files from Google Cloud Storage or S3/R2.
+Reads files from cloud storage (Google Cloud Storage, AWS S3, Cloudflare R2, or local MinIO).
 Supports full document processing with embeddings and database storage.
+Works across multiple cloud providers with unified storage interface.
 """
 
 import os
@@ -12,9 +13,9 @@ from db.postgres import get_connection_pool
 
 # Import routers
 from routes.health import router as health_router
-from routes.gcs_convert import router as gcs_router
-from routes.s3_pdf import router as s3_pdf_router
-from routes.s3_document import router as s3_document_router
+from routes.convert import router as convert_router
+from routes.process_document import router as document_router
+from routes.process_pdf import router as pdf_router
 
 
 @asynccontextmanager
@@ -34,16 +35,16 @@ async def lifespan(app: FastAPI):
 # Initialize FastAPI app
 app = FastAPI(
     title="Docling Microservice",
-    description="Convert various file formats to Markdown from Google Cloud Storage",
+    description="Convert various file formats to Markdown from cloud storage",
     version="1.0.0",
     lifespan=lifespan
 )
 
 # Include routers
 app.include_router(health_router, tags=["health"])
-app.include_router(gcs_router, tags=["gcs"])
-app.include_router(s3_pdf_router, tags=["s3-pdf"])
-app.include_router(s3_document_router, tags=["s3-document"])
+app.include_router(convert_router, tags=["convert"])
+app.include_router(document_router, tags=["process-document"])
+app.include_router(pdf_router, tags=["process-pdf"])
 
 
 if __name__ == "__main__":

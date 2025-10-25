@@ -19,72 +19,36 @@ from models.responses import (
     ProcessingResponse
 )
 
-from access_clients import get_object_bytes, embed_content
+from access_clients import get_storage_client
 from db.postgres import (
     upload_to_postgres_db,
     update_status_to_processing,
     update_status_to_finished
 )
+from embeddings.embeddings_client import embed_content
 
 router = APIRouter()
 
 
-@router.post("/convert-document-from-s3")
-async def convert_document_from_s3(event: DocumentUploadEvent):
-    """Convert a non-PDF document from S3/R2 to chunks."""
+@router.post("/process-document")
+async def process_document(event: DocumentUploadEvent):
+    """Convert a non-PDF document from cloud storage to chunks."""
     try:
-        return await _process_document(event)
+        return await _convert_document(event)
     except ClientError as e:
         error_code = e.response.get("Error", {}).get("Code", "Unknown")
         if error_code == "NoSuchKey":
             raise HTTPException(
                 status_code=404,
-                detail=f"File not found: {event.bucket}/{event.name}"
+                detail=f"File not found: {event.bucketId}/{event.name}"
             )
-        raise HTTPException(status_code=500, detail=f"S3 error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to convert document: {str(e)}")
 
 
-async def _convert_document_to_chunks(
-    bucketId: str,
-    key: str
-) -> DocumentChunkedConversionResponse:
-    """Convert document to chunks without full processing."""
-    file_content = get_object_bytes(bucketId, key)
-
-    if "." in key:
-        file_extension = key.split(".")[-1].lower()
-    else:
-        raise ValueError("File key does not contain an extension")
-    buf = io.BytesIO(file_content)
-    source = DocumentStream(name=f"document.{file_extension}", stream=buf)
-
-    converter = get_converter()
-    result = converter.convert(source)
-
-    chunker = HybridChunker(tokenizer=get_tokenizer())
-    chunk_iter = chunker.chunk(dl_doc=result.document)
-
-    chunks: List[DocumentChunkData] = []
-    for idx, chunk in enumerate(chunk_iter):
-        contextualized_text = chunker.contextualize(chunk=chunk)
-
-        chunks.append(DocumentChunkData(
-            contextualized_content=contextualized_text,
-            chunk_index=idx
-        ))
-
-    return DocumentChunkedConversionResponse(
-        chunks=chunks,
-        total_chunks=len(chunks),
-        success=True,
-        message=f"Successfully converted and chunked document {key}"
-    )
-
-
-async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
+async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full document processing workflow with embeddings and database storage."""
     task_id = event.taskId
     course_id, shortened_filename = event.name.split("/")
@@ -92,7 +56,7 @@ async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
     try:
         await update_status_to_processing(task_id)
 
-        chunks_response = await _convert_document_to_chunks(event.bucket, event.name)
+        chunks_response = await _convert_document_to_chunks("files-bucket", event.bucketId + "/" + event.name)
 
         if not chunks_response.chunks:
             raise ValueError("No content chunks generated from document")
@@ -120,5 +84,44 @@ async def _process_document(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        await handle_processing_error(event, error)
+        await handle_processing_error("files-bucket", event, error)
         raise error
+
+
+async def _convert_document_to_chunks(
+    bucket: str,
+    key: str
+) -> DocumentChunkedConversionResponse:
+    """Convert document to chunks without full processing."""
+    storage_client = get_storage_client()
+    file_content = storage_client.get_object_bytes(bucket, key)
+
+    if "." in key:
+        file_extension = key.split(".")[-1].lower()
+    else:
+        raise ValueError("File key does not contain an extension")
+
+    buf = io.BytesIO(file_content)
+    source = DocumentStream(name=f"document.{file_extension}", stream=buf)
+
+    converter = get_converter()
+    result = converter.convert(source)
+
+    chunker = HybridChunker(tokenizer=get_tokenizer())
+    chunk_iter = chunker.chunk(dl_doc=result.document)
+
+    chunks: List[DocumentChunkData] = []
+    for idx, chunk in enumerate(chunk_iter):
+        contextualized_text = chunker.contextualize(chunk=chunk)
+
+        chunks.append(DocumentChunkData(
+            contextualized_content=contextualized_text,
+            chunk_index=idx
+        ))
+
+    return DocumentChunkedConversionResponse(
+        chunks=chunks,
+        total_chunks=len(chunks),
+        success=True,
+        message=f"Successfully converted and chunked document {key}"
+    )

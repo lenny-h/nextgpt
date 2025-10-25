@@ -43,10 +43,10 @@ export function getTasksClient(): ITasksClient {
 
     default:
       // Default to local tasks client if not specified
-      console.warn(
-        "[TasksClient] No CLOUD_PROVIDER specified, using local mock implementation"
+      console.error(
+        `[TasksClient] Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`
       );
-      tasksClientInstance = new LocalTasksClient();
+      throw new Error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
   }
 
   return tasksClientInstance;
