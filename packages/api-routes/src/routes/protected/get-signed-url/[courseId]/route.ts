@@ -1,11 +1,13 @@
 import * as z from "zod";
 
+//TODO:
+
 import { increaseBucketSize } from "@workspace/api-routes/lib/db/queries/buckets.js";
 import { isCourseMaintainer } from "@workspace/api-routes/lib/db/queries/course-maintainers.js";
 import { getBucketSizeByCourseId } from "@workspace/api-routes/lib/db/queries/courses.js";
 import { addTask } from "@workspace/api-routes/lib/db/queries/tasks.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
-import { getSignedUrlForUpload } from "@workspace/api-routes/utils/access-clients/s3-client.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import { Hono } from "hono";
@@ -124,8 +126,10 @@ const app = new Hono().post(
 
     const extFilename = `${courseId}/${filename}`;
 
-    const signedUrl = await getSignedUrlForUpload({
-      bucket: `${projectId}-files-bucket`,
+    const storageClient = getStorageClient();
+
+    const signedUrl = await storageClient.getSignedUrlForUpload({
+      bucket: "files-bucket",
       key: extFilename,
       contentType: "application/pdf",
       contentLength: fileSize,

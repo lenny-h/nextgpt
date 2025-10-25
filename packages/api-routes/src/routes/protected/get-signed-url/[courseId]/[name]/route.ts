@@ -3,7 +3,7 @@ import * as z from "zod";
 import { getBucketIdByCourseId } from "@workspace/api-routes/lib/db/queries/courses.js";
 import { filenameSchema } from "@workspace/api-routes/schemas/filename-schema.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
-import { getSignedUrlForDownload } from "@workspace/api-routes/utils/access-clients/s3-client.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -40,11 +40,11 @@ const app = new Hono().get(
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
 
-    const filePath = `${courseId}/${filename}`;
+    const storageClient = getStorageClient();
 
-    const signedUrl = await getSignedUrlForDownload({
-      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
-      key: filePath,
+    const signedUrl = await storageClient.getSignedUrlForDownload({
+      bucket: "files-bucket",
+      key: `${courseId}/${filename}`,
     });
 
     return c.json({

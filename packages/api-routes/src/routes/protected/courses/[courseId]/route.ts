@@ -65,7 +65,7 @@ const app = new Hono().delete(
       });
 
       await storageClient.deleteFile({
-        bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-files-bucket`,
+        bucket: "files-bucket",
         key: `${courseId}/${file.name}`,
       });
     }

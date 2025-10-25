@@ -48,7 +48,7 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<string> {
     const s3Client = this.getS3Client();
     const command = new PutObjectCommand({
-      Bucket: bucket,
+      Bucket: process.env.AWS_PROJECT_NAME + bucket,
       Key: key,
       ContentType: contentType,
       ContentLength: contentLength,
@@ -66,7 +66,7 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<string> {
     const s3Client = this.getS3Client();
     const command = new GetObjectCommand({
-      Bucket: bucket,
+      Bucket: process.env.AWS_PROJECT_NAME + bucket,
       Key: key,
     });
 
@@ -84,7 +84,7 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<void> {
     const s3Client = this.getS3Client();
     const command = new DeleteObjectCommand({
-      Bucket: bucket,
+      Bucket: process.env.AWS_PROJECT_NAME + bucket,
       Key: key,
     });
 

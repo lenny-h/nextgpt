@@ -111,6 +111,10 @@ resource "aws_ecs_task_definition" "api" {
         value = "aws"
       },
       {
+        name  = "AWS_PROJECT_NAME"
+        value = var.aws_project_name
+      },
+      {
         name  = "AWS_REGION"
         value = var.aws_region
       },
@@ -229,6 +233,10 @@ resource "aws_ecs_task_definition" "document_processor" {
       {
         name  = "CLOUD_PROVIDER"
         value = "aws"
+      },
+      {
+        name  = "AWS_PROJECT_NAME"
+        value = var.aws_project_name
       },
       {
         name  = "AWS_REGION"

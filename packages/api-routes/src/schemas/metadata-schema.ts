@@ -9,7 +9,8 @@ export const metadataSchema = z
     attachments: z
       .array(
         z.object({
-          url: z.string().max(1024),
+          filename: z.string().max(256),
+          contentType: z.string().max(256).optional(),
         })
       )
       .max(5)

@@ -1,4 +1,4 @@
-import { getSignedUrlForUpload } from "@workspace/api-routes/utils/access-clients/google-storage-client.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { getSignedUrlSchema } from "./schema.js";
@@ -12,11 +12,13 @@ const app = new Hono().post(
     const { filename, fileSize, fileType } = c.req.valid("json");
     const user = c.get("user");
 
-    const newFilename = user.id + "/" + filename;
+    const newFilename = `${user.id}/${filename}`;
 
-    const signedUrl = await getSignedUrlForUpload({
-      bucket: `${process.env.GOOGLE_VERTEX_PROJECT}-temporary-files-bucket`,
-      filename: newFilename,
+    const storageClient = getStorageClient();
+
+    const signedUrl = await storageClient.getSignedUrlForUpload({
+      bucket: "temporary-files-bucket",
+      key: newFilename,
       contentType: fileType,
       contentLength: fileSize,
     });

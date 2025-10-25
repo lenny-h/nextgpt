@@ -2,10 +2,10 @@
 
 # # S3 Bucket for temporary files
 # resource "aws_s3_bucket" "temporary_files" {
-#   bucket = "${var.project_name}-temporary-files"
+#   bucket = "${var.aws_project_name}-temporary-files-bucket"
 
 #   tags = {
-#     Name = "${var.project_name}-temporary-files"
+#     Name = "${var.aws_project_name}-temporary-files-bucket"
 #   }
 # }
 
@@ -69,10 +69,10 @@
 
 # # S3 Bucket for permanent files
 # resource "aws_s3_bucket" "files" {
-#   bucket = "${var.project_name}-files"
+#   bucket = "${var.aws_project_name}-files-bucket"
 
 #   tags = {
-#     Name = "${var.project_name}-files"
+#     Name = "${var.aws_project_name}-files-bucket"
 #   }
 # }
 

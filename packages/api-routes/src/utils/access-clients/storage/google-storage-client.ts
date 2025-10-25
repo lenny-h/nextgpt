@@ -40,7 +40,9 @@ export class GoogleStorageClient implements IStorageClient {
     contentLength: number;
   }): Promise<string> {
     const storage = this.getStorageClient();
-    const blob = storage.bucket(bucket).file(key);
+    const blob = storage
+      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .file(key);
 
     const [signedUrl] = await blob.getSignedUrl({
       version: "v4",
@@ -63,7 +65,9 @@ export class GoogleStorageClient implements IStorageClient {
     key: string;
   }): Promise<string> {
     const storage = this.getStorageClient();
-    const blob = storage.bucket(bucket).file(key);
+    const blob = storage
+      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .file(key);
 
     const [signedUrl] = await blob.getSignedUrl({
       version: "v4",
@@ -82,6 +86,9 @@ export class GoogleStorageClient implements IStorageClient {
     key: string;
   }): Promise<void> {
     const storage = this.getStorageClient();
-    await storage.bucket(bucket).file(key).delete();
+    await storage
+      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .file(key)
+      .delete();
   }
 }

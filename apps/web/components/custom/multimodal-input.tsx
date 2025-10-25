@@ -172,9 +172,7 @@ const PureMultimodalInput = ({
         parts: [{ type: "text", text: input }],
         metadata: {
           filter: stripFilter(filter, false),
-          attachments: attachments.map((attachment) => ({
-            url: `gs://${process.env.NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT}-correction-bucket/${user.id}/${attachment.filename}`,
-          })),
+          attachments,
         },
       },
       {
