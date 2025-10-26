@@ -1,0 +1,132 @@
+name: AWS Database Migrations
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: main
+  #   paths:
+  #     - "packages/server/src/drizzle/**"
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_PROJECT_NAME: ${{ vars.AWS_PROJECT_NAME }}
+
+jobs:
+  build-and-push-migration-image:
+    name: Build and push migration Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.AWS_PROJECT_NAME }}/db-migrator
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f apps/db-migrator/Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  run-migrations:
+    name: Execute database migrations
+    runs-on: ubuntu-latest
+    needs: build-and-push-migration-image
+
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Run migration task
+        env:
+          ECS_CLUSTER: ${{ env.AWS_PROJECT_NAME }}-cluster
+          TASK_DEFINITION: ${{ env.AWS_PROJECT_NAME }}-db-migrator
+        run: |
+          # Get the latest task definition
+          TASK_DEF_ARN=$(aws ecs describe-task-definition \
+            --task-definition $TASK_DEFINITION \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          echo "Using task definition: $TASK_DEF_ARN"
+
+          # Get network configuration from the ECS cluster
+          # We'll use the same network config as other services
+          NETWORK_CONFIG=$(aws ecs describe-services \
+            --cluster $ECS_CLUSTER \
+            --services api \
+            --query 'services[0].networkConfiguration' \
+            --output json)
+
+          echo "Network configuration retrieved"
+
+          # Run the migration task
+          TASK_ARN=$(aws ecs run-task \
+            --cluster $ECS_CLUSTER \
+            --task-definition $TASK_DEF_ARN \
+            --launch-type FARGATE \
+            --network-configuration "$NETWORK_CONFIG" \
+            --query 'tasks[0].taskArn' \
+            --output text)
+
+          echo "Started migration task: $TASK_ARN"
+
+          # Wait for the task to complete
+          echo "Waiting for migration task to complete..."
+          aws ecs wait tasks-stopped \
+            --cluster $ECS_CLUSTER \
+            --tasks $TASK_ARN
+
+          # Check the exit code
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster $ECS_CLUSTER \
+            --tasks $TASK_ARN \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+
+          echo "Migration task exit code: $EXIT_CODE"
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "Migration failed with exit code $EXIT_CODE"
+            exit 1
+          fi
+
+          echo "Migration completed successfully"
+
+      - name: Get migration logs
+        if: always()
+        run: |
+          # Get logs from CloudWatch
+          aws logs tail "/ecs/${{ env.AWS_PROJECT_NAME }}/db-migrator" \
+            --follow \
+            --format short \
+            --since 10m || true

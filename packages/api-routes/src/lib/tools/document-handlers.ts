@@ -1,7 +1,8 @@
-import { vertex } from "@ai-sdk/google-vertex";
+import { documentModifierModelIdx } from "@workspace/api-routes/utils/models.js";
 import { type UIMessageStreamWriter, smoothStream, streamText } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { createDocumentPrompt, updateDocumentPrompt } from "../prompts.js";
+import { getModel } from "../providers.js";
 
 export interface UpdateDocumentProps {
   content: string;
@@ -20,9 +21,11 @@ export const documentHandlers = (["text", "code"] as const).map((kind) => ({
   }) => {
     let draftContent = "";
 
+    const config = await getModel(documentModifierModelIdx);
+
     const { fullStream } = streamText({
       system: createDocumentPrompt(kind),
-      model: vertex("gemini-2.5-pro"),
+      model: config.model,
       prompt: instructions,
       experimental_transform: smoothStream({ chunking: "line" }),
     });
@@ -51,9 +54,11 @@ export const documentHandlers = (["text", "code"] as const).map((kind) => ({
   }: UpdateDocumentProps) => {
     let draftContent = "";
 
+    const config = await getModel(documentModifierModelIdx);
+
     const { fullStream } = streamText({
       system: updateDocumentPrompt(content, kind),
-      model: vertex("gemini-2.5-pro"),
+      model: config.model,
       prompt: instructions,
       experimental_transform: smoothStream({ chunking: "line" }),
     });

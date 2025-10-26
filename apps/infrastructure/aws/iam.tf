@@ -238,3 +238,78 @@ resource "aws_iam_role" "pdf_exporter_task" {
     Name = "${var.aws_project_name}-pdf-exporter-task-role"
   }
 }
+
+# IAM Role for GitHub Actions (OIDC)
+resource "aws_iam_role" "github_actions" {
+  name = "${var.aws_project_name}-github-actions-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Effect = "Allow"
+      Principal = {
+        Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+      }
+      Condition = {
+        StringEquals = {
+          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+        }
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:*"
+        }
+      }
+    }]
+  })
+
+  tags = {
+    Name = "${var.aws_project_name}-github-actions-role"
+  }
+}
+
+# Policy for GitHub Actions to deploy to ECS
+resource "aws_iam_role_policy" "github_actions_deploy" {
+  name = "${var.aws_project_name}-github-actions-deploy-policy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:PutImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload"
+        ]
+        Resource = [
+          "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/${var.aws_project_name}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:UpdateService",
+          "ecs:DescribeServices"
+        ]
+        Resource = [
+          "arn:aws:ecs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:service/${var.aws_project_name}-cluster/*"
+        ]
+      }
+    ]
+  })
+}
+
+# Data source for AWS account ID
+data "aws_caller_identity" "current" {}

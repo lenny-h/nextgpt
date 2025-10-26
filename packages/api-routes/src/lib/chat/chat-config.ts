@@ -1,4 +1,5 @@
 import { type JSONValue, type LanguageModel } from "ai";
+import { getModel } from "../providers.js";
 
 export class ChatConfig {
   public readonly modelId: LanguageModel;
@@ -17,11 +18,9 @@ export class ChatConfig {
   }
 
   static async create(
-    selectedChatModel: string,
+    selectedChatModel: number,
     reasoningEnabled?: boolean
   ): Promise<ChatConfig> {
-    const { getModel } = await import("../providers.js");
-
     const config = await getModel(selectedChatModel, reasoningEnabled);
 
     return new ChatConfig(config.model, config.providerOptions);

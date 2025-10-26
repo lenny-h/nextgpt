@@ -1,80 +1,67 @@
-output "vpc_id" {
-  description = "The ID of the VPC"
-  value       = aws_vpc.main.id
+# ========================================
+# DNS CONFIGURATION
+# ========================================
+# Add these to your DNS provider (Cloudflare, Route53, etc.)
+
+output "dns_cname_record" {
+  description = "Add this CNAME record to your DNS"
+  value = {
+    type  = "CNAME"
+    name  = "api.${var.site_url}"
+    value = aws_lb.main.dns_name
+  }
 }
 
-output "alb_dns_name" {
-  description = "The DNS name of the load balancer"
-  value       = aws_lb.main.dns_name
-}
-
-output "alb_zone_id" {
-  description = "The zone ID of the load balancer"
-  value       = aws_lb.main.zone_id
-}
-
-output "database_endpoint" {
-  description = "The endpoint of the RDS instance"
-  value       = aws_db_instance.postgres.endpoint
-}
-
-output "redis_endpoint" {
-  description = "The endpoint of the ElastiCache cluster"
-  value       = "${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}"
-}
-
-output "ecr_repository_url_api" {
-  description = "The URL of the API ECR repository"
-  value       = aws_ecr_repository.api.repository_url
-}
-
-output "ecr_repository_url_document_processor" {
-  description = "The URL of the Document Processor ECR repository"
-  value       = aws_ecr_repository.document_processor.repository_url
-}
-
-output "ecr_repository_url_pdf_exporter" {
-  description = "The URL of the PDF Exporter ECR repository"
-  value       = aws_ecr_repository.pdf_exporter.repository_url
-}
-
-output "s3_bucket_name" {
-  description = "The name of the S3 bucket for temporary files"
-  value       = aws_s3_bucket.temporary_files.bucket
-}
-
-output "sqs_queue_url" {
-  description = "The URL of the SQS queue for document processing"
-  value       = aws_sqs_queue.document_processing.url
-}
-
-output "sqs_queue_arn" {
-  description = "The ARN of the SQS queue for document processing"
-  value       = aws_sqs_queue.document_processing.arn
-}
-
-output "eventbridge_scheduler_group" {
-  description = "The name of the EventBridge Scheduler group"
-  value       = aws_scheduler_schedule_group.tasks.name
-}
-
-output "eventbridge_scheduler_role_arn" {
-  description = "The ARN of the IAM role for EventBridge Scheduler"
-  value       = aws_iam_role.eventbridge_scheduler.arn
-}
-
-output "ecs_cluster_name" {
-  description = "The name of the ECS cluster"
-  value       = aws_ecs_cluster.main.name
-}
-
-output "acm_certificate_validation" {
-  description = "DNS records required for ACM certificate validation"
+output "dns_ssl_validation" {
+  description = "Add these DNS records to validate your SSL certificate"
   value = {
     for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      record = dvo.resource_record_value
+      type  = dvo.resource_record_type
+      name  = dvo.resource_record_name
+      value = dvo.resource_record_value
     }
   }
 }
+
+# ========================================
+# GITHUB VARIABLES
+# ========================================
+# Settings > Secrets and variables > Actions > Variables
+
+output "github_variables" {
+  description = "Add these as GitHub repository variables"
+  value = {
+    AWS_REGION         = var.aws_region
+    AWS_PROJECT_NAME   = var.aws_project_name
+    AWS_ROLE_TO_ASSUME = aws_iam_role.github_actions.arn
+  }
+}
+
+# ========================================
+# SETUP INSTRUCTIONS
+# ========================================
+
+output "setup_instructions" {
+  description = "Follow these steps to complete deployment"
+  value       = <<-EOT
+    
+    📋 DEPLOYMENT SETUP
+    
+    1️⃣  Add DNS Records (Required for SSL)
+       terraform output dns_ssl_validation
+       → Add these records to your DNS provider
+       → Wait 5-10 minutes for validation
+    
+    2️⃣  Add DNS CNAME
+       terraform output dns_cname_record
+       → Points api.${var.site_url} to your load balancer
+    
+    3️⃣  Configure GitHub Variables
+       terraform output github_variables
+       → Add to: Settings > Secrets and variables > Actions > Variables
+    
+    ✅ SSL certificates are automatically managed by AWS ACM after validation
+    
+  EOT
+}
+

@@ -1,0 +1,188 @@
+name: Deploy Backend Services to AWS ECS
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  # Job to detect changes in different apps
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.changes.outputs.api }}
+      pdf-exporter: ${{ steps.changes.outputs.pdf-exporter }}
+      document-processor: ${{ steps.changes.outputs.document-processor }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/**'
+              - 'package.json'
+              - '.github/workflows/deploy-aws-backend.yml'
+            pdf-exporter:
+              - 'apps/pdf-exporter/**'
+              - 'package.json'
+              - '.github/workflows/deploy-aws-backend.yml'
+            document-processor:
+              - 'apps/document-processor/**'
+              - 'package.json'
+              - '.github/workflows/deploy-aws-backend.yml'
+
+  # Deploy API service
+  deploy-api:
+    name: Deploy API Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.AWS_PROJECT_NAME }}/api
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f apps/api/Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Force new deployment
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
+            --service api \
+            --force-new-deployment
+
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
+            --services api
+
+  # Deploy PDF Exporter service
+  deploy-pdf-exporter:
+    name: Deploy PDF Exporter Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.pdf-exporter == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.AWS_PROJECT_NAME }}/pdf-exporter
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f apps/pdf-exporter/Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Force new deployment
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
+            --service pdf-exporter \
+            --force-new-deployment
+
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
+            --services pdf-exporter
+
+  # Deploy Document Processor service
+  deploy-document-processor:
+    name: Deploy Document Processor Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.document-processor == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.AWS_PROJECT_NAME }}/document-processor
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f apps/document-processor/Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Force new deployment
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
+            --service document-processor \
+            --force-new-deployment
+
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
+            --services document-processor

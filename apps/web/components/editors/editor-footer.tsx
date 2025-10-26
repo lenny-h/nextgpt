@@ -37,8 +37,11 @@ export const EditorFooter = memo(() => {
         return {
           id,
           body: {
+            id: chatId,
             message: messages[messages.length - 1],
             messageCount: getMessageCountAfterLastStart(messages),
+            modelIdx: selectedChatModel.id,
+            isTemp: isTemporary,
           },
         };
       },
@@ -51,24 +54,14 @@ export const EditorFooter = memo(() => {
       return;
     }
 
-    sendMessage(
-      {
-        id: generateUUID(),
-        role: "user",
-        parts: [{ type: "text", text: content }],
-        metadata: {
-          filter: stripFilter(filter, true),
-        },
+    sendMessage({
+      id: generateUUID(),
+      role: "user",
+      parts: [{ type: "text", text: content }],
+      metadata: {
+        filter: stripFilter(filter, true),
       },
-      {
-        body: {
-          id: chatId,
-          modelId: selectedChatModel.id,
-          temp: isTemporary,
-          messageCount: getMessageCountAfterLastStart(messages),
-        },
-      },
-    );
+    });
 
     textEditorRef.current?.focus();
   };

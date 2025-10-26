@@ -94,8 +94,11 @@ export function Practice({
           return {
             id,
             body: {
+              id: chatId,
               message: messages[messages.length - 1],
               messageCount: getMessageCountAfterLastStart(messages),
+              modelIdx: selectedChatModel.id,
+              isTemp: isTemporary,
             },
           };
         },
@@ -117,24 +120,15 @@ export function Practice({
 
     window.history.replaceState({}, "", `/${locale}/practice/${chatId}`);
 
-    sendMessage(
-      {
-        id: generateUUID(),
-        role: "user",
-        parts: [{ type: "text", text: "START" }],
-        metadata: {
-          filter: stripFilter(filter, true),
-          isStartMessage: true,
-        },
+    sendMessage({
+      id: generateUUID(),
+      role: "user",
+      parts: [{ type: "text", text: "START" }],
+      metadata: {
+        filter: stripFilter(filter, true),
+        isStartMessage: true,
       },
-      {
-        body: {
-          id: chatId,
-          modelId: selectedChatModel.id,
-          temp: isTemporary,
-        },
-      },
-    );
+    });
   }, [
     sendMessage,
     locale,

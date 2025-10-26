@@ -67,8 +67,6 @@ const PureMultimodalInput = ({
 }: MultimodalInputProps) => {
   const { locale } = useSharedTranslations();
 
-  const user = useUser();
-
   const { filter } = useFilter();
   const { selectedChatModel, reasoningEnabled } = useChatModel();
   const [isTemporary] = useIsTemporary();
@@ -165,27 +163,15 @@ const PureMultimodalInput = ({
       handleDocumentClick(document.id, document.title, document.kind);
     }
 
-    sendMessage(
-      {
-        id: generateUUID(),
-        role: "user",
-        parts: [{ type: "text", text: input }],
-        metadata: {
-          filter: stripFilter(filter, false),
-          attachments,
-        },
+    sendMessage({
+      id: generateUUID(),
+      role: "user",
+      parts: [{ type: "text", text: input }],
+      metadata: {
+        filter: stripFilter(filter, false),
+        attachments,
       },
-      {
-        body: {
-          id: chatId,
-          modelId: selectedChatModel.id,
-          temp: isTemporary,
-          ...(isPractice
-            ? {}
-            : { reasoning: selectedChatModel.reasoning && reasoningEnabled }),
-        },
-      },
-    );
+    });
 
     setInput("");
     setAttachments([]);

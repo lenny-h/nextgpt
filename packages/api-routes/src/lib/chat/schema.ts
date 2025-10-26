@@ -1,24 +1,22 @@
+import { chatModels } from "@workspace/api-routes/utils/models.js";
 import * as z from "zod";
-import { uuidSchema } from "../../schemas/uuid-schema.js";
 
 const basePayloadSchema = z.object({
   id: z.uuid({
     message: "Chat ID must be a valid UUID",
   }),
   message: z.any(), // This will be validate with the ai.validateUIMessages function later
-  modelId: z.union([
-    z.enum(["chat-model-small", "chat-model-large"]),
-    uuidSchema,
-  ]),
-  temp: z.boolean(),
+  modelIdx: z
+    .number()
+    .int()
+    .min(0)
+    .max(chatModels.length - 1),
+  isTemp: z.boolean(),
+  reasoning: z.boolean().optional(),
   trigger: z.string().max(128).optional(),
 });
 
-export const chatPayloadSchema = basePayloadSchema
-  .extend({
-    reasoning: z.boolean(),
-  })
-  .strict();
+export const chatPayloadSchema = basePayloadSchema.strict();
 
 export const practicePayloadSchema = basePayloadSchema
   .extend({

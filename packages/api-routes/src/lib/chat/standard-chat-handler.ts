@@ -1,4 +1,5 @@
-import { vertex } from "@ai-sdk/google-vertex";
+import { generateTitleFromUserMessage } from "@workspace/api-routes/utils/generate-title.js";
+import { chatTitleModelIdx } from "@workspace/api-routes/utils/models.js";
 import { CustomDocument } from "@workspace/server/drizzle/schema.js";
 import {
   stepCountIs,
@@ -12,6 +13,7 @@ import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { generateUUID } from "../../utils/utils.js";
 import { getDocument } from "../db/queries/documents.js";
 import { USER_RESPONSE_SYSTEM_PROMPT } from "../prompts.js";
+import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
 import { modifyDocumentTool } from "../tools/modify-document.js";
 import { retrieveDocumentSourcesTool } from "../tools/retrieve-document-sources.js";
@@ -42,13 +44,11 @@ export class StandardChatHandler extends ChatHandler {
   }
 
   protected async generateChatTitle(): Promise<string> {
-    const { generateTitleFromUserMessage } = await import(
-      "../../utils/generate-title.js"
-    );
+    const config = await getModel(chatTitleModelIdx);
 
     return await generateTitleFromUserMessage({
       message: this.request.lastMessage,
-      model: vertex("gemini-2.0-flash-001"),
+      model: config.model,
     });
   }
 

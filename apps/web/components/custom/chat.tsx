@@ -3,6 +3,8 @@
 import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
+import { useChatModel } from "@/contexts/selected-chat-model";
+import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
@@ -30,6 +32,9 @@ export function Chat({
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");
+
+  const { selectedChatModel, reasoningEnabled } = useChatModel();
+  const [isTemporary] = useIsTemporary();
 
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode, setEditorMode] = useEditor();
@@ -84,7 +89,11 @@ export function Chat({
           return {
             id,
             body: {
+              id: chatId,
               message: messages[messages.length - 1],
+              modelIdx: selectedChatModel.id,
+              isTemp: isTemporary,
+              reasoning: selectedChatModel.reasoning && reasoningEnabled,
             },
           };
         },

@@ -1,7 +1,8 @@
 import * as z from "zod";
 
-import { vertex } from "@ai-sdk/google-vertex";
 import { COMPLETION_SYSTEM_PROMPT } from "@workspace/api-routes/lib/prompts.js";
+import { getModel } from "@workspace/api-routes/lib/providers.js";
+import { completionModelIdx } from "@workspace/api-routes/utils/models.js";
 import { generateObject } from "ai";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
@@ -19,9 +20,11 @@ const app = new Hono().post(
   async (c) => {
     const { context } = c.req.valid("json");
 
+    const config = await getModel(completionModelIdx);
+
     const { object } = await generateObject({
       system: COMPLETION_SYSTEM_PROMPT,
-      model: vertex("gemini-2.0-flash-001"),
+      model: config.model,
       messages: [{ role: "user", content: context }],
       schema: completionResponseSchema,
       maxOutputTokens: 60,

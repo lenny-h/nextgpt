@@ -1,6 +1,6 @@
 "use client";
 
-import { defaultChatModels } from "@/lib/models";
+import { chatModels } from "@/lib/models";
 import React, {
   createContext,
   type ReactNode,
@@ -9,8 +9,9 @@ import React, {
 } from "react";
 
 interface ChatModel {
-  id: string;
+  id: number;
   name: string;
+  label: string;
   description: string;
   images: boolean;
   pdfs: boolean;
@@ -25,7 +26,7 @@ interface ChatModelContextType {
 }
 
 const ChatModelContext = createContext<ChatModelContextType | undefined>(
-  undefined
+  undefined,
 );
 
 interface Props {
@@ -34,10 +35,10 @@ interface Props {
 
 export function ChatModelProvider({ children }: Props) {
   const [selectedChatModel, setSelectedChatModel] = useState<ChatModel>(() => {
-    if (!defaultChatModels[0]) {
+    if (!chatModels[0]) {
       throw new Error("No default chat models found.");
     }
-    return defaultChatModels[0];
+    return chatModels[0];
   });
 
   const [reasoningEnabled, setReasoningEnabled] = useState(false);

@@ -44,7 +44,6 @@
     │   SQS Queue                                                │
     │   • document-processing-queue                              │
     │   • Buffers messages for workers                           │
-    │   • Also receives immediate (non-scheduled) tasks          │
     └───────────────────┬────────────────────────────────────────┘
                         │
                         │ Polls for messages
@@ -145,20 +144,4 @@
 │  ├── sqs:DeleteMessage                                      │
 │  └── sqs:GetQueueAttributes                                 │
 └─────────────────────────────────────────────────────────────┘
-```
-
-## Comparison: Immediate vs Scheduled Tasks
-
-### Immediate Task
-
-```
-API → SQS → Document Processor
-     (< 15 min delay)
-```
-
-### Scheduled Task
-
-```
-API → EventBridge Scheduler → SQS → Document Processor
-     (up to 1 year delay)
 ```

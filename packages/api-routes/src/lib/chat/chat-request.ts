@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
 import { User } from "@workspace/server/drizzle/schema.js";
 import { validateUIMessages } from "ai";
@@ -18,9 +19,9 @@ export class ChatRequest {
   public readonly messages: MyUIMessage[];
   public readonly lastMessage: MyUIMessage;
   public readonly filter: Filter | PracticeFilter; // Search filter
-  public readonly attachments: { url: string }[]; // Attachments in the last message
+  public readonly attachments: Attachment[]; // Attachments in the last message
 
-  public readonly selectedChatModelId: string;
+  public readonly selectedChatModel: number;
   public readonly isTemporary: boolean; // Whether to save the chat or not
   public readonly user: User;
 
@@ -29,7 +30,7 @@ export class ChatRequest {
   constructor(
     id: string,
     messages: MyUIMessage[],
-    selectedChatModelId: string,
+    selectedChatModel: number,
     isTemporary: boolean,
     user: User,
     reasoningEnabled?: boolean
@@ -47,7 +48,7 @@ export class ChatRequest {
     this.filter = this.lastMessage.metadata.filter;
     this.attachments = this.lastMessage.metadata?.attachments || [];
 
-    this.selectedChatModelId = selectedChatModelId;
+    this.selectedChatModel = selectedChatModel;
     this.isTemporary = isTemporary;
     this.user = user;
 
@@ -66,10 +67,10 @@ export class ChatRequest {
     const {
       id,
       message,
-      modelId: selectedChatModelId,
-      temp: isTemporary,
-      reasoning: reasoningEnabled,
       messageCount,
+      modelIdx: selectedChatModel,
+      isTemp: isTemporary,
+      reasoning: reasoningEnabled,
     } = validatedPayload;
 
     // For practice chats with lastStartMessageIndex, only retrieve messages after that index
@@ -79,8 +80,6 @@ export class ChatRequest {
     });
 
     const messages = [...prevMessages, message];
-
-    console.log("Messages:", messages);
 
     const validatedUIMessages = await validateUIMessages<MyUIMessage>({
       messages,
@@ -103,7 +102,7 @@ export class ChatRequest {
     return new ChatRequest(
       id,
       validatedUIMessages,
-      selectedChatModelId,
+      selectedChatModel,
       isTemporary,
       user,
       reasoningEnabled

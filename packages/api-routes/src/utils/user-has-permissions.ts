@@ -8,6 +8,7 @@ import { HTTPException } from "hono/http-exception";
 import { isBucketUser } from "../lib/db/queries/buckets.js";
 import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
 import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
+import { Attachment } from "../schemas/attachment-schema.js";
 
 export async function userHasPermissions({
   userId,
@@ -20,7 +21,7 @@ export async function userHasPermissions({
   filterBucketId: string;
   filterCourseIds: string[];
   filterFileIds: string[];
-  filterAttachments: { url: string }[];
+  filterAttachments: Attachment[];
 }): Promise<boolean> {
   let courseIds: string[] = [];
   let fileIds: string[] = filterFileIds;
@@ -90,15 +91,8 @@ export async function userHasPermissions({
 
   // Validate attachment URLs
   if (filterAttachments.length > 0) {
-    const expectedPrefix = process.env.ATTACHMENT_URL_PREFIX!;
-
-    for (const part of filterAttachments) {
-      if (!part.url.startsWith(expectedPrefix)) {
-        throw new HTTPException(403, { message: "FORBIDDEN" });
-      }
-
-      const rest = part.url.substring(expectedPrefix.length);
-      if (!rest.startsWith(userId)) {
+    for (const attachment of filterAttachments) {
+      if (!attachment.filename.startsWith(userId)) {
         throw new HTTPException(403, { message: "FORBIDDEN" });
       }
     }

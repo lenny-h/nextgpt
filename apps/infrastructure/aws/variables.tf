@@ -123,3 +123,8 @@ variable "llm_models" {
   description = "The LLM models to use"
   type        = string
 }
+
+variable "github_repository" {
+  description = "GitHub repository in format 'owner/repo'"
+  type        = string
+}

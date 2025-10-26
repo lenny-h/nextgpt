@@ -1,23 +1,27 @@
-import { vertex } from "@ai-sdk/google-vertex";
+import { embed } from "ai";
 import {
   matchDocuments,
   retrievePagesByPageNumbers,
   searchPagesByContent,
 } from "../lib/db/queries/pages.js";
+import { getEmbeddingModel } from "../lib/embeddings-providers.js";
 import { type Filter } from "../schemas/filter-schema.js";
 import { type PracticeFilter } from "../schemas/practice-filter-schema.js";
 import { type DocumentSource } from "../types/document-source.js";
 
 export async function retrieveEmbedding(text: string): Promise<number[]> {
-  const { embeddings } = await vertex
-    .textEmbeddingModel(process.env.EMBEDDINGS_MODEL!)
-    .doEmbed({ values: [text] });
+  const { model } = await getEmbeddingModel();
 
-  if (!embeddings || embeddings.length === 0) {
+  const { embedding } = await embed({
+    model,
+    value: text,
+  });
+
+  if (!embedding) {
     throw new Error("Failed to generate embedding");
   }
 
-  return embeddings[0];
+  return embedding;
 }
 
 export async function retrieveDocumentSources({

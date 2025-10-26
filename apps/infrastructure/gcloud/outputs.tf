@@ -1,40 +1,67 @@
-output "vpc_network_id" {
-  description = "The ID of the VPC network"
-  value       = google_compute_network.private_network.id
+# ========================================
+# DNS CONFIGURATION
+# ========================================
+# Add this A record to your DNS provider (Cloudflare, etc.)
+
+output "dns_a_record" {
+  description = "Add this A record to your DNS"
+  value = {
+    type  = "A"
+    name  = "api.${var.site_url}"
+    value = google_compute_global_address.lb_ip.address
+  }
 }
 
-output "vpc_network_name" {
-  description = "The name of the VPC network"
-  value       = google_compute_network.private_network.name
-}
+# ========================================
+# GITHUB SECRETS
+# ========================================
+# Settings > Secrets and variables > Actions > Secrets
 
-output "vpc_subnet_name" {
-  description = "The name of the VPC subnet"
-  value       = google_compute_subnetwork.private_subnet.name
-}
-
-output "database_private_ip" {
-  description = "The private IP address of the Cloud SQL instance"
-  value       = google_sql_database_instance.postgres.private_ip_address
-}
-
-output "database_instance_connection_name" {
-  description = "The connection name of the Cloud SQL instance"
-  value       = google_sql_database_instance.postgres.connection_name
-}
-
-output "load_balancer_ip" {
-  description = "The IP address of the HTTPS load balancer"
-  value       = google_compute_global_address.lb_ip.address
-}
-
-output "ci_cd_service_account_email" {
-  description = "The email of the CI/CD service account"
-  value       = google_service_account.ci_cd_sa.email
-}
-
-output "ci_cd_service_account_key" {
-  description = "The private key of the CI/CD service account. Add this as a secret (GCP_SA_KEY) in your GitHub repository."
+output "github_secret" {
+  description = "Add this as GCP_SA_KEY secret in GitHub"
   value       = google_service_account_key.ci_cd_sa_key.private_key
   sensitive   = true
 }
+
+# ========================================
+# GITHUB VARIABLES
+# ========================================
+# Settings > Secrets and variables > Actions > Variables
+
+output "github_variables" {
+  description = "Add these as GitHub repository variables"
+  value = {
+    PROJECT_ID = var.project_id
+    REGION     = var.gcp_region
+  }
+}
+
+# ========================================
+# SETUP INSTRUCTIONS
+# ========================================
+
+output "setup_instructions" {
+  description = "Follow these steps to complete deployment"
+  value       = <<-EOT
+    
+    📋 DEPLOYMENT SETUP
+    
+    1️⃣  Add DNS A Record
+       terraform output dns_a_record
+       → Add to your DNS provider
+       → Points api.${var.site_url} to ${google_compute_global_address.lb_ip.address}
+    
+    2️⃣  Configure GitHub Secret
+       terraform output -raw github_secret | base64 -d > sa-key.json
+       → Copy contents to: Settings > Secrets > GCP_SA_KEY
+       → Delete sa-key.json after copying
+    
+    3️⃣  Configure GitHub Variables
+       terraform output github_variables
+       → Add to: Settings > Secrets and variables > Actions > Variables
+    
+    ✅ SSL certificates are automatically managed by Google after DNS is configured
+    
+  EOT
+}
+

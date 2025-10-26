@@ -11,8 +11,7 @@ export class ChatHandlerFactory {
   ): Promise<StandardChatHandler> {
     const chatRequest = await ChatRequest.fromRequest(c, chatPayloadSchema);
     const config = await ChatConfig.create(
-      chatRequest.selectedChatModelId,
-      chatRequest.filter.bucket.id,
+      chatRequest.selectedChatModel,
       chatRequest.reasoningEnabled
     );
 
@@ -23,10 +22,7 @@ export class ChatHandlerFactory {
     c: Context
   ): Promise<PracticeChatHandler> {
     const chatRequest = await ChatRequest.fromRequest(c, practicePayloadSchema);
-    const config = await ChatConfig.create(
-      chatRequest.selectedChatModelId,
-      chatRequest.filter.bucket.id
-    );
+    const config = await ChatConfig.create(chatRequest.selectedChatModel);
 
     return new PracticeChatHandler(chatRequest, config);
   }

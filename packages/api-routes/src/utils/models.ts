@@ -20,3 +20,7 @@ export const chatModels = [
     reasoning: false,
   },
 ];
+
+export const chatTitleModelIdx = 0;
+export const documentModifierModelIdx = 1;
+export const completionModelIdx = 0;

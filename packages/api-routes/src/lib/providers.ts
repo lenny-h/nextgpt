@@ -1,5 +1,6 @@
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import { type JSONValue, type LanguageModel } from "ai";
+import { chatModels } from "../utils/models.js";
 
 export interface Config {
   model: LanguageModel;
@@ -7,14 +8,14 @@ export interface Config {
 }
 
 export const getModel = async (
-  selectedChatModel: string,
+  selectedChatModel: number,
   reasoningEnabled?: boolean
 ): Promise<Config> => {
   if (process.env.USE_OPENAI_API === "true") {
     const { openai } = await import("@ai-sdk/openai");
 
     return {
-      model: openai(selectedChatModel),
+      model: openai(chatModels[selectedChatModel].name),
       providerOptions: {
         openai: {
           parallelToolCalls: false,
@@ -29,7 +30,7 @@ export const getModel = async (
     const { vertex } = await import("@ai-sdk/google-vertex");
 
     return {
-      model: vertex(selectedChatModel),
+      model: vertex(chatModels[selectedChatModel].name),
       providerOptions: {
         google: {
           ...(reasoningEnabled
@@ -54,7 +55,7 @@ export const getModel = async (
     });
 
     return {
-      model: bedrock(selectedChatModel),
+      model: bedrock(chatModels[selectedChatModel].name),
       providerOptions: {
         amazon_bedrock: {
           ...(reasoningEnabled
