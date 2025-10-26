@@ -2,19 +2,23 @@
 
 import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
+import { useFilter } from "@/contexts/filter-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
+import { type FrontendFilter } from "@/types/filter";
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ChatHeader } from "./chat-header";
 import { Introduction } from "./introduction";
@@ -29,12 +33,14 @@ export function Chat({
   initialMessages: Array<MyUIMessage>;
 }) {
   const { webT } = useWebTranslations();
+  const { sharedT } = useSharedTranslations();
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");
 
   const { selectedChatModel, reasoningEnabled } = useChatModel();
   const [isTemporary] = useIsTemporary();
+  const { setFilter } = useFilter();
 
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode, setEditorMode] = useEditor();
@@ -53,6 +59,28 @@ export function Chat({
     diffPrev: codeDiffPrev,
     setDiffNext: setCodeDiffNext,
   } = useCodeEditorContent();
+
+  // Fetch and set filter from last message metadata if it exists
+  useEffect(() => {
+    if (initialMessages.length > 0) {
+      apiFetcher(
+        (client) =>
+          client["filter"][":chatId"].$get({
+            param: { chatId },
+          }),
+        sharedT.apiCodes,
+      )
+        .then((response) => {
+          const frontendFilter = response as FrontendFilter;
+          if (frontendFilter.bucket.id) {
+            setFilter(frontendFilter);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to fetch filter:", error);
+        });
+    }
+  }, [chatId, initialMessages.length, sharedT.apiCodes]);
 
   const { sendMessage, messages, setMessages, status, stop, regenerate } =
     useChat<MyUIMessage>({

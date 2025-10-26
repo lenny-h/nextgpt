@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to test the db-migrator Docker image locally
-# Usage: ./test-migrator.sh [DATABASE_URL]
+# Usage: ./test-migrator.sh DATABASE_PASSWORD DATABASE_HOST
 
 set -e
 
@@ -19,21 +19,24 @@ docker build -f apps/db-migrator/Dockerfile -t db-migrator:test .
 echo -e "${GREEN}✓ Image built successfully${NC}"
 echo ""
 
-# Check if DATABASE_URL is provided
-if [ -z "$1" ]; then
-  echo -e "${YELLOW}Warning: No DATABASE_URL provided${NC}"
-  echo "Usage: $0 'postgresql://postgres:password@localhost:5432/postgres'"
+# Check arguments
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo -e "${YELLOW}Warning: DATABASE_PASSWORD and DATABASE_HOST must be provided${NC}"
+  echo "Usage: $0 <DATABASE_PASSWORD> <DATABASE_HOST>"
+  echo "Example: $0 'password' 'localhost:5432'"
   exit 1
 fi
 
-DATABASE_URL=$1
+DATABASE_PASSWORD=$1
+DATABASE_HOST=$2
 
-echo -e "${GREEN}Running migration with provided DATABASE_URL...${NC}"
+echo -e "${GREEN}Running migration with provided DATABASE_PASSWORD and DATABASE_HOST...${NC}"
 echo ""
 
 # Run the container
 docker run --rm \
-  -e DATABASE_URL="$DATABASE_URL" \
+  -e DATABASE_PASSWORD="$DATABASE_PASSWORD" \
+  -e DATABASE_HOST="$DATABASE_HOST" \
   db-migrator:test
 
 echo ""

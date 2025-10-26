@@ -13,15 +13,17 @@ import {
   getMessagesAfterLastStart,
   stripFilter,
 } from "@/lib/utils";
+import { type FrontendFilter } from "@/types/filter";
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
@@ -36,6 +38,7 @@ export function Practice({
   initialMessages: Array<MyUIMessage>;
 }) {
   const { locale } = useSharedTranslations();
+  const { sharedT } = useSharedTranslations();
 
   const queryClient = useQueryClient();
 
@@ -105,12 +108,34 @@ export function Practice({
       }),
     });
 
-  const { filter, studyMode } = useFilter();
+  const { filter, studyMode, setFilter } = useFilter();
   const { selectedChatModel } = useChatModel();
   const [isTemporary] = useIsTemporary();
 
   const [showTextArea, setShowTextArea] = useState(true);
   const [showPreviousMessages, setShowPreviousMessages] = useState(false);
+
+  // Fetch and set filter from last message metadata if it exists
+  useEffect(() => {
+    if (initialMessages.length > 0) {
+      apiFetcher(
+        (client) =>
+          client["filter"][":chatId"].$get({
+            param: { chatId },
+          }),
+        sharedT.apiCodes,
+      )
+        .then((response) => {
+          const frontendFilter = response as FrontendFilter;
+          if (frontendFilter.bucket.id) {
+            setFilter(frontendFilter);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to fetch filter:", error);
+        });
+    }
+  }, [chatId, initialMessages.length, sharedT.apiCodes]);
 
   const submitForm = useCallback(() => {
     if (!filter.bucket.id) {

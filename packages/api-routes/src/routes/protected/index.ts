@@ -35,6 +35,7 @@ import documentsIlike from "./documents/ilike/route.js";
 import documentsRoute from "./documents/route.js";
 import documentsTitleRoute from "./documents/title/[documentId]/[title]/route.js";
 import feedbackRoute from "./feedback/route.js";
+import filterRoute from "./filter/[chatId]/route.js";
 import filesByCourseRoute from "./files/[courseId]/route.js";
 import filesDeleteRoute from "./files/[fileId]/route.js";
 import filesIlike from "./files/ilike/route.js";
@@ -119,6 +120,9 @@ const protectedApiRouter = new Hono()
 
   // Feedback
   .route("/feedback", feedbackRoute)
+
+  // Filter
+  .route("/filter/:chatId", filterRoute)
 
   // Files
   .route("/files", filesRoute)
