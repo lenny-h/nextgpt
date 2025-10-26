@@ -3,10 +3,14 @@ import { z } from "zod";
 import { type ArtifactKind } from "../../types/artifact-kind.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { documentHandlers } from "./document-handlers.js";
+import { db } from "@workspace/server/drizzle/db.js";
+import { documentToolCalls } from "@workspace/server/drizzle/schema.js";
 
 interface ModifyDocumentProps {
   writer: UIMessageStreamWriter<MyUIMessage>;
   documentId: string;
+  userId: string;
+  chatId: string;
   documentTitle: string;
   content: string;
   kind: ArtifactKind;
@@ -15,6 +19,8 @@ interface ModifyDocumentProps {
 export const modifyDocumentTool = ({
   writer,
   documentId,
+  chatId,
+  userId,
   documentTitle,
   content,
   kind,
@@ -44,13 +50,22 @@ export const modifyDocumentTool = ({
         throw new Error(`No document handler found for kind: ${kind}`);
       }
 
-      await documentHandler.onUpdateDocument({
+      const draftContent = await documentHandler.onUpdateDocument({
         writer,
         content,
         instructions,
       });
 
       writer.write({ type: "finish" });
+
+      await db.insert(documentToolCalls).values({
+        id: documentId,
+        chatId,
+        userId,
+        title: documentTitle,
+        content: draftContent,
+        kind,
+      });
 
       return {
         message:

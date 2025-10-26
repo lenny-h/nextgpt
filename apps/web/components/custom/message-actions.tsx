@@ -147,17 +147,6 @@ export const MessageActions = memo(
 
                     await regenerate({
                       messageId,
-                      body: {
-                        id: chatId,
-                        modelId: selectedChatModel.id,
-                        temp: isTemporary,
-                        ...(isPractice
-                          ? {}
-                          : {
-                              reasoning:
-                                selectedChatModel.reasoning && reasoningEnabled,
-                            }),
-                      },
                     });
                   } catch (error) {
                     console.error("Error during retry:", error);

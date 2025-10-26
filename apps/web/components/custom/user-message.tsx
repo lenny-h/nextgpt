@@ -46,7 +46,7 @@ function PureUserMessage({
   const [_, copyToClipboard] = useCopyToClipboard();
   const [mode, setMode] = useState<"view" | "edit">("view");
 
-  // Extract text and file parts from the message
+  // Extract text parts from the message
   const textParts = message.parts.filter((part) => part.type === "text");
   const textContent = textParts.map((part) => part.text).join("\n");
 

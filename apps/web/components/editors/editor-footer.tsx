@@ -33,9 +33,8 @@ export const EditorFooter = memo(() => {
     transport: new DefaultChatTransport({
       api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/practice`,
       credentials: "include",
-      prepareSendMessagesRequest({ id, messages }) {
+      prepareSendMessagesRequest({ messages }) {
         return {
-          id,
           body: {
             id: chatId,
             message: messages[messages.length - 1],

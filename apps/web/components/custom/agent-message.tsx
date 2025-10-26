@@ -48,31 +48,19 @@ const PureAgentMessage = ({
   previousMessageId,
   isPractice = false,
 }: AgentMessageProps) => {
-  // Extract different part types
+  // Extract text and reasoning content for special handling
   const textParts = message.parts.filter((part) => part.type === "text");
   const reasoningParts = message.parts.filter(
     (part) => part.type === "reasoning",
   );
-  // const fileParts = message.parts.filter((part) => part.type === "file");
 
-  const retrieveDocumentSourcesParts = message.parts.filter(
-    (part) => part.type === "tool-retrieveDocumentSources",
-  );
-  const retrieveWebSourcesParts = message.parts.filter(
-    (part) => part.type === "tool-retrieveWebSources",
-  );
-  const retrieveWebPagesParts = message.parts.filter(
-    (part) => part.type === "tool-retrieveWebPages",
-  );
-  const modifyDocumentParts = message.parts.filter(
-    (part) => part.type === "tool-modifyDocument",
-  );
+  // TODO:
 
-  const documentSources = retrieveDocumentSourcesParts.flatMap(
-    (part) => part.output?.documentSources ?? [],
-  );
+  const documentSources = message.parts
+    .filter((part) => part.type === "tool-retrieveDocumentSources")
+    .flatMap((part) => part.output?.documentSources ?? []);
 
-  // Combine text content
+  // Combine text and reasoning content
   const textContent = textParts.map((part) => part.text).join("\n");
   const reasoningContent = reasoningParts.map((part) => part.text).join("\n");
 
@@ -106,18 +94,23 @@ const PureAgentMessage = ({
           ) : (
             <>
               <div className="space-y-3">
-                {retrieveDocumentSourcesParts.map((part, index) => (
-                  <RetrieveDocumentSourcesUI key={index} part={part} />
-                ))}
-                {retrieveWebSourcesParts.map((part, index) => (
-                  <RetrieveWebSourcesUI key={index} part={part} />
-                ))}
-                {retrieveWebPagesParts.map((part, index) => (
-                  <RetrieveWebPagesUI key={index} part={part} />
-                ))}
-                {modifyDocumentParts.map((part, index) => (
-                  <ModifyDocumentUI key={index} part={part} />
-                ))}
+                {message.parts.map((part, index) => {
+                  if (part.type === "tool-retrieveDocumentSources") {
+                    return (
+                      <RetrieveDocumentSourcesUI key={index} part={part} />
+                    );
+                  }
+                  if (part.type === "tool-retrieveWebSources") {
+                    return <RetrieveWebSourcesUI key={index} part={part} />;
+                  }
+                  if (part.type === "tool-retrieveWebPages") {
+                    return <RetrieveWebPagesUI key={index} part={part} />;
+                  }
+                  if (part.type === "tool-modifyDocument") {
+                    return <ModifyDocumentUI key={index} part={part} />;
+                  }
+                  return null;
+                })}
               </div>
 
               {reasoningContent && (

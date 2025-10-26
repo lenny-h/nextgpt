@@ -10,6 +10,7 @@ import {
   courseUserRoles,
   courses,
   documents,
+  documentToolCalls,
   feedback,
   files,
   messages,
@@ -83,9 +84,10 @@ export const chatsRelations = relations(chats, ({ one, many }) => ({
     references: [user.id],
   }),
   messages: many(messages),
+  documentToolCalls: many(documentToolCalls),
 }));
 
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one, many }) => ({
   chat: one(chats, {
     fields: [messages.chatId],
     references: [chats.id],
@@ -233,3 +235,17 @@ export const courseKeysRelations = relations(courseKeys, ({ one }) => ({
     references: [courses.id],
   }),
 }));
+
+export const documentToolCallsRelations = relations(
+  documentToolCalls,
+  ({ one }) => ({
+    message: one(chats, {
+      fields: [documentToolCalls.chatId],
+      references: [chats.id],
+    }),
+    user: one(user, {
+      fields: [documentToolCalls.userId],
+      references: [user.id],
+    }),
+  })
+);

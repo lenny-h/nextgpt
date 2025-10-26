@@ -86,11 +86,6 @@ const PureMessageEditor = ({
 
       await regenerate({
         messageId: message.id,
-        body: {
-          id: chatId,
-          modelId: selectedChatModel.id,
-          temp: isTemporary,
-        },
       });
     } catch (error) {
       setIsSubmitting(false);

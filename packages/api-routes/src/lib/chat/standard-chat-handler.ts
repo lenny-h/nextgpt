@@ -1,5 +1,6 @@
 import { generateTitleFromUserMessage } from "@workspace/api-routes/utils/generate-title.js";
 import { chatTitleModelIdx } from "@workspace/api-routes/utils/models.js";
+import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import { CustomDocument } from "@workspace/server/drizzle/schema.js";
 import {
   stepCountIs,
@@ -10,7 +11,6 @@ import {
 import { HTTPException } from "hono/http-exception";
 import { type Filter } from "../../schemas/filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
-import { generateUUID } from "../../utils/utils.js";
 import { getDocument } from "../db/queries/documents.js";
 import { USER_RESPONSE_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
@@ -60,13 +60,19 @@ export class StandardChatHandler extends ChatHandler {
         filter: this.request.filter,
         retrieveContent: true, // Always retrieve content to pass as context to the model
       }),
-      createDocument: createDocumentTool({ writer }),
+      createDocument: createDocumentTool({
+        writer,
+        chatId: this.request.id,
+        userId: this.request.user.id,
+      }),
     };
 
     if (this.document) {
       tools.modifyDocument = modifyDocumentTool({
         writer,
         documentId: this.document.id,
+        chatId: this.request.id,
+        userId: this.request.user.id,
         documentTitle: this.document.title,
         content: this.document.content,
         kind: this.document.kind,

@@ -1,3 +1,4 @@
+import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import {
   stepCountIs,
   streamText,
@@ -26,7 +27,7 @@ export class PracticeChatHandler extends ChatHandler {
   }
 
   protected async generateChatTitle(): Promise<string> {
-    return "Practice Session";
+    return `Practice session: ${(this.request.filter as PracticeFilter).studyMode}`;
   }
 
   protected retrieveToolSet(): Record<string, Tool> {
@@ -86,6 +87,7 @@ export class PracticeChatHandler extends ChatHandler {
 
     writer.merge(
       result.toUIMessageStream({
+        generateMessageId: generateUUID,
         originalMessages: this.request.messages,
         onFinish: async ({ messages }) => {
           await this.saveResponseMessages(messages);

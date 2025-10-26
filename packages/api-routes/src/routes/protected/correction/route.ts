@@ -1,6 +1,5 @@
 import { insertDocument } from "@workspace/api-routes/lib/db/queries/documents.js";
 import { getPrompt } from "@workspace/api-routes/lib/db/queries/prompts.js";
-import { CORRECTION_PROMPT } from "@workspace/api-routes/lib/prompts.js";
 import { getModel } from "@workspace/api-routes/lib/providers.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { studentEvaluationModelIdx } from "@workspace/api-routes/utils/models.js";
@@ -8,6 +7,16 @@ import { generateText } from "ai";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { correctionSchema } from "./schema.js";
+
+const CORRECTION_PROMPT = `You are a helpful assistant for evaluating student submissions.
+I'm providing a solution sheet (marked as SOLUTION) and a student submission (marked as SUBMISSION).
+
+Please evaluate the student work by:
+1. Identifying what the student did correctly
+2. Pointing out any mistakes or misunderstandings. Elaborate what is incorrect and why. Correct the mistakes.
+3. Providing a fair assessment of the overall quality of the submission
+
+Format your response as a structured evaluation that could be shared with the student. Use LaTeX syntax for writing math equations. Do not start with an introduction, just dive into the evaluation.`;
 
 const app = new Hono().post(
   "/",

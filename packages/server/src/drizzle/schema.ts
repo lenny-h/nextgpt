@@ -253,6 +253,22 @@ export const courseKeys = pgTable(
 
 export type CourseKey = InferSelectModel<typeof courseKeys>;
 
+export const documentToolCalls = pgTable("document_tool_calls", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  chatId: uuid("chat_id")
+    .notNull()
+    .references(() => chats.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 128 }).notNull(),
+  content: text("content").notNull(),
+  kind: documentKindEnum("kind").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type DocumentToolCall = InferSelectModel<typeof documentToolCalls>;
+
 // Documents table
 export const documents = pgTable(
   "documents",
@@ -341,10 +357,6 @@ export const pages = pgTable(
   (table) => [
     primaryKey({ columns: [table.id, table.courseId] }),
     index("idx_content_search").using("gin", table.fts),
-    // index("content_search_index").using(
-    //   "gin",
-    //   sql`to_tsvector('english', ${table.content})`
-    // ),
   ]
 );
 
