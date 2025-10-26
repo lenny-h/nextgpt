@@ -1,6 +1,6 @@
-import { Filter } from "@/schemas/filter-schema";
-import { PracticeFilter } from "@/schemas/practice-filter-schema";
 import { FrontendFilter } from "@/types/filter";
+import { type Filter } from "@workspace/api-routes/schemas/filter-schema";
+import { type PracticeFilter } from "@workspace/api-routes/schemas/practice-filter-schema";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 
 export function createDiffViewString(

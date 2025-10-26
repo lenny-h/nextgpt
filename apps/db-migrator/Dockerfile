@@ -1,15 +1,35 @@
-# Minimal image to run drizzle-kit migrations
-FROM node:22-alpine
+FROM node:lts-alpine AS base
 
+FROM base AS builder
+# Enable pnpm via corepack
+RUN corepack enable pnpm
+# Set working directory
+WORKDIR /app
+RUN npm install -g turbo
+COPY . .
+RUN turbo prune db-migrator --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN corepack enable pnpm
 WORKDIR /app
 
-# Install only the required dependencies for drizzle-kit migrate
-RUN npm install -g drizzle-orm@0.44.5 drizzle-kit@0.31.5 pg@8.16.3 dotenv@17.2.2
+# First install dependencies (as they change less often)
+COPY --from=builder /app/out/json/ .
+RUN pnpm install --frozen-lockfile
 
-# Copy the drizzle config and schema
-COPY packages/server/drizzle.config.ts ./
-COPY packages/server/src/drizzle ./src/drizzle
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/ .
 
-# Run migrations
+RUN pnpm turbo build
+
+FROM base AS runner
+WORKDIR /app
+
+# Don't run production as root
+RUN addgroup --system --gid 1001 migrator
+RUN adduser --system --uid 1001 migrator
+USER migrator
+COPY --from=installer /app .
+
 CMD ["npx", "drizzle-kit", "migrate"]
-

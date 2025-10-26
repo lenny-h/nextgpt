@@ -24,3 +24,4 @@ export const chatModels = [
 export const chatTitleModelIdx = 0;
 export const documentModifierModelIdx = 1;
 export const completionModelIdx = 0;
+export const studentEvaluationModelIdx = 1;

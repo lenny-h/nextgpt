@@ -66,7 +66,7 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<string> {
     const s3Client = this.getS3Client();
     const command = new GetObjectCommand({
-      Bucket: process.env.AWS_PROJECT_NAME + bucket,
+      Bucket: `${process.env.AWS_PROJECT_NAME}-${bucket}`,
       Key: key,
     });
 
@@ -84,12 +84,12 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<Buffer> {
     const s3Client = this.getS3Client();
     const command = new GetObjectCommand({
-      Bucket: process.env.AWS_PROJECT_NAME + bucket,
+      Bucket: `${process.env.AWS_PROJECT_NAME}-${bucket}`,
       Key: key,
     });
 
     const response = await s3Client.send(command);
-    
+
     if (!response.Body) {
       throw new Error(`File not found: ${bucket}/${key}`);
     }
@@ -99,7 +99,7 @@ export class AwsStorageClient implements IStorageClient {
     for await (const chunk of response.Body as any) {
       chunks.push(chunk);
     }
-    
+
     return Buffer.concat(chunks);
   }
 
@@ -112,7 +112,7 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<void> {
     const s3Client = this.getS3Client();
     const command = new DeleteObjectCommand({
-      Bucket: process.env.AWS_PROJECT_NAME + bucket,
+      Bucket: `${process.env.AWS_PROJECT_NAME}-${bucket}`,
       Key: key,
     });
 

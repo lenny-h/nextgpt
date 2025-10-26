@@ -17,4 +17,5 @@ export const dataSchemas = {
     .strict(),
   "text-delta": z.string(),
   "code-delta": z.string(),
+  finish: z.string(),
 };

@@ -49,15 +49,6 @@ async function convertToMarkdown(key: string): Promise<string> {
   return result.markdown;
 }
 
-async function downloadFileContent(key: string): Promise<Buffer> {
-  const storageClient = getStorageClient();
-
-  return await storageClient.downloadFile({
-    bucket: "temporary-files-bucket",
-    key,
-  });
-}
-
 export async function processAttachments(
   attachments: Attachment[]
 ): Promise<MyUIMessagePart[]> {
@@ -68,7 +59,12 @@ export async function processAttachments(
 
     if (canDirectlyAttach(fileType)) {
       // Download the file content from storage
-      const fileContent = await downloadFileContent(attachment.filename);
+      const storageClient = getStorageClient();
+
+      const fileContent = await storageClient.downloadFile({
+        bucket: "temporary-files-bucket",
+        key: attachment.filename,
+      });
 
       // Convert to data URL
       const base64Data = fileContent.toString("base64");

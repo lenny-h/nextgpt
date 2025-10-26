@@ -13,10 +13,7 @@ export const practiceFilterSchema = z
     courses: z
       .array(
         z.object({
-          id: z.uuid({
-            version: "v4",
-            message: "Course Ids must be valid UUIDs",
-          }),
+          id: uuidSchema,
         })
       )
       .max(5, {

@@ -96,6 +96,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@workspace/server':
+        specifier: workspace:*
+        version: link:../../packages/server
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -169,9 +172,6 @@ importers:
       '@workspace/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@workspace/server':
-        specifier: workspace:*
-        version: link:../../packages/server
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -185,7 +185,17 @@ importers:
         specifier: ^4.36.0
         version: 4.36.0
 
-  apps/db-migrator: {}
+  apps/db-migrator:
+    dependencies:
+      drizzle-kit:
+        specifier: 0.31.5
+        version: 0.31.5
+      drizzle-orm:
+        specifier: 0.44.5
+        version: 0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.4.1)(kysely@0.28.7)(pg@8.16.3)(prisma@5.22.0)
+      pg:
+        specifier: 8.16.3
+        version: 8.16.3
 
   apps/document-processor: {}
 
@@ -261,6 +271,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.87.1
         version: 5.87.1(react@19.1.1)
+      '@workspace/server':
+        specifier: workspace:*
+        version: link:../../packages/server
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -367,9 +380,6 @@ importers:
       '@workspace/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@workspace/server':
-        specifier: workspace:*
-        version: link:../../packages/server
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config

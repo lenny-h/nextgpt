@@ -66,7 +66,7 @@ export class GoogleStorageClient implements IStorageClient {
   }): Promise<string> {
     const storage = this.getStorageClient();
     const blob = storage
-      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
       .file(key);
 
     const [signedUrl] = await blob.getSignedUrl({
@@ -87,7 +87,7 @@ export class GoogleStorageClient implements IStorageClient {
   }): Promise<Buffer> {
     const storage = this.getStorageClient();
     const blob = storage
-      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
       .file(key);
 
     const [content] = await blob.download();
@@ -103,7 +103,7 @@ export class GoogleStorageClient implements IStorageClient {
   }): Promise<void> {
     const storage = this.getStorageClient();
     await storage
-      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
       .file(key)
       .delete();
   }

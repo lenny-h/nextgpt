@@ -1,7 +1,9 @@
 import { insertDocument } from "@workspace/api-routes/lib/db/queries/documents.js";
 import { getPrompt } from "@workspace/api-routes/lib/db/queries/prompts.js";
 import { CORRECTION_PROMPT } from "@workspace/api-routes/lib/prompts.js";
-import { vertex } from "@ai-sdk/google-vertex";
+import { getModel } from "@workspace/api-routes/lib/providers.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
+import { studentEvaluationModelIdx } from "@workspace/api-routes/utils/models.js";
 import { generateText } from "ai";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
@@ -74,26 +76,40 @@ async function evaluateSubmission(
       customPrompt;
   }
 
+  const config = await getModel(studentEvaluationModelIdx);
+
+  const storageClient = getStorageClient();
+
+  const solutionContent = await storageClient.downloadFile({
+    bucket: "temporary-files-bucket",
+    key: `${userId}/${solutionFilename}`,
+  });
+
+  const handInContent = await storageClient.downloadFile({
+    bucket: "temporary-files-bucket",
+    key: `${userId}/${handInFilename}`,
+  });
+
   try {
     const { text } = await generateText({
-      model: vertex("gemini-2.5-pro"),
+      system: prompt,
+      model: config.model,
       messages: [
         {
           role: "user",
           content: [
-            { type: "text", text: prompt },
+            { type: "text", text: "Solution:" },
             {
               type: "file",
-              data: `gs://${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket/${userId}/${solutionFilename}`,
+              data: solutionContent,
               mediaType: "application/pdf",
             },
-            { type: "text", text: "Solution (above)" },
+            { type: "text", text: "Submission:" },
             {
               type: "file",
-              data: `gs://${process.env.GOOGLE_VERTEX_PROJECT}-correction-bucket/${userId}/${handInFilename}`,
+              data: handInContent,
               mediaType: "application/pdf",
             },
-            { type: "text", text: "Submission (above)" },
           ],
         },
       ],

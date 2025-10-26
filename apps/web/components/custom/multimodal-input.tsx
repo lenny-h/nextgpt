@@ -21,10 +21,10 @@ import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { useFileUpload } from "@/hooks/use-file-upload";
-import { type Attachment } from "@workspace/api-routes/types/attachment";
+import { stripFilter } from "@/lib/utils";
+import { Attachment } from "@workspace/api-routes/schemas/attachment-schema";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
-import { useUser } from "@workspace/ui/contexts/user-context";
 import { cn, generateUUID } from "@workspace/ui/lib/utils";
 import { type ChatRequestOptions } from "ai";
 import React, {
@@ -41,7 +41,6 @@ import { AttachmentPreview } from "./attachment-preview";
 import { ContextFiles } from "./context-files";
 import { Textarea } from "./text-area";
 import { TextAreaControl } from "./text-area-control";
-import { stripFilter } from "@/lib/utils";
 
 interface MultimodalInputProps {
   sendMessage: (

@@ -4,13 +4,13 @@ import { getModel } from "../providers.js";
 export class ChatConfig {
   public readonly modelId: LanguageModel;
   public readonly providerOptions: {
-    [model: string]: Record<string, JSONValue | undefined>;
+    [model: string]: Record<string, JSONValue>;
   };
 
   constructor(
     modelId: LanguageModel,
     providerOptions: {
-      [model: string]: Record<string, JSONValue | undefined>;
+      [model: string]: Record<string, JSONValue>;
     } = {}
   ) {
     this.modelId = modelId;

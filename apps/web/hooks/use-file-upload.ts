@@ -1,4 +1,4 @@
-import { type Attachment } from "@workspace/api-routes/types/attachment";
+import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
@@ -67,7 +67,7 @@ export const useFileUpload = () => {
       const uploadPromises = files.map((file) => uploadFile(file));
       const uploadedAttachments = await Promise.all(uploadPromises);
       const successfullyUploadedAttachments = uploadedAttachments.filter(
-        (attachment): attachment is Attachment => attachment !== undefined,
+        (attachment) => attachment !== undefined,
       );
 
       setAttachments((currentAttachments) => [

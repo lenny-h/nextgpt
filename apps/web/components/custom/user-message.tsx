@@ -64,15 +64,8 @@ function PureUserMessage({
           {attachments && attachments.length > 0 && (
             <div className="flex flex-row justify-end gap-2">
               {attachments.map((attachment, index) => {
-                const filename = attachment.url.split("/").pop() ?? "";
                 return (
-                  <AttachmentPreview
-                    key={index}
-                    attachment={{
-                      filename,
-                      contentType: filename.split(".").pop() || "",
-                    }}
-                  />
+                  <AttachmentPreview key={index} attachment={attachment} />
                 );
               })}
             </div>

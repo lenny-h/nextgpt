@@ -14,7 +14,7 @@
 
 // Modifications copyright (C) 2025 <NextGpt.ai Technologies>
 
-import { type Attachment } from "@workspace/api-routes/types/attachment";
+import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema";
 import { FileImage, FileText, Loader, X } from "lucide-react";
 
 interface PreviewAttachmentProps {
@@ -37,7 +37,7 @@ export const AttachmentPreview: React.FC<PreviewAttachmentProps> = ({
           <div className="animate-spin">
             <Loader />
           </div>
-        ) : contentType.startsWith("image") ? (
+        ) : contentType && contentType.startsWith("image") ? (
           <FileImage />
         ) : (
           <FileText />

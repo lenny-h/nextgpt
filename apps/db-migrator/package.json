@@ -2,5 +2,10 @@
   "name": "@workspace/db-migrator",
   "version": "0.0.0",
   "private": true,
-  "description": "Cloud Run job for database migrations using Drizzle Kit"
+  "description": "Job for database migrations using Drizzle Kit",
+  "dependencies": {
+    "drizzle-kit": "0.31.5",
+    "drizzle-orm": "0.44.5",
+    "pg": "8.16.3"
+  }
 }

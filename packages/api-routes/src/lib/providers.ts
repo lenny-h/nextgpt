@@ -4,7 +4,7 @@ import { chatModels } from "../utils/models.js";
 
 export interface Config {
   model: LanguageModel;
-  providerOptions: { [model: string]: Record<string, JSONValue | undefined> };
+  providerOptions: { [model: string]: Record<string, JSONValue> };
 }
 
 export const getModel = async (
@@ -20,7 +20,7 @@ export const getModel = async (
         openai: {
           parallelToolCalls: false,
           store: false,
-          reasoningSummary: reasoningEnabled ? "detailed" : undefined,
+          ...(reasoningEnabled ? { reasoningSummary: "detailed" } : {}),
         },
       },
     };
