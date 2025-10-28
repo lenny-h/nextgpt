@@ -65,22 +65,23 @@ export const processDataPart = async ({
 
       if (dataPart.data.kind === "text") {
         if (!textEditorRef.current) {
-          console.error(
+          console.warn(
             "Text editor reference is null when switching to text mode.",
           );
           return;
         }
 
         // Prevent overwriting unsaved changes
-        if (localTextEditorContent.id !== dataPart.data.id) {
+        if (
+          localTextEditorContent.id !== dataPart.data.id &&
+          textEditorRef.current.state.doc.content.size
+        ) {
           return;
         }
 
-        if (textEditorRef.current.state.doc.content.size) {
-          return;
-        } else {
-          // Update local storage input
-          // This should also update the editor header
+        // Update local storage input
+        // This should also update the editor header
+        if (localTextEditorContent.id !== dataPart.data.id) {
           setLocalTextEditorContent({
             id: dataPart.data.id,
             title: dataPart.data.title,
@@ -94,31 +95,30 @@ export const processDataPart = async ({
         );
 
         // Save current state for diffing later and clear editor
-        if (textEditorRef.current.state.doc.content.size) {
-          textDiffPrev.current = textEditorRef.current.state;
-          updateTextEditorWithDispatch(textEditorRef, "");
-        }
+        textDiffPrev.current = textEditorRef.current.state;
+        updateTextEditorWithDispatch(textEditorRef, "");
 
         // Disable editing while streaming
         textEditorRef.current.setProps({ editable: () => false });
       } else if (dataPart.data.kind === "code") {
         if (!codeEditorRef.current) {
-          console.error(
+          console.warn(
             "Code editor reference is null when switching to code mode.",
           );
           return;
         }
 
         // Prevent overwriting unsaved changes
-        if (localCodeEditorContent.id !== dataPart.data.id) {
+        if (
+          localCodeEditorContent.id !== dataPart.data.id &&
+          codeEditorRef.current.state.doc.length
+        ) {
           return;
         }
 
-        if (codeEditorRef.current.state.doc.length) {
-          return;
-        } else {
-          // Update local storage input
-          // This should also update the editor header
+        // Update local storage input
+        // This should also update the editor header
+        if (localCodeEditorContent.id !== dataPart.data.id) {
           setLocalCodeEditorContent({
             id: dataPart.data.id,
             title: dataPart.data.title,
@@ -127,20 +127,19 @@ export const processDataPart = async ({
         }
 
         // Save current state for diffing later and clear editor
-        if (codeEditorRef.current.state.doc.length) {
-          codeDiffPrev.current = codeEditorRef.current.state;
+        codeDiffPrev.current = codeEditorRef.current.state;
+        updateCodeEditorWithDispatch(codeEditorRef, "");
 
-          // Dynamically Import StateEffect, EditorView
-          const { StateEffect } = await import("@codemirror/state");
-          const { EditorView } = await import("@codemirror/view");
+        // Dynamically Import StateEffect, EditorView
+        const { StateEffect } = await import("@codemirror/state");
+        const { EditorView } = await import("@codemirror/view");
 
-          // Create a transaction that reconfigures the editable facet to false
-          // This disables editing while streaming
-          const effect = StateEffect.reconfigure.of([
-            EditorView.editable.of(false),
-          ]);
-          codeEditorRef.current.dispatch({ effects: effect });
-        }
+        // Create a transaction that reconfigures the editable facet to false
+        // This disables editing while streaming
+        const effect = StateEffect.reconfigure.of([
+          EditorView.editable.of(false),
+        ]);
+        codeEditorRef.current.dispatch({ effects: effect });
       }
 
       resizeEditor(panelRef, false);
@@ -148,6 +147,11 @@ export const processDataPart = async ({
 
     case "data-text-delta":
       console.log("Text delta event received: ", dataPart.data);
+
+      // If there's no previous state, dont append deltas
+      if (!textDiffPrev.current) {
+        return;
+      }
 
       // Dynamically import the appendContentToTextEditor function
       const { appendContentToTextEditor } = await import(
@@ -160,6 +164,10 @@ export const processDataPart = async ({
     case "data-code-delta":
       console.log("Code delta event received: ", dataPart.data);
 
+      if (!codeDiffPrev.current) {
+        return;
+      }
+
       appendContentToCodeEditor(codeEditorRef, dataPart.data);
       break;
 
@@ -168,7 +176,7 @@ export const processDataPart = async ({
 
       if (editorMode === "text") {
         if (!textDiffPrev.current || !textEditorRef.current) {
-          console.error(
+          console.warn(
             "Text editor reference is null when processing finish event.",
           );
           return;
@@ -203,7 +211,7 @@ export const processDataPart = async ({
         );
       } else if (editorMode === "code") {
         if (!codeEditorRef.current || !codeDiffPrev.current) {
-          console.error(
+          console.warn(
             "Code editor reference is null when processing finish event.",
           );
           return;

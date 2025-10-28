@@ -1,4 +1,5 @@
 import { Button } from "@workspace/ui/components/button";
+import { ButtonGroup } from "@workspace/ui/components/button-group";
 import {
   Dialog,
   DialogContent,
@@ -190,7 +191,11 @@ export const EditorHeader = memo(() => {
         <X />
       </Button>
 
-      <>
+      <div className="flex-1 truncate text-left text-lg font-semibold">
+        {editorContent.title}
+      </div>
+
+      <ButtonGroup>
         {editorMode === "code" ? (
           <Button variant="ghost">
             {copied ? (
@@ -228,9 +233,11 @@ export const EditorHeader = memo(() => {
             </Button>
           </>
         )}
+      </ButtonGroup>
 
-        <ModeSwitcher />
+      <ModeSwitcher />
 
+      <ButtonGroup>
         {editorContent.id ? (
           <Button
             className="px-2"
@@ -272,7 +279,7 @@ export const EditorHeader = memo(() => {
           setEditorContent={setEditorContent}
           panelRef={panelRef}
         />
-      </>
+      </ButtonGroup>
     </div>
   );
 });

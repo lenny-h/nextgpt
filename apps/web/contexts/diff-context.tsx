@@ -18,6 +18,7 @@ type DiffContextType = {
   codeDiffPrev: RefObject<CodeEditorState | undefined>;
   codeDiffNext: string;
   setCodeDiffNext: React.Dispatch<React.SetStateAction<string>>;
+  isBlocked: boolean;
 };
 
 const DiffContext = createContext<DiffContextType | undefined>(undefined);
@@ -32,6 +33,9 @@ export function DiffProvider({ children }: Props) {
   const codeDiffPrev = useRef<CodeEditorState | undefined>(undefined);
   const [codeDiffNext, setCodeDiffNext] = useState("");
 
+  const isBlocked =
+    textDiffPrev.current !== undefined || codeDiffPrev.current !== undefined;
+
   return (
     <DiffContext.Provider
       value={{
@@ -41,6 +45,7 @@ export function DiffProvider({ children }: Props) {
         codeDiffPrev,
         codeDiffNext,
         setCodeDiffNext,
+        isBlocked,
       }}
     >
       {children}

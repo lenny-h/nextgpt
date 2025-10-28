@@ -1,5 +1,7 @@
+import { useDiff } from "@/contexts/diff-context";
 import { useDiffActions } from "@/hooks/use-diff-actions";
 import { Button } from "@workspace/ui/components/button";
+import { ButtonGroup } from "@workspace/ui/components/button-group";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +44,7 @@ export const EditorHeader = memo(() => {
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode] = useEditor();
 
+  const { isBlocked } = useDiff();
   const { isDiff, handleDiffAction } = useDiffActions();
 
   const [_, copyToClipboard] = useCopyToClipboard();
@@ -199,97 +202,109 @@ export const EditorHeader = memo(() => {
       </div>
 
       {isDiff ? (
-        <>
+        <ButtonGroup>
           <Button onClick={() => handleDiffAction(true)}>Accept</Button>
           <Button variant="outline" onClick={() => handleDiffAction(false)}>
             Deny
           </Button>
-        </>
+        </ButtonGroup>
       ) : (
         <>
-          {editorMode === "code" ? (
-            <Button variant="ghost">
-              {copied ? (
-                <Check className="text-green-500" />
-              ) : (
-                <Copy onClick={() => handleCopy()} />
-              )}
-            </Button>
-          ) : (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">
-                    {copied ? <Check className="text-green-500" /> : <Copy />}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => handleCopy("markdown")}
-                  >
-                    Markdown
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => handleCopy("latex")}
-                  >
-                    Latex
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button variant="ghost" onClick={handlePdfDownload}>
-                <Download className="h-4 w-4" />
+          <ButtonGroup>
+            {editorMode === "code" ? (
+              <Button variant="ghost" disabled={isBlocked}>
+                {copied ? (
+                  <Check className="text-green-500" />
+                ) : (
+                  <Copy onClick={() => handleCopy()} />
+                )}
               </Button>
-            </>
-          )}
+            ) : (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" disabled={isBlocked}>
+                      {copied ? <Check className="text-green-500" /> : <Copy />}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleCopy("markdown")}
+                    >
+                      Markdown
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleCopy("latex")}
+                    >
+                      Latex
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  variant="ghost"
+                  onClick={handlePdfDownload}
+                  disabled={isBlocked}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </ButtonGroup>
 
           {!isDiff && <ModeSwitcher />}
 
           {!isDiff && <LoadButton type="documents" />}
 
-          {editorContent.id ? (
-            <Button
-              className="px-2"
-              disabled={isSaving}
-              onClick={() => saveDocument(editorContent.id)}
-              variant="outline"
-            >
-              {isSaving ? "Saving..." : "Save"}
-              <KeyboardShortcut keys={["⌘", "s"]} />
-            </Button>
-          ) : (
-            <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="px-2" variant="outline">
-                  Save
-                  <KeyboardShortcut keys={["⌘", "s"]} />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Set title</DialogTitle>
-                  <DialogDescription>
-                    Saving this file will overwrite files with the same title.
-                    After saving, the document will be accessible under
-                    'Documents'
-                  </DialogDescription>
-                </DialogHeader>
-                <SaveDocumentForm
-                  onClose={() => setSaveDialogOpen(false)}
-                  editorContent={editorContent}
-                  setEditorContent={setEditorContent}
-                />
-              </DialogContent>
-            </Dialog>
-          )}
+          <ButtonGroup>
+            {editorContent.id ? (
+              <Button
+                className="px-2"
+                disabled={isSaving || isBlocked}
+                onClick={() => saveDocument(editorContent.id)}
+                variant="outline"
+              >
+                {isSaving ? "Saving..." : "Save"}
+                <KeyboardShortcut keys={["⌘", "s"]} />
+              </Button>
+            ) : (
+              <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="px-2"
+                    variant="outline"
+                    disabled={isBlocked}
+                  >
+                    Save
+                    <KeyboardShortcut keys={["⌘", "s"]} />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Set title</DialogTitle>
+                    <DialogDescription>
+                      Saving this file will overwrite files with the same title.
+                      After saving, the document will be accessible under
+                      'Documents'
+                    </DialogDescription>
+                  </DialogHeader>
+                  <SaveDocumentForm
+                    onClose={() => setSaveDialogOpen(false)}
+                    editorContent={editorContent}
+                    setEditorContent={setEditorContent}
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
 
-          <EditorDropdownMenu
-            editorContent={editorContent}
-            setEditorContent={setEditorContent}
-            panelRef={panelRef}
-          />
+            <EditorDropdownMenu
+              editorContent={editorContent}
+              setEditorContent={setEditorContent}
+              panelRef={panelRef}
+            />
+          </ButtonGroup>
         </>
       )}
     </div>
