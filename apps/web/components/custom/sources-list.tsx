@@ -67,31 +67,49 @@ export const SourcesList = ({ sources, isLoading }: Props) => {
             : "xl:grid-cols-1",
       )}
     >
-      {sources.map((source) => (
-        <button
-          key={source.id}
-          className="border-primary flex h-20 w-full cursor-pointer items-center space-x-2 rounded-md border p-2"
-          onClick={() =>
-            openPdf(
-              isMobile,
-              panelRef,
-              source.courseId,
-              source.fileName,
-              source.pageIndex + 1,
-            )
-          }
-        >
-          <File className="text-primary h-full w-10" />
-          <div className="flex flex-1 flex-col space-y-1 overflow-x-hidden">
-            <h2 className="w-full truncate text-left text-lg font-semibold">
-              {source.fileName}, page {source.pageIndex + 1}
-            </h2>
-            <p className="text-muted-foreground w-full truncate text-left text-sm">
-              {source.courseName}
-            </p>
-          </div>
-        </button>
-      ))}
+      {sources.map((source) => {
+        const isPdf = source.fileName.toLowerCase().endsWith(".pdf");
+        return (
+          <button
+            key={source.id}
+            className={cn(
+              "border-primary flex h-20 w-full items-center space-x-2 rounded-md border p-2",
+              isPdf
+                ? "hover:bg-muted/50 cursor-pointer"
+                : "cursor-default opacity-75",
+            )}
+            onClick={() => {
+              if (isPdf) {
+                openPdf(
+                  isMobile,
+                  panelRef,
+                  source.courseId,
+                  source.fileName,
+                  source.pageIndex + 1,
+                );
+              }
+            }}
+            disabled={!isPdf}
+          >
+            <File className="text-primary h-full w-10" />
+            <div className="flex flex-1 flex-col space-y-1 overflow-x-hidden">
+              <div className="flex items-center gap-2">
+                <h2 className="flex-1 truncate text-left text-lg font-semibold">
+                  {source.fileName}, page {source.pageIndex + 1}
+                </h2>
+                {!isPdf && (
+                  <span className="text-muted-foreground text-[10px] italic">
+                    Preview unavailable
+                  </span>
+                )}
+              </div>
+              <p className="text-muted-foreground w-full truncate text-left text-sm">
+                {source.courseName}
+              </p>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 };

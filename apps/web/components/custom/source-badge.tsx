@@ -19,19 +19,28 @@ export function SourceBadge({ source, className }: SourceBadgeProps) {
   const { panelRef } = useRefs();
   const { openPdf } = usePdf();
 
+  const isPdf = source.fileName.toLowerCase().endsWith(".pdf");
+
+  const handleClick = () => {
+    if (isPdf) {
+      openPdf(
+        isMobile,
+        panelRef,
+        source.courseId,
+        source.fileName,
+        source.pageIndex + 1,
+      );
+    }
+  };
+
   return (
     <Badge
-      onClick={() =>
-        openPdf(
-          isMobile,
-          panelRef,
-          source.courseId,
-          source.fileName,
-          source.pageIndex + 1,
-        )
-      }
+      onClick={handleClick}
       className={cn(
-        "bg-primary/10 hover:bg-primary/20 inline-flex cursor-pointer items-center gap-1 rounded text-xs font-medium transition-colors",
+        "bg-primary/10 inline-flex items-center gap-1 rounded text-xs font-medium transition-colors",
+        isPdf
+          ? "hover:bg-primary/20 cursor-pointer"
+          : "cursor-default opacity-75",
         className,
       )}
     >

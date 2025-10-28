@@ -9,7 +9,7 @@ export type MyUITools = {
       questions: string[];
       pageNumbers: number[];
     };
-    output: { documentSources: DocumentSource[] };
+    output: { docSources: DocumentSource[] };
   };
   retrieveWebSources: {
     input: { searchTerms: string[] };

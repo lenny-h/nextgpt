@@ -1,4 +1,5 @@
 import { type DocumentSource } from "@workspace/api-routes/types/document-source";
+import { type WebSource } from "@workspace/api-routes/types/web-source";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { SourceBadge } from "./source-badge";
+import { WebSourceBadge } from "./web-source-badge";
 
 import "katex/dist/katex.min.css";
 
@@ -54,10 +56,11 @@ const processChildrenWithLineBreaks = (children: React.ReactNode) => {
   });
 };
 
-// New: rehype plugin to convert £1,2£ into <source-ref indices="1,2" />
+// New: rehype plugin to convert <doc-source>id</doc-source> and <web-source>id</web-source>
 const rehypeSourceRefs = () => {
   return (tree: any) => {
-    const regex = /£(\d+(?:,\s?\d+)*)£/g;
+    const docSourceRegex = /<doc-source>(.*?)<\/doc-source>/g;
+    const webSourceRegex = /<web-source>(.*?)<\/web-source>/g;
 
     const transform = (parent: any) => {
       if (!parent || !Array.isArray(parent.children)) return;
@@ -67,14 +70,17 @@ const rehypeSourceRefs = () => {
 
         if (node?.type === "text" && typeof node.value === "string") {
           const value: string = node.value;
-          regex.lastIndex = 0;
+
+          // Combined regex to find both types of sources
+          const combinedRegex = /<(doc-source|web-source)>(.*?)<\/\1>/g;
+          combinedRegex.lastIndex = 0;
 
           let match: RegExpExecArray | null;
           let lastIndex = 0;
           const newNodes: any[] = [];
 
           // Find and split around matches
-          while ((match = regex.exec(value)) !== null) {
+          while ((match = combinedRegex.exec(value)) !== null) {
             if (match.index > lastIndex) {
               newNodes.push({
                 type: "text",
@@ -82,10 +88,16 @@ const rehypeSourceRefs = () => {
               });
             }
 
+            const sourceType = match[1]; // "doc-source" or "web-source"
+            const sourceId = match[2]; // the ID
+
             newNodes.push({
               type: "element",
-              tagName: "source-ref",
-              properties: { indices: match[1] }, // e.g., "1,2"
+              tagName:
+                sourceType === "doc-source"
+                  ? "doc-source-ref"
+                  : "web-source-ref",
+              properties: { sourceId },
               children: [],
             });
 
@@ -116,43 +128,55 @@ const rehypeSourceRefs = () => {
   };
 };
 
-// New: allow custom "source-ref" tag in Components typing
+// New: allow custom source ref tags in Components typing
 type ComponentsWithSourceRef = Components & {
-  "source-ref"?: (props: any) => React.ReactNode;
+  "doc-source-ref"?: (props: any) => React.ReactNode;
+  "web-source-ref"?: (props: any) => React.ReactNode;
 };
 
 const getComponents = ({
-  sources,
+  docSources,
+  webSources,
 }: {
-  sources?: DocumentSource[];
-  // parseSourceRefs?: boolean; // not needed here
+  docSources?: DocumentSource[];
+  webSources?: WebSource[];
 }): Partial<ComponentsWithSourceRef> => ({
-  // Render our custom element produced by rehypeSourceRefs
-  "source-ref": ({ node }: any) => {
-    const indicesProp = node?.properties?.indices ?? "";
-    const indices = String(indicesProp)
-      .split(",")
-      .map((s) => parseInt(s.trim(), 10))
-      .filter(
-        (n) =>
-          Number.isFinite(n) && n >= 0 && sources && n < (sources?.length ?? 0),
-      );
+  // Render our custom element produced by rehypeSourceRefs for document sources
+  "doc-source-ref": ({ node }: any) => {
+    const sourceId = node?.properties?.sourceId ?? "";
 
-    if (!sources || indices.length === 0) {
-      // Fallback: render original text if indices invalid
-      return <>£{indicesProp}£</>;
+    if (!docSources) {
+      // Fallback: render original text if sources not available
+      return <>&lt;doc-source&gt;{sourceId}&lt;/doc-source&gt;</>;
     }
 
-    return (
-      <span className="inline-flex flex-wrap gap-1">
-        {indices
-          .map((sourceIndex) => sources[sourceIndex])
-          .filter((source): source is DocumentSource => !!source)
-          .map((source, i) => (
-            <SourceBadge key={`source-${source.id}-${i}`} source={source} />
-          ))}
-      </span>
-    );
+    const source = docSources.find((s) => s.id === sourceId);
+
+    if (!source) {
+      // Fallback: render original text if source not found
+      return <>&lt;doc-source&gt;{sourceId}&lt;/doc-source&gt;</>;
+    }
+
+    return <SourceBadge source={source} />;
+  },
+
+  // Render our custom element produced by rehypeSourceRefs for web sources
+  "web-source-ref": ({ node }: any) => {
+    const sourceId = node?.properties?.sourceId ?? "";
+
+    if (!webSources) {
+      // Fallback: render original text if sources not available
+      return <>&lt;web-source&gt;{sourceId}&lt;/web-source&gt;</>;
+    }
+
+    const source = webSources.find((s) => s.id === sourceId);
+
+    if (!source) {
+      // Fallback: render original text if source not found
+      return <>&lt;web-source&gt;{sourceId}&lt;/web-source&gt;</>;
+    }
+
+    return <WebSourceBadge source={source} />;
   },
 
   p: ({ children, ...props }) => {
@@ -306,14 +330,23 @@ const getComponents = ({
 
 interface MarkdownProps {
   children: string;
-  sources?: DocumentSource[];
+  docSources?: DocumentSource[];
+  webSources?: WebSource[];
   parseSourceRefs?: boolean;
 }
 
 export const Markdown = memo(
-  ({ children, sources = [], parseSourceRefs = false }: MarkdownProps) => {
+  ({
+    children,
+    docSources = [],
+    webSources = [],
+    parseSourceRefs = false,
+  }: MarkdownProps) => {
     // Memoize components and rehype plugins
-    const components = useMemo(() => getComponents({ sources }), [sources]);
+    const components = useMemo(
+      () => getComponents({ docSources, webSources }),
+      [docSources, webSources],
+    );
 
     const rehypePlugins = useMemo(() => {
       const plugins: any[] = [];

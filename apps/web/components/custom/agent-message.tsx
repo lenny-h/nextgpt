@@ -48,27 +48,32 @@ const PureAgentMessage = ({
   previousMessageId,
   isPractice = false,
 }: AgentMessageProps) => {
-  // Extract text and reasoning content for special handling
-  const textParts = message.parts.filter((part) => part.type === "text");
-  const reasoningParts = message.parts.filter(
-    (part) => part.type === "reasoning",
-  );
-
-  // TODO:
-
-  const documentSources = message.parts
+  // Aggregate document sources
+  const docSources = message.parts
     .filter((part) => part.type === "tool-retrieveDocumentSources")
-    .flatMap((part) => part.output?.documentSources ?? []);
+    .flatMap((part) => part.output?.docSources ?? []);
 
-  // Combine text and reasoning content
-  const textContent = textParts.map((part) => part.text).join("\n");
-  const reasoningContent = reasoningParts.map((part) => part.text).join("\n");
+  // Aggregate web sources
+  const webSources = message.parts
+    .filter(
+      (part) =>
+        part.type === "tool-retrieveWebSources" ||
+        part.type === "tool-retrieveWebPages",
+    )
+    .flatMap((part) => part.output?.webSources ?? []);
+
+  // Aggregate text content from all text parts for message actions
+  const textContent = message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n\n");
 
   // Parse LaTeX content
-  const parsedContent = textContent
-    .replace(/\\\[(.*?)\\\]/gs, "$$$$$1$$$$")
-    .replace(/\\\((.*?)\\\)/gs, "$$$1$$");
-  // .replace(/```latex([\s\S]*?)```/gs, "$$$$$1$$$$");
+  const parseContent = (text: string) => {
+    return text
+      .replace(/\\\[(.*?)\\\]/gs, "$$$$$1$$$$")
+      .replace(/\\\((.*?)\\\)/gs, "$$$1$$");
+  };
 
   return (
     <LazyMotion features={loadFeatures}>
@@ -89,46 +94,57 @@ const PureAgentMessage = ({
             },
           )}
         >
-          {isThinking || (isLoading && !reasoningContent && !textContent) ? (
+          {isThinking || (isLoading && message.parts.length === 0) ? (
             <StreamingIndicator />
           ) : (
             <>
-              <div className="space-y-3">
-                {message.parts.map((part, index) => {
-                  if (part.type === "tool-retrieveDocumentSources") {
-                    return (
-                      <RetrieveDocumentSourcesUI key={index} part={part} />
-                    );
-                  }
-                  if (part.type === "tool-retrieveWebSources") {
-                    return <RetrieveWebSourcesUI key={index} part={part} />;
-                  }
-                  if (part.type === "tool-retrieveWebPages") {
-                    return <RetrieveWebPagesUI key={index} part={part} />;
-                  }
-                  if (part.type === "tool-modifyDocument") {
-                    return <ModifyDocumentUI key={index} part={part} />;
-                  }
-                  return null;
-                })}
-              </div>
+              {message.parts.map((part, index) => {
+                // Render text parts
+                if (part.type === "text") {
+                  const parsedContent = parseContent(part.text);
+                  return (
+                    <Markdown
+                      key={index}
+                      docSources={docSources}
+                      webSources={webSources}
+                      parseSourceRefs={true}
+                    >
+                      {parsedContent}
+                    </Markdown>
+                  );
+                }
 
-              {reasoningContent && (
-                <MessageReasoning
-                  isLoading={isLoading}
-                  reasoning={reasoningContent}
-                />
-              )}
+                // Render reasoning parts
+                if (part.type === "reasoning") {
+                  return (
+                    <MessageReasoning
+                      key={index}
+                      isLoading={isLoading}
+                      reasoning={part.text}
+                    />
+                  );
+                }
 
-              {textContent && (
-                <Markdown sources={documentSources} parseSourceRefs={true}>
-                  {parsedContent}
-                </Markdown>
-              )}
+                // Render tool UI components
+                if (part.type === "tool-retrieveDocumentSources") {
+                  return <RetrieveDocumentSourcesUI key={index} part={part} />;
+                }
+                if (part.type === "tool-retrieveWebSources") {
+                  return <RetrieveWebSourcesUI key={index} part={part} />;
+                }
+                if (part.type === "tool-retrieveWebPages") {
+                  return <RetrieveWebPagesUI key={index} part={part} />;
+                }
+                if (part.type === "tool-modifyDocument") {
+                  return <ModifyDocumentUI key={index} part={part} />;
+                }
+
+                return null;
+              })}
 
               {textContent && (
                 <MessageActions
-                  content={parsedContent}
+                  content={parseContent(textContent)}
                   role={message.role}
                   isLoading={isLoading}
                   regenerate={regenerate}

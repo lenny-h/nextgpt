@@ -13,7 +13,7 @@ export const tools = {
       questions: z.array(z.string()),
       pageNumbers: z.array(z.number()),
     }),
-    outputSchema: z.object({ documentSources: z.array(documentSourceSchema) }),
+    outputSchema: z.object({ docSources: z.array(documentSourceSchema) }),
   }),
   modifyDocument: tool({
     description:

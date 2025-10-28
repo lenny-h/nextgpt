@@ -7,8 +7,9 @@ import {
 } from "@workspace/ui/components/collapsible";
 import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
+import { cn } from "@workspace/ui/lib/utils";
 import { type ToolUIPart } from "ai";
-import { ChevronDownIcon, FileText, Loader2 } from "lucide-react";
+import { ChevronDownIcon, File, Loader2 } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 
 export const RetrieveDocumentSourcesUI = memo(
@@ -96,7 +97,7 @@ export const RetrieveDocumentSourcesUI = memo(
 
       return (
         <div className="bg-muted/30 flex items-start gap-2 rounded-md border p-2">
-          <FileText className="text-primary mt-0.5" size={16} />
+          <File className="text-primary mt-0.5" size={16} />
           <div className="flex-1">
             <p className="mb-1 text-xs font-medium">
               Searching documents with:
@@ -118,8 +119,8 @@ export const RetrieveDocumentSourcesUI = memo(
       );
     }
 
-    if (part.state === "output-available" && part.output?.documentSources) {
-      const sources = part.output.documentSources;
+    if (part.state === "output-available" && part.output?.docSources) {
+      const sources = part.output.docSources;
 
       return (
         <Collapsible
@@ -129,38 +130,58 @@ export const RetrieveDocumentSourcesUI = memo(
         >
           <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-2 text-xs font-medium">
             <div className="flex items-center gap-2">
-              <FileText size={14} className="text-primary" />
+              <File size={14} className="text-primary" />
               <span>Document Sources ({sources.length})</span>
             </div>
             <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={14} />
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="space-y-1 p-2 text-xs">
-              {sources.map((source) => (
-                <div
-                  key={source.id}
-                  className="bg-muted/30 hover:bg-muted/50 flex cursor-pointer flex-col gap-1 rounded-md border p-2 transition-colors"
-                  onClick={() =>
-                    openPdf(
-                      isMobile,
-                      panelRef,
-                      source.courseId,
-                      source.fileName,
-                      source.pageIndex + 1,
-                    )
-                  }
-                >
-                  <div className="flex items-center gap-2">
-                    <FileText size={12} className="text-primary" />
-                    <span className="font-medium">
-                      {source.fileName}, page {source.pageIndex + 1}
-                    </span>
+              {sources.map((source) => {
+                const isPdf = source.fileName.toLowerCase().endsWith(".pdf");
+                return (
+                  <div
+                    key={source.id}
+                    className={cn(
+                      "flex flex-col gap-1 rounded-md border p-2 transition-colors",
+                      isPdf
+                        ? "bg-muted/30 hover:bg-muted/50 cursor-pointer"
+                        : "bg-muted/20 cursor-default opacity-75",
+                    )}
+                    onClick={() => {
+                      if (isPdf) {
+                        openPdf(
+                          isMobile,
+                          panelRef,
+                          source.courseId,
+                          source.fileName,
+                          source.pageIndex + 1,
+                        );
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <File
+                        size={12}
+                        className={
+                          isPdf ? "text-primary" : "text-muted-foreground"
+                        }
+                      />
+                      <span className="font-medium">
+                        {source.fileName}, page {source.pageIndex + 1}
+                      </span>
+                      {!isPdf && (
+                        <span className="text-muted-foreground ml-auto text-[10px] italic">
+                          Preview unavailable
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground ml-5 text-xs">
+                      Course: {source.courseName}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground ml-5 text-xs">
-                    Course: {source.courseName}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CollapsibleContent>
         </Collapsible>

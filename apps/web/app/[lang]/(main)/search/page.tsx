@@ -62,7 +62,7 @@ export default function SearchPage() {
     setIsLoading(true);
 
     try {
-      const documentSources = await apiFetcher(
+      const docSources = await apiFetcher(
         (client) =>
           client.search[":query"].$post({
             param: { query: encodeURI(query) },
@@ -74,7 +74,7 @@ export default function SearchPage() {
         sharedT.apiCodes,
       );
 
-      setSources(documentSources);
+      setSources(docSources);
     } catch (error) {
       toast.error(
         error instanceof Error

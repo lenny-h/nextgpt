@@ -12,7 +12,7 @@ import { HTTPException } from "hono/http-exception";
 import { type Filter } from "../../schemas/filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { getDocument } from "../db/queries/documents.js";
-import { USER_RESPONSE_SYSTEM_PROMPT } from "../prompts.js";
+import { STANDARD_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
 import { modifyDocumentTool } from "../tools/modify-document.js";
@@ -22,7 +22,7 @@ import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
 
 export class StandardChatHandler extends ChatHandler {
-  private systemPrompt: string = USER_RESPONSE_SYSTEM_PROMPT;
+  private systemPrompt: string = STANDARD_SYSTEM_PROMPT;
   private document?: CustomDocument;
 
   constructor(request: ChatRequest, config: ChatConfig) {

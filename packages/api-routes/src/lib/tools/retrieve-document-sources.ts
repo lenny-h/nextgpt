@@ -25,7 +25,7 @@ export const retrieveDocumentSourcesTool = ({
     execute: async ({ keywords, questions, pageNumbers }) => {
       const embedding = await retrieveEmbedding(questions.join(" "));
 
-      const sources = await retrieveDocumentSources({
+      const docSources = await retrieveDocumentSources({
         filter,
         retrieveContent,
         embedding,
@@ -33,6 +33,6 @@ export const retrieveDocumentSourcesTool = ({
         pageNumbers,
       });
 
-      return { documentSources: sources };
+      return { docSources };
     },
   });

@@ -7,7 +7,7 @@ import {
 } from "ai";
 import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
-import { P_USER_RESPONSE_SYSTEM_PROMPT } from "../prompts.js";
+import { PRACTICE_SYSTEM_PROMPT } from "../prompts.js";
 import { createMultipleChoiceTool } from "../tools/create-multiple-choice.js";
 import { retrieveDocumentSourcesTool } from "../tools/retrieve-document-sources.js";
 import { retrieveRandomDocumentSourcesTool } from "../tools/retrieve-random-sources.js";
@@ -16,7 +16,7 @@ import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
 
 export class PracticeChatHandler extends ChatHandler {
-  private systemPrompt: string = P_USER_RESPONSE_SYSTEM_PROMPT;
+  private systemPrompt: string = PRACTICE_SYSTEM_PROMPT;
 
   constructor(request: ChatRequest, config: ChatConfig) {
     super(request, config);
