@@ -1,6 +1,5 @@
 "use client";
 
-import { type EditorContent } from "@/contexts/diff-context";
 import { useAutocomplete } from "@workspace/ui/contexts/autocomplete-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { createCompletionPlugin } from "@workspace/ui/editors/completion-plugin";
@@ -20,6 +19,12 @@ import { memo, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 import "./prosemirror-math/styles.css";
+
+export type EditorContent = {
+  id?: string;
+  title: string;
+  content: string;
+};
 
 type EditorProps = {
   textEditorRef: React.RefObject<EditorView | null>;
@@ -77,7 +82,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
         JSON.stringify({
           ...autocomplete,
           text: autocomplete.text,
-        }),
+        })
       );
 
       const newState = EditorState.create({
@@ -105,7 +110,7 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
 
 export function syncTextEditorContentToLocalStorage(
   editorRef: React.RefObject<EditorView | null>,
-  setLocalStorageInput: React.Dispatch<React.SetStateAction<EditorContent>>,
+  setLocalStorageInput: React.Dispatch<React.SetStateAction<EditorContent>>
 ) {
   if (!editorRef.current) return;
 
@@ -119,7 +124,7 @@ export function syncTextEditorContentToLocalStorage(
 
 export function updateTextEditorWithDispatch(
   editorRef: React.RefObject<EditorView | null>,
-  content: string,
+  content: string
 ) {
   if (!editorRef.current) return;
 
@@ -127,21 +132,21 @@ export function updateTextEditorWithDispatch(
   const tr = editorRef.current.state.tr.replaceWith(
     0,
     editorRef.current.state.doc.content.size,
-    newDoc.content,
+    newDoc.content
   );
   editorRef.current.dispatch(tr);
 }
 
 export function appendContentToTextEditor(
   editorRef: React.RefObject<EditorView | null>,
-  contentToAppend: string,
+  contentToAppend: string
 ) {
   if (!editorRef.current) return;
 
   const newDoc = buildDocumentFromContent(contentToAppend);
   const tr = editorRef.current.state.tr.insert(
     editorRef.current.state.doc.content.size,
-    newDoc.content,
+    newDoc.content
   );
   editorRef.current.dispatch(tr);
 }

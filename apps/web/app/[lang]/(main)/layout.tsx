@@ -3,10 +3,8 @@
 import { SidebarLeft } from "@/components/sidebars/sidebar-left";
 import { CSResultsProvider } from "@/contexts/classic-search-results";
 import { DiffProvider } from "@/contexts/diff-context";
-import { EditorProvider } from "@/contexts/editor-context";
 import { FilterProvider } from "@/contexts/filter-context";
 import { PDFProvider } from "@/contexts/pdf-context";
-import { RefsProvider } from "@/contexts/refs-context";
 import { ChatModelProvider } from "@/contexts/selected-chat-model";
 import { VSResultsProvider } from "@/contexts/semantic-search-results";
 import { TempChatProvider } from "@/contexts/temporary-chat-context";
@@ -16,6 +14,8 @@ import {
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
 import { AutocompleteProvider } from "@workspace/ui/contexts/autocomplete-context";
+import { EditorProvider } from "@workspace/ui/contexts/editor-context";
+import { RefsProvider } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
 import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";

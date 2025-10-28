@@ -1,7 +1,8 @@
 import * as m from "motion/react-m";
 
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
+import { updateCodeEditorWithDispatch } from "@workspace/ui/editors/utils";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { Check, Copy, Pencil } from "lucide-react";
 import { LazyMotion } from "motion/react";
@@ -9,7 +10,6 @@ import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useCopyToClipboard } from "usehooks-ts";
-import { updateCodeEditorWithDispatch } from "../editors/utils";
 
 const loadFeatures = () => import("@/lib/features").then((res) => res.default);
 

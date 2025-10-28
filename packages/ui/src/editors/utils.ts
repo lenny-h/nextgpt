@@ -2,7 +2,7 @@ import { type EditorView } from "@codemirror/view";
 
 export function updateCodeEditorWithDispatch(
   editorRef: React.RefObject<EditorView | null>,
-  newContent: string,
+  newContent: string
 ) {
   if (!editorRef.current) return;
 
@@ -17,7 +17,7 @@ export function updateCodeEditorWithDispatch(
 
 export function appendContentToCodeEditor(
   editorRef: React.RefObject<EditorView | null>,
-  contentToAppend: string,
+  contentToAppend: string
 ) {
   if (!editorRef.current) return;
 

@@ -1,4 +1,3 @@
-import { useEditor } from "@/contexts/editor-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
@@ -10,6 +9,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { Switch } from "@workspace/ui/components/switch";
 import { useAutocomplete } from "@workspace/ui/contexts/autocomplete-context";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { DeleteForm } from "@workspace/ui/editors/delete-form";
 import {
@@ -20,6 +20,7 @@ import { apiFetcher, removeFromInfiniteCache } from "@workspace/ui/lib/fetcher";
 import { FilePlus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { type RefObject, useState } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
+
 interface EditorDropdownMenuProps {
   editorContent: {
     id?: string;

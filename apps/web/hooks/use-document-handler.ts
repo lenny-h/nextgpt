@@ -1,9 +1,9 @@
-import { updateCodeEditorWithDispatch } from "@/components/editors/utils";
-import { type EditorContent } from "@/contexts/diff-context";
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
+import { updateCodeEditorWithDispatch } from "@workspace/ui/editors/utils";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { useLocalStorage } from "usehooks-ts";
@@ -56,7 +56,7 @@ export function useDocumentHandler() {
 
       // Dynamically load the text editor update helper only when needed
       const { updateTextEditorWithDispatch } = await import(
-        "@/components/editors/text-editor"
+        "@workspace/ui/editors/text-editor"
       );
       updateTextEditorWithDispatch(textEditorRef, fullDocument.content);
     } else {

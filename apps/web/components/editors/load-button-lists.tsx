@@ -1,9 +1,9 @@
 import { useFilter } from "@/contexts/filter-context";
 import { usePdf } from "@/contexts/pdf-context";
-import { useRefs } from "@/contexts/refs-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";

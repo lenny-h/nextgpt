@@ -1,8 +1,5 @@
 "use client";
 
-import { memo } from "react";
-
-import { useRefs } from "@/contexts/refs-context";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,19 +11,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher, removeFromInfiniteCache } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { PanelRightIcon, Star } from "lucide-react";
+import { memo } from "react";
 import { toast } from "sonner";
 import { CourseSelector } from "./course-selector";
 
-interface Props {
+interface ChatHeaderProps {
   chatId: string;
   isEmpty: boolean;
 }
 
-export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
+export const ChatHeader = memo(({ chatId, isEmpty }: ChatHeaderProps) => {
   const { sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
 
@@ -71,10 +70,7 @@ export const ChatHeader = memo(({ chatId, isEmpty }: Props) => {
       sharedT.apiCodes,
     );
 
-    queryClient.setQueryData(
-      ["liked", chatId],
-      { isFavourite },
-    );
+    queryClient.setQueryData(["liked", chatId], { isFavourite });
   };
 
   const handleAdd = async (chatId: string) => {

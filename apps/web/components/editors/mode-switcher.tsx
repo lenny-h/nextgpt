@@ -1,4 +1,3 @@
-import { useEditor } from "@/contexts/editor-context";
 import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
@@ -6,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
 import {
   ChevronDownIcon,
   CodeIcon,

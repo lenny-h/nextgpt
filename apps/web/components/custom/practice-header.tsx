@@ -1,4 +1,3 @@
-import { useRefs } from "@/contexts/refs-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar-left";
@@ -7,6 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { Eye, PanelRightIcon, TextCursorInput } from "lucide-react";
 import { type Dispatch, memo, type SetStateAction } from "react";

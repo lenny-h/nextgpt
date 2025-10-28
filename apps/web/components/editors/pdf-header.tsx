@@ -1,8 +1,8 @@
 "use client";
 
 import { usePdf } from "@/contexts/pdf-context";
-import { useRefs } from "@/contexts/refs-context";
 import { Button } from "@workspace/ui/components/button";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { X } from "lucide-react";
 import { ModeSwitcher } from "../editors/mode-switcher";
 import { LoadButton } from "./load-button";

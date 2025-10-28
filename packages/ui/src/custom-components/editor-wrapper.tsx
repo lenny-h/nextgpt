@@ -1,9 +1,9 @@
 "use client";
 
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
-import { CodeEditor } from "./code-editor";
-import { TextEditor } from "./text-editor";
+import { useEditor } from "../contexts/editor-context";
+import { useRefs } from "../contexts/refs-context";
+import { CodeEditor } from "../editors/code-editor";
+import { TextEditor } from "../editors/text-editor";
 
 export const EditorWrapper = () => {
   const { textEditorRef, codeEditorRef } = useRefs();

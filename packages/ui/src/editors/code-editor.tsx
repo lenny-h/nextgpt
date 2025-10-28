@@ -1,6 +1,5 @@
 "use client";
 
-import { type EditorContent } from "@/contexts/diff-context";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
 import { javascript } from "@codemirror/lang-javascript";
@@ -11,6 +10,7 @@ import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";
 import { memo, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { type EditorContent } from "./text-editor";
 
 type EditorProps = {
   codeEditorRef: React.RefObject<EditorView | null>;
@@ -65,7 +65,7 @@ export const CodeEditor = memo(({ codeEditorRef: editorRef }: EditorProps) => {
 
 export function syncCodeEditorContentToLocalStorage(
   editorRef: React.RefObject<EditorView | null>,
-  setLocalStorageInput: React.Dispatch<React.SetStateAction<EditorContent>>,
+  setLocalStorageInput: React.Dispatch<React.SetStateAction<EditorContent>>
 ) {
   if (!editorRef.current) return;
 

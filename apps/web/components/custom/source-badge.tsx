@@ -1,9 +1,9 @@
 "use client";
 
 import { usePdf } from "@/contexts/pdf-context";
-import { useRefs } from "@/contexts/refs-context";
 import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Badge } from "@workspace/ui/components/badge";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { cn } from "@workspace/ui/lib/utils";
 import { File } from "lucide-react";

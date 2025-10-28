@@ -1,9 +1,7 @@
 "use client";
 
-import { type EditorContent, useDiff } from "@/contexts/diff-context";
-import { useEditor } from "@/contexts/editor-context";
+import { useDiff } from "@/contexts/diff-context";
 import { useFilter } from "@/contexts/filter-context";
-import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { processDataPart } from "@/lib/process-data-part";
@@ -18,7 +16,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";

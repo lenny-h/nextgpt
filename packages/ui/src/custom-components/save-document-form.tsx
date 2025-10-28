@@ -1,8 +1,5 @@
 import * as z from "zod";
 
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
-import { type EditorContent } from "@/contexts/diff-context";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -16,13 +13,16 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { filenameSchema } from "@workspace/ui/lib/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useEditor } from "../contexts/editor-context";
 
 const titleFormSchema = z.object({
   title: filenameSchema,
@@ -59,7 +59,7 @@ export const SaveDocumentForm = memo(
         payload = {
           title: values.title,
           content: mathMarkdownSerializer.serialize(
-            textEditorRef.current.state.doc,
+            textEditorRef.current.state.doc
           ),
           kind: "text" as const,
         };
@@ -75,7 +75,7 @@ export const SaveDocumentForm = memo(
 
       await apiFetcher(
         (client) => client.documents.$post({ json: payload }),
-        sharedT.apiCodes,
+        sharedT.apiCodes
       );
 
       setEditorContent({
@@ -129,5 +129,5 @@ export const SaveDocumentForm = memo(
         </form>
       </Form>
     );
-  },
+  }
 );

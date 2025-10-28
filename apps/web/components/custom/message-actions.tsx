@@ -1,5 +1,3 @@
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -7,6 +5,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn, resizeEditor } from "@workspace/ui/lib/utils";
@@ -195,7 +195,7 @@ export const MessageActions = memo(
               resizeEditor(panelRef, false);
 
               const { updateTextEditorWithDispatch } = await import(
-                "../editors/text-editor"
+                "@workspace/ui/editors/text-editor"
               );
               updateTextEditorWithDispatch(textEditorRef, content);
             }}

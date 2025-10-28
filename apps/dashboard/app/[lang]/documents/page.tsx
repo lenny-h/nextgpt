@@ -2,7 +2,6 @@
 
 import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { DocumentsList } from "@/components/custom/documents-list";
-import { useRefs } from "@/contexts/refs-context";
 import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -10,6 +9,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@workspace/ui/components/resizable";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2, Search, X } from "lucide-react";
@@ -21,7 +21,7 @@ const EditorHeader = dynamic(() =>
   import("@/components/editors/editor-header").then((mod) => mod.EditorHeader),
 );
 const EditorWrapper = dynamic(() =>
-  import("@/components/editors/editor-wrapper").then(
+  import("@workspace/ui/custom-components/editor-wrapper").then(
     (mod) => mod.EditorWrapper,
   ),
 );

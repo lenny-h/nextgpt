@@ -1,6 +1,6 @@
 import { useDiff } from "@/contexts/diff-context";
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";
 import { useCallback } from "react";
 
@@ -36,6 +36,7 @@ export function useDiffActions() {
         const newState = textDiffPrev.current.apply(tr);
         if (newState) {
           textEditorRef.current.updateState(newState);
+          textEditorRef.current.setProps({ editable: () => true });
         }
       } else {
         textEditorRef.current.updateState(textDiffPrev.current);
@@ -52,9 +53,9 @@ export function useDiffActions() {
       if (!codeEditorRef.current || !codeDiffPrev.current) return;
 
       if (acceptChanges) {
-        codeEditorRef.current.setState(codeDiffPrev.current);
+        const prevState = codeDiffPrev.current;
 
-        const transaction = codeDiffPrev.current.update({
+        const transaction = prevState.update({
           changes: {
             from: 0,
             to: codeEditorRef.current.state.doc.length,
@@ -62,6 +63,7 @@ export function useDiffActions() {
           },
         });
 
+        codeEditorRef.current.setState(codeDiffPrev.current);
         codeEditorRef.current.dispatch(transaction);
       } else {
         codeEditorRef.current.setState(codeDiffPrev.current);

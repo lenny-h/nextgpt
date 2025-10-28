@@ -1,6 +1,3 @@
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
-import { type EditorContent } from "@/contexts/diff-context";
 import { useDiffActions } from "@/hooks/use-diff-actions";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -17,12 +14,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { SaveDocumentForm } from "@workspace/ui/custom-components/save-document-form";
 import { textEditorSchema } from "@workspace/ui/editors/prosemirror-math/config";
 import {
   mathLatexSerializer,
   mathMarkdownSerializer,
 } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Check, Copy, Download, X } from "lucide-react";
@@ -31,7 +32,6 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard, useLocalStorage } from "usehooks-ts";
 import { KeyboardShortcut } from "../custom/keyboard-shortcut";
-import { SaveDocumentForm } from "../custom/save-document-form";
 import { EditorDropdownMenu } from "./editor-dropdown-menu";
 import { LoadButton } from "./load-button";
 import { ModeSwitcher } from "./mode-switcher";

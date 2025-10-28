@@ -2,16 +2,16 @@
 
 import { EditorFooter } from "@/components/editors/editor-footer";
 import { EditorHeader } from "@/components/editors/editor-header";
-import { EditorWrapper } from "@/components/editors/editor-wrapper";
 import { PdfHeader } from "@/components/editors/pdf-header";
 import { PDFViewer } from "@/components/sidebars/pdf-viewer";
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@workspace/ui/components/resizable";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
+import { EditorWrapper } from "@workspace/ui/custom-components/editor-wrapper";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -54,7 +54,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel
-        className="flex flex-col h-svh"
+        className="flex h-svh flex-col"
         ref={panelRef}
         defaultSize={0}
         onResize={(size) => {

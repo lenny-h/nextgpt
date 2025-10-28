@@ -1,15 +1,14 @@
-import {
-  appendContentToCodeEditor,
-  updateCodeEditorWithDispatch,
-} from "@/components/editors/utils";
-import { type EditorContent } from "@/contexts/diff-context";
-import { type EditorMode } from "@/contexts/editor-context";
 import { type EditorState as CodeEditorState } from "@codemirror/state";
 import { type EditorView as CodeEditorView } from "@codemirror/view";
 import { type QueryClient } from "@tanstack/react-query";
 import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
+import { type EditorMode } from "@workspace/ui/contexts/editor-context";
 import { diffLines } from "@workspace/ui/editors/jsdiff/line";
-// import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
+import {
+  appendContentToCodeEditor,
+  updateCodeEditorWithDispatch,
+} from "@workspace/ui/editors/utils";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { type DataUIPart } from "ai";
 import { type EditorState as TextEditorState } from "prosemirror-state";
@@ -91,7 +90,7 @@ export const processDataPart = async ({
 
         // Dynamically import the updateTextEditorWithDispatch function
         const { updateTextEditorWithDispatch } = await import(
-          "@/components/editors/text-editor"
+          "@workspace/ui/editors/text-editor"
         );
 
         // Save current state for diffing later and clear editor
@@ -130,13 +129,13 @@ export const processDataPart = async ({
         // Save current state for diffing later and clear editor
         if (codeEditorRef.current.state.doc.length) {
           codeDiffPrev.current = codeEditorRef.current.state;
-          // Create a transaction that reconfigures the editable facet to false
-          // This disables editing while streaming
 
           // Dynamically Import StateEffect, EditorView
           const { StateEffect } = await import("@codemirror/state");
           const { EditorView } = await import("@codemirror/view");
 
+          // Create a transaction that reconfigures the editable facet to false
+          // This disables editing while streaming
           const effect = StateEffect.reconfigure.of([
             EditorView.editable.of(false),
           ]);
@@ -152,7 +151,7 @@ export const processDataPart = async ({
 
       // Dynamically import the appendContentToTextEditor function
       const { appendContentToTextEditor } = await import(
-        "@/components/editors/text-editor"
+        "@workspace/ui/editors/text-editor"
       );
 
       appendContentToTextEditor(textEditorRef, dataPart.data);
@@ -184,7 +183,7 @@ export const processDataPart = async ({
           "@workspace/ui/editors/jsdiff/sentence"
         );
         const { updateTextEditorWithDispatch } = await import(
-          "@/components/editors/text-editor"
+          "@workspace/ui/editors/text-editor"
         );
 
         const prevContent = mathMarkdownSerializer.serialize(

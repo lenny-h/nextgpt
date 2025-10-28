@@ -11,12 +11,6 @@ import React, {
   useState,
 } from "react";
 
-export type EditorContent = {
-  id?: string;
-  title: string;
-  content: string;
-};
-
 type DiffContextType = {
   textDiffPrev: RefObject<TextEditorState | undefined>;
   textDiffNext: string;

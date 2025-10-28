@@ -1,16 +1,18 @@
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
-import { useEditor } from "@/contexts/editor-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { CustomDocument } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
+import { updateCodeEditorWithDispatch } from "@workspace/ui/editors/utils";
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { File, Loader2 } from "lucide-react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { toast } from "sonner";
+import { useLocalStorage } from "usehooks-ts";
 
 interface Props {
   documents: Omit<CustomDocument, "userId">[];
@@ -27,9 +29,26 @@ export const DocumentsList = ({
 }: Props) => {
   const { sharedT } = useSharedTranslations();
 
+  const { textEditorRef, codeEditorRef } = useRefs();
+
   const [, setEditorMode] = useEditor();
-  const { setTextEditorContent } = useTextEditorContent();
-  const { setCodeEditorContent } = useCodeEditorContent();
+
+  const [, setLocalTextEditorContent] = useLocalStorage<EditorContent>(
+    "text-editor-input",
+    {
+      id: undefined,
+      title: "",
+      content: "",
+    },
+  );
+  const [, setLocalCodeEditorContent] = useLocalStorage<EditorContent>(
+    "text-editor-input",
+    {
+      id: undefined,
+      title: "",
+      content: "",
+    },
+  );
 
   const {
     data: documents,
@@ -69,17 +88,25 @@ export const DocumentsList = ({
     setEditorMode(documentKind);
 
     if (documentKind === "text") {
-      setTextEditorContent({
+      setLocalTextEditorContent({
         id: documentId,
         title: documentTitle,
         content: fullDocument.content,
       });
+
+      // Dynamically load the text editor update helper only when needed
+      const { updateTextEditorWithDispatch } = await import(
+        "@workspace/ui/editors/text-editor"
+      );
+      updateTextEditorWithDispatch(textEditorRef, fullDocument.content);
     } else {
-      setCodeEditorContent({
+      setLocalCodeEditorContent({
         id: documentId,
         title: documentTitle,
         content: fullDocument.content,
       });
+
+      updateCodeEditorWithDispatch(codeEditorRef, fullDocument.content);
     }
 
     if (panelRef.current?.isCollapsed()) {

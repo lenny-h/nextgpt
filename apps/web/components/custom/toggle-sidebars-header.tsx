@@ -1,6 +1,5 @@
 "use client";
 
-import { useRefs } from "@/contexts/refs-context";
 import { Button } from "@workspace/ui/components/button";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar-left";
 import {
@@ -8,6 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { PanelRightIcon } from "lucide-react";
 import { memo } from "react";

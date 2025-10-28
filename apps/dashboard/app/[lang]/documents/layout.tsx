@@ -1,16 +1,14 @@
 "use client";
 
 import { SidebarLeft } from "@/components/sidebar/sidebar-left";
-import { CodeEditorContentProvider } from "@/contexts/code-editor-content-context";
-import { EditorProvider } from "@/contexts/editor-context";
-import { RefsProvider } from "@/contexts/refs-context";
-import { TextEditorContentProvider } from "@/contexts/text-editor-content-context";
 import { type User } from "@workspace/server/drizzle/schema";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
 import { AutocompleteProvider } from "@workspace/ui/contexts/autocomplete-context";
+import { EditorProvider } from "@workspace/ui/contexts/editor-context";
+import { RefsProvider } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
 import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";
@@ -58,16 +56,12 @@ export default function DocumentsLayout({
     <UserProvider user={user as User}>
       <RefsProvider>
         <EditorProvider>
-          <TextEditorContentProvider>
-            <CodeEditorContentProvider>
-              <AutocompleteProvider>
-                <SidebarProvider defaultOpen={defaultLeftOpen}>
-                  <SidebarLeft />
-                  <SidebarInset>{children}</SidebarInset>
-                </SidebarProvider>
-              </AutocompleteProvider>
-            </CodeEditorContentProvider>
-          </TextEditorContentProvider>
+          <AutocompleteProvider>
+            <SidebarProvider defaultOpen={defaultLeftOpen}>
+              <SidebarLeft />
+              <SidebarInset>{children}</SidebarInset>
+            </SidebarProvider>
+          </AutocompleteProvider>
         </EditorProvider>
       </RefsProvider>
     </UserProvider>

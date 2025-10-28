@@ -1,9 +1,9 @@
-import { useRefs } from "@/contexts/refs-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";

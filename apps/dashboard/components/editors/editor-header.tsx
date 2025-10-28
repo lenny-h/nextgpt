@@ -1,7 +1,3 @@
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
-import { useEditor } from "@/contexts/editor-context";
-import { useRefs } from "@/contexts/refs-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -17,21 +13,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import { useEditor } from "@workspace/ui/contexts/editor-context";
+import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { SaveDocumentForm } from "@workspace/ui/custom-components/save-document-form";
 import { textEditorSchema } from "@workspace/ui/editors/prosemirror-math/config";
 import {
   mathLatexSerializer,
   mathMarkdownSerializer,
 } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
+import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { checkResponse } from "@workspace/ui/lib/translation-utils";
 import { Check, Copy, Download, X } from "lucide-react";
 import { DOMSerializer } from "prosemirror-model";
 import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useCopyToClipboard } from "usehooks-ts";
+import { useCopyToClipboard, useLocalStorage } from "usehooks-ts";
 import { KeyboardShortcut } from "../custom/keyboard-shortcut";
-import { SaveDocumentForm } from "../custom/save-document-form";
 import { EditorDropdownMenu } from "./editor-dropdown-menu";
 import { ModeSwitcher } from "./mode-switcher";
 
@@ -41,18 +40,30 @@ export const EditorHeader = memo(() => {
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode] = useEditor();
 
-  const { textEditorContent, setTextEditorContent } = useTextEditorContent();
-  const { codeEditorContent, setCodeEditorContent } = useCodeEditorContent();
-
   const [_, copyToClipboard] = useCopyToClipboard();
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
+  const [localTextEditorContent, setLocalTextEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
+  const [localCodeEditorContent, setLocalCodeEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
+
   const editorContent =
-    editorMode === "text" ? textEditorContent : codeEditorContent;
+    editorMode === "text" ? localTextEditorContent : localCodeEditorContent;
   const setEditorContent =
-    editorMode === "text" ? setTextEditorContent : setCodeEditorContent;
+    editorMode === "text"
+      ? setLocalTextEditorContent
+      : setLocalCodeEditorContent;
 
   const saveDocument = useCallback(
     async (savedId?: string) => {

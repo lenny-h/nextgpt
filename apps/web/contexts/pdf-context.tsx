@@ -1,5 +1,6 @@
 "use client";
 
+import { useEditor } from "@workspace/ui/contexts/editor-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
@@ -12,7 +13,6 @@ import {
   useState,
 } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
-import { useEditor } from "./editor-context";
 
 interface PDFContextType {
   currentPdfUrl: string | null;
