@@ -19,6 +19,19 @@ export type MyUITools = {
     input: { urls: string[] };
     output: { webSources: WebSource[] };
   };
+  createDocument: {
+    input: {
+      instructions: string;
+      documentTitle: string;
+      kind: ArtifactKind;
+    };
+    output: {
+      message: string;
+      documentId: string;
+      documentTitle: string;
+      kind: ArtifactKind;
+    };
+  };
   modifyDocument: {
     input: { instructions: string };
     output: {

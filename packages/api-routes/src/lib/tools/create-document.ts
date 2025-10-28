@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { db } from "@workspace/server/drizzle/db.js";
-import { documentToolCalls } from "@workspace/server/drizzle/schema.js";
+import { toolCallDocuments } from "@workspace/server/drizzle/schema.js";
 import { type UIMessageStreamWriter, tool } from "ai";
 import { artifactKindSchema } from "../../types/artifact-kind.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
@@ -23,8 +23,8 @@ export const createDocumentTool = ({
     description:
       "Call this tool if the user explicitly mentions that they want you to create a new document. Provide the instructions that will be passed to an llm for creating the document. The llm will stream the document to the user.",
     inputSchema: z.object({
-      documentTitle: z.string(),
       instructions: z.string(),
+      documentTitle: z.string(),
       kind: artifactKindSchema,
     }),
     execute: async ({ documentTitle, instructions, kind }) => {
@@ -55,7 +55,7 @@ export const createDocumentTool = ({
 
       writer.write({ type: "finish" });
 
-      await db.insert(documentToolCalls).values({
+      await db.insert(toolCallDocuments).values({
         id: documentId,
         chatId,
         userId,

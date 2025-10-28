@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import { useEditor } from "@workspace/ui/contexts/editor-context";
-import { ChevronDownIcon, CodeIcon, FileTextIcon } from "lucide-react";
+import { ChevronDownIcon, CodeIcon, FileText } from "lucide-react";
 import { memo } from "react";
 
 export const ModeSwitcher = memo(() => {
@@ -25,7 +25,7 @@ export const ModeSwitcher = memo(() => {
           className="cursor-pointer"
           onClick={() => setEditorMode("text")}
         >
-          <FileTextIcon className="mr-2 size-4" />
+          <FileText className="mr-2 size-4" />
           Text
         </DropdownMenuItem>
         <DropdownMenuItem

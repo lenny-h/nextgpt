@@ -1,10 +1,10 @@
+import { db } from "@workspace/server/drizzle/db.js";
+import { toolCallDocuments } from "@workspace/server/drizzle/schema.js";
 import { type UIMessageStreamWriter, tool } from "ai";
 import { z } from "zod";
 import { type ArtifactKind } from "../../types/artifact-kind.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { documentHandlers } from "./document-handlers.js";
-import { db } from "@workspace/server/drizzle/db.js";
-import { documentToolCalls } from "@workspace/server/drizzle/schema.js";
 
 interface ModifyDocumentProps {
   writer: UIMessageStreamWriter<MyUIMessage>;
@@ -58,7 +58,7 @@ export const modifyDocumentTool = ({
 
       writer.write({ type: "finish" });
 
-      await db.insert(documentToolCalls).values({
+      await db.insert(toolCallDocuments).values({
         id: documentId,
         chatId,
         userId,

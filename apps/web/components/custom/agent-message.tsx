@@ -10,6 +10,7 @@ import { LazyMotion } from "motion/react";
 import dynamic from "next/dynamic";
 import { memo } from "react";
 import { ModifyDocumentUI } from "../tools/modify-document";
+import { CreateDocumentUI } from "../tools/create-document";
 import { RetrieveDocumentSourcesUI } from "../tools/retrieve-document-sources";
 import { RetrieveWebPagesUI } from "../tools/retrieve-web-pages";
 import { RetrieveWebSourcesUI } from "../tools/retrieve-web-sources";
@@ -134,6 +135,9 @@ const PureAgentMessage = ({
                 }
                 if (part.type === "tool-retrieveWebPages") {
                   return <RetrieveWebPagesUI key={index} part={part} />;
+                }
+                if (part.type === "tool-createDocument") {
+                  return <CreateDocumentUI key={index} part={part} />;
                 }
                 if (part.type === "tool-modifyDocument") {
                   return <ModifyDocumentUI key={index} part={part} />;

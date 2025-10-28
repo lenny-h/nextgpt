@@ -6,15 +6,15 @@ import {
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible";
 import { type ToolUIPart } from "ai";
-import { ChevronDownIcon, Loader2, Pencil } from "lucide-react";
+import { ChevronDownIcon, FileText, Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 
-export const ModifyDocumentUI = memo(
+export const CreateDocumentUI = memo(
   ({
     part,
   }: {
     part: ToolUIPart<{
-      modifyDocument: MyUITools["modifyDocument"];
+      createDocument: MyUITools["createDocument"];
     }>;
   }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -24,9 +24,7 @@ export const ModifyDocumentUI = memo(
       return (
         <div className="bg-muted/30 flex items-center gap-2 rounded-md border p-2">
           <Loader2 className="text-primary animate-spin" size={16} />
-          <span className="text-xs font-medium">
-            Processing document modification...
-          </span>
+          <span className="text-xs font-medium">Creating document...</span>
         </div>
       );
     }
@@ -40,8 +38,8 @@ export const ModifyDocumentUI = memo(
         >
           <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-2 text-xs font-medium">
             <div className="flex items-center gap-2">
-              <Pencil size={14} className="text-primary" />
-              <span>Modifying document</span>
+              <FileText size={14} className="text-primary" />
+              <span>Creating document: {part.input.documentTitle}</span>
             </div>
             <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={14} />
           </CollapsibleTrigger>
@@ -65,14 +63,14 @@ export const ModifyDocumentUI = memo(
           className="flex w-full items-start gap-2 rounded-md border bg-green-100 p-2 transition-colors hover:bg-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/30"
           onClick={() => {
             if (part.output) {
-              handleDocumentToolCallClick(part.output.documentId, true);
+              handleDocumentToolCallClick(part.output.documentId, false);
             }
           }}
         >
-          <Pencil className="mt-0.5 text-green-600" size={16} />
+          <FileText className="mt-0.5 text-green-600" size={16} />
           <div className="flex-1 text-left">
             <p className="text-xs font-medium text-green-700 dark:text-green-300">
-              Document modification completed
+              Document created
             </p>
             {part.output && (
               <p className="text-xxs text-green-600 dark:text-green-400">

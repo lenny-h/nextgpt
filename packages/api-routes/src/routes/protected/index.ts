@@ -35,11 +35,11 @@ import documentsIlike from "./documents/ilike/route.js";
 import documentsRoute from "./documents/route.js";
 import documentsTitleRoute from "./documents/title/[documentId]/[title]/route.js";
 import feedbackRoute from "./feedback/route.js";
-import filterRoute from "./filter/[chatId]/route.js";
 import filesByCourseRoute from "./files/[courseId]/route.js";
 import filesDeleteRoute from "./files/[fileId]/route.js";
 import filesIlike from "./files/ilike/route.js";
 import filesRoute from "./files/route.js";
+import filterRoute from "./filter/[chatId]/route.js";
 import getSignedUrlNameRoute from "./get-signed-url/[courseId]/[name]/route.js";
 import getSignedUrlRoute from "./get-signed-url/[courseId]/route.js";
 import acceptInvitationRoute from "./invitations/accept/route.js";
@@ -60,6 +60,7 @@ import promptsRoute from "./prompts/route.js";
 import searchRoute from "./search/[query]/route.js";
 import tasksByCourseRoute from "./tasks/[courseId]/route.js";
 import tasksDeleteRoute from "./tasks/[taskId]/route.js";
+import toolCallDocumentRoute from "./tool-call-documents/[documentId]/route.js";
 
 // Important: Move routes with slugs to the end to prevent route conflicts
 
@@ -168,7 +169,10 @@ const protectedApiRouter = new Hono()
 
   // Tasks
   .route("/tasks/:courseId", tasksByCourseRoute)
-  .route("/tasks/:taskId", tasksDeleteRoute);
+  .route("/tasks/:taskId", tasksDeleteRoute)
+
+  // Tool call documents
+  .route("/tool-call-documents/:documentId", toolCallDocumentRoute);
 
 export { protectedApiRouter };
 export type ProtectedApiType = typeof protectedApiRouter;

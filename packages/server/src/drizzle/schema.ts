@@ -253,7 +253,7 @@ export const courseKeys = pgTable(
 
 export type CourseKey = InferSelectModel<typeof courseKeys>;
 
-export const documentToolCalls = pgTable("document_tool_calls", {
+export const toolCallDocuments = pgTable("tool_call_documents", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   chatId: uuid("chat_id")
     .notNull()
@@ -267,7 +267,7 @@ export const documentToolCalls = pgTable("document_tool_calls", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export type DocumentToolCall = InferSelectModel<typeof documentToolCalls>;
+export type ToolCallDocument = InferSelectModel<typeof toolCallDocuments>;
 
 // Documents table
 export const documents = pgTable(

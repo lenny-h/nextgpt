@@ -103,18 +103,11 @@ export const DocumentsList = ({
         <button
           key={document.id}
           className="border-primary flex h-20 w-full cursor-pointer items-center space-x-2 rounded-md border p-2"
-          onClick={async () => {
-            toast.promise(
-              handleDocumentClick(
-                document.id,
-                document.title,
-                document.kind as ArtifactKind,
-              ),
-              {
-                loading: "Loading document...",
-                success: "Document loaded successfully",
-                error: (error) => "Error loading document: " + error,
-              },
+          onClick={() => {
+            handleDocumentClick(
+              document.id,
+              document.title,
+              document.kind as ArtifactKind,
             );
           }}
         >
