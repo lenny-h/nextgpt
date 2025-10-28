@@ -1,7 +1,6 @@
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
+import { useDiff } from "@/contexts/diff-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";
 import { useCallback } from "react";
 
@@ -10,17 +9,13 @@ export function useDiffActions() {
   const [editorMode] = useEditor();
 
   const {
-    diffPrev: textDiffPrev,
-    setDiffPrevString,
-    diffNext: textDiffNext,
-    setDiffNext: setTextDiffNext,
-  } = useTextEditorContent();
-
-  const {
-    diffPrev: codeDiffPrev,
-    diffNext: codeDiffNext,
-    setDiffNext: setCodeDiffNext,
-  } = useCodeEditorContent();
+    textDiffPrev,
+    textDiffNext,
+    setTextDiffNext,
+    codeDiffPrev,
+    codeDiffNext,
+    setCodeDiffNext,
+  } = useDiff();
 
   const isDiff = editorMode === "text" ? textDiffNext : codeDiffNext;
 
@@ -35,7 +30,7 @@ export function useDiffActions() {
         tr.replaceWith(
           0,
           textDiffPrev.current.doc.content.size,
-          newDoc.content
+          newDoc.content,
         );
 
         const newState = textDiffPrev.current.apply(tr);
@@ -47,10 +42,9 @@ export function useDiffActions() {
       }
 
       textDiffPrev.current = undefined;
-      setDiffPrevString("");
       setTextDiffNext("");
     },
-    [textEditorRef, textDiffPrev, textDiffNext, setTextDiffNext]
+    [textEditorRef, textDiffPrev, textDiffNext, setTextDiffNext],
   );
 
   const handleCodeDiffAction = useCallback(
@@ -76,7 +70,7 @@ export function useDiffActions() {
       codeDiffPrev.current = undefined;
       setCodeDiffNext("");
     },
-    [codeEditorRef, codeDiffPrev, codeDiffNext, setCodeDiffNext]
+    [codeEditorRef, codeDiffPrev, codeDiffNext, setCodeDiffNext],
   );
 
   const handleDiffAction = useCallback(
@@ -87,7 +81,7 @@ export function useDiffActions() {
         handleCodeDiffAction(acceptChanges);
       }
     },
-    [editorMode, handleTextDiffAction, handleCodeDiffAction]
+    [editorMode, handleTextDiffAction, handleCodeDiffAction],
   );
 
   return {

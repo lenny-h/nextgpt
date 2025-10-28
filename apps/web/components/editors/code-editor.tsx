@@ -1,6 +1,6 @@
 "use client";
 
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
+import { type EditorContent } from "@/contexts/diff-context";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
 import { javascript } from "@codemirror/lang-javascript";
@@ -17,22 +17,21 @@ type EditorProps = {
 };
 
 export const CodeEditor = memo(({ codeEditorRef: editorRef }: EditorProps) => {
-  const { codeEditorContent, setCodeEditorContent, diffPrev, diffNext } =
-    useCodeEditorContent();
-
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    "code-editor-input",
-    "",
-  );
+  const [localStorageInput, setLocalStorageInput] =
+    useLocalStorage<EditorContent>("code-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
 
   useEffect(() => {
     console.log("Initializing code editor");
 
     if (containerRef.current && !editorRef.current) {
       const startState = EditorState.create({
-        doc: codeEditorContent.content,
+        doc: localStorageInput.content,
         extensions: [
           basicSetup,
           python(),
@@ -40,7 +39,6 @@ export const CodeEditor = memo(({ codeEditorRef: editorRef }: EditorProps) => {
           java(),
           cpp(),
           oneDark,
-          EditorView.editable.of(!diffPrev.current),
         ],
       });
 
@@ -50,21 +48,9 @@ export const CodeEditor = memo(({ codeEditorRef: editorRef }: EditorProps) => {
       });
     }
 
-    if (!codeEditorContent.content) {
-      setCodeEditorContent((prev) => ({
-        ...prev,
-        content: localStorageInput,
-      }));
-    }
-
     return () => {
       if (editorRef.current) {
-        const content = editorRef.current.state.doc.toString();
-
-        setCodeEditorContent((prev) => ({
-          ...prev,
-          content,
-        }));
+        syncCodeEditorContentToLocalStorage(editorRef, setLocalStorageInput);
 
         editorRef.current.destroy();
         editorRef.current = null;
@@ -72,40 +58,44 @@ export const CodeEditor = memo(({ codeEditorRef: editorRef }: EditorProps) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (editorRef.current) {
-      const newState = EditorState.create({
-        doc: codeEditorContent.content,
-        extensions: [
-          basicSetup,
-          python(),
-          javascript(),
-          java(),
-          cpp(),
-          oneDark,
-          EditorView.editable.of(!diffPrev.current || !diffNext),
-        ],
-      });
-
-      editorRef.current.setState(newState);
-    }
-  }, [codeEditorContent.content]);
-
-  useEffect(() => {
-    if (!editorRef.current) return;
-
-    const saveInterval = setInterval(() => {
-      if (editorRef.current) {
-        setLocalStorageInput(editorRef.current.state.doc.toString());
-      }
-    }, 17000);
-
-    return () => {
-      clearInterval(saveInterval);
-    };
-  }, [editorRef.current, setLocalStorageInput]);
-
   return (
     <div className="not-prose relative size-full text-sm" ref={containerRef} />
   );
 });
+
+export function syncCodeEditorContentToLocalStorage(
+  editorRef: React.RefObject<EditorView | null>,
+  setLocalStorageInput: React.Dispatch<React.SetStateAction<EditorContent>>,
+) {
+  if (!editorRef.current) return;
+
+  const content = editorRef.current.state.doc.toString();
+
+  setLocalStorageInput((prev) => ({
+    ...prev,
+    content,
+  }));
+}
+
+// export function updateCodeEditorWithNewState(
+//   editorRef: React.RefObject<EditorView | null>,
+//   content: string,
+//   editable: boolean,
+// ) {
+//   if (!editorRef.current) return;
+
+//   const newState = EditorState.create({
+//     doc: content,
+//     extensions: [
+//       basicSetup,
+//       python(),
+//       javascript(),
+//       java(),
+//       cpp(),
+//       oneDark,
+//       EditorView.editable.of(editable),
+//     ],
+//   });
+
+//   editorRef.current.setState(newState);
+// }

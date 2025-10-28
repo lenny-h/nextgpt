@@ -1,8 +1,5 @@
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
-import { useChatModel } from "@/contexts/selected-chat-model";
-import { useIsTemporary } from "@/contexts/temporary-chat-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -28,7 +25,6 @@ import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 
 interface MessageActionsProps {
-  chatId: string;
   content: string;
   role: string;
   isLoading: boolean;
@@ -39,28 +35,21 @@ interface MessageActionsProps {
   ) => Promise<void>;
   messageId: string;
   previousMessageId: string;
-  isPractice?: boolean;
 }
 
 export const MessageActions = memo(
   ({
-    chatId,
     content,
     role,
     isLoading,
     regenerate,
     messageId,
     previousMessageId,
-    isPractice = false,
   }: MessageActionsProps) => {
     const { sharedT } = useSharedTranslations();
 
-    const { selectedChatModel, reasoningEnabled } = useChatModel();
-    const [isTemporary] = useIsTemporary();
-
-    const { panelRef } = useRefs();
+    const { panelRef, textEditorRef } = useRefs();
     const [, setEditorMode] = useEditor();
-    const { setTextEditorContent } = useTextEditorContent();
 
     const [_, copyToClipboard] = useCopyToClipboard();
     const [liked, setLiked] = useState<null | boolean>(null);
@@ -199,17 +188,16 @@ export const MessageActions = memo(
 
           <button
             className="flex cursor-pointer space-x-1"
-            onClick={() => {
+            onClick={async () => {
               console.log(content);
 
-              setTextEditorContent({
-                title: "",
-                content: content
-                  .replace(/\$\$(.*?)\$\$/gs, "$$$1$$")
-                  .replace(/£(\d+(?:,\s?\d+)*)£/g, ""),
-              });
               setEditorMode("text");
               resizeEditor(panelRef, false);
+
+              const { updateTextEditorWithDispatch } = await import(
+                "../editors/text-editor"
+              );
+              updateTextEditorWithDispatch(textEditorRef, content);
             }}
           >
             <Pencil className="size-4" />

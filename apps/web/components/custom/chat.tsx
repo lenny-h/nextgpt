@@ -1,12 +1,11 @@
 "use client";
 
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
+import { type EditorContent, useDiff } from "@/contexts/diff-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useFilter } from "@/contexts/filter-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
 import { type FrontendFilter } from "@/types/filter";
@@ -20,6 +19,7 @@ import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useLocalStorage } from "usehooks-ts";
 import { ChatHeader } from "./chat-header";
 import { Introduction } from "./introduction";
 import { Messages } from "./messages";
@@ -34,6 +34,7 @@ export function Chat({
 }) {
   const { webT } = useWebTranslations();
   const { sharedT } = useSharedTranslations();
+
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");
@@ -45,20 +46,21 @@ export function Chat({
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode, setEditorMode] = useEditor();
 
-  const {
-    textEditorContent,
-    setTextEditorContent,
-    diffPrev: textDiffPrev,
-    diffPrevString,
-    setDiffPrevString,
-    setDiffNext: setTextDiffNext,
-  } = useTextEditorContent();
-  const {
-    codeEditorContent,
-    setCodeEditorContent,
-    diffPrev: codeDiffPrev,
-    setDiffNext: setCodeDiffNext,
-  } = useCodeEditorContent();
+  const { textDiffPrev, setTextDiffNext, codeDiffPrev, setCodeDiffNext } =
+    useDiff();
+
+  const [localTextEditorContent, setLocalTextEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
+  const [localCodeEditorContent, setLocalCodeEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
 
   // Fetch and set filter from last message metadata if it exists
   useEffect(() => {
@@ -98,14 +100,12 @@ export function Chat({
           codeEditorRef,
           editorMode,
           setEditorMode,
-          textEditorContent,
-          setTextEditorContent,
+          localTextEditorContent,
+          setLocalTextEditorContent,
           textDiffPrev,
-          diffPrevString,
-          setDiffPrevString,
           setTextDiffNext,
-          codeEditorContent,
-          setCodeEditorContent,
+          localCodeEditorContent,
+          setLocalCodeEditorContent,
           codeDiffPrev,
           setCodeDiffNext,
         }),

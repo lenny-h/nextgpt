@@ -1,7 +1,6 @@
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
+import { type EditorContent } from "@/contexts/diff-context";
 import { useDiffActions } from "@/hooks/use-diff-actions";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -30,7 +29,7 @@ import { Check, Copy, Download, X } from "lucide-react";
 import { DOMSerializer } from "prosemirror-model";
 import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useCopyToClipboard } from "usehooks-ts";
+import { useCopyToClipboard, useLocalStorage } from "usehooks-ts";
 import { KeyboardShortcut } from "../custom/keyboard-shortcut";
 import { SaveDocumentForm } from "../custom/save-document-form";
 import { EditorDropdownMenu } from "./editor-dropdown-menu";
@@ -43,9 +42,6 @@ export const EditorHeader = memo(() => {
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode] = useEditor();
 
-  const { textEditorContent, setTextEditorContent } = useTextEditorContent();
-  const { codeEditorContent, setCodeEditorContent } = useCodeEditorContent();
-
   const { isDiff, handleDiffAction } = useDiffActions();
 
   const [_, copyToClipboard] = useCopyToClipboard();
@@ -53,10 +49,25 @@ export const EditorHeader = memo(() => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
+  const [localTextEditorContent, setLocalTextEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
+  const [localCodeEditorContent, setLocalCodeEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
+
   const editorContent =
-    editorMode === "text" ? textEditorContent : codeEditorContent;
+    editorMode === "text" ? localTextEditorContent : localCodeEditorContent;
   const setEditorContent =
-    editorMode === "text" ? setTextEditorContent : setCodeEditorContent;
+    editorMode === "text"
+      ? setLocalTextEditorContent
+      : setLocalCodeEditorContent;
 
   const saveDocument = useCallback(
     async (savedId?: string) => {

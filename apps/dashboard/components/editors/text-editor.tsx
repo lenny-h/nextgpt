@@ -1,7 +1,8 @@
 "use client";
 
-import { useAutocomplete } from "@/contexts/autocomplete-context";
 import { useTextEditorContent } from "@/contexts/text-editor-content-context";
+import { useAutocomplete } from "@workspace/ui/contexts/autocomplete-context";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { createCompletionPlugin } from "@workspace/ui/editors/completion-plugin";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";
 import {
@@ -18,7 +19,6 @@ import { EditorView } from "prosemirror-view";
 import { memo, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
-import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import "./prosemirror-math/styles.css";
 
 type EditorProps = {

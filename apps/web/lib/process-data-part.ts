@@ -1,11 +1,15 @@
+import {
+  appendContentToCodeEditor,
+  updateCodeEditorWithDispatch,
+} from "@/components/editors/utils";
+import { type EditorContent } from "@/contexts/diff-context";
 import { type EditorMode } from "@/contexts/editor-context";
-import { type EditorContent } from "@/contexts/text-editor-content-context";
 import { type EditorState as CodeEditorState } from "@codemirror/state";
 import { type EditorView as CodeEditorView } from "@codemirror/view";
 import { type QueryClient } from "@tanstack/react-query";
 import { type MyUIDataTypes } from "@workspace/api-routes/types/custom-ui-data-types";
 import { diffLines } from "@workspace/ui/editors/jsdiff/line";
-import { diffSentences } from "@workspace/ui/editors/jsdiff/sentence";
+// import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import { type DataUIPart } from "ai";
 import { type EditorState as TextEditorState } from "prosemirror-state";
@@ -14,7 +18,7 @@ import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { createDiffViewString } from "./utils";
 
-export const processDataPart = ({
+export const processDataPart = async ({
   chatId,
   queryClient,
   dataPart,
@@ -23,14 +27,12 @@ export const processDataPart = ({
   codeEditorRef,
   editorMode,
   setEditorMode,
-  textEditorContent,
-  setTextEditorContent,
+  localTextEditorContent,
+  setLocalTextEditorContent,
   textDiffPrev,
-  diffPrevString,
-  setDiffPrevString,
   setTextDiffNext,
-  codeEditorContent,
-  setCodeEditorContent,
+  localCodeEditorContent,
+  setLocalCodeEditorContent,
   codeDiffPrev,
   setCodeDiffNext,
 }: {
@@ -42,14 +44,12 @@ export const processDataPart = ({
   codeEditorRef: RefObject<CodeEditorView | null>;
   editorMode: EditorMode;
   setEditorMode: Dispatch<SetStateAction<EditorMode>>;
-  textEditorContent: EditorContent;
-  setTextEditorContent: Dispatch<SetStateAction<EditorContent>>;
+  localTextEditorContent: EditorContent;
+  setLocalTextEditorContent: Dispatch<SetStateAction<EditorContent>>;
   textDiffPrev: RefObject<TextEditorState | undefined>;
-  diffPrevString: string;
-  setDiffPrevString: Dispatch<SetStateAction<string>>;
   setTextDiffNext: Dispatch<SetStateAction<string>>;
-  codeEditorContent: EditorContent;
-  setCodeEditorContent: Dispatch<SetStateAction<EditorContent>>;
+  localCodeEditorContent: EditorContent;
+  setLocalCodeEditorContent: Dispatch<SetStateAction<EditorContent>>;
   codeDiffPrev: RefObject<CodeEditorState | undefined>;
   setCodeDiffNext: Dispatch<SetStateAction<string>>;
 }) => {
@@ -65,23 +65,83 @@ export const processDataPart = ({
       setEditorMode(dataPart.data.kind);
 
       if (dataPart.data.kind === "text") {
-        textDiffPrev.current = textEditorRef.current?.state;
+        if (!textEditorRef.current) {
+          console.error(
+            "Text editor reference is null when switching to text mode.",
+          );
+          return;
+        }
 
-        setDiffPrevString(textEditorContent.content);
+        // Prevent overwriting unsaved changes
+        if (localTextEditorContent.id !== dataPart.data.id) {
+          return;
+        }
 
-        setTextEditorContent({
-          id: dataPart.data.id,
-          title: dataPart.data.title,
-          content: "",
-        });
+        if (textEditorRef.current.state.doc.content.size) {
+          return;
+        } else {
+          // Update local storage input
+          // This should also update the editor header
+          setLocalTextEditorContent({
+            id: dataPart.data.id,
+            title: dataPart.data.title,
+            content: "",
+          });
+        }
+
+        // Dynamically import the updateTextEditorWithDispatch function
+        const { updateTextEditorWithDispatch } = await import(
+          "@/components/editors/text-editor"
+        );
+
+        // Save current state for diffing later and clear editor
+        if (textEditorRef.current.state.doc.content.size) {
+          textDiffPrev.current = textEditorRef.current.state;
+          updateTextEditorWithDispatch(textEditorRef, "");
+        }
+
+        // Disable editing while streaming
+        textEditorRef.current.setProps({ editable: () => false });
       } else if (dataPart.data.kind === "code") {
-        codeDiffPrev.current = codeEditorRef.current?.state;
+        if (!codeEditorRef.current) {
+          console.error(
+            "Code editor reference is null when switching to code mode.",
+          );
+          return;
+        }
 
-        setCodeEditorContent({
-          id: dataPart.data.id,
-          title: dataPart.data.title,
-          content: "",
-        });
+        // Prevent overwriting unsaved changes
+        if (localCodeEditorContent.id !== dataPart.data.id) {
+          return;
+        }
+
+        if (codeEditorRef.current.state.doc.length) {
+          return;
+        } else {
+          // Update local storage input
+          // This should also update the editor header
+          setLocalCodeEditorContent({
+            id: dataPart.data.id,
+            title: dataPart.data.title,
+            content: "",
+          });
+        }
+
+        // Save current state for diffing later and clear editor
+        if (codeEditorRef.current.state.doc.length) {
+          codeDiffPrev.current = codeEditorRef.current.state;
+          // Create a transaction that reconfigures the editable facet to false
+          // This disables editing while streaming
+
+          // Dynamically Import StateEffect, EditorView
+          const { StateEffect } = await import("@codemirror/state");
+          const { EditorView } = await import("@codemirror/view");
+
+          const effect = StateEffect.reconfigure.of([
+            EditorView.editable.of(false),
+          ]);
+          codeEditorRef.current.dispatch({ effects: effect });
+        }
       }
 
       resizeEditor(panelRef, false);
@@ -90,51 +150,78 @@ export const processDataPart = ({
     case "data-text-delta":
       console.log("Text delta event received: ", dataPart.data);
 
-      setTextEditorContent((prev) => ({
-        ...prev,
-        content: prev.content + dataPart.data,
-      }));
+      // Dynamically import the appendContentToTextEditor function
+      const { appendContentToTextEditor } = await import(
+        "@/components/editors/text-editor"
+      );
+
+      appendContentToTextEditor(textEditorRef, dataPart.data);
       break;
 
     case "data-code-delta":
       console.log("Code delta event received: ", dataPart.data);
 
-      setCodeEditorContent((prev) => {
-        return {
-          ...prev,
-          content: prev.content + dataPart.data,
-        };
-      });
+      appendContentToCodeEditor(codeEditorRef, dataPart.data);
       break;
 
     case "data-finish":
       console.log("Finish event received: ", dataPart);
 
       if (editorMode === "text") {
-        setTextDiffNext(textEditorContent.content);
-
-        setTextEditorContent((prev) => {
-          const diffResult = diffSentences(diffPrevString, prev.content);
-
-          return {
-            ...prev,
-            content: createDiffViewString(diffResult, true),
-          };
-        });
-      } else if (editorMode === "code") {
-        setCodeDiffNext(codeEditorContent.content);
-
-        setCodeEditorContent((prev) => {
-          const diffResult = diffLines(
-            codeDiffPrev.current!.doc.toString(),
-            prev.content,
+        if (!textDiffPrev.current || !textEditorRef.current) {
+          console.error(
+            "Text editor reference is null when processing finish event.",
           );
+          return;
+        }
 
-          return {
-            ...prev,
-            content: createDiffViewString(diffResult, false),
-          };
-        });
+        // Dynamically import the mathMarkdownSerializer
+        // and diffSentences function
+        const { mathMarkdownSerializer } = await import(
+          "@workspace/ui/editors/prosemirror-math/utils/text-serializer"
+        );
+        const { diffSentences } = await import(
+          "@workspace/ui/editors/jsdiff/sentence"
+        );
+        const { updateTextEditorWithDispatch } = await import(
+          "@/components/editors/text-editor"
+        );
+
+        const prevContent = mathMarkdownSerializer.serialize(
+          textDiffPrev.current.doc,
+        );
+
+        const content = mathMarkdownSerializer.serialize(
+          textEditorRef.current.state.doc,
+        );
+
+        setTextDiffNext(content);
+        const diffResult = diffSentences(prevContent, content);
+
+        updateTextEditorWithDispatch(
+          textEditorRef,
+          createDiffViewString(diffResult, true),
+        );
+      } else if (editorMode === "code") {
+        if (!codeEditorRef.current || !codeDiffPrev.current) {
+          console.error(
+            "Code editor reference is null when processing finish event.",
+          );
+          return;
+        }
+
+        const content = codeEditorRef.current.state.doc.toString();
+
+        setCodeDiffNext(content);
+        const diffResult = diffLines(
+          codeDiffPrev.current.doc.toString(),
+          content,
+        );
+
+        updateCodeEditorWithDispatch(
+          codeEditorRef,
+          createDiffViewString(diffResult, true),
+        );
       }
       break;
 

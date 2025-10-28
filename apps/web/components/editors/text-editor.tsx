@@ -1,7 +1,8 @@
 "use client";
 
-import { useAutocomplete } from "@/contexts/autocomplete-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
+import { type EditorContent } from "@/contexts/diff-context";
+import { useAutocomplete } from "@workspace/ui/contexts/autocomplete-context";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { createCompletionPlugin } from "@workspace/ui/editors/completion-plugin";
 import { buildDocumentFromContent } from "@workspace/ui/editors/functions";
 import {
@@ -18,7 +19,6 @@ import { EditorView } from "prosemirror-view";
 import { memo, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
-import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import "./prosemirror-math/styles.css";
 
 type EditorProps = {
@@ -28,27 +28,26 @@ type EditorProps = {
 export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
   const { sharedT } = useSharedTranslations();
 
-  const { textEditorContent, setTextEditorContent, diffPrev } =
-    useTextEditorContent();
-
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [autocomplete] = useAutocomplete();
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    "text-editor-input",
-    "",
-  );
+  const [localStorageInput, setLocalStorageInput] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
 
   useEffect(() => {
     console.log("Initializing text editor");
 
     if (containerRef.current && !editorRef.current) {
       const state = EditorState.create({
-        doc: buildDocumentFromContent(textEditorContent.content),
+        doc: buildDocumentFromContent(localStorageInput.content),
         plugins: [
           ...exampleSetup({ schema: textEditorSchema, menuBar: false }),
-          ...plugins,
           createCompletionPlugin(650, autocomplete.text, sharedT.apiCodes),
+          ...plugins,
         ],
         schema: textEditorSchema,
       });
@@ -58,45 +57,18 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
         clipboardTextSerializer: (slice) => {
           return mathTextSerializer.serializeSlice(slice);
         },
-        editable: () => !diffPrev.current,
       });
-
-      if (!textEditorContent.content) {
-        setTextEditorContent((prev) => ({
-          ...prev,
-          content: localStorageInput.replace(/\$\$(.*?)\$\$/g, "$$$1$$"),
-        }));
-      }
     }
 
     return () => {
       if (editorRef.current) {
-        const content = mathMarkdownSerializer.serialize(
-          editorRef.current.state.doc,
-        );
-
-        setTextEditorContent((prev) => ({
-          ...prev,
-          content,
-        }));
+        syncTextEditorContentToLocalStorage(editorRef, setLocalStorageInput);
 
         editorRef.current.destroy();
         editorRef.current = null;
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (editorRef.current) {
-      const newDoc = buildDocumentFromContent(textEditorContent.content);
-      const tr = editorRef.current.state.tr.replaceWith(
-        0,
-        editorRef.current.state.doc.content.size,
-        newDoc.content,
-      );
-      editorRef.current.dispatch(tr);
-    }
-  }, [textEditorContent.content]);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -112,8 +84,8 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
         doc: editorRef.current.state.doc,
         plugins: [
           ...exampleSetup({ schema: textEditorSchema, menuBar: false }),
-          ...plugins,
           createCompletionPlugin(650, autocomplete.text, sharedT.apiCodes),
+          ...plugins,
         ],
         schema: textEditorSchema,
       });
@@ -121,25 +93,6 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
       editorRef.current.updateState(newState);
     }
   }, [autocomplete.text]);
-
-  useEffect(() => {
-    if (!editorRef.current) {
-      return;
-    }
-
-    const saveInterval = setInterval(() => {
-      if (editorRef.current) {
-        const content = mathMarkdownSerializer.serialize(
-          editorRef.current.state.doc,
-        );
-        setLocalStorageInput(content);
-      }
-    }, 15000);
-
-    return () => {
-      clearInterval(saveInterval);
-    };
-  }, [editorRef.current, setLocalStorageInput]);
 
   return (
     <div
@@ -149,3 +102,46 @@ export const TextEditor = memo(({ textEditorRef: editorRef }: EditorProps) => {
     />
   );
 });
+
+export function syncTextEditorContentToLocalStorage(
+  editorRef: React.RefObject<EditorView | null>,
+  setLocalStorageInput: React.Dispatch<React.SetStateAction<EditorContent>>,
+) {
+  if (!editorRef.current) return;
+
+  const content = mathMarkdownSerializer.serialize(editorRef.current.state.doc);
+
+  setLocalStorageInput((prev) => ({
+    ...prev,
+    content,
+  }));
+}
+
+export function updateTextEditorWithDispatch(
+  editorRef: React.RefObject<EditorView | null>,
+  content: string,
+) {
+  if (!editorRef.current) return;
+
+  const newDoc = buildDocumentFromContent(content);
+  const tr = editorRef.current.state.tr.replaceWith(
+    0,
+    editorRef.current.state.doc.content.size,
+    newDoc.content,
+  );
+  editorRef.current.dispatch(tr);
+}
+
+export function appendContentToTextEditor(
+  editorRef: React.RefObject<EditorView | null>,
+  contentToAppend: string,
+) {
+  if (!editorRef.current) return;
+
+  const newDoc = buildDocumentFromContent(contentToAppend);
+  const tr = editorRef.current.state.tr.insert(
+    editorRef.current.state.doc.content.size,
+    newDoc.content,
+  );
+  editorRef.current.dispatch(tr);
+}

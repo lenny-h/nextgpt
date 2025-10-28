@@ -1,23 +1,45 @@
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
+import { updateCodeEditorWithDispatch } from "@/components/editors/utils";
+import { type EditorContent } from "@/contexts/diff-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
-import { useCallback } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 export function useDocumentHandler() {
   const { sharedT } = useSharedTranslations();
 
-  const { panelRef } = useRefs();
-  const [, setEditorMode] = useEditor();
-  const { textEditorContent, setTextEditorContent } = useTextEditorContent();
-  const { codeEditorContent, setCodeEditorContent } = useCodeEditorContent();
+  const { panelRef, textEditorRef, codeEditorRef } = useRefs();
 
-  const retrieveFullDocument = useCallback(async (documentId: string) => {
-    const document = await apiFetcher(
+  const [, setEditorMode] = useEditor();
+
+  const [, setLocalTextEditorContent] = useLocalStorage<EditorContent>(
+    "text-editor-input",
+    {
+      id: undefined,
+      title: "",
+      content: "",
+    },
+  );
+  const [, setLocalCodeEditorContent] = useLocalStorage<EditorContent>(
+    "text-editor-input",
+    {
+      id: undefined,
+      title: "",
+      content: "",
+    },
+  );
+
+  const handleDocumentClick = async (
+    documentId: string,
+    documentTitle: string,
+    documentKind: ArtifactKind,
+  ) => {
+    setEditorMode(documentKind);
+
+    const fullDocument = await apiFetcher(
       (client) =>
         client["documents"][":documentId"].$get({
           param: { documentId },
@@ -25,53 +47,30 @@ export function useDocumentHandler() {
       sharedT.apiCodes,
     );
 
-    return document;
-  }, []);
+    if (documentKind === "text") {
+      setLocalTextEditorContent({
+        id: documentId,
+        title: documentTitle,
+        content: fullDocument.content,
+      });
 
-  const handleDocumentClick = useCallback(
-    async (
-      documentId: string,
-      documentTitle: string,
-      documentKind: ArtifactKind,
-    ) => {
-      setEditorMode(documentKind);
-      resizeEditor(panelRef, false);
+      // Dynamically load the text editor update helper only when needed
+      const { updateTextEditorWithDispatch } = await import(
+        "@/components/editors/text-editor"
+      );
+      updateTextEditorWithDispatch(textEditorRef, fullDocument.content);
+    } else {
+      setLocalCodeEditorContent({
+        id: documentId,
+        title: documentTitle,
+        content: fullDocument.content,
+      });
 
-      if (documentKind === "text" && textEditorContent.id === documentId) {
-        return;
-      } else if (
-        documentKind === "code" &&
-        codeEditorContent.id === documentId
-      ) {
-        return;
-      }
+      updateCodeEditorWithDispatch(codeEditorRef, fullDocument.content);
+    }
 
-      const fullDocument = await retrieveFullDocument(documentId);
-
-      if (documentKind === "text") {
-        setTextEditorContent({
-          id: documentId,
-          title: documentTitle,
-          content: fullDocument.content,
-        });
-      } else {
-        setCodeEditorContent({
-          id: documentId,
-          title: documentTitle,
-          content: fullDocument.content,
-        });
-      }
-    },
-    [
-      panelRef,
-      setEditorMode,
-      textEditorContent.id,
-      codeEditorContent.id,
-      setTextEditorContent,
-      setCodeEditorContent,
-      retrieveFullDocument,
-    ],
-  );
+    resizeEditor(panelRef, false);
+  };
 
   return { handleDocumentClick };
 }

@@ -1,9 +1,8 @@
 "use client";
 
 import { SidebarLeft } from "@/components/sidebars/sidebar-left";
-import { AutocompleteProvider } from "@/contexts/autocomplete-context";
 import { CSResultsProvider } from "@/contexts/classic-search-results";
-import { CodeEditorContentProvider } from "@/contexts/code-editor-content-context";
+import { DiffProvider } from "@/contexts/diff-context";
 import { EditorProvider } from "@/contexts/editor-context";
 import { FilterProvider } from "@/contexts/filter-context";
 import { PDFProvider } from "@/contexts/pdf-context";
@@ -11,12 +10,12 @@ import { RefsProvider } from "@/contexts/refs-context";
 import { ChatModelProvider } from "@/contexts/selected-chat-model";
 import { VSResultsProvider } from "@/contexts/semantic-search-results";
 import { TempChatProvider } from "@/contexts/temporary-chat-context";
-import { TextEditorContentProvider } from "@/contexts/text-editor-content-context";
 import { type User } from "@workspace/server/drizzle/schema";
 import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
+import { AutocompleteProvider } from "@workspace/ui/contexts/autocomplete-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
 import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";
@@ -64,28 +63,26 @@ export default function MainLayout({
     <UserProvider user={user as User}>
       <RefsProvider>
         <EditorProvider>
-          <TextEditorContentProvider>
-            <CodeEditorContentProvider>
-              <PDFProvider>
-                <ChatModelProvider>
-                  <TempChatProvider>
-                    <AutocompleteProvider>
-                      <CSResultsProvider>
-                        <VSResultsProvider>
-                          <FilterProvider>
-                            <SidebarProvider defaultOpen={defaultLeftOpen}>
-                              <SidebarLeft />
-                              <SidebarInset>{children}</SidebarInset>
-                            </SidebarProvider>
-                          </FilterProvider>
-                        </VSResultsProvider>
-                      </CSResultsProvider>
-                    </AutocompleteProvider>
-                  </TempChatProvider>
-                </ChatModelProvider>
-              </PDFProvider>
-            </CodeEditorContentProvider>
-          </TextEditorContentProvider>
+          <DiffProvider>
+            <PDFProvider>
+              <ChatModelProvider>
+                <TempChatProvider>
+                  <AutocompleteProvider>
+                    <CSResultsProvider>
+                      <VSResultsProvider>
+                        <FilterProvider>
+                          <SidebarProvider defaultOpen={defaultLeftOpen}>
+                            <SidebarLeft />
+                            <SidebarInset>{children}</SidebarInset>
+                          </SidebarProvider>
+                        </FilterProvider>
+                      </VSResultsProvider>
+                    </CSResultsProvider>
+                  </AutocompleteProvider>
+                </TempChatProvider>
+              </ChatModelProvider>
+            </PDFProvider>
+          </DiffProvider>
         </EditorProvider>
       </RefsProvider>
     </UserProvider>

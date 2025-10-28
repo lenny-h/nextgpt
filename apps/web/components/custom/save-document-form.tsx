@@ -2,7 +2,7 @@ import * as z from "zod";
 
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
-import { type EditorContent } from "@/contexts/text-editor-content-context";
+import { type EditorContent } from "@/contexts/diff-context";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";

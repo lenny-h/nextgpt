@@ -1,12 +1,11 @@
 "use client";
 
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
+import { type EditorContent, useDiff } from "@/contexts/diff-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useFilter } from "@/contexts/filter-context";
 import { useRefs } from "@/contexts/refs-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
-import { useTextEditorContent } from "@/contexts/text-editor-content-context";
 import { processDataPart } from "@/lib/process-data-part";
 import {
   getMessageCountAfterLastStart,
@@ -25,6 +24,7 @@ import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useLocalStorage } from "usehooks-ts";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { PracticeForm } from "./practice-form";
@@ -47,20 +47,21 @@ export function Practice({
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode, setEditorMode] = useEditor();
 
-  const {
-    textEditorContent,
-    setTextEditorContent,
-    diffPrev: textDiffPrev,
-    diffPrevString,
-    setDiffPrevString,
-    setDiffNext: setTextDiffNext,
-  } = useTextEditorContent();
-  const {
-    codeEditorContent,
-    setCodeEditorContent,
-    diffPrev: codeDiffPrev,
-    setDiffNext: setCodeDiffNext,
-  } = useCodeEditorContent();
+  const { textDiffPrev, setTextDiffNext, codeDiffPrev, setCodeDiffNext } =
+    useDiff();
+
+  const [localTextEditorContent, setLocalTextEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
+  const [localCodeEditorContent, setLocalCodeEditorContent] =
+    useLocalStorage<EditorContent>("text-editor-input", {
+      id: undefined,
+      title: "",
+      content: "",
+    });
 
   const { sendMessage, messages, setMessages, status, stop, regenerate } =
     useChat<MyUIMessage>({
@@ -78,14 +79,12 @@ export function Practice({
           codeEditorRef,
           editorMode,
           setEditorMode,
-          textEditorContent,
-          setTextEditorContent,
+          localTextEditorContent,
+          setLocalTextEditorContent,
           textDiffPrev,
-          diffPrevString,
-          setDiffPrevString,
           setTextDiffNext,
-          codeEditorContent,
-          setCodeEditorContent,
+          localCodeEditorContent,
+          setLocalCodeEditorContent,
           codeDiffPrev,
           setCodeDiffNext,
         }),

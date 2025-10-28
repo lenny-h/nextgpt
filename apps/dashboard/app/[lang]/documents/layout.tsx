@@ -1,7 +1,6 @@
 "use client";
 
 import { SidebarLeft } from "@/components/sidebar/sidebar-left";
-import { AutocompleteProvider } from "@/contexts/autocomplete-context";
 import { CodeEditorContentProvider } from "@/contexts/code-editor-content-context";
 import { EditorProvider } from "@/contexts/editor-context";
 import { RefsProvider } from "@/contexts/refs-context";
@@ -11,6 +10,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
+import { AutocompleteProvider } from "@workspace/ui/contexts/autocomplete-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
 import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";

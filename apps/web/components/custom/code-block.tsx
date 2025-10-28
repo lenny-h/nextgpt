@@ -1,6 +1,5 @@
 import * as m from "motion/react-m";
 
-import { useCodeEditorContent } from "@/contexts/code-editor-content-context";
 import { useEditor } from "@/contexts/editor-context";
 import { useRefs } from "@/contexts/refs-context";
 import { resizeEditor } from "@workspace/ui/lib/utils";
@@ -10,6 +9,7 @@ import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useCopyToClipboard } from "usehooks-ts";
+import { updateCodeEditorWithDispatch } from "../editors/utils";
 
 const loadFeatures = () => import("@/lib/features").then((res) => res.default);
 
@@ -27,9 +27,8 @@ export const CodeBlock = ({
   style,
   ...props
 }: CodeBlockProps) => {
-  const { panelRef } = useRefs();
+  const { panelRef, codeEditorRef } = useRefs();
   const [, setEditorMode] = useEditor();
-  const { setCodeEditorContent } = useCodeEditorContent();
 
   const [copied, setCopied] = useState(false);
   const [edited, setEdited] = useState(false);
@@ -67,12 +66,10 @@ export const CodeBlock = ({
           <button
             className="flex cursor-pointer items-center space-x-1 text-slate-50"
             onClick={async () => {
-              setCodeEditorContent({
-                title: "",
-                content: String(children),
-              });
               setEditorMode("code");
               resizeEditor(panelRef, false);
+
+              updateCodeEditorWithDispatch(codeEditorRef, String(children));
 
               setEdited(true);
               setTimeout(() => {

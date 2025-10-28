@@ -128,14 +128,12 @@ const PureAgentMessage = ({
 
               {textContent && (
                 <MessageActions
-                  chatId={chatId}
                   content={parsedContent}
                   role={message.role}
                   isLoading={isLoading}
                   regenerate={regenerate}
                   messageId={message.id}
                   previousMessageId={previousMessageId}
-                  isPractice={isPractice}
                 />
               )}
             </>

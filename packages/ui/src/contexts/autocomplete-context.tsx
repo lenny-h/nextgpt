@@ -8,7 +8,7 @@ import React, {
   useEffect,
 } from "react";
 
-type Autocomplete = {
+export type Autocomplete = {
   code: boolean;
   text: boolean;
 };
