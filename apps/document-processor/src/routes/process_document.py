@@ -34,13 +34,14 @@ router = APIRouter()
 async def process_document(event: DocumentUploadEvent):
     """Convert a non-PDF document from cloud storage to chunks."""
     try:
+        print("Processing Document:", event.name)
         return await _convert_document(event)
     except ClientError as e:
         error_code = e.response.get("Error", {}).get("Code", "Unknown")
         if error_code == "NoSuchKey":
             raise HTTPException(
                 status_code=404,
-                detail=f"File not found: {event.bucketId}/{event.name}"
+                detail=f"File not found: {event.name}"
             )
         raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
     except Exception as e:
@@ -56,7 +57,7 @@ async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
     try:
         await update_status_to_processing(task_id)
 
-        chunks_response = await _convert_document_to_chunks("files-bucket", event.bucketId + "/" + event.name)
+        chunks_response = await _convert_document_to_chunks("files-bucket", event.name)
 
         if not chunks_response.chunks:
             raise ValueError("No content chunks generated from document")

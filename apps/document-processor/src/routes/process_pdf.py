@@ -75,13 +75,14 @@ def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[dict]]:
 async def process_pdf(event: DocumentUploadEvent):
     """Process a PDF from cloud storage to chunks with page numbers and bounding boxes."""
     try:
+        print("Processing PDF:", event.name)
         return await _convert_pdf(event)
     except ClientError as e:
         error_code = e.response.get("Error", {}).get("Code", "Unknown")
         if error_code == "NoSuchKey":
             raise HTTPException(
                 status_code=404,
-                detail=f"File not found: {event.bucketId}/{event.name}"
+                detail=f"File not found: {event.name}"
             )
         raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
     except Exception as e:
@@ -98,7 +99,7 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         await update_status_to_processing(task_id)
 
         chunks_response, page_count = await _convert_pdf_to_chunks(
-            "files-bucket", event.bucketId + "/" + event.name, event.pipelineOptions
+            "files-bucket", event.name, event.pipelineOptions
         )
 
         if not chunks_response.chunks:

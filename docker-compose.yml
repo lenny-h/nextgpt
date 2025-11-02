@@ -132,7 +132,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
 
       # Local MinIO configuration
-      MINIO_ENDPOINT: http://localhost:9000
+      MINIO_ENDPOINT: http://minio:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
@@ -194,7 +194,7 @@ services:
   #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
 
   #     # Document processor
-  #     DOCUMENT_PROCESSOR_URL: http://localhost:3006
+  #     DOCUMENT_PROCESSOR_URL: http://document-processor:8080
 
   #     # Better Auth configuration and Resend email service (for sending verification emails)
   #     BETTER_AUTH_URL: http://localhost:3004
@@ -221,7 +221,7 @@ services:
   #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
   #     # Local MinIO configuration
-  #     MINIO_ENDPOINT: http://localhost:9000
+  #     MINIO_ENDPOINT: http://minio:9000
   #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
   #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 

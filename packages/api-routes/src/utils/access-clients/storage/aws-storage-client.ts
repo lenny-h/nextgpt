@@ -103,7 +103,7 @@ export class AwsStorageClient implements IStorageClient {
     const response = await s3Client.send(command);
 
     if (!response.Body) {
-      throw new Error(`File not found: ${bucket}/${key}`);
+      throw new Error(`File not found: ${key}`);
     }
 
     // Convert the stream to a Buffer

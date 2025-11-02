@@ -21,19 +21,26 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu
 
 ENV DOCLING_ARTIFACTS_PATH=/app/.cache/docling/models
-RUN mkdir -p "$DOCLING_ARTIFACTS_PATH" && chown -R appuser:appuser "$DOCLING_ARTIFACTS_PATH"
+RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
+
+# Set HuggingFace cache to a subdirectory to avoid path interpretation issues
+ENV HF_HOME=/app/.cache/huggingface
+RUN mkdir -p "$HF_HOME"
 
 # Optional: configure Tesseract data path if tesseract is used
 # ENV TESSDATA_PREFIX=/usr/share/tesseract/tessdata/
 
-# Prefetch Docling models into a fixed artifacts directory for offline usage
-# ARG MODELS_LIST="easyocr layout tableformer"
+# Prefetch essential Docling models at build time
+# Only download the core models needed for basic PDF processing
+# Optional models (formula, code, etc.) will be downloaded at runtime when first used
+ARG MODELS_LIST="layout"
 
-# RUN echo "Downloading models..." && \
-#     HF_HUB_DOWNLOAD_TIMEOUT="90" \
-#     HF_HUB_ETAG_TIMEOUT="90" \
-#     docling-tools models download -o "${DOCLING_ARTIFACTS_PATH}" ${MODELS_LIST} && \
-#     chmod -R g=u ${DOCLING_ARTIFACTS_PATH} &&
+RUN echo "Downloading essential models..." && \
+    HF_HUB_DOWNLOAD_TIMEOUT="90" \
+    HF_HUB_ETAG_TIMEOUT="90" \
+    docling-tools models download -o "${DOCLING_ARTIFACTS_PATH}" ${MODELS_LIST} && \
+    chown -R appuser:appuser ${DOCLING_ARTIFACTS_PATH} ${HF_HOME} && \
+    chmod -R g=u ${DOCLING_ARTIFACTS_PATH} ${HF_HOME}
 
 # Copy application source (again: paths are from repo root)
 COPY --chown=appuser:appuser apps/document-processor/src ./src

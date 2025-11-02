@@ -106,9 +106,9 @@ export class CloudflareStorageClient implements IStorageClient {
     });
 
     const response = await s3Client.send(command);
-    
+
     if (!response.Body) {
-      throw new Error(`File not found: ${bucket}/${key}`);
+      throw new Error(`File not found: ${key}`);
     }
 
     // Convert the stream to a Buffer
@@ -116,7 +116,7 @@ export class CloudflareStorageClient implements IStorageClient {
     for await (const chunk of response.Body as any) {
       chunks.push(chunk);
     }
-    
+
     return Buffer.concat(chunks);
   }
 

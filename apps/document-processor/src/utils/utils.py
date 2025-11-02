@@ -29,7 +29,7 @@ async def handle_processing_error(bucket: str, event: DocumentUploadEvent, error
     """Handle errors during document/PDF processing with cleanup."""
     try:
         storage_client = get_storage_client()
-        storage_client.delete_file(bucket, event.bucketId + "/" + event.name)
+        storage_client.delete_file(bucket, event.name)
     except Exception as e:
         print(f"Failed to clean up source file: {e}")
 

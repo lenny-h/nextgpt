@@ -90,6 +90,8 @@ const app = new Hono().post(
       ? new Date(processingDate)
       : new Date(Date.now() + 70 * 1000); // 70 seconds from now
 
+    const extFilename = `${courseId}/${filename}`;
+
     // Schedule the processing task with cloud-agnostic interface
     await tasksClient.scheduleProcessingTask({
       taskId,
@@ -99,7 +101,7 @@ const app = new Hono().post(
       payload: {
         taskId,
         bucketId: bucketSizeInfo.bucketId,
-        name: `${courseId}/${filename}`,
+        name: extFilename,
         size: fileSize.toString(),
         contentType: fileType,
         pageNumberOffset,
@@ -107,8 +109,6 @@ const app = new Hono().post(
       },
       scheduleTime,
     });
-
-    const extFilename = `${courseId}/${filename}`;
 
     const storageClient = getStorageClient();
 
@@ -118,6 +118,8 @@ const app = new Hono().post(
       contentType: "application/pdf",
       contentLength: fileSize,
     });
+
+    console.log("SignedUrl generated:", { signedUrl, extFilename });
 
     return c.json({
       signedUrl,
