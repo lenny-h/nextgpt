@@ -2,7 +2,10 @@ import FirecrawlApp from "@mendable/firecrawl-js";
 import { tool } from "ai";
 import { z } from "zod";
 
-const app = new FirecrawlApp({ apiUrl: process.env.FIRECRAWL_API_URL });
+const app = new FirecrawlApp({
+  apiUrl: process.env.FIRECRAWL_API_URL,
+  apiKey: process.env.FIRECRAWL_API_KEY || "dummy-key",
+});
 
 export const scrapeTool = tool({
   description:

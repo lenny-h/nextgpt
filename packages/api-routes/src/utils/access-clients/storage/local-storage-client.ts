@@ -35,14 +35,9 @@ export class LocalStorageClient implements IStorageClient {
         throw new Error("MINIO_ENDPOINT environment variable is required");
       }
 
-      // Ensure endpoint has protocol
-      const formattedEndpoint = endpoint.startsWith("http")
-        ? endpoint
-        : `http://${endpoint}`;
-
       this.s3Client = new S3Client({
         region: "us-east-1", // MinIO uses this as default
-        endpoint: formattedEndpoint,
+        endpoint,
         credentials: {
           accessKeyId,
           secretAccessKey,
@@ -110,7 +105,7 @@ export class LocalStorageClient implements IStorageClient {
     });
 
     const response = await s3Client.send(command);
-    
+
     if (!response.Body) {
       throw new Error(`File not found: ${bucket}/${key}`);
     }
@@ -120,7 +115,7 @@ export class LocalStorageClient implements IStorageClient {
     for await (const chunk of response.Body as any) {
       chunks.push(chunk);
     }
-    
+
     return Buffer.concat(chunks);
   }
 

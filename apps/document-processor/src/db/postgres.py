@@ -35,7 +35,7 @@ async def get_connection_pool() -> AsyncConnectionPool:
                     )
 
                 database_url = (
-                    f"postgresql://postgres:${database_password}@${database_host}/postgres"
+                    f"postgresql://postgres:{database_password}@{database_host}/postgres"
                 )
 
                 # Create an async connection pool with min 2 and max 20 connections

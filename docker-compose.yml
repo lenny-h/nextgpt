@@ -105,7 +105,7 @@ services:
       PORT: 8080
       ENVIRONMENT: development
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: localhost:5432
+      DATABASE_HOST: postgres:5432
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
 
       USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
@@ -114,7 +114,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
 
       # Local MinIO configuration
-      MINIO_ENDPOINT: localhost:9000
+      MINIO_ENDPOINT: http://localhost:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
@@ -203,7 +203,7 @@ services:
   #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
   #     # Local MinIO configuration
-  #     MINIO_ENDPOINT: localhost:9000
+  #     MINIO_ENDPOINT: http://localhost:9000
   #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
   #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 

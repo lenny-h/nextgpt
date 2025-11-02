@@ -60,13 +60,9 @@ class LocalStorageClient(IStorageClient):
                             "MINIO_ENDPOINT, MINIO_ROOT_USER, and MINIO_ROOT_PASSWORD environment variables must be set"
                         )
 
-                    # Ensure endpoint has protocol
-                    formatted_endpoint = endpoint if endpoint.startswith(
-                        "http") else f"http://{endpoint}"
-
                     self._client = boto3.client(
                         "s3",
-                        endpoint_url=formatted_endpoint,
+                        endpoint_url=endpoint,
                         aws_access_key_id=access_key,
                         aws_secret_access_key=secret_key,
                         region_name="us-east-1",  # MinIO uses this as default
