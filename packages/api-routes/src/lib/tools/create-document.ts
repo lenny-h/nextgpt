@@ -27,18 +27,11 @@ export const createDocumentTool = ({
       documentTitle: z.string(),
       kind: artifactKindSchema,
     }),
-    execute: async ({ documentTitle, instructions, kind }) => {
+    execute: async (
+      { documentTitle, instructions, kind },
+      { experimental_context: context }
+    ) => {
       const documentId = generateUUID();
-
-      writer.write({
-        type: "data-kind",
-        data: {
-          id: documentId,
-          title: documentTitle,
-          kind,
-        },
-        transient: true,
-      });
 
       const documentHandler = documentHandlers.find(
         (documentHandler) => documentHandler.kind === kind
@@ -48,12 +41,15 @@ export const createDocumentTool = ({
         throw new Error(`No document handler found for kind: ${kind}`);
       }
 
+      const typedContext = context as { writeDeltas: boolean };
+
       const draftContent = await documentHandler.onCreateDocument({
         writer,
+        writeDeltas: typedContext.writeDeltas,
         instructions,
+        documentId,
+        documentTitle,
       });
-
-      writer.write({ type: "finish" });
 
       await db.insert(toolCallDocuments).values({
         id: documentId,

@@ -4,10 +4,21 @@ import { type UIMessageStreamWriter, smoothStream, streamText } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { getModel } from "../providers.js";
 
+export interface CreateDocumentProps {
+  writer: UIMessageStreamWriter<MyUIMessage>;
+  writeDeltas: boolean;
+  instructions: string;
+  documentId: string;
+  documentTitle: string;
+}
+
 export interface UpdateDocumentProps {
+  writer: UIMessageStreamWriter<MyUIMessage>;
+  writeDeltas: boolean;
   content: string;
   instructions: string;
-  writer: UIMessageStreamWriter<MyUIMessage>;
+  documentId: string;
+  documentTitle: string;
 }
 
 const createDocumentPrompt = (type: ArtifactKind) =>
@@ -23,14 +34,26 @@ export const documentHandlers = (["text", "code"] as const).map((kind) => ({
   kind,
   onCreateDocument: async ({
     writer,
+    writeDeltas,
     instructions,
-  }: {
-    writer: UIMessageStreamWriter<MyUIMessage>;
-    instructions: string;
-  }) => {
+    documentId,
+    documentTitle,
+  }: CreateDocumentProps) => {
     let draftContent = "";
 
     const config = await getModel(documentModifierModelIdx);
+
+    if (writeDeltas) {
+      writer.write({
+        type: "data-kind",
+        data: {
+          id: documentId,
+          title: documentTitle,
+          kind,
+        },
+        transient: true,
+      });
+    }
 
     const { fullStream } = streamText({
       system: createDocumentPrompt(kind),
@@ -39,31 +62,50 @@ export const documentHandlers = (["text", "code"] as const).map((kind) => ({
       experimental_transform: smoothStream({ chunking: "line" }),
     });
 
-    for await (const delta of fullStream) {
-      const { type } = delta;
+    if (writeDeltas) {
+      for await (const delta of fullStream) {
+        const { type } = delta;
 
-      if (type === "text-delta") {
-        const { text } = delta;
+        if (type === "text-delta") {
+          const { text } = delta;
 
-        draftContent += text;
-        writer.write({
-          type: `data-${kind}-delta`,
-          data: text,
-          transient: true,
-        });
+          draftContent += text;
+          writer.write({
+            type: `data-${kind}-delta`,
+            data: text,
+            transient: true,
+          });
+        }
       }
     }
+
+    writer.write({ type: "finish" });
 
     return draftContent;
   },
   onUpdateDocument: async ({
     writer,
+    writeDeltas,
     content,
     instructions,
+    documentId,
+    documentTitle,
   }: UpdateDocumentProps) => {
     let draftContent = "";
 
     const config = await getModel(documentModifierModelIdx);
+
+    if (writeDeltas) {
+      writer.write({
+        type: "data-kind",
+        data: {
+          id: documentId,
+          title: documentTitle,
+          kind,
+        },
+        transient: true,
+      });
+    }
 
     const { fullStream } = streamText({
       system: updateDocumentPrompt(content, kind),
@@ -72,20 +114,24 @@ export const documentHandlers = (["text", "code"] as const).map((kind) => ({
       experimental_transform: smoothStream({ chunking: "line" }),
     });
 
-    for await (const delta of fullStream) {
-      const { type } = delta;
+    if (writeDeltas) {
+      for await (const delta of fullStream) {
+        const { type } = delta;
 
-      if (type === "text-delta") {
-        const { text } = delta;
+        if (type === "text-delta") {
+          const { text } = delta;
 
-        draftContent += text;
-        writer.write({
-          type: `data-${kind}-delta`,
-          data: text,
-          transient: true,
-        });
+          draftContent += text;
+          writer.write({
+            type: `data-${kind}-delta`,
+            data: text,
+            transient: true,
+          });
+        }
       }
     }
+
+    writer.write({ type: "finish" });
 
     return draftContent;
   },

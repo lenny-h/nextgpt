@@ -8,11 +8,12 @@ services:
   # PostgreSQL Database with pgvector extension
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:pg18
     restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:
+      # - ./packages/server/src/drizzle/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql:ro # Only required for Firecrawl
       - ./packages/server/src/drizzle/0000_romantic_outlaw_kid.sql:/docker-entrypoint-initdb.d/0000_romantic_outlaw_kid.sql:ro
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -140,161 +141,235 @@ services:
   # The services below need not be run in Docker
   # It is better to run them using `pnpm run dev` due to hot-reloading
 
-  # Custom API Service
-  api:
-    container_name: api
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3004:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/api/public/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      PORT: 8080
-      NODE_ENV: development
+  # # Custom API Service
+  # api:
+  #   container_name: api
+  #   build:
+  #     context: .
+  #     dockerfile: apps/api/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3004:8080"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--spider",
+  #         "http://localhost:8080/api/public/health",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     PORT: 8080
+  #     NODE_ENV: development
 
-      BASE_URL: http://localhost:3000
-      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  #     BASE_URL: http://localhost:3000
+  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
 
-      # Document processor
-      DOCUMENT_PROCESSOR_URL: http://localhost:3006
+  #     # Document processor
+  #     DOCUMENT_PROCESSOR_URL: http://localhost:3006
 
-      # Better Auth configuration and Resend email service (for sending verification emails)
-      BETTER_AUTH_URL: http://localhost:3004
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
-      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
-      RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
-      RESEND_API_KEY: ${RESEND_API_KEY}
+  #     # Better Auth configuration and Resend email service (for sending verification emails)
+  #     BETTER_AUTH_URL: http://localhost:3004
+  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
+  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
+  #     RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
+  #     RESEND_API_KEY: ${RESEND_API_KEY}
 
-      # Google OAuth
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  #     # Google OAuth
+  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
 
-      # Database and Redis
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: localhost:5432
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      REDIS_URL: "redis://localhost:6379" # Has format: redis://HOST:PORT
+  #     # Database and Redis
+  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+  #     DATABASE_HOST: localhost:5432
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  #     REDIS_URL: "redis://localhost:6379" # Has format: redis://HOST:PORT
 
-      USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
-      USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
-      USE_LOCAL_TASKS_CLIENT: ${USE_LOCAL_TASKS_CLIENT}
-      USE_OPENAI_API: ${USE_OPENAI_API}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #     USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
+  #     USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
+  #     USE_LOCAL_TASKS_CLIENT: ${USE_LOCAL_TASKS_CLIENT}
+  #     USE_OPENAI_API: ${USE_OPENAI_API}
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
-      # Local MinIO configuration
-      MINIO_ENDPOINT: localhost:9000
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+  #     # Local MinIO configuration
+  #     MINIO_ENDPOINT: localhost:9000
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
-      # Cloudflare R2 configuration
-      R2_ENDPOINT: ${R2_ENDPOINT}
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+  #     # Cloudflare R2 configuration
+  #     R2_ENDPOINT: ${R2_ENDPOINT}
+  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
 
-      CLOUD_PROVIDER: ${CLOUD_PROVIDER}
+  #     CLOUD_PROVIDER: ${CLOUD_PROVIDER}
 
-      # Gcloud configuration
-      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-      CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
-      TASK_QUEUE_PATH: ${TASK_QUEUE_PATH}
+  #     # Gcloud configuration
+  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+  #     CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
+  #     TASK_QUEUE_PATH: ${TASK_QUEUE_PATH}
 
-      # Aws configuration
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+  #     # Aws configuration
+  #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  #     AWS_REGION: ${AWS_REGION}
+  #     SQS_QUEUE_URL: ${SQS_QUEUE_URL}
 
-      # Configuration common to all cloud providers
-      ATTACHMENT_URL_PREFIX: ${ATTACHMENT_URL_PREFIX}
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-      LLM_MODELS: ${LLM_MODELS}
-    networks:
-      - database_network
+  #     # Configuration common to all cloud providers
+  #     ATTACHMENT_URL_PREFIX: ${ATTACHMENT_URL_PREFIX}
+  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+  #     LLM_MODELS: ${LLM_MODELS}
+  #   networks:
+  #     - database_network
 
-  # PDF Exporter Service
-  pdf-exporter:
-    container_name: pdf-exporter
-    build:
-      context: .
-      dockerfile: apps/pdf-exporter/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3005:8080"
-    depends_on:
-      api:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/pdf-exporter/public/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      PORT: 8080
-      NODE_ENV: development
-      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
-    networks:
-      - database_network
+  # # PDF Exporter Service
+  # pdf-exporter:
+  #   container_name: pdf-exporter
+  #   build:
+  #     context: .
+  #     dockerfile: apps/pdf-exporter/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3005:8080"
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--spider",
+  #         "http://localhost:8080/pdf-exporter/public/health",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     PORT: 8080
+  #     NODE_ENV: development
+  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  #   networks:
+  #     - database_network
 
-  # Web interface (Next.js)
-  web:
-    container_name: web
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3000
-        NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
-        NEXT_PUBLIC_API_URL: http://localhost:3004
-        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-        NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
+  # # Web interface (Next.js)
+  # web:
+  #   container_name: web
+  #   build:
+  #     context: .
+  #     dockerfile: apps/web/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: http://localhost:3000
+  #       NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
 
-  # Dashboard interface (Next.js)
-  dashboard:
-    container_name: dashboard
-    build:
-      context: .
-      dockerfile: apps/dashboard/Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3001
-        NEXT_PUBLIC_CHAT_URL: http://localhost:3000
-        NEXT_PUBLIC_API_URL: http://localhost:3004
-        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-        NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
-    restart: unless-stopped
-    ports:
-      - "3001:3000"
+  # # Dashboard interface (Next.js)
+  # dashboard:
+  #   container_name: dashboard
+  #   build:
+  #     context: .
+  #     dockerfile: apps/dashboard/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: http://localhost:3001
+  #       NEXT_PUBLIC_CHAT_URL: http://localhost:3000
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
+
+  # # Firecrawl
+
+  # firecrawl-api:
+  #   image: ghcr.io/firecrawl/firecrawl
+
+  #   ulimits:
+  #     nofile:
+  #       soft: 65535
+  #       hard: 65535
+  
+  #   environment:
+  #     HOST: "0.0.0.0"
+  #     PORT: 8080
+  #     EXTRACT_WORKER_PORT: 3004
+  #     WORKER_PORT: 3005
+  #     ENV: local
+
+  #     REDIS_URL: redis://localhost:6379
+  #     REDIS_RATE_LIMIT_URL: redis://localhost:6379
+  #     PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
+
+  #     NUQ_DATABASE_URL: postresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
+
+  #     USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
+  #     SUPABASE_URL: ${SUPABASE_URL}
+  #     SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
+  #     SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
+  #     SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
+
+  #     OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+  #     MODEL_NAME: ${MODEL_NAME}
+  #     MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
+  #     OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
+
+  #     SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+
+  #     # Use if you've set up authentication and want to test with a real API key
+  #     TEST_API_KEY: ${TEST_API_KEY}
+
+  #     # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
+  #     BULL_AUTH_KEY: ${BULL_AUTH_KEY}
+
+  #     POSTHOG_HOST: ${POSTHOG_HOST}
+  #     POSTHOG_API_KEY: ${POSTHOG_API_KEY}
+
+  #     SERPER_API_KEY: ${SERPER_API_KEY}
+  #     SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
+  #     LOGGING_LEVEL: ${LOGGING_LEVEL}
+  #     PROXY_SERVER: ${PROXY_SERVER}
+  #     PROXY_USERNAME: ${PROXY_USERNAME}
+  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
+  #     SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
+  #     SEARXNG_ENGINES: ${SEARXNG_ENGINES}
+  #     SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+  #   depends_on:
+  #     - redis
+  #     - playwright-service
+  #   ports:
+  #     - "3007:8080"
+  #   command: node dist/src/harness.js --start-docker
+    
+  # playwright-service:
+  #   image: ghcr.io/firecrawl/playwright-service:latest
+  #   environment:
+  #     PORT: 3008
+  #     PROXY_SERVER: ${PROXY_SERVER}
+  #     PROXY_USERNAME: ${PROXY_USERNAME}
+  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
+  #     BLOCK_MEDIA: ${BLOCK_MEDIA}
+  #   networks:
+  #     - database_network
 
 volumes:
   postgres-data:

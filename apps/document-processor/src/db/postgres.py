@@ -27,10 +27,16 @@ async def get_connection_pool() -> AsyncConnectionPool:
         async with _pool_lock:
             # Double-check after acquiring lock
             if _connection_pool is None:
-                database_url = os.getenv("DATABASE_URL")
-                if not database_url:
+                database_password = os.getenv("DATABASE_PASSWORD", "")
+                database_host = os.getenv("DATABASE_HOST", "")
+                if not database_password or not database_host:
                     raise ValueError(
-                        "DATABASE_URL environment variable must be set")
+                        "DATABASE_PASSWORD and DATABASE_HOST environment variables must be set"
+                    )
+
+                database_url = (
+                    f"postgresql://postgres:${database_password}@${database_host}/postgres"
+                )
 
                 # Create an async connection pool with min 2 and max 20 connections
                 _connection_pool = AsyncConnectionPool(
@@ -139,8 +145,8 @@ async def upload_to_postgres_db(
                     # Batch insert pages using executemany
                     await cursor.executemany(
                         """
-                        INSERT INTO pages 
-                        (id, file_id, file_name, course_id, course_name, embedding, content, 
+                        INSERT INTO pages
+                        (id, file_id, file_name, course_id, course_name, embedding, content,
                          page_index, page_number)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
@@ -213,7 +219,7 @@ async def update_status_to_failed(task_id: str, bucket_id: str) -> None:
                 # Update bucket size by subtracting the file size
                 await cursor.execute(
                     """
-                    UPDATE buckets 
+                    UPDATE buckets
                     SET size = size - (SELECT file_size FROM tasks WHERE id = %s)
                     WHERE id = %s
                     """,

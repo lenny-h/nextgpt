@@ -17,6 +17,8 @@ import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
 import { modifyDocumentTool } from "../tools/modify-document.js";
 import { retrieveDocumentSourcesTool } from "../tools/retrieve-document-sources.js";
+import { scrapeTool } from "../tools/scrape.js";
+import { searchTool } from "../tools/search.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
@@ -79,6 +81,11 @@ export class StandardChatHandler extends ChatHandler {
       });
     }
 
+    if (process.env.FIRECRAWL_API_URL) {
+      tools.scrape = scrapeTool;
+      tools.search = searchTool;
+    }
+
     return tools;
   }
 
@@ -89,9 +96,23 @@ export class StandardChatHandler extends ChatHandler {
       systemPrompt: this.systemPrompt,
     });
 
+    const experimental_context = { writeDeltas: true };
+
     const result = streamText({
       ...streamConfig,
       tools: this.retrieveToolSet(writer),
+      experimental_context,
+      onStepFinish: (step) => {
+        if (
+          step.toolCalls.some(
+            (call) =>
+              call.toolName === "createDocument" ||
+              call.toolName === "modifyDocument"
+          )
+        ) {
+          experimental_context.writeDeltas = false;
+        }
+      },
       stopWhen: stepCountIs(6),
     });
 

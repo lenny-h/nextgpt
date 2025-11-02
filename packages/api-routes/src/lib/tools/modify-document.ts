@@ -9,9 +9,9 @@ import { documentHandlers } from "./document-handlers.js";
 interface ModifyDocumentProps {
   writer: UIMessageStreamWriter<MyUIMessage>;
   documentId: string;
+  documentTitle: string;
   userId: string;
   chatId: string;
-  documentTitle: string;
   content: string;
   kind: ArtifactKind;
 }
@@ -19,9 +19,9 @@ interface ModifyDocumentProps {
 export const modifyDocumentTool = ({
   writer,
   documentId,
+  documentTitle,
   chatId,
   userId,
-  documentTitle,
   content,
   kind,
 }: ModifyDocumentProps) =>
@@ -31,17 +31,7 @@ export const modifyDocumentTool = ({
     inputSchema: z.object({
       instructions: z.string(),
     }),
-    execute: async ({ instructions }) => {
-      writer.write({
-        type: "data-kind",
-        data: {
-          id: documentId,
-          title: documentTitle,
-          kind,
-        },
-        transient: true,
-      });
-
+    execute: async ({ instructions }, { experimental_context: context }) => {
       const documentHandler = documentHandlers.find(
         (documentHandler) => documentHandler.kind === kind
       );
@@ -50,10 +40,15 @@ export const modifyDocumentTool = ({
         throw new Error(`No document handler found for kind: ${kind}`);
       }
 
+      const typedContext = context as { writeDeltas: boolean };
+
       const draftContent = await documentHandler.onUpdateDocument({
         writer,
+        writeDeltas: typedContext.writeDeltas,
         content,
         instructions,
+        documentId,
+        documentTitle,
       });
 
       writer.write({ type: "finish" });
