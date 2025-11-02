@@ -28,11 +28,13 @@ export class LocalStorageClient implements IStorageClient {
       }
 
       const endpoint = process.env.MINIO_ENDPOINT;
-      const accessKeyId = process.env.MINIO_ACCESS_KEY!;
-      const secretAccessKey = process.env.MINIO_SECRET_KEY!;
+      const accessKeyId = process.env.MINIO_ROOT_USER;
+      const secretAccessKey = process.env.MINIO_ROOT_PASSWORD;
 
       if (!endpoint || !accessKeyId || !secretAccessKey) {
-        throw new Error("MINIO_ENDPOINT environment variable is required");
+        throw new Error(
+          "MINIO_ENDPOINT, MINIO_ROOT_USER, or MINIO_ROOT_PASSWORD not configured"
+        );
       }
 
       this.s3Client = new S3Client({

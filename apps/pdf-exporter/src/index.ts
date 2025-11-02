@@ -52,6 +52,9 @@ serve(
   {
     fetch: app.fetch,
     port: Number(PORT),
+    serverOptions: {
+      requestTimeout: 30000, // 30 seconds timeout
+    },
   },
   (info) => {
     console.log(`Server running on http://localhost:${info.port}`);

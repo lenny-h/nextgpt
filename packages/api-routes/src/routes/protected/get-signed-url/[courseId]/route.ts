@@ -18,10 +18,18 @@ const paramSchema = z.object({ courseId: uuidSchema }).strict();
 const app = new Hono().post(
   "/",
   validator("param", (value) => {
-    return paramSchema.parse(value);
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
+    }
+    return parsed.data;
   }),
   validator("json", async (value, c) => {
-    return getSignedUrlSchema.parse(value);
+    const parsed = getSignedUrlSchema.safeParse(value);
+    if (!parsed.success) {
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { courseId } = c.req.valid("param");
@@ -92,7 +100,7 @@ const app = new Hono().post(
         taskId,
         bucketId: bucketSizeInfo.bucketId,
         name: `${courseId}/${filename}`,
-        size: fileSize,
+        size: fileSize.toString(),
         contentType: fileType,
         pageNumberOffset,
         ...(pdfPipelineOptions && { pipelineOptions: pdfPipelineOptions }),

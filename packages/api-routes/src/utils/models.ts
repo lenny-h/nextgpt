@@ -2,7 +2,7 @@
 
 export const chatModels = [
   {
-    id: 1,
+    id: 0,
     name: "gemini-2.5-flash",
     label: "Gemini 2.5 Flash",
     description: "Powerful model with fast response times",

@@ -6,7 +6,7 @@ Thread-safe using double-checked locking pattern.
 
 import os
 import threading
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 
 import boto3
 from ..interfaces.storage_client import IStorageClient
@@ -47,7 +47,19 @@ class AwsStorageClient(IStorageClient):
                     or self._client_creation_time is None
                     or now - self._client_creation_time > self.CLIENT_MAX_AGE
                 ):
-                    self._client = boto3.client("s3")
+                    # Use explicit credentials if provided
+                    if os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_SECRET_ACCESS_KEY"):
+                        self._client = boto3.client(
+                            "s3",
+                            region_name=os.getenv("AWS_REGION"),
+                            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                            aws_secret_access_key=os.getenv(
+                                "AWS_SECRET_ACCESS_KEY"),
+                        )
+                    else:
+                        # Let boto3 use its default provider chain
+                        self._client = boto3.client("s3")
+
                     self._client_creation_time = now
 
         return self._client

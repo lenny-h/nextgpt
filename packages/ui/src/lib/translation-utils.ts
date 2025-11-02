@@ -11,11 +11,8 @@ export async function checkResponse(
   errors: ErrorDictionary
 ) {
   if (!response.ok) {
-    const { error } = await response.json();
-    const errorMessage = translateError(
-      errors,
-      error?.errorCode || "UNKNOWN_ERROR"
-    );
+    const errorCode = await response.text();
+    const errorMessage = translateError(errors, errorCode || "UNKNOWN_ERROR");
     throw new Error(errorMessage);
   }
 }

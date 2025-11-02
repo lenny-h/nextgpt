@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
+  S3ClientConfig,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { IStorageClient } from "../interfaces/storage-client.interface.js";
@@ -27,7 +28,18 @@ export class AwsStorageClient implements IStorageClient {
         this.s3Client = null;
       }
 
-      this.s3Client = new S3Client();
+      // Use explicit credentials if provided; otherwise let SDK use default provider chain.
+      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+        this.s3Client = new S3Client({
+          region: process.env.AWS_REGION,
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          },
+        });
+      } else {
+        this.s3Client = new S3Client();
+      }
 
       this.clientCreationTime = now;
     }

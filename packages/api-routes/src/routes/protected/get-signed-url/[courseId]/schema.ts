@@ -27,7 +27,7 @@ export const getSignedUrlSchema = getSignedUrlBaseSchema
     pageNumberOffset: z
       .number()
       .int()
-      .positive()
+      .min(0, { message: "Page number offset must be at least 0" })
       .max(1000, { message: "Page number offset must be at most 1000" })
       .default(0),
     // PDF pipeline options (only applicable for PDF files)

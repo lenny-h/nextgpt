@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
+import { toast } from "sonner";
 
 interface PDFContextType {
   currentPdfUrl: string | null;
@@ -91,6 +92,8 @@ export function PDFProvider({ children }: { children: ReactNode }) {
         setEditorMode("pdf");
       } catch (error) {
         console.error("Error loading PDF:", error);
+
+        toast.error("Failed to load PDF. Please try again later.");
       } finally {
         setIsFetching(false);
       }
@@ -107,8 +110,14 @@ export function PDFProvider({ children }: { children: ReactNode }) {
       page = 1,
     ) => {
       if (isMobile) {
-        const signedUrl = await getSignedUrl(courseId, filename);
-        window.open(signedUrl, "_blank");
+        try {
+          const signedUrl = await getSignedUrl(courseId, filename);
+          window.open(signedUrl, "_blank");
+        } catch (error) {
+          console.error("Error opening PDF on mobile:", error);
+
+          toast.error("Failed to open PDF. Please try again later.");
+        }
       } else {
         resizeEditor(panelRef, false);
         loadPdf(courseId, filename, page);

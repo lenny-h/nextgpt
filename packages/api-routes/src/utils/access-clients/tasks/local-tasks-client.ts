@@ -18,21 +18,20 @@ export class LocalTasksClient implements ITasksClient {
 
     const delay = Math.max(0, scheduleTime.getTime() - Date.now());
     const url = `${processorUrl}${endpoint}`;
-    const taskName = `process-${taskId}`;
 
     console.log(`[LocalTasksClient] Task scheduled with delay: ${delay}ms`);
     console.log(`[LocalTasksClient] Target URL: ${url}`);
     console.log(`[LocalTasksClient] Task ID: ${taskId}`);
 
     // Clear any existing timeout with the same name
-    if (this.scheduledTasks.has(taskName)) {
-      clearTimeout(this.scheduledTasks.get(taskName)!);
+    if (this.scheduledTasks.has(taskId)) {
+      clearTimeout(this.scheduledTasks.get(taskId)!);
     }
 
     // Execute after delay
     const timeout = setTimeout(async () => {
       try {
-        console.log(`[LocalTasksClient] Executing task: ${taskName}`);
+        console.log(`[LocalTasksClient] Executing task: ${taskId}`);
 
         const response = await fetch(url, {
           method: "POST",
@@ -55,27 +54,26 @@ export class LocalTasksClient implements ITasksClient {
         console.error(`[LocalTasksClient] Task execution error:`, error);
       } finally {
         // Remove from scheduled tasks
-        this.scheduledTasks.delete(taskName);
+        this.scheduledTasks.delete(taskId);
       }
     }, delay);
 
     // Store the timeout
-    this.scheduledTasks.set(taskName, timeout);
+    this.scheduledTasks.set(taskId, timeout);
   }
 
   async cancelTask(params: CancelTaskParams): Promise<void> {
     const { taskId } = params;
-    const taskName = `process-${taskId}`;
 
-    console.log(`[LocalTasksClient] Canceling task: ${taskName}`);
+    console.log(`[LocalTasksClient] Canceling task: ${taskId}`);
 
-    if (this.scheduledTasks.has(taskName)) {
-      clearTimeout(this.scheduledTasks.get(taskName)!);
-      this.scheduledTasks.delete(taskName);
+    if (this.scheduledTasks.has(taskId)) {
+      clearTimeout(this.scheduledTasks.get(taskId)!);
+      this.scheduledTasks.delete(taskId);
       console.log(`[LocalTasksClient] Task canceled successfully`);
     } else {
       console.warn(
-        `[LocalTasksClient] Task not found or already executed: ${taskName}`
+        `[LocalTasksClient] Task not found or already executed: ${taskId}`
       );
     }
   }

@@ -36,7 +36,7 @@ export default function UploadFilesPage() {
   );
 
   // Page number offset state (where page "1" actually starts in the document)
-  const [pageNumberOffset, setPageNumberOffset] = useState<number>(1);
+  const [pageNumberOffset, setPageNumberOffset] = useState<number>(0);
 
   // PDF Pipeline Options state (only for PDFs)
   const [pdfPipelineOptions, setPdfPipelineOptions] = useState({
@@ -170,7 +170,7 @@ export default function UploadFilesPage() {
           <Input
             id="pageNumberOffset"
             type="number"
-            min={1}
+            min={0}
             max={1000}
             value={pageNumberOffset}
             onChange={(e) => {

@@ -49,7 +49,7 @@ export async function apiFetcher<T>(
 ): Promise<T> {
   const client = createProtectedApiClient();
   const response = await clientCallback(client);
-  checkResponse(response, errorDictionary);
+  await checkResponse(response, errorDictionary);
   return response.json() as Promise<T>;
 }
 

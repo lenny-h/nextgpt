@@ -34,12 +34,11 @@ export class GoogleTasksClient implements ITasksClient {
     const location = queuePathParts[3];
     const queue = queuePathParts[queuePathParts.length - 1];
 
-    const taskName = `process-${taskId}`;
     const fullTaskPath = this.client.taskPath(
       projectId,
       location,
       queue,
-      taskName
+      taskId
     );
 
     const task = {
@@ -82,12 +81,11 @@ export class GoogleTasksClient implements ITasksClient {
     const location = queuePathParts[3];
     const queue = queuePathParts[queuePathParts.length - 1];
 
-    const taskName = `process-${taskId}`;
     const fullTaskPath = this.client.taskPath(
       projectId,
       location,
       queue,
-      taskName
+      taskId
     );
 
     await this.client.deleteTask({ name: fullTaskPath });

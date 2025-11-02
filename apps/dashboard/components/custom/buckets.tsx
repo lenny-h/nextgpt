@@ -57,6 +57,35 @@ export const Buckets = memo(({ locale }: Props) => {
     enabled: !!selectedBucket,
   });
 
+  const convertCamelCase = (key: string) => {
+    // Split camelCase to Title case
+    const spaced = key.replace(/([A-Z])/g, " $1").trim();
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  };
+
+  // Helper: format value based on key
+  const formatValue = (key: string, value: unknown) => {
+    // Created date handling (accept Date or parseable string)
+    if (key === "createdAt") {
+      if (value instanceof Date) {
+        return value.toLocaleString();
+      }
+      const parsed = new Date(String(value));
+      return isNaN(parsed.getTime()) ? "-" : parsed.toLocaleString();
+    }
+
+    // Size fields: bytes -> GB with validation
+    if (key === "size" || key === "maxSize") {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "-";
+      return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    }
+
+    if (typeof value === "object") return JSON.stringify(value);
+
+    return String(value);
+  };
+
   if (isPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
@@ -134,27 +163,18 @@ export const Buckets = memo(({ locale }: Props) => {
               <div className="rounded-md border p-2">
                 {Object.entries(selectedBucket)
                   .filter(
-                    ([key]) =>
-                      !["id", "owner", "subscription_id"].includes(key),
+                    ([key]) => !["id", "owner", "subscriptionId"].includes(key),
                   )
                   .map(([key, value]) => (
                     <div key={key} className="flex space-x-4 font-medium">
-                      <span className="text-primary">{key}:</span>
-                      <span>
-                        {key === "createdAt"
-                          ? value instanceof Date
-                            ? value.toLocaleString()
-                            : new Date(value).toLocaleString()
-                          : key === "size" || key === "maxSize"
-                            ? `${(Number(value) / (1024 * 1024 * 1024)).toFixed(
-                                2,
-                              )} GB`
-                            : String(value)}
+                      <span className="text-primary">
+                        {convertCamelCase(key)}:
                       </span>
+                      <span>{formatValue(key, value)}</span>
                     </div>
                   ))}
                 <div className="flex space-x-4 font-medium">
-                  <span className="text-primary">usersCount:</span>
+                  <span className="text-primary">User count:</span>
                   <span>
                     {isUserCountPending
                       ? "Loading..."

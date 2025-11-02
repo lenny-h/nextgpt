@@ -59,10 +59,8 @@ export class AwsTasksClient implements ITasksClient {
     // Convert schedule time to ISO 8601 format
     const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`; // AWS requires no milliseconds
 
-    const taskName = `process-${taskId}`;
-
     const command = new CreateScheduleCommand({
-      Name: taskName,
+      Name: taskId,
       GroupName: scheduleGroup,
       ScheduleExpression: scheduleExpression,
       FlexibleTimeWindow: {
@@ -72,7 +70,7 @@ export class AwsTasksClient implements ITasksClient {
         Arn: targetArn,
         RoleArn: roleArn,
         Input: JSON.stringify({
-          name: taskName,
+          name: taskId,
           url: `${processorUrl}${endpoint}`,
           method: "POST",
           headers: {
@@ -94,10 +92,8 @@ export class AwsTasksClient implements ITasksClient {
     const schedulerClient = this.getSchedulerClient();
     const scheduleGroup = process.env.AWS_SCHEDULER_GROUP || "default";
 
-    const taskName = `process-${taskId}`;
-
     const command = new DeleteScheduleCommand({
-      Name: taskName,
+      Name: taskId,
       GroupName: scheduleGroup,
     });
 
@@ -106,7 +102,7 @@ export class AwsTasksClient implements ITasksClient {
     } catch (error: any) {
       if (error.name === "ResourceNotFoundException") {
         console.warn(
-          `[AwsTasksClient] Schedule not found: ${taskName}. It may have already been executed or deleted.`
+          `[AwsTasksClient] Schedule not found: ${taskId}. It may have already been executed or deleted.`
         );
       } else {
         throw error;

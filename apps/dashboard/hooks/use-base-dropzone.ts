@@ -1,11 +1,11 @@
 import { type Upload } from "@/types/upload";
 import { filenameSchema } from "@workspace/api-routes/schemas/filename-schema";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface Props {
-  onUploadChange?: (uploads: { [key: string]: Upload }) => void;
   getSignedUrl: (
     file: File,
     name: string,
@@ -14,16 +14,18 @@ interface Props {
     extFilename: string;
     processingDate?: string;
   }>;
+  onUploadChange?: (uploads: { [key: string]: Upload }) => void;
   maxFiles?: number;
   useGoogleStorage?: boolean;
 }
 
 export function useBaseDropzone({
-  onUploadChange,
   getSignedUrl,
+  onUploadChange,
   maxFiles,
   useGoogleStorage = false,
 }: Props) {
+  const { sharedT } = useSharedTranslations();
   const [uploads, setUploads] = useState<{ [key: string]: Upload }>({});
 
   useEffect(() => {
@@ -60,10 +62,7 @@ export function useBaseDropzone({
     }));
 
     try {
-      const { signedUrl, extFilename, processingDate } = await getSignedUrl(
-        file,
-        name,
-      );
+      const { signedUrl, extFilename } = await getSignedUrl(file, name);
       const renamedFile = new File([file], extFilename, { type: file.type });
 
       await new Promise((resolve, reject) => {
@@ -121,7 +120,9 @@ export function useBaseDropzone({
       }));
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "An unexpected error occurred";
+        error instanceof Error
+          ? error.message
+          : sharedT.apiCodes.FALLBACK_ERROR;
       setUploads((pre) => ({
         ...pre,
         [id]: { ...pre[id]!, state: "failure", error: message },

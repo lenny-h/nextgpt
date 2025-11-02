@@ -26,9 +26,11 @@ export const UploadList = ({
           ) : (
             <p className="text-xs">
               {upload.state === "success" ? (
-                <span className="text-emerald-500">Uploaded successfully</span>
+                <span className="text-emerald-500 dark:text-emerald-200">
+                  Uploaded successfully
+                </span>
               ) : (
-                <span className="text-red-500">
+                <span className="text-red-500 dark:text-red-200">
                   Upload failed: {upload.error}
                 </span>
               )}
@@ -40,9 +42,9 @@ export const UploadList = ({
             {upload.progress}%
           </div>
         ) : upload.state === "success" ? (
-          <CircleCheck className="size-5 text-emerald-500" />
+          <CircleCheck className="size-5 text-emerald-500 dark:text-emerald-200" />
         ) : (
-          <CircleX className="size-5 text-red-500" />
+          <CircleX className="size-5 text-red-500 dark:text-red-200" />
         )}
       </div>
     ))}

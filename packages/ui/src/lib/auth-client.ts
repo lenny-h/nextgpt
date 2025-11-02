@@ -33,6 +33,7 @@ export const client = createAuthClient({
     }),
   ],
   fetchOptions: {
+    timeout: 30000, // 30 seconds timeout
     onError(e) {
       if (e.error.status === 429) {
         toast.error("Too many requests. Please try again later.");
