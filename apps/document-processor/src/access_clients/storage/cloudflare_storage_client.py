@@ -6,7 +6,7 @@ Thread-safe using double-checked locking pattern.
 
 import os
 import threading
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 
 import boto3
 from ..interfaces.storage_client import IStorageClient

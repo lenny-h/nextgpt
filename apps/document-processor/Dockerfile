@@ -23,17 +23,13 @@ RUN pip install --upgrade pip \
 ENV DOCLING_ARTIFACTS_PATH=/app/.cache/docling/models
 RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
 
-# Set HuggingFace cache to a subdirectory to avoid path interpretation issues
-ENV HF_HOME=/app/.cache/huggingface
-RUN mkdir -p "$HF_HOME"
-
 # Optional: configure Tesseract data path if tesseract is used
 # ENV TESSDATA_PREFIX=/usr/share/tesseract/tessdata/
 
 # Prefetch essential Docling models at build time
 # Only download the core models needed for basic PDF processing
 # Optional models (formula, code, etc.) will be downloaded at runtime when first used
-ARG MODELS_LIST="layout"
+ARG MODELS_LIST="layout tableformer code_formula"
 
 RUN echo "Downloading essential models..." && \
     HF_HUB_DOWNLOAD_TIMEOUT="90" \

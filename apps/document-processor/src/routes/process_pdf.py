@@ -48,6 +48,8 @@ def _create_converter_with_options(pipeline_options: Optional[object]) -> Docume
     for attr in option_attrs:
         if hasattr(pipeline_options, attr):
             setattr(custom_options, attr, getattr(pipeline_options, attr))
+        else:
+            setattr(custom_options, attr, False)
 
     return DocumentConverter(
         format_options={InputFormat.PDF: PdfFormatOption(

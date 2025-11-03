@@ -122,6 +122,7 @@ services:
     environment:
       PORT: 8080
       ENVIRONMENT: development
+      API_URL: http://api:8080
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_HOST: postgres:5432
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}

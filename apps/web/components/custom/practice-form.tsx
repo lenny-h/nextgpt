@@ -19,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@workspace/ui/components/form";
+import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
 import { ChevronDown, File } from "lucide-react";
 import { memo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -147,7 +148,10 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
         </div>
 
         <Form {...practiceForm}>
-          <form onSubmit={practiceForm.handleSubmit(() => submitForm())}>
+          <form
+            onSubmit={practiceForm.handleSubmit(() => submitForm())}
+            className="w-full"
+          >
             <div className="w-full rounded-md border p-4">
               <FormField
                 control={practiceForm.control}
@@ -184,9 +188,14 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
                 )}
               />
             </div>
-            <Button type="submit" className="mt-8">
-              Start
-            </Button>
+            <div className="mt-6 flex w-full justify-center">
+              <SubmitButton
+                isPending={practiceForm.formState.isSubmitting}
+                pendingText="Starting..."
+              >
+                Start
+              </SubmitButton>
+            </div>
           </form>
         </Form>
       </div>

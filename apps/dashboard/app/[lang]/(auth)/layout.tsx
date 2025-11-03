@@ -1,20 +1,25 @@
+"use client";
+
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";
 import { client } from "@workspace/ui/lib/auth-client";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function Layout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ lang: Locale }>;
-}) {
-  const lang = (await params).lang;
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const { data, isPending } = client.useSession();
+  const { locale } = useSharedTranslations();
 
-  const { data } = await client.getSession();
+  const router = useRouter();
 
-  if (data?.user) {
-    return redirect(`/${lang}/buckets`);
+  useEffect(() => {
+    if (!isPending && data?.user) {
+      router.push(`/${locale}/buckets`);
+    }
+  }, [data, isPending, locale]);
+
+  if (isPending || data?.user) {
+    return <CentralLoadingScreen />;
   }
 
   return (

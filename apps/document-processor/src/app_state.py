@@ -5,6 +5,7 @@ Uses lazy initialization to avoid creating clients at import time.
 """
 
 from typing import Optional
+
 import threading
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import InputFormat

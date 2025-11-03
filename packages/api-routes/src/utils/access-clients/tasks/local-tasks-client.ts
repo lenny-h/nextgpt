@@ -33,13 +33,20 @@ export class LocalTasksClient implements ITasksClient {
       try {
         console.log(`[LocalTasksClient] Executing task: ${taskId}`);
 
+        // Create an AbortController for a reasonable timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 minutes
+
         const response = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           console.error(
@@ -51,12 +58,46 @@ export class LocalTasksClient implements ITasksClient {
           console.log(`[LocalTasksClient] Task completed successfully`);
         }
       } catch (error) {
-        console.error(`[LocalTasksClient] Task execution error:`, error);
+        if (error instanceof Error && error.name === "AbortError") {
+          console.error(`[LocalTasksClient] Task timed out after 10 minutes`);
+        } else {
+          console.error(`[LocalTasksClient] Task execution error:`, error);
+        }
       } finally {
-        // Remove from scheduled tasks
         this.scheduledTasks.delete(taskId);
       }
     }, delay);
+
+    // Alternative version without timeout handling
+    // const timeout = setTimeout(() => {
+    //   console.log(`[LocalTasksClient] Executing task: ${taskId}`);
+
+    //   // Fire and forget - don't await the fetch
+    //   fetch(url, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(payload),
+    //   })
+    //     .then(async (response) => {
+    //       if (!response.ok) {
+    //         console.error(
+    //           `[LocalTasksClient] Task failed: ${response.status} ${response.statusText}`
+    //         );
+    //         const errorBody = await response.text();
+    //         console.error(`[LocalTasksClient] Error body:`, errorBody);
+    //       } else {
+    //         console.log(`[LocalTasksClient] Task completed successfully`);
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       console.error(`[LocalTasksClient] Task execution error:`, error);
+    //     });
+
+    //   // Immediately remove from scheduled tasks since we've triggered it
+    //   this.scheduledTasks.delete(taskId);
+    // }, delay);
 
     // Store the timeout
     this.scheduledTasks.set(taskId, timeout);

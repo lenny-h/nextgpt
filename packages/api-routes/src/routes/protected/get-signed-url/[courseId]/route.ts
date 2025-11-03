@@ -110,6 +110,10 @@ const app = new Hono().post(
       scheduleTime,
     });
 
+    console.log("Processing task with pipeline options: ", {
+      pdfPipelineOptions,
+    });
+
     const storageClient = getStorageClient();
 
     const signedUrl = await storageClient.getSignedUrlForUpload({
