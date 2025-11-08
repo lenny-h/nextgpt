@@ -35,7 +35,7 @@ def get_converter() -> DocumentConverter:
                 # Initialize with default pipeline options
                 pipeline_options = PdfPipelineOptions()
                 pipeline_options.do_ocr = False
-                pipeline_options.do_formula_enrichment = True
+                pipeline_options.do_formula_enrichment = False
                 pipeline_options.do_code_enrichment = False
                 pipeline_options.do_table_structure = False
                 pipeline_options.do_picture_description = False

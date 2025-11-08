@@ -10,7 +10,8 @@ import { useSharedTranslations } from "@workspace/ui/contexts/shared-translation
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
-import { memo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { memo, useEffect, useState } from "react";
 import { AddBucketUsers } from "./add-bucket-users";
 import { CSVUploader } from "./csv-uploader";
 import { DeleteDialogWithConfirmation } from "./delete-dialog-with-confirmation";
@@ -22,6 +23,10 @@ interface Props {
 export const Buckets = memo(({ locale }: Props) => {
   const { sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
+  
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const {
     data: buckets,
@@ -38,6 +43,20 @@ export const Buckets = memo(({ locale }: Props) => {
 
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
+
+  // Initialize selected bucket from URL on mount
+  useEffect(() => {
+    const bucketIdFromUrl = searchParams.get("bucketId");
+    if (bucketIdFromUrl && buckets) {
+      const bucket = buckets.find((b) => b.id === bucketIdFromUrl);
+      if (bucket) {
+        setSelectedBucket({
+          ...bucket,
+          createdAt: new Date(bucket.createdAt),
+        });
+      }
+    }
+  }, [searchParams, buckets]);
 
   // Fetch user count for selected bucket
   const {
@@ -136,18 +155,30 @@ export const Buckets = memo(({ locale }: Props) => {
             <li
               key={bucket.id}
               className="cursor-pointer rounded-md border px-2 py-1"
-              onClick={() =>
-                setSelectedBucket({
+              onClick={() => {
+                const bucketData = {
                   ...bucket,
                   createdAt: new Date(bucket.createdAt),
-                })
-              }
+                };
+                setSelectedBucket(bucketData);
+                
+                // Update URL with bucketId search parameter
+                const params = new URLSearchParams(searchParams);
+                params.set("bucketId", bucket.id);
+                router.push(`${pathname}?${params.toString()}`);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  setSelectedBucket({
+                  const bucketData = {
                     ...bucket,
                     createdAt: new Date(bucket.createdAt),
-                  });
+                  };
+                  setSelectedBucket(bucketData);
+                  
+                  // Update URL with bucketId search parameter
+                  const params = new URLSearchParams(searchParams);
+                  params.set("bucketId", bucket.id);
+                  router.push(`${pathname}?${params.toString()}`);
                 }
               }}
               role="button"

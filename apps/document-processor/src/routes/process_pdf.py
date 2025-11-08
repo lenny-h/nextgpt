@@ -40,6 +40,8 @@ def _create_converter_with_options(pipeline_options: Optional[object]) -> Docume
     """Create a DocumentConverter with custom pipeline options if provided."""
     if not pipeline_options:
         return get_converter()
+    
+    print("Creating PDF converter with custom pipeline options: ", pipeline_options)
 
     custom_options = PdfPipelineOptions()
     option_attrs = ("do_ocr", "do_formula_enrichment", "do_code_enrichment",

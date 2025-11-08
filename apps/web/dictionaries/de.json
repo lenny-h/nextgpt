@@ -1,6 +1,9 @@
 {
   "addContext": {
-    "add": "Verknüpfe",
+    "addFiles": "Dateien hinzufügen",
+    "addDocuments": "Dokumente hinzufügen",
+    "searchFiles": "Dateien suchen",
+    "searchDocuments": "Dokumente suchen",
     "search": "Suche"
   },
   "chatHeader": {
@@ -41,5 +44,10 @@
   },
   "chat": {
     "errorOccurred": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut!"
+  },
+  "navHistory": {
+    "more": "Mehr",
+    "history": "Verlauf",
+    "quickSearch": "Schnellsuche"
   }
 }

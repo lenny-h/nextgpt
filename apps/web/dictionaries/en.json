@@ -1,6 +1,9 @@
 {
   "addContext": {
-    "add": "Add",
+    "addFiles": "Add files",
+    "addDocuments": "Add documents",
+    "searchFiles": "Search files",
+    "searchDocuments": "Search documents",
     "search": "Search"
   },
   "chatHeader": {
@@ -42,5 +45,10 @@
   },
   "chat": {
     "errorOccurred": "An error occurred, please try again!"
+  },
+  "navHistory": {
+    "more": "More",
+    "history": "History",
+    "quickSearch": "Quick Search"
   }
 }

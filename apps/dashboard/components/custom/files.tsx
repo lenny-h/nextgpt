@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { filesColumns } from "../tables/files-columns";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
-import { CourseSelector } from "./courses-selector";
+import { CoursesSelector } from "./courses-selector";
 
 interface Props {
   locale: Locale;
@@ -112,7 +112,7 @@ export const Files = ({ locale }: Props) => {
 
   return (
     <div className="flex flex-col items-center space-y-6 p-2">
-      <CourseSelector
+      <CoursesSelector
         resourceName={"files"}
         selectedCourseId={selectedCourseId}
         setSelectedCourseId={setSelectedCourseId}

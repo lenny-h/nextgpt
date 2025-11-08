@@ -127,7 +127,7 @@ export const EditorDropdownMenu = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost">
+          <Button variant="outline">
             <MoreVertical />
           </Button>
         </DropdownMenuTrigger>

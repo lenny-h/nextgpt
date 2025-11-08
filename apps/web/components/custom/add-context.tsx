@@ -64,7 +64,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
           )}
           onClick={() => setOpen((open) => !open)}
         >
-          {webT.addContext.add + " " + type}
+          {type === "files" ? webT.addContext.addFiles : webT.addContext.addDocuments}
           <kbd className="bg-muted text-muted-foreground inline-flex h-4 items-center gap-1 rounded-xl border px-1.5 font-mono font-medium">
             <span className="text-xs">⌘</span>
             {shortcut}
@@ -73,7 +73,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{webT.addContext.search + " " + type}</DialogTitle>
+          <DialogTitle>{type === "files" ? webT.addContext.searchFiles : webT.addContext.searchDocuments}</DialogTitle>
         </DialogHeader>
         <SearchWithSelection
           type={type}

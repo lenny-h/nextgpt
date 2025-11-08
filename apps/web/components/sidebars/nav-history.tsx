@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { ChatItem } from "../custom/chat-item";
 import { ChatSearch } from "../custom/chat-search";
 import { KeyboardShortcut } from "../custom/keyboard-shortcut";
+import { useWebTranslations } from "@/contexts/web-translations";
 
 type GroupedChats = {
   today: Chat[];
@@ -43,6 +44,7 @@ type GroupedChats = {
 
 export const NavHistory = memo(() => {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const queryClient = useQueryClient();
 
@@ -173,15 +175,15 @@ export const NavHistory = memo(() => {
         // Update the cache
         removeFromInfiniteCache(queryClient, ["chats"], chatId);
         removeFromInfiniteCache(queryClient, ["favourites"], chatId);
+        
+        if (chatId === id) {
+          router.push("/");
+        }
 
         return "Chat deleted successfully";
       },
       error: "Failed to delete chat",
     });
-
-    if (chatId === id) {
-      router.push("/");
-    }
   };
 
   const onSubmit = async (values: RenameFormData) => {
@@ -326,7 +328,7 @@ export const NavHistory = memo(() => {
                   onClick={() => fetchNextPageFavourites()}
                 >
                   <MoreHorizontal />
-                  <span>More</span>
+                  <span>{webT.navHistory.more}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -340,10 +342,10 @@ export const NavHistory = memo(() => {
       )}
       <SidebarGroup>
         {/* <div className="flex flex-row gap-2"> */}
-        <SidebarGroupLabel>Chat history</SidebarGroupLabel>
+        <SidebarGroupLabel>{webT.navHistory.history}</SidebarGroupLabel>
         <ChatSearch>
           <button className="hover:bg-muted mb-4 flex w-fit cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-xs">
-            Quick search
+            {webT.navHistory.quickSearch}
             <KeyboardShortcut keys={["⌘", "a"]} />
           </button>
         </ChatSearch>

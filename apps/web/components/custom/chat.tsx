@@ -83,7 +83,7 @@ export function Chat({
           console.error("Failed to fetch filter:", error);
         });
     }
-  }, [chatId, initialMessages.length, sharedT.apiCodes]);
+  }, [chatId, initialMessages.length]);
 
   const { sendMessage, messages, setMessages, status, stop, regenerate } =
     useChat<MyUIMessage>({
@@ -131,7 +131,7 @@ export function Chat({
   return (
     <>
       <div className="flex h-dvh flex-col">
-        <ChatHeader chatId={chatId} isEmpty={messages.length === 0} />
+        <ChatHeader chatId={chatId} isEmpty={messages.length === 0} isLoading={status === "submitted" || status === "streaming"} />
 
         {messages.length === 0 ? (
           <Introduction />

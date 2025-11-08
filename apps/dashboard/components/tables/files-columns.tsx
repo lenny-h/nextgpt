@@ -11,6 +11,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { MoreHorizontal, Trash2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { DeleteDialog } from "../custom/delete-dialog";
 
@@ -52,6 +53,8 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const [deleteDialog, setDeleteDialog] = useState(false);
+      const searchParams = useSearchParams();
+      const courseId = searchParams.get("courseId");
 
       return (
         <>
@@ -87,7 +90,7 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
                 ),
                 resourceId: row.getValue("id"),
                 queryClient,
-                queryKey: ["files"],
+                queryKey: courseId ? ["files", courseId] : ["files"],
                 isInfinite: true,
               });
             }}

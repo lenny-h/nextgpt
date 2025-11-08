@@ -22,7 +22,7 @@ export const ModelSelector = memo(() => {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="min-w-0 flex-shrink rounded-lg">
-          <span className="truncate">{selectedChatModel.name}</span>
+          <span className="truncate">{selectedChatModel.label}</span>
           <ChevronDownIcon
             className={cn(
               "ml-1 transition-transform duration-200 ease-in-out",
@@ -43,7 +43,7 @@ export const ModelSelector = memo(() => {
               className="flex flex-row items-center justify-between gap-4"
             >
               <div className="flex flex-col items-start gap-1">
-                <div>{chatModel.name}</div>
+                <div>{chatModel.label}</div>
                 <div className="text-muted-foreground text-xs">
                   {chatModel.description}
                 </div>

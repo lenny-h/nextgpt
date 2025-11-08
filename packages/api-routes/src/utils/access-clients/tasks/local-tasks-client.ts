@@ -1,7 +1,8 @@
+import http from "node:http";
 import {
+  CancelTaskParams,
   ITasksClient,
   ScheduleProcessingTaskParams,
-  CancelTaskParams,
 } from "../interfaces/tasks-client.interface.js";
 
 /**
@@ -33,36 +34,58 @@ export class LocalTasksClient implements ITasksClient {
       try {
         console.log(`[LocalTasksClient] Executing task: ${taskId}`);
 
-        // Create an AbortController for a reasonable timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000); // 30 minutes; file processing can be long
+        // Use native http module for proper timeout control
+        const requestBody = JSON.stringify(payload);
 
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-        });
+        await new Promise<void>((resolve, reject) => {
+          const req = http.request(
+            url,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                // "Content-Length": Buffer.byteLength(requestBody),
+              },
+              timeout: 30 * 60 * 1000, // 30 minutes total timeout
+            },
+            (res) => {
+              let responseBody = "";
 
-        clearTimeout(timeoutId);
+              res.on("data", (chunk) => {
+                responseBody += chunk;
+              });
 
-        if (!response.ok) {
-          console.error(
-            `[LocalTasksClient] Task failed: ${response.status} ${response.statusText}`
+              res.on("end", () => {
+                if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                  console.log(`[LocalTasksClient] Task completed successfully`);
+                  resolve();
+                } else {
+                  console.error(
+                    `[LocalTasksClient] Task failed: ${res.statusCode} ${res.statusMessage}`
+                  );
+                  console.error(`[LocalTasksClient] Error body:`, responseBody);
+                  reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+                }
+              });
+            }
           );
-          const errorBody = await response.text();
-          console.error(`[LocalTasksClient] Error body:`, errorBody);
-        } else {
-          console.log(`[LocalTasksClient] Task completed successfully`);
-        }
+
+          req.on("timeout", () => {
+            req.destroy();
+            console.error(`[LocalTasksClient] Task timed out after 30 minutes`);
+            reject(new Error("Request timeout after 30 minutes"));
+          });
+
+          req.on("error", (error) => {
+            console.error(`[LocalTasksClient] Task execution error:`, error);
+            reject(error);
+          });
+
+          req.write(requestBody);
+          req.end();
+        });
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          console.error(`[LocalTasksClient] Task timed out after 10 minutes`);
-        } else {
-          console.error(`[LocalTasksClient] Task execution error:`, error);
-        }
+        console.error(`[LocalTasksClient] Task execution error:`, error);
       } finally {
         this.scheduledTasks.delete(taskId);
       }

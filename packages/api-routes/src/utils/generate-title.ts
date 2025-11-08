@@ -20,7 +20,7 @@ export async function generateTitleFromUserMessage({
         .filter((part) => part.type === "text")
         .map((part) => part.text)
         .join("\n"),
-    maxOutputTokens: 8,
+    maxOutputTokens: 16,
   });
 
   return title;

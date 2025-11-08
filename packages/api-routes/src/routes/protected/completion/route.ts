@@ -27,7 +27,7 @@ const app = new Hono().post(
       model: config.model,
       messages: [{ role: "user", content: context }],
       schema: completionResponseSchema,
-      maxOutputTokens: 60,
+      maxOutputTokens: 64,
     });
 
     return c.json({ completion: object.completion });

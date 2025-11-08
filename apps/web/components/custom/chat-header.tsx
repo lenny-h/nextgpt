@@ -23,9 +23,10 @@ import { CourseSelector } from "./course-selector";
 interface ChatHeaderProps {
   chatId: string;
   isEmpty: boolean;
+  isLoading: boolean;
 }
 
-export const ChatHeader = memo(({ chatId, isEmpty }: ChatHeaderProps) => {
+export const ChatHeader = memo(({ chatId, isEmpty, isLoading }: ChatHeaderProps) => {
   const { sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
 
@@ -44,7 +45,7 @@ export const ChatHeader = memo(({ chatId, isEmpty }: ChatHeaderProps) => {
           }),
         sharedT.apiCodes,
       ),
-    enabled: !isEmpty && !isTemporary,
+    enabled: !isEmpty && !isTemporary && !isLoading,
   });
 
   const { data: favouritesData } = useQuery({
@@ -57,7 +58,7 @@ export const ChatHeader = memo(({ chatId, isEmpty }: ChatHeaderProps) => {
           }),
         sharedT.apiCodes,
       ),
-    enabled: !isEmpty && !isTemporary,
+    enabled: !isEmpty && !isTemporary && !isLoading,
   });
 
   const updateChat = async (chatId: string, isFavourite: boolean) => {

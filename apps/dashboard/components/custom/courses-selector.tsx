@@ -15,7 +15,8 @@ import {
 } from "@workspace/ui/components/popover";
 import { cn } from "@workspace/ui/lib/utils";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { type Dispatch, memo, type SetStateAction, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { type Dispatch, memo, type SetStateAction, useEffect, useState } from "react";
 
 interface CourseSelectorProps {
   resourceName: "files" | "tasks";
@@ -27,7 +28,7 @@ interface CourseSelectorProps {
   inViewRef: (node?: Element | null | undefined) => void;
 }
 
-export const CourseSelector = memo(
+export const CoursesSelector = memo(
   ({
     resourceName,
     selectedCourseId,
@@ -37,7 +38,22 @@ export const CourseSelector = memo(
     isFetchingNextCoursesPage,
     inViewRef,
   }: CourseSelectorProps) => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
     const [coursesPopoverOpen, setCoursesPopoverOpen] = useState(false);
+
+    // Initialize selected course from URL on mount
+    useEffect(() => {
+      const courseIdFromUrl = searchParams.get("courseId");
+      if (courseIdFromUrl) {
+        const courseExists = courses.some((c) => c.id === courseIdFromUrl);
+        if (courseExists) {
+          setSelectedCourseId(courseIdFromUrl);
+        }
+      }
+    }, [searchParams, selectedCourseId, courses, setSelectedCourseId]);
 
     return (
       <div className="flex items-center space-x-2">
@@ -72,10 +88,18 @@ export const CourseSelector = memo(
                       key={c.id}
                       value={c.id}
                       onSelect={(currentValue) => {
-                        setSelectedCourseId(
-                          currentValue === selectedCourseId ? "" : currentValue,
-                        );
+                        const newCourseId = currentValue === selectedCourseId ? "" : currentValue;
+                        setSelectedCourseId(newCourseId);
                         setCoursesPopoverOpen(false);
+                        
+                        // Update URL with courseId search parameter
+                        const params = new URLSearchParams(searchParams);
+                        if (newCourseId) {
+                          params.set("courseId", newCourseId);
+                        } else {
+                          params.delete("courseId");
+                        }
+                        router.push(`${pathname}?${params.toString()}`);
                       }}
                     >
                       {c.name}

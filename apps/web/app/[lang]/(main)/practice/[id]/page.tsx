@@ -7,7 +7,8 @@ import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message"
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useUser } from "@workspace/ui/contexts/user-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function PracticePage() {
   const { locale, sharedT } = useSharedTranslations();
@@ -17,14 +18,6 @@ export default function PracticePage() {
   const router = useRouter();
   const { id } = useParams();
   const chatId = Array.isArray(id) ? id[0] : id;
-
-  if (!user) {
-    return router.push(`/${locale}/sign-in`);
-  }
-
-  if (!chatId) {
-    return redirect(`/${locale}`);
-  }
 
   const {
     data: messages,
@@ -36,19 +29,33 @@ export default function PracticePage() {
       apiFetcher(
         (client) =>
           client["messages"][":chatId"].$get({
-            param: { chatId },
+            param: { chatId: chatId! },
           }),
         sharedT.apiCodes,
       ),
-    enabled: !!id,
+    enabled: !!id && !!user && !!chatId,
   });
 
-  if (isPending) {
-    return <ChatSkeleton />;
-  }
+  useEffect(() => {
+    if (!user) {
+      router.replace(`/${locale}/sign-in`);
+    }
+  }, [user, router, locale]);
 
-  if (isError || !messages) {
-    router.push(`/${locale}`);
+  useEffect(() => {
+    if (!chatId) {
+      router.replace(`/${locale}`);
+    }
+  }, [chatId, router, locale]);
+
+  useEffect(() => {
+    if (!isPending && (isError || !messages)) {
+      router.replace(`/${locale}`);
+    }
+  }, [isPending, isError, messages, router, locale]);
+
+  if (isPending || !chatId || !messages) {
+    return <ChatSkeleton />;
   }
 
   return (
