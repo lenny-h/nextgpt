@@ -84,5 +84,14 @@
     "contentPlaceholder": "Enter your instructions here...",
     "cancel": "Cancel",
     "create": "Create"
+  },
+  "tasks": {
+    "loading": "Loading courses...",
+    "errorLoading": "Courses could not be loaded. Please try again later.",
+    "noCourses": "Looks like there are no courses yet",
+    "createCourse": "Create a course",
+    "selectCourse": "Please select a course to view its tasks",
+    "errorLoadingTasks": "Could not fetch the tasks of this course. Please try again later.",
+    "filterLabel": "task name"
   }
 }

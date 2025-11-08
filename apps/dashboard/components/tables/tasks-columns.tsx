@@ -14,6 +14,7 @@ import {
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { ArrowUpDown, MoreHorizontal, Trash2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { DeleteDialog } from "../custom/delete-dialog";
 
@@ -88,6 +89,8 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const [deleteDialog, setDeleteDialog] = useState(false);
+      const searchParams = useSearchParams();
+      const courseId = searchParams.get("courseId");
 
       if (row.getValue("status") !== "scheduled") {
         return <div className="flex h-8 items-center">No actions</div>;
@@ -127,7 +130,7 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
                 ),
                 resourceId: row.getValue("id"),
                 queryClient,
-                queryKey: ["tasks"],
+                queryKey: courseId ? ["tasks", courseId] : ["tasks"],
                 isInfinite: true,
               });
             }}

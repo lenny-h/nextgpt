@@ -1,5 +1,6 @@
 "use client";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useQueryClient } from "@tanstack/react-query";
 import { Chat } from "@workspace/server/drizzle/schema";
 import {
@@ -32,7 +33,6 @@ import { toast } from "sonner";
 import { ChatItem } from "../custom/chat-item";
 import { ChatSearch } from "../custom/chat-search";
 import { KeyboardShortcut } from "../custom/keyboard-shortcut";
-import { useWebTranslations } from "@/contexts/web-translations";
 
 type GroupedChats = {
   today: Chat[];
@@ -136,29 +136,29 @@ export const NavHistory = memo(() => {
 
   const handleAdd = async (chatId: string) => {
     toast.promise(updateChat(chatId, true), {
-      loading: "Adding chat to favourites...",
+      loading: webT.navHistory.addingToFavorites,
       success: () => {
         // Update the cache
         queryClient.invalidateQueries({ queryKey: ["favourites"] });
         queryClient.setQueryData(["liked", chatId], [{ is_favourite: true }]);
 
-        return "Chat added to favourites";
+        return webT.navHistory.addedToFavorites;
       },
-      error: "Failed to add chat to favourites",
+      error: webT.navHistory.failedToAddToFavorites,
     });
   };
 
   const handleRemove = async (chatId: string) => {
     toast.promise(updateChat(chatId, false), {
-      loading: "Removing chat from favourites...",
+      loading: webT.navHistory.removingFromFavorites,
       success: () => {
         // Update the cache
         removeFromInfiniteCache(queryClient, ["favourites"], chatId);
         queryClient.setQueryData(["liked", chatId], [{ is_favourite: false }]);
 
-        return "Chat removed from favourites";
+        return webT.navHistory.removedFromFavorites;
       },
-      error: "Failed to remove chat from favourites",
+      error: webT.navHistory.failedToRemoveFromFavorites,
     });
   };
 
@@ -170,7 +170,7 @@ export const NavHistory = memo(() => {
 
   const handleDelete = async (chatId: string) => {
     toast.promise(deleteChat(chatId), {
-      loading: "Deleting chat...",
+      loading: webT.navHistory.deletingChat,
       success: () => {
         // Update the cache
         removeFromInfiniteCache(queryClient, ["chats"], chatId);
@@ -180,9 +180,9 @@ export const NavHistory = memo(() => {
           router.push("/");
         }
 
-        return "Chat deleted successfully";
+        return webT.navHistory.chatDeleted;
       },
-      error: "Failed to delete chat",
+      error: webT.navHistory.failedToDeleteChat,
     });
   };
 
@@ -214,7 +214,7 @@ export const NavHistory = memo(() => {
         : { ...item, title: values.title };
     });
 
-    return "Chat renamed!";
+    return webT.navHistory.chatRenamed;
   };
 
   const groupChatsByDate = (chats: Chat[]): GroupedChats => {
@@ -254,7 +254,7 @@ export const NavHistory = memo(() => {
     return (
       <SidebarGroup>
         <div className="text-sidebar-foreground/50 px-2 py-1 text-xs">
-          Today
+          {webT.navHistory.today}
         </div>
         <SidebarGroupContent>
           <div className="flex flex-col space-y-3">
@@ -274,7 +274,7 @@ export const NavHistory = memo(() => {
       <SidebarGroup>
         <SidebarGroupContent>
           <div className="flex w-full flex-row items-center justify-center text-sm">
-            There was an error loading your conversations. Please try again.
+            {webT.navHistory.errorLoadingConversations}
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -286,7 +286,7 @@ export const NavHistory = memo(() => {
       <SidebarGroup>
         <SidebarGroupContent>
           <div className="flex w-full flex-row items-center justify-center text-sm">
-            Your conversations will appear here once you start chatting!
+            {webT.navHistory.noConversationsYet}
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -306,7 +306,7 @@ export const NavHistory = memo(() => {
 
       {favouriteChats && favouriteChats.length > 0 && (
         <SidebarGroup>
-          <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+          <SidebarGroupLabel>{webT.navHistory.favorites}</SidebarGroupLabel>
           <SidebarMenu>
             {favouriteChats.map((chat) => (
               <ChatItem
@@ -366,7 +366,7 @@ export const NavHistory = memo(() => {
                     {groupedChats.today.length > 0 && (
                       <>
                         <div className="text-sidebar-foreground/50 px-2 py-1 text-xs">
-                          Today
+                          {webT.navHistory.today}
                         </div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
@@ -387,7 +387,7 @@ export const NavHistory = memo(() => {
                     {groupedChats.yesterday.length > 0 && (
                       <>
                         <div className="text-sidebar-foreground/50 mt-3 px-2 py-1 text-xs">
-                          Yesterday
+                          {webT.navHistory.yesterday}
                         </div>
                         {groupedChats.yesterday.map((chat) => (
                           <ChatItem
@@ -408,7 +408,7 @@ export const NavHistory = memo(() => {
                     {groupedChats.lastWeek.length > 0 && (
                       <>
                         <div className="text-sidebar-foreground/50 mt-3 px-2 py-1 text-xs">
-                          Last 7 days
+                          {webT.navHistory.last7Days}
                         </div>
                         {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
@@ -429,7 +429,7 @@ export const NavHistory = memo(() => {
                     {groupedChats.lastMonth.length > 0 && (
                       <>
                         <div className="text-sidebar-foreground/50 mt-3 px-2 py-1 text-xs">
-                          Last 30 days
+                          {webT.navHistory.last30Days}
                         </div>
                         {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
@@ -450,7 +450,7 @@ export const NavHistory = memo(() => {
                     {groupedChats.older.length > 0 && (
                       <>
                         <div className="text-sidebar-foreground/50 mt-3 px-2 py-1 text-xs">
-                          Older
+                          {webT.navHistory.older}
                         </div>
                         {groupedChats.older.map((chat) => (
                           <ChatItem

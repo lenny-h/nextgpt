@@ -1,5 +1,6 @@
 "use client";
 
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
@@ -10,7 +11,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
 import { tasksColumns } from "../tables/tasks-columns";
-import { CourseSelector } from "./courses-selector";
+import { CoursesSelector } from "./courses-selector";
 
 interface Props {
   locale: Locale;
@@ -18,6 +19,7 @@ interface Props {
 
 export const Tasks = ({ locale }: Props) => {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
@@ -81,7 +83,7 @@ export const Tasks = ({ locale }: Props) => {
   if (coursesPending) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-2xl font-semibold">Loading courses...</h1>
+        <h1 className="text-2xl font-semibold">{dashboardT.tasks.loading}</h1>
         <Skeleton className="mx-auto h-96 w-full max-w-4xl" />
       </div>
     );
@@ -91,7 +93,7 @@ export const Tasks = ({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-muted-foreground text-center text-xl font-medium">
-          Courses could not be loaded. Please try again later.
+          {dashboardT.tasks.errorLoading}
         </h1>
       </div>
     );
@@ -101,10 +103,10 @@ export const Tasks = ({ locale }: Props) => {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-muted-foreground text-center text-xl font-medium">
-          Looks like there are no courses yet
+          {dashboardT.tasks.noCourses}
         </h1>
         <Button asChild>
-          <Link href={`/${locale}/courses/new`}>Create a course</Link>
+          <Link href={`/${locale}/courses/new`}>{dashboardT.tasks.createCourse}</Link>
         </Button>
       </div>
     );
@@ -112,7 +114,7 @@ export const Tasks = ({ locale }: Props) => {
 
   return (
     <div className="flex flex-col items-center space-y-6 p-2">
-      <CourseSelector
+      <CoursesSelector
         resourceName={"tasks"}
         selectedCourseId={selectedCourseId}
         setSelectedCourseId={setSelectedCourseId}
@@ -123,13 +125,13 @@ export const Tasks = ({ locale }: Props) => {
       />
       {!selectedCourseId ? (
         <div className="mt-8 text-center text-lg font-semibold">
-          Please select a course to view its tasks
+          {dashboardT.tasks.selectCourse}
         </div>
       ) : tasksPending ? (
         <Skeleton className="mx-auto h-96 w-full max-w-4xl rounded-md" />
       ) : tasksError || !tasks ? (
         <h1 className="mt-8 text-center text-2xl font-semibold">
-          Could not fetch the tasks of this course. Please try again later.
+          {dashboardT.tasks.errorLoadingTasks}
         </h1>
       ) : (
         <InfiniteDataTable
@@ -145,7 +147,7 @@ export const Tasks = ({ locale }: Props) => {
             createdAt: true,
             pubDate: true,
           }}
-          filterLabel={"task name"}
+          filterLabel={dashboardT.tasks.filterLabel}
           filterColumn={"name"}
           queryKey={["tasks", selectedCourseId]}
           isRefreshing={tasksFetching}

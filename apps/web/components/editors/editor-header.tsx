@@ -1,4 +1,5 @@
 import { useDiff } from "@/contexts/diff-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useDiffActions } from "@/hooks/use-diff-actions";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
@@ -40,6 +41,7 @@ import { ModeSwitcher } from "./mode-switcher";
 
 export const EditorHeader = memo(() => {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode] = useEditor();
@@ -84,7 +86,7 @@ export const EditorHeader = memo(() => {
           : codeEditorRef.current?.state.doc.toString();
 
       if (!content) {
-        toast.error("No content to save");
+        toast.error(webT.editorHeader.noContentToSave);
         return;
       }
 
@@ -100,12 +102,12 @@ export const EditorHeader = memo(() => {
           sharedT.apiCodes,
         );
       } catch (error) {
-        toast.error("Failed to save document");
+        toast.error(webT.editorHeader.failedToSave);
       } finally {
         setTimeout(() => setIsSaving(false), 600);
       }
     },
-    [isSaving, editorMode, textEditorRef, codeEditorRef],
+    [isSaving, editorMode, textEditorRef, codeEditorRef, webT],
   );
 
   useEffect(() => {
@@ -145,7 +147,7 @@ export const EditorHeader = memo(() => {
 
   const handlePdfDownload = useCallback(async () => {
     if (editorMode === "text" && textEditorRef.current) {
-      const title = editorContent.title || "Untitled document";
+      const title = editorContent.title || webT.editorHeader.untitledDocument;
       const filename = `${title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
 
       const contentElement = document.createElement("div");
@@ -154,7 +156,7 @@ export const EditorHeader = memo(() => {
       ).serializeFragment(textEditorRef.current.state.doc.content);
       contentElement.appendChild(fragment);
 
-      const toastId = toast.loading("Generating PDF...");
+      const toastId = toast.loading(webT.editorHeader.generatingPdf);
 
       try {
         const response = await fetch(
@@ -184,12 +186,12 @@ export const EditorHeader = memo(() => {
         a.remove();
         window.URL.revokeObjectURL(url);
 
-        toast.success(`Downloaded as ${filename}`, { id: toastId });
+        toast.success(webT.editorHeader.downloadedAs.replace('{filename}', filename), { id: toastId });
       } catch (error) {
-        toast.error("Failed to generate PDF", { id: toastId });
+        toast.error(webT.editorHeader.failedToGeneratePdf, { id: toastId });
       }
     }
-  }, [editorMode, textEditorRef, editorContent.title]);
+  }, [editorMode, textEditorRef, editorContent.title, webT]);
 
   return (
     <div className="bg-sidebar flex h-14 items-center gap-2 border-b px-3">
@@ -198,14 +200,14 @@ export const EditorHeader = memo(() => {
       </Button>
 
       <div className="flex-1 truncate text-left text-lg font-semibold">
-        {isDiff ? "Diff view" : editorContent.title}
+        {isDiff ? webT.editorHeader.diffView : editorContent.title}
       </div>
 
       {isDiff ? (
         <ButtonGroup>
-          <Button onClick={() => handleDiffAction(true)}>Accept</Button>
+          <Button onClick={() => handleDiffAction(true)}>{webT.editorHeader.accept}</Button>
           <Button variant="outline" onClick={() => handleDiffAction(false)}>
-            Deny
+            {webT.editorHeader.deny}
           </Button>
         </ButtonGroup>
       ) : (
@@ -232,13 +234,13 @@ export const EditorHeader = memo(() => {
                       className="cursor-pointer"
                       onClick={() => handleCopy("markdown")}
                     >
-                      Markdown
+                      {webT.editorHeader.markdown}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={() => handleCopy("latex")}
                     >
-                      Latex
+                      {webT.editorHeader.latex}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -266,7 +268,7 @@ export const EditorHeader = memo(() => {
                 onClick={() => saveDocument(editorContent.id)}
                 variant="outline"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? webT.editorHeader.saving : webT.editorHeader.save}
                 <KeyboardShortcut keys={["⌘", "s"]} />
               </Button>
             ) : (
@@ -277,17 +279,15 @@ export const EditorHeader = memo(() => {
                     variant="outline"
                     disabled={isBlocked}
                   >
-                    Save
+                    {webT.editorHeader.save}
                     <KeyboardShortcut keys={["⌘", "s"]} />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Set title</DialogTitle>
+                    <DialogTitle>{webT.editorHeader.setTitle}</DialogTitle>
                     <DialogDescription>
-                      Saving this file will overwrite files with the same title.
-                      After saving, the document will be accessible under
-                      'Documents'
+                      {webT.editorHeader.saveDescription}
                     </DialogDescription>
                   </DialogHeader>
                   <SaveDocumentForm

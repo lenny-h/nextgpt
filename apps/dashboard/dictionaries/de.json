@@ -84,5 +84,14 @@
     "contentPlaceholder": "Geben Sie hier Ihre Anweisungen ein...",
     "cancel": "Abbrechen",
     "create": "Erstellen"
+  },
+  "tasks": {
+    "loading": "Kurse werden geladen...",
+    "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "noCourses": "Es scheint, als ob es noch keine Aufgaben gibt",
+    "createCourse": "Kurs erstellen",
+    "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Aufgaben anzuzeigen",
+    "errorLoadingTasks": "Die Aufgaben dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "filterLabel": "Aufgabenname"
   }
 }

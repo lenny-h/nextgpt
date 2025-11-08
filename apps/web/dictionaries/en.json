@@ -49,6 +49,45 @@
   "navHistory": {
     "more": "More",
     "history": "History",
-    "quickSearch": "Quick Search"
+    "quickSearch": "Quick Search",
+    "favorites": "Favorites",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "older": "Older",
+    "addingToFavorites": "Adding chat to favourites...",
+    "addedToFavorites": "Chat added to favourites",
+    "failedToAddToFavorites": "Failed to add chat to favourites",
+    "removingFromFavorites": "Removing chat from favourites...",
+    "removedFromFavorites": "Chat removed from favourites",
+    "failedToRemoveFromFavorites": "Failed to remove chat from favourites",
+    "deletingChat": "Deleting chat...",
+    "chatDeleted": "Chat deleted successfully",
+    "failedToDeleteChat": "Failed to delete chat",
+    "chatRenamed": "Chat renamed!",
+    "errorLoadingConversations": "There was an error loading your conversations. Please try again.",
+    "noConversationsYet": "Your conversations will appear here once you start chatting!"
+  },
+  "editorHeader": {
+    "diffView": "Diff view",
+    "accept": "Accept",
+    "deny": "Deny",
+    "markdown": "Markdown",
+    "latex": "Latex",
+    "save": "Save",
+    "saving": "Saving...",
+    "noContentToSave": "No content to save",
+    "failedToSave": "Failed to save document",
+    "setTitle": "Set title",
+    "saveDescription": "Saving this file will overwrite files with the same title. After saving, the document will be accessible under 'Documents'",
+    "generatingPdf": "Generating PDF...",
+    "downloadedAs": "Downloaded as {filename}",
+    "failedToGeneratePdf": "Failed to generate PDF",
+    "untitledDocument": "Untitled document"
+  },
+  "courseSelector": {
+    "coursesSelected": "{count} courses selected",
+    "searchCourses": "Search courses"
   }
 }

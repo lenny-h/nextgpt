@@ -48,6 +48,45 @@
   "navHistory": {
     "more": "Mehr",
     "history": "Verlauf",
-    "quickSearch": "Schnellsuche"
+    "quickSearch": "Schnellsuche",
+    "favorites": "Favoriten",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "last7Days": "Letzte 7 Tage",
+    "last30Days": "Letzte 30 Tage",
+    "older": "Älter",
+    "addingToFavorites": "Chat wird zu Favoriten hinzugefügt...",
+    "addedToFavorites": "Chat zu Favoriten hinzugefügt",
+    "failedToAddToFavorites": "Fehler beim Hinzufügen des Chats zu den Favoriten",
+    "removingFromFavorites": "Chat wird aus Favoriten entfernt...",
+    "removedFromFavorites": "Chat aus Favoriten entfernt",
+    "failedToRemoveFromFavorites": "Fehler beim Entfernen des Chats aus den Favoriten",
+    "deletingChat": "Chat wird gelöscht...",
+    "chatDeleted": "Chat erfolgreich gelöscht",
+    "failedToDeleteChat": "Fehler beim Löschen des Chats",
+    "chatRenamed": "Chat umbenannt!",
+    "errorLoadingConversations": "Beim Laden Ihrer Gespräche ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "noConversationsYet": "Ihre Gespräche werden hier angezeigt, sobald Sie mit dem Chatten beginnen!"
+  },
+  "editorHeader": {
+    "diffView": "Diff-Ansicht",
+    "accept": "Akzeptieren",
+    "deny": "Ablehnen",
+    "markdown": "Markdown",
+    "latex": "Latex",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "noContentToSave": "Kein Inhalt zum Speichern",
+    "failedToSave": "Fehler beim Speichern des Dokuments",
+    "setTitle": "Titel festlegen",
+    "saveDescription": "Wenn Sie diese Datei speichern, werden Dateien mit demselben Titel überschrieben. Nach dem Speichern ist das Dokument unter 'Dokumente' zugänglich",
+    "generatingPdf": "PDF wird erstellt...",
+    "downloadedAs": "Heruntergeladen als {filename}",
+    "failedToGeneratePdf": "Fehler beim Erstellen des PDFs",
+    "untitledDocument": "Unbenanntes Dokument"
+  },
+  "courseSelector": {
+    "coursesSelected": "{count} Kurse ausgewählt",
+    "searchCourses": "Kurse suchen"
   }
 }

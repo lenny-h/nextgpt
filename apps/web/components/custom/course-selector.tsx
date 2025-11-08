@@ -1,6 +1,7 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { CourseAccessCache } from "@/lib/course-access-cache";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -25,6 +26,7 @@ interface SelectedCourseType {
 
 export const CourseSelector = memo(() => {
   const { isLoading, isError, filter, setFilter } = useFilter();
+  const { webT } = useWebTranslations();
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -87,7 +89,7 @@ export const CourseSelector = memo(() => {
             onClick={() => setOpen((open) => !open)}
             variant="outline"
           >
-            {filter.courses.length} courses selected
+            {webT.courseSelector.coursesSelected.replace('{count}', filter.courses.length.toString())}
             <kbd className="bg-muted text-muted-foreground inline-flex h-5 items-center gap-1 rounded-xl border px-1.5 font-mono font-medium">
               <span className="text-xs">⌘</span>b
             </kbd>
@@ -95,7 +97,7 @@ export const CourseSelector = memo(() => {
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Search courses</DialogTitle>
+            <DialogTitle>{webT.courseSelector.searchCourses}</DialogTitle>
           </DialogHeader>
           <SearchWithSelection
             type="courses"
