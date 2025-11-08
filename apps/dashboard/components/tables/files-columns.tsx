@@ -44,7 +44,7 @@ export const filesColumns: ColumnDef<FileTableColumns>[] = [
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      return new Date(row.getValue("created_at")).toLocaleString();
+      return new Date(row.getValue("createdAt")).toLocaleString();
     },
   },
   {

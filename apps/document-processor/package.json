@@ -4,7 +4,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "cd src && python main.py",
-    "install": "pip install -r requirements.txt"
+    "dev": "cd src && python main.py"
   }
 }

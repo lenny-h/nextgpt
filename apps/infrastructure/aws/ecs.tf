@@ -139,10 +139,6 @@ resource "aws_ecs_task_definition" "api" {
         value = aws_scheduler_schedule_group.tasks.name
       },
       {
-        name  = "ATTACHMENT_URL_PREFIX"
-        value = "https://${aws_s3_bucket.temporary_files.bucket}.s3.${var.aws_region}.amazonaws.com"
-      },
-      {
         name  = "EMBEDDINGS_MODEL"
         value = var.embeddings_model
       },

@@ -42,10 +42,11 @@ const app = new Hono()
     async (c) => {
       const { texts } = c.req.valid("json");
 
-      const { model } = await getEmbeddingModel();
+      const { model, providerOptions } = await getEmbeddingModel();
 
       const { embeddings } = await embedMany({
         model,
+        providerOptions,
         values: texts,
       });
 

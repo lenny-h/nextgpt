@@ -35,7 +35,7 @@ export class LocalTasksClient implements ITasksClient {
 
         // Create an AbortController for a reasonable timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 minutes
+        const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000); // 30 minutes; file processing can be long
 
         const response = await fetch(url, {
           method: "POST",

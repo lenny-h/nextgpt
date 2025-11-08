@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS base
+FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1

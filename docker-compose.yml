@@ -122,7 +122,7 @@ services:
     environment:
       PORT: 8080
       ENVIRONMENT: development
-      API_URL: http://api:8080
+      API_URL: http://host.docker.internal:3004 # Use host.docker.internal to reach host machine from container
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_HOST: postgres:5432
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
@@ -211,9 +211,9 @@ services:
 
   #     # Database and Redis
   #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-  #     DATABASE_HOST: localhost:5432
+  #     DATABASE_HOST: postgres:5432
   #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-  #     REDIS_URL: "redis://localhost:6379" # Has format: redis://HOST:PORT
+  #     REDIS_URL: "redis://redis:6379"
 
   #     USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
   #     USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
@@ -246,7 +246,6 @@ services:
   #     SQS_QUEUE_URL: ${SQS_QUEUE_URL}
 
   #     # Configuration common to all cloud providers
-  #     ATTACHMENT_URL_PREFIX: ${ATTACHMENT_URL_PREFIX}
   #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
   #     LLM_MODELS: ${LLM_MODELS}
   #   networks:
@@ -333,8 +332,8 @@ services:
   #     WORKER_PORT: 3005
   #     ENV: local
 
-  #     REDIS_URL: redis://localhost:6379
-  #     REDIS_RATE_LIMIT_URL: redis://localhost:6379
+  #     REDIS_URL: redis://redis:6379
+  #     REDIS_RATE_LIMIT_URL: redis://redis:6379
   #     PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
 
   #     NUQ_DATABASE_URL: postresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres

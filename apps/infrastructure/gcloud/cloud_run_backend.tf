@@ -84,10 +84,6 @@ resource "google_cloud_run_v2_service" "api" {
         value = "projects/${var.project_id}/locations/${var.gcp_region}/queues/${google_cloud_tasks_queue.document_processing_queue.name}"
       }
       env {
-        name  = "ATTACHMENT_URL_PREFIX"
-        value = "https://storage.googleapis.com/${var.project_id}-temporary-files-bucket"
-      }
-      env {
         name  = "EMBEDDINGS_MODEL"
         value = var.embeddings_model
       }

@@ -3,8 +3,8 @@
 export const chatModels = [
   {
     id: 0,
-    name: "gemini-2.5-flash",
-    label: "Gemini 2.5 Flash",
+    name: "gemini-2.5-flash", // chatgpt-4o-latest
+    label: "Gemini 2.5 Flash", // GPT4o
     description: "Powerful model with fast response times",
     images: true,
     pdfs: true,

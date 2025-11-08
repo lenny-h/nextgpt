@@ -74,9 +74,8 @@ const app = new Hono().post(
       });
     }
 
-    const tasksClient = getTasksClient();
-
     const taskId = generateUUID();
+    const tasksClient = getTasksClient();
 
     await addTask({
       id: taskId,

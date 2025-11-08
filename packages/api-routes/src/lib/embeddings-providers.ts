@@ -3,7 +3,7 @@ import { EmbeddingModel, JSONValue } from "ai";
 
 export const getEmbeddingModel = async (): Promise<{
   model: EmbeddingModel;
-  providerOptions: Record<string, JSONValue>;
+  providerOptions: { [model: string]: Record<string, JSONValue> };
 }> => {
   if (process.env.USE_OPENAI_API === "true") {
     const { openai } = await import("@ai-sdk/openai");
