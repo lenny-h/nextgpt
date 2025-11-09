@@ -1,6 +1,9 @@
 import FirecrawlApp from "@mendable/firecrawl-js";
 import { tool } from "ai";
 import { z } from "zod";
+import { createLogger } from "../../utils/logger.js";
+
+const logger = createLogger("scrape-tool");
 
 const app = new FirecrawlApp({
   apiUrl: process.env.FIRECRAWL_API_URL,
@@ -18,10 +21,18 @@ export const scrapeTool = tool({
       .describe("The URL to scrape (including https://)"),
   }),
   execute: async ({ urlToScrape }) => {
-    const scrapeResponse = await app.scrape(urlToScrape, {
-      formats: ["markdown"],
-    });
+    logger.debug("Scraping URL:", urlToScrape);
+    
+    try {
+      const scrapeResponse = await app.scrape(urlToScrape, {
+        formats: ["markdown"],
+      });
 
-    return scrapeResponse.markdown;
+      logger.debug("Successfully scraped URL:", urlToScrape);
+      return scrapeResponse.markdown;
+    } catch (error) {
+      logger.error("Failed to scrape URL:", urlToScrape, error);
+      throw error;
+    }
   },
 });

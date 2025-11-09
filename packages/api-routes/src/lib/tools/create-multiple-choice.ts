@@ -1,5 +1,8 @@
 import * as z from "zod";
 import { tool } from "ai";
+import { createLogger } from "../../utils/logger.js";
+
+const logger = createLogger("create-multiple-choice-tool");
 
 export const createMultipleChoiceTool = tool({
   description:
@@ -12,8 +15,12 @@ export const createMultipleChoiceTool = tool({
     choiceD: z.string(),
     correctAnswer: z.enum(["A", "B", "C", "D"]),
   }),
-  execute: async () => ({
-    message:
-      "The multiple choice question has been created and sent to the user.",
-  }),
+  execute: async ({ question, correctAnswer }) => {
+    logger.debug("Creating multiple choice question:", { question, correctAnswer });
+    
+    return {
+      message:
+        "The multiple choice question has been created and sent to the user.",
+    };
+  },
 });

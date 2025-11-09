@@ -2,6 +2,7 @@ import * as z from "zod";
 
 import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { User } from "@workspace/server/drizzle/schema.js";
 import { validateUIMessages } from "ai";
 import { type Context } from "hono";
@@ -13,6 +14,8 @@ import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { getMessagesByChatId } from "../db/queries/messages.js";
 import { tools } from "../tools/index.js";
+
+const logger = createLogger("chat-request");
 
 export class ChatRequest {
   public readonly id: string; // Chat ID
@@ -40,6 +43,7 @@ export class ChatRequest {
     this.lastMessage = messages[messages.length - 1];
 
     if (!this.lastMessage.metadata?.filter) {
+      logger.warn("Missing filter in message metadata");
       throw new HTTPException(400, {
         message: "BAD_REQUEST",
       });
@@ -53,6 +57,16 @@ export class ChatRequest {
     this.user = user;
 
     this.reasoningEnabled = reasoningEnabled;
+
+    logger.debug("ChatRequest constructed", {
+      chatId: id,
+      userId: user.id,
+      messageCount: messages.length,
+      attachmentCount: this.attachments.length,
+      isTemporary,
+      selectedChatModel,
+      reasoningEnabled,
+    });
   }
 
   static async fromRequest(
@@ -72,6 +86,8 @@ export class ChatRequest {
       isTemp: isTemporary,
       reasoning: reasoningEnabled,
     } = validatedPayload;
+
+    logger.debug("Retrieving previous messages");
 
     // For practice chats with lastStartMessageIndex, only retrieve messages after that index
     const prevMessages = await getMessagesByChatId({
@@ -96,6 +112,10 @@ export class ChatRequest {
     });
 
     if (containsFilePart) {
+      logger.warn("Request contains disallowed file parts in messages", {
+        chatId: id,
+        userId: user.id,
+      });
       throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
 
@@ -110,6 +130,15 @@ export class ChatRequest {
   }
 
   async validatePermissions(): Promise<void> {
+    logger.debug("Validating user permissions", {
+      chatId: this.id,
+      userId: this.user.id,
+      bucketId: this.filter.bucket.id,
+      courseCount: this.filter.courses.length,
+      fileCount: this.filter.files.length,
+      attachmentCount: this.attachments.length,
+    });
+
     const hasPermission = await userHasPermissions({
       userId: this.user.id,
       filterBucketId: this.filter.bucket.id,
@@ -119,12 +148,20 @@ export class ChatRequest {
     });
 
     if (!hasPermission) {
+      logger.warn("Permission validation failed", {
+        chatId: this.id,
+        userId: this.user.id,
+        bucketId: this.filter.bucket.id,
+        courseIds: this.filter.courses.map((c) => c.id),
+        fileIds: this.filter.files.map((f) => f.id),
+      });
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
   }
 
   validateUserMessage(): void {
     if (this.lastMessage.role !== "user") {
+      logger.warn("Last message is not from user");
       throw new HTTPException(400, {
         message: "BAD_REQUEST",
       });

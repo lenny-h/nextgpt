@@ -10,10 +10,14 @@ import { errorHandler } from "@workspace/server/error-handler.js";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
+import { logger as honoLogger } from "hono/logger";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 import { internalApiRouter } from "@workspace/api-routes/routes/internal/index.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
+
+// Configure logger
+const logger = createLogger("api-server");
 
 // Create Hono application
 const app = new Hono();
@@ -21,7 +25,7 @@ const app = new Hono();
 // Global middleware
 app.use("*", requestId());
 if (process.env.NODE_ENV === "development") {
-  app.use("*", logger());
+  app.use("*", honoLogger());
 }
 app.use("*", compress());
 app.use("*", secureHeaders());
@@ -66,6 +70,10 @@ app.route("/api/public", unprotectedApiRouter);
 app.route("/api/protected", protectedApiRouter);
 
 const PORT = process.env.PORT || 8080;
+const isDev = process.env.NODE_ENV === "development";
+
+logger.info(`Starting NextGPT API server on port ${PORT} (Environment: ${isDev ? 'development' : 'production'})`);
+
 serve(
   {
     fetch: app.fetch,
@@ -75,7 +83,7 @@ serve(
     },
   },
   (info) => {
-    console.log(`Server running on http://localhost:${info.port}`);
+    logger.info(`Server running on http://localhost:${info.port}`);
   }
 );
 

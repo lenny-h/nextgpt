@@ -4,6 +4,9 @@ import {
   MyUIMessagePart,
 } from "@workspace/api-routes/types/custom-ui-message.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
+
+const logger = createLogger("process-attachments");
 
 function getFileType(filename: string): string {
   if (filename.endsWith(".pdf")) return "application/pdf";
@@ -25,6 +28,11 @@ function canDirectlyAttach(mediaType: string): boolean {
 
 async function convertToMarkdown(key: string): Promise<string> {
   const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
+  
+  logger.debug("Converting document to markdown", {
+    key,
+    processorUrl,
+  });
 
   const response = await fetch(
     `${processorUrl}/convert?key=${encodeURIComponent(key)}`,
@@ -52,13 +60,29 @@ async function convertToMarkdown(key: string): Promise<string> {
 export async function processAttachments(
   attachments: Attachment[]
 ): Promise<MyUIMessagePart[]> {
+  logger.info("Processing attachments", {
+    attachmentCount: attachments.length,
+    filenames: attachments.map(a => a.filename),
+  });
+
   const parts: MyUIMessagePart[] = [];
 
   for (const attachment of attachments) {
     const fileType = getFileType(attachment.filename);
+    
+    logger.debug("Processing attachment", {
+      filename: attachment.filename,
+      detectedFileType: fileType,
+      canDirectlyAttach: canDirectlyAttach(fileType),
+    });
 
     if (canDirectlyAttach(fileType)) {
       // Download the file content from storage
+      logger.debug("Downloading file from storage", {
+        filename: attachment.filename,
+        bucket: "temporary-files-bucket",
+      });
+
       const storageClient = getStorageClient();
 
       const fileContent = await storageClient.downloadFile({
@@ -77,6 +101,11 @@ export async function processAttachments(
       });
     } else {
       // For other formats - convert to markdown via document-processor
+      logger.info("Converting file to markdown", {
+        filename: attachment.filename,
+        fileType,
+      });
+
       try {
         const markdown = await convertToMarkdown(attachment.filename);
         parts.push({
@@ -84,7 +113,7 @@ export async function processAttachments(
           text: "Parsed content of the uploaded attachment: " + markdown,
         });
       } catch (error) {
-        console.error(
+        logger.error(
           `Failed to process attachment ${attachment.filename}:`,
           error
         );

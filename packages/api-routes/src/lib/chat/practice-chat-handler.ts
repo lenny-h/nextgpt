@@ -1,4 +1,5 @@
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import {
   stepCountIs,
   streamText,
@@ -14,6 +15,8 @@ import { retrieveRandomDocumentSourcesTool } from "../tools/retrieve-random-sour
 import { ChatConfig } from "./chat-config.js";
 import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
+
+const logger = createLogger("practice-chat-handler");
 
 export class PracticeChatHandler extends ChatHandler {
   private systemPrompt: string = PRACTICE_SYSTEM_PROMPT;
@@ -97,7 +100,7 @@ export class PracticeChatHandler extends ChatHandler {
   }
 
   protected handleError(error: any): string {
-    console.error("Error in practice route", error);
+    logger.error("Error in practice route", error);
 
     return "An error occurred. Please try again later.";
   }

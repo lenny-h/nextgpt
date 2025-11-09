@@ -1,7 +1,10 @@
+import { createLogger } from "../logger.js";
 import { ITasksClient } from "./interfaces/tasks-client.interface.js";
 import { AwsTasksClient } from "./tasks/aws-tasks-client.js";
 import { GoogleTasksClient } from "./tasks/google-tasks-client.js";
 import { LocalTasksClient } from "./tasks/local-tasks-client.js";
+
+const logger = createLogger("tasks-client");
 
 let tasksClientInstance: ITasksClient | null = null;
 
@@ -17,7 +20,7 @@ export function getTasksClient(): ITasksClient {
   const isLocal = process.env.USE_LOCAL_TASKS_CLIENT === "true";
 
   if (isLocal) {
-    console.log("[TasksClient] Using local mock implementation");
+    logger.info("Using local mock implementation");
     tasksClientInstance = new LocalTasksClient();
     return tasksClientInstance;
   }
@@ -31,8 +34,8 @@ export function getTasksClient(): ITasksClient {
       break;
 
     case "azure":
-      console.warn(
-        "[TasksClient] Azure is currently not supported. Using local mock implementation instead."
+      logger.warn(
+        "Azure is currently not supported. Using local mock implementation instead."
       );
       tasksClientInstance = new LocalTasksClient();
       break;
@@ -43,8 +46,8 @@ export function getTasksClient(): ITasksClient {
 
     default:
       // Default to local tasks client if not specified
-      console.error(
-        `[TasksClient] Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`
+      logger.error(
+        `Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`
       );
       throw new Error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
   }

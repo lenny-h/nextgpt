@@ -4,7 +4,10 @@ import { type UIMessageStreamWriter, tool } from "ai";
 import { z } from "zod";
 import { type ArtifactKind } from "../../types/artifact-kind.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
+import { createLogger } from "../../utils/logger.js";
 import { documentHandlers } from "./document-handlers.js";
+
+const logger = createLogger("modify-document-tool");
 
 interface ModifyDocumentProps {
   writer: UIMessageStreamWriter<MyUIMessage>;
@@ -32,42 +35,52 @@ export const modifyDocumentTool = ({
       instructions: z.string(),
     }),
     execute: async ({ instructions }, { experimental_context: context }) => {
+      logger.debug("Modifying document:", { documentId, documentTitle, kind });
+      
       const documentHandler = documentHandlers.find(
         (documentHandler) => documentHandler.kind === kind
       );
 
       if (!documentHandler) {
+        logger.error("No document handler found for kind:", kind);
         throw new Error(`No document handler found for kind: ${kind}`);
       }
 
       const typedContext = context as { writeDeltas: boolean };
 
-      const draftContent = await documentHandler.onUpdateDocument({
-        writer,
-        writeDeltas: typedContext.writeDeltas,
-        content,
-        instructions,
-        documentId,
-        documentTitle,
-      });
+      try {
+        const draftContent = await documentHandler.onUpdateDocument({
+          writer,
+          writeDeltas: typedContext.writeDeltas,
+          content,
+          instructions,
+          documentId,
+          documentTitle,
+        });
 
-      writer.write({ type: "finish" });
+        writer.write({ type: "finish" });
 
-      await db.insert(toolCallDocuments).values({
-        id: documentId,
-        chatId,
-        userId,
-        title: documentTitle,
-        content: draftContent,
-        kind,
-      });
+        await db.insert(toolCallDocuments).values({
+          id: documentId,
+          chatId,
+          userId,
+          title: documentTitle,
+          content: draftContent,
+          kind,
+        });
 
-      return {
-        message:
-          "The document was modified and is now visible to the user. Ask the user if they want any other changes.",
-        documentId,
-        documentTitle,
-        kind,
-      };
+        logger.debug("Document modified successfully:", { documentId, documentTitle });
+
+        return {
+          message:
+            "The document was modified and is now visible to the user. Ask the user if they want any other changes.",
+          documentId,
+          documentTitle,
+          kind,
+        };
+      } catch (error) {
+        logger.error("Failed to modify document:", { documentId, documentTitle, kind }, error);
+        throw error;
+      }
     },
   });

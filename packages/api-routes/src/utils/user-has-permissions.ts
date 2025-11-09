@@ -9,6 +9,9 @@ import { isBucketUser } from "../lib/db/queries/buckets.js";
 import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
 import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
 import { Attachment } from "../schemas/attachment-schema.js";
+import { createLogger } from "./logger.js";
+
+const logger = createLogger("user-has-permissions");
 
 export async function userHasPermissions({
   userId,
@@ -43,7 +46,7 @@ export async function userHasPermissions({
     try {
       metadata = JSON.parse(cachedData);
     } catch (error) {
-      console.error("Error parsing cached permissions:", error);
+      logger.error("Error parsing cached permissions:", error);
     }
   }
 

@@ -7,6 +7,9 @@ import {
   retrieveDocumentSources,
   retrieveEmbedding,
 } from "../../utils/retrieve-context.js";
+import { createLogger } from "../../utils/logger.js";
+
+const logger = createLogger("retrieve-document-sources-tool");
 
 export const retrieveDocumentSourcesTool = ({
   filter,
@@ -23,16 +26,28 @@ export const retrieveDocumentSourcesTool = ({
       pageNumbers: z.array(z.number()),
     }),
     execute: async ({ keywords, questions, pageNumbers }) => {
-      const embedding = await retrieveEmbedding(questions.join(" "));
-
-      const docSources = await retrieveDocumentSources({
-        filter,
-        retrieveContent,
-        embedding,
-        ftsQuery: keywords.join(" "),
-        pageNumbers,
+      logger.debug("Retrieving document sources:", { 
+        keywordsCount: keywords.length, 
+        questionsCount: questions.length,
+        pageNumbersCount: pageNumbers.length 
       });
 
-      return { docSources };
+      try {
+        const embedding = await retrieveEmbedding(questions.join(" "));
+
+        const docSources = await retrieveDocumentSources({
+          filter,
+          retrieveContent,
+          embedding,
+          ftsQuery: keywords.join(" "),
+          pageNumbers,
+        });
+
+        logger.debug("Retrieved document sources:", { count: docSources.length });
+        return { docSources };
+      } catch (error) {
+        logger.error("Failed to retrieve document sources:", error);
+        throw error;
+      }
     },
   });

@@ -1,6 +1,7 @@
 import { generateTitleFromUserMessage } from "@workspace/api-routes/utils/generate-title.js";
 import { chatTitleModelIdx } from "@workspace/api-routes/utils/models.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { CustomDocument } from "@workspace/server/drizzle/schema.js";
 import {
   stepCountIs,
@@ -23,6 +24,8 @@ import { ChatConfig } from "./chat-config.js";
 import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
 
+const logger = createLogger("standard-chat-handler");
+
 export class StandardChatHandler extends ChatHandler {
   private systemPrompt: string = STANDARD_SYSTEM_PROMPT;
   private document?: CustomDocument;
@@ -35,6 +38,11 @@ export class StandardChatHandler extends ChatHandler {
     const filter = this.request.filter as Filter;
 
     if (filter.documents?.length) {
+      logger.debug("Validating document access", {
+        chatId: this.request.id,
+        documentId: filter.documents[0].id,
+      });
+
       this.document = await getDocument({
         id: filter.documents[0].id,
       });
@@ -47,6 +55,11 @@ export class StandardChatHandler extends ChatHandler {
 
   protected async generateChatTitle(): Promise<string> {
     const config = await getModel(chatTitleModelIdx);
+
+    logger.debug("Generating chat title with model", {
+      chatId: this.request.id,
+      model: config.model.toString(),
+    });
 
     return await generateTitleFromUserMessage({
       message: this.request.lastMessage,
@@ -96,13 +109,17 @@ export class StandardChatHandler extends ChatHandler {
       systemPrompt: this.systemPrompt,
     });
 
+    const tools = this.retrieveToolSet(writer);
     const experimental_context = { writeDeltas: true };
+
+    logger.info("Executing chat with tools:", Object.keys(tools));
 
     const result = streamText({
       ...streamConfig,
-      tools: this.retrieveToolSet(writer),
+      tools,
       experimental_context,
       onStepFinish: (step) => {
+        logger.info("Step finished:", { text: step.text, reasoning: step.reasoning, toolCalls: step.toolCalls });
         if (
           step.toolCalls.some(
             (call) =>
@@ -110,6 +127,7 @@ export class StandardChatHandler extends ChatHandler {
               call.toolName === "modifyDocument"
           )
         ) {
+          logger.debug("Disabling delta writes for document operations", { chatId: this.request.id });
           experimental_context.writeDeltas = false;
         }
       },
@@ -131,7 +149,7 @@ export class StandardChatHandler extends ChatHandler {
   }
 
   protected handleError(error: any): string {
-    console.error("Error in chat route", error);
+    logger.error("Error in chat route", error);
 
     return "An error occurred. Please try again later.";
   }

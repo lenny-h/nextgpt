@@ -1,6 +1,9 @@
 import FirecrawlApp from "@mendable/firecrawl-js";
 import { tool } from "ai";
 import { z } from "zod";
+import { createLogger } from "../../utils/logger.js";
+
+const logger = createLogger("search-tool");
 
 const app = new FirecrawlApp({
   apiUrl: process.env.FIRECRAWL_API_URL,
@@ -13,13 +16,24 @@ export const searchTool = tool({
     searchQuery: z.string().min(1).max(100).describe("The search query to use"),
   }),
   execute: async ({ searchQuery }) => {
-    const searchResponse = await app.search(searchQuery, {
-      limit: 6,
-      scrapeOptions: {
-        formats: ["markdown"],
-      },
-    });
+    logger.debug("Searching web for query:", searchQuery);
+    
+    try {
+      const searchResponse = await app.search(searchQuery, {
+        limit: 6,
+        scrapeOptions: {
+          formats: ["markdown"],
+        },
+      });
 
-    return searchResponse.web;
+      logger.debug("Search completed successfully:", { 
+        query: searchQuery, 
+        resultsCount: searchResponse.web?.length || 0 
+      });
+      return searchResponse.web;
+    } catch (error) {
+      logger.error("Search failed for query:", searchQuery, error);
+      throw error;
+    }
   },
 });

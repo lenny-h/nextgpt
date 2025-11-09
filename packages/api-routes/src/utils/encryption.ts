@@ -1,4 +1,7 @@
 import crypto from "crypto";
+import { createLogger } from "./logger.js";
+
+const logger = createLogger("encryption");
 
 export function encryptApiKey(apiKey: string): string {
   // Generate a random initialization vector
@@ -45,7 +48,7 @@ export function decryptApiKey(encryptedData: string): string {
 
     return decrypted;
   } catch (error) {
-    console.error("Failed to decrypt API key:", error);
+    logger.error("Failed to decrypt API key:", error);
     throw new Error("Failed to decrypt API key");
   }
 }

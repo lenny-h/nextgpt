@@ -59,9 +59,9 @@ export const RetrieveDocumentSourcesUI = memo(
 
     if (part.state === "input-streaming") {
       return (
-        <div className="bg-muted/30 flex items-center gap-2 rounded-md border p-2">
-          <Loader2 className="text-primary animate-spin" size={16} />
-          <span className="text-xs font-medium">
+        <div className="bg-muted/30 flex items-center gap-3 rounded-md border p-3">
+          <Loader2 className="text-primary animate-spin" size={18} />
+          <span className="text-sm font-medium">
             Processing document search request...
           </span>
         </div>
@@ -96,18 +96,18 @@ export const RetrieveDocumentSourcesUI = memo(
         availableItems[currentDisplayIndex % availableItems.length];
 
       return (
-        <div className="bg-muted/30 flex items-start gap-2 rounded-md border p-2">
-          <File className="text-primary mt-0.5" size={16} />
+        <div className="bg-muted/30 flex items-start gap-3 rounded-md border p-3">
+          <File className="text-primary mt-0.5" size={18} />
           <div className="flex-1">
-            <p className="mb-1 text-xs font-medium">
+            <p className="mb-1.5 text-sm font-medium">
               Searching documents with:
             </p>
             {currentItem && (
               <div className="mb-1">
-                <span className="text-muted-foreground text-xs">
+                <span className="text-muted-foreground text-sm">
                   {currentItem.label}:{" "}
                 </span>
-                <span className="text-xs">
+                <span className="text-sm">
                   {Array.isArray(currentItem.data)
                     ? currentItem.data.join(", ")
                     : currentItem.data}
@@ -128,22 +128,22 @@ export const RetrieveDocumentSourcesUI = memo(
           onOpenChange={setIsOpen}
           className="border-border/50 w-full overflow-hidden rounded-md border"
         >
-          <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-2 text-xs font-medium">
+          <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-3 text-sm font-medium">
             <div className="flex items-center gap-2">
-              <File size={14} className="text-primary" />
+              <File size={16} className="text-primary" />
               <span>Document Sources ({sources.length})</span>
             </div>
-            <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={14} />
+            <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={16} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="space-y-1 p-2 text-xs">
+            <div className="space-y-1.5 p-3 text-sm">
               {sources.map((source) => {
                 const isPdf = source.fileName.toLowerCase().endsWith(".pdf");
                 return (
                   <div
                     key={source.id}
                     className={cn(
-                      "flex flex-col gap-1 rounded-md border p-2 transition-colors",
+                      "flex flex-col gap-1.5 rounded-md border p-3 transition-colors",
                       isPdf
                         ? "bg-muted/30 hover:bg-muted/50 cursor-pointer"
                         : "bg-muted/20 cursor-default opacity-75",
@@ -162,7 +162,7 @@ export const RetrieveDocumentSourcesUI = memo(
                   >
                     <div className="flex items-center gap-2">
                       <File
-                        size={12}
+                        size={14}
                         className={
                           isPdf ? "text-primary" : "text-muted-foreground"
                         }
@@ -171,12 +171,12 @@ export const RetrieveDocumentSourcesUI = memo(
                         {source.fileName}, page {source.pageIndex + 1}
                       </span>
                       {!isPdf && (
-                        <span className="text-muted-foreground ml-auto text-[10px] italic">
+                        <span className="text-muted-foreground ml-auto text-xs italic">
                           Preview unavailable
                         </span>
                       )}
                     </div>
-                    <p className="text-muted-foreground ml-5 text-xs">
+                    <p className="text-muted-foreground ml-6 text-sm">
                       Course: {source.courseName}
                     </p>
                   </div>

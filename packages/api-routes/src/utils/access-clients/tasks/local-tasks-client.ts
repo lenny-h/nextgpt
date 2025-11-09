@@ -1,9 +1,12 @@
 import http from "node:http";
+import { createLogger } from "../../logger.js";
 import {
   CancelTaskParams,
   ITasksClient,
   ScheduleProcessingTaskParams,
 } from "../interfaces/tasks-client.interface.js";
+
+const logger = createLogger("local-tasks-client");
 
 /**
  * Local tasks client for development
@@ -20,9 +23,9 @@ export class LocalTasksClient implements ITasksClient {
     const delay = Math.max(0, scheduleTime.getTime() - Date.now());
     const url = `${processorUrl}${endpoint}`;
 
-    console.log(`[LocalTasksClient] Task scheduled with delay: ${delay}ms`);
-    console.log(`[LocalTasksClient] Target URL: ${url}`);
-    console.log(`[LocalTasksClient] Task ID: ${taskId}`);
+    logger.debug(`Task scheduled with delay: ${delay}ms`);
+    logger.debug(`Target URL: ${url}`);
+    logger.debug(`Task ID: ${taskId}`);
 
     // Clear any existing timeout with the same name
     if (this.scheduledTasks.has(taskId)) {
@@ -32,7 +35,7 @@ export class LocalTasksClient implements ITasksClient {
     // Execute after delay
     const timeout = setTimeout(async () => {
       try {
-        console.log(`[LocalTasksClient] Executing task: ${taskId}`);
+        logger.info(`Executing task: ${taskId}`);
 
         // Use native http module for proper timeout control
         const requestBody = JSON.stringify(payload);
@@ -57,13 +60,13 @@ export class LocalTasksClient implements ITasksClient {
 
               res.on("end", () => {
                 if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                  console.log(`[LocalTasksClient] Task completed successfully`);
+                  logger.info(`Task completed successfully`);
                   resolve();
                 } else {
-                  console.error(
-                    `[LocalTasksClient] Task failed: ${res.statusCode} ${res.statusMessage}`
+                  logger.error(
+                    `Task failed: ${res.statusCode} ${res.statusMessage}`
                   );
-                  console.error(`[LocalTasksClient] Error body:`, responseBody);
+                  logger.error(`Error body:`, responseBody);
                   reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
                 }
               });
@@ -72,12 +75,12 @@ export class LocalTasksClient implements ITasksClient {
 
           req.on("timeout", () => {
             req.destroy();
-            console.error(`[LocalTasksClient] Task timed out after 30 minutes`);
+            logger.error(`Task timed out after 30 minutes`);
             reject(new Error("Request timeout after 30 minutes"));
           });
 
           req.on("error", (error) => {
-            console.error(`[LocalTasksClient] Task execution error:`, error);
+            logger.error(`Task execution error:`, error);
             reject(error);
           });
 
@@ -85,7 +88,7 @@ export class LocalTasksClient implements ITasksClient {
           req.end();
         });
       } catch (error) {
-        console.error(`[LocalTasksClient] Task execution error:`, error);
+        logger.error(`Task execution error:`, error);
       } finally {
         this.scheduledTasks.delete(taskId);
       }
@@ -129,15 +132,15 @@ export class LocalTasksClient implements ITasksClient {
   async cancelTask(params: CancelTaskParams): Promise<void> {
     const { taskId } = params;
 
-    console.log(`[LocalTasksClient] Canceling task: ${taskId}`);
+    logger.info(`Canceling task: ${taskId}`);
 
     if (this.scheduledTasks.has(taskId)) {
       clearTimeout(this.scheduledTasks.get(taskId)!);
       this.scheduledTasks.delete(taskId);
-      console.log(`[LocalTasksClient] Task canceled successfully`);
+      logger.info(`Task canceled successfully`);
     } else {
-      console.warn(
-        `[LocalTasksClient] Task not found or already executed: ${taskId}`
+      logger.warn(
+        `Task not found or already executed: ${taskId}`
       );
     }
   }
@@ -150,7 +153,7 @@ export class LocalTasksClient implements ITasksClient {
       clearTimeout(timeout);
     }
     this.scheduledTasks.clear();
-    console.log("[LocalTasksClient] All scheduled tasks cleared");
+    logger.info("All scheduled tasks cleared");
   }
 
   /**

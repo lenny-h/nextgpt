@@ -20,9 +20,9 @@ export const RetrieveWebSourcesUI = memo(
 
     if (part.state === "input-streaming") {
       return (
-        <div className="bg-muted/30 flex items-center gap-2 rounded-md border p-2">
-          <Loader2 className="text-primary animate-spin" size={16} />
-          <span className="text-xs font-medium">
+        <div className="bg-muted/30 flex items-center gap-3 rounded-md border p-3">
+          <Loader2 className="text-primary animate-spin" size={18} />
+          <span className="text-sm font-medium">
             Processing web search request...
           </span>
         </div>
@@ -31,13 +31,13 @@ export const RetrieveWebSourcesUI = memo(
 
     if (part.state === "input-available") {
       return (
-        <div className="bg-muted/30 flex items-start gap-2 rounded-md border p-2">
-          <Search className="text-primary mt-0.5" size={16} />
+        <div className="bg-muted/30 flex items-start gap-3 rounded-md border p-3">
+          <Search className="text-primary mt-0.5" size={18} />
           <div className="flex-1">
-            <p className="mb-1 text-xs font-medium">Searching web with:</p>
+            <p className="mb-1.5 text-sm font-medium">Searching web with:</p>
             {part.input.searchTerms && (
               <div className="space-y-1">
-                <div className="text-muted-foreground text-xs">
+                <div className="text-muted-foreground text-sm">
                   • {part.input.searchTerms}
                 </div>
               </div>
@@ -56,27 +56,27 @@ export const RetrieveWebSourcesUI = memo(
           onOpenChange={setIsOpen}
           className="border-border/50 w-full overflow-hidden rounded-md border"
         >
-          <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-2 text-xs font-medium">
+          <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-3 text-sm font-medium">
             <div className="flex items-center gap-2">
-              <Globe size={14} className="text-primary" />
+              <Globe size={16} className="text-primary" />
               <span>Web Sources ({pages.length})</span>
             </div>
-            <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={14} />
+            <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={16} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="space-y-1 p-2 text-xs">
+            <div className="space-y-1.5 p-3 text-sm">
               {pages.map((page, index) => (
                 <div
                   key={index}
-                  className="bg-muted/30 hover:bg-muted/50 flex cursor-pointer flex-col gap-1 rounded-md border p-2 transition-colors"
+                  className="bg-muted/30 hover:bg-muted/50 flex cursor-pointer flex-col gap-1.5 rounded-md border p-3 transition-colors"
                   onClick={() => window.open(page.url, "_blank")}
                 >
                   <div className="flex items-center gap-2">
-                    <Globe size={12} className="text-primary" />
+                    <Globe size={14} className="text-primary" />
                     <span className="font-medium">{page.url}</span>
                   </div>
                   {page.pageContent && (
-                    <p className="text-muted-foreground ml-5 mt-1 text-xs">
+                    <p className="text-muted-foreground ml-6 mt-1 text-sm">
                       {page.pageContent.substring(0, 100)}...
                     </p>
                   )}

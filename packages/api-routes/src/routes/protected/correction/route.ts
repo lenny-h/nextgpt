@@ -3,10 +3,13 @@ import { getPrompt } from "@workspace/api-routes/lib/db/queries/prompts.js";
 import { getModel } from "@workspace/api-routes/lib/providers.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { studentEvaluationModelIdx } from "@workspace/api-routes/utils/models.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { generateText } from "ai";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { correctionSchema } from "./schema.js";
+
+const logger = createLogger("correction");
 
 const CORRECTION_PROMPT = `You are a helpful assistant for evaluating student submissions.
 I'm providing a solution sheet (marked as SOLUTION) and a student submission (marked as SUBMISSION).
@@ -56,7 +59,7 @@ const app = new Hono().post(
           kind: "text",
         });
       } catch (error) {
-        console.error(`Error processing ${handInFilename}:`, error);
+        logger.error(`Error processing ${handInFilename}:`, error);
         failedFiles.push(handInFilename);
       }
     }
@@ -126,7 +129,7 @@ async function evaluateSubmission(
 
     return text;
   } catch (error) {
-    console.error("Vertex AI evaluation error:", error);
+    logger.error("Vertex AI evaluation error:", error);
     throw new Error("Failed to evaluate submission");
   }
 }

@@ -8,10 +8,13 @@ import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { getSignedUrlSchema } from "./schema.js";
+
+const logger = createLogger("get-signed-url");
 
 const paramSchema = z.object({ courseId: uuidSchema }).strict();
 
@@ -109,7 +112,7 @@ const app = new Hono().post(
       scheduleTime,
     });
 
-    console.log("Processing task with pipeline options: ", {
+    logger.debug("Processing task with pipeline options: ", {
       pdfPipelineOptions,
     });
 
@@ -122,7 +125,7 @@ const app = new Hono().post(
       contentLength: fileSize,
     });
 
-    console.log("SignedUrl generated:", { signedUrl, extFilename });
+    logger.debug("SignedUrl generated:", { signedUrl, extFilename });
 
     return c.json({
       signedUrl,

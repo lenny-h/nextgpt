@@ -4,11 +4,14 @@ import {
   DeleteScheduleCommand,
   FlexibleTimeWindowMode,
 } from "@aws-sdk/client-scheduler";
+import { createLogger } from "../../logger.js";
 import {
   ITasksClient,
   ScheduleProcessingTaskParams,
   CancelTaskParams,
 } from "../interfaces/tasks-client.interface.js";
+
+const logger = createLogger("aws-tasks-client");
 
 /**
  * AWS EventBridge Scheduler implementation for task queuing
@@ -101,8 +104,8 @@ export class AwsTasksClient implements ITasksClient {
       await schedulerClient.send(command);
     } catch (error: any) {
       if (error.name === "ResourceNotFoundException") {
-        console.warn(
-          `[AwsTasksClient] Schedule not found: ${taskId}. It may have already been executed or deleted.`
+        logger.warn(
+          `Schedule not found: ${taskId}. It may have already been executed or deleted.`
         );
       } else {
         throw error;

@@ -6,7 +6,10 @@ import { type UIMessageStreamWriter, tool } from "ai";
 import { artifactKindSchema } from "../../types/artifact-kind.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { generateUUID } from "../../utils/utils.js";
+import { createLogger } from "../../utils/logger.js";
 import { documentHandlers } from "./document-handlers.js";
+
+const logger = createLogger("create-document-tool");
 
 interface CreateDocumentProps {
   writer: UIMessageStreamWriter<MyUIMessage>;
@@ -32,40 +35,50 @@ export const createDocumentTool = ({
       { experimental_context: context }
     ) => {
       const documentId = generateUUID();
+      
+      logger.debug("Creating document:", { documentId, documentTitle, kind });
 
       const documentHandler = documentHandlers.find(
         (documentHandler) => documentHandler.kind === kind
       );
 
       if (!documentHandler) {
+        logger.error("No document handler found for kind:", kind);
         throw new Error(`No document handler found for kind: ${kind}`);
       }
 
       const typedContext = context as { writeDeltas: boolean };
 
-      const draftContent = await documentHandler.onCreateDocument({
-        writer,
-        writeDeltas: typedContext.writeDeltas,
-        instructions,
-        documentId,
-        documentTitle,
-      });
+      try {
+        const draftContent = await documentHandler.onCreateDocument({
+          writer,
+          writeDeltas: typedContext.writeDeltas,
+          instructions,
+          documentId,
+          documentTitle,
+        });
 
-      await db.insert(toolCallDocuments).values({
-        id: documentId,
-        chatId,
-        userId,
-        title: documentTitle,
-        content: draftContent,
-        kind,
-      });
+        await db.insert(toolCallDocuments).values({
+          id: documentId,
+          chatId,
+          userId,
+          title: documentTitle,
+          content: draftContent,
+          kind,
+        });
 
-      return {
-        message:
-          "The document was created and is now visible to the user. Ask the user if they want any other changes.",
-        documentId,
-        documentTitle,
-        kind,
-      };
+        logger.debug("Document created successfully:", { documentId, documentTitle });
+
+        return {
+          message:
+            "The document was created and is now visible to the user. Ask the user if they want any other changes.",
+          documentId,
+          documentTitle,
+          kind,
+        };
+      } catch (error) {
+        logger.error("Failed to create document:", { documentId, documentTitle, kind }, error);
+        throw error;
+      }
     },
   });
