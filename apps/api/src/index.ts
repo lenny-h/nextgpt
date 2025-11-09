@@ -20,59 +20,63 @@ import { createLogger } from "@workspace/api-routes/utils/logger.js";
 const logger = createLogger("api-server");
 
 // Create Hono application
-const app = new Hono();
+const app = new Hono()
+  .use("*", requestId())
+  .use("*", compress())
+  .use("*", secureHeaders())
 
-// Global middleware
-app.use("*", requestId());
+  // CORS middleware
+  .use(
+    "*",
+    cors({
+      origin: process.env.ALLOWED_ORIGINS!.split(","),
+      credentials: true,
+    })
+  )
+
+  // Global error handler
+  .use("*", errorHandler)
+
+  // Default root route
+  .get("/", (c) => {
+    return c.json({
+      name: "NextGPT API",
+      version: "1.0.0",
+      status: "Running",
+    });
+  })
+
+  // Authentication routes
+  .on(["POST", "GET"], "/api/auth/*", (c) => {
+    return auth.handler(c.req.raw);
+  })
+
+  // Authentication middleware for protected routes
+  .use("/api/protected/*", authMiddleware)
+
+  // Internal secret middleware for internal routes
+  .use("/api/internal/*", internalAuthMiddleware)
+
+  // Internal routes
+  .route("/api/internal", internalApiRouter)
+
+  // Unprotected routes
+  .route("/api/public", unprotectedApiRouter)
+
+  // Protected routes
+  .route("/api/protected", protectedApiRouter);
+
+// Apply conditional logger only in development
 if (process.env.NODE_ENV === "development") {
   app.use("*", honoLogger());
 }
-app.use("*", compress());
-app.use("*", secureHeaders());
-app.use(
-  "*",
-  cors({
-    origin: process.env.ALLOWED_ORIGINS!.split(","),
-    credentials: true,
-  })
-);
-
-// Global error handler
-app.use("*", errorHandler);
-
-// Default root route
-app.get("/", (c) => {
-  return c.json({
-    name: "NextGPT API",
-    version: "1.0.0",
-    status: "Running",
-  });
-});
-
-// Authentication routes
-app.on(["POST", "GET"], "/api/auth/*", (c) => {
-  return auth.handler(c.req.raw);
-});
-
-// Authentication middleware for protected routes
-app.use("/api/protected/*", authMiddleware);
-
-// Internal secret middleware for internal routes
-app.use("/api/internal/*", internalAuthMiddleware);
-
-// Internal routes
-app.route("/api/internal", internalApiRouter);
-
-// Unprotected routes
-app.route("/api/public", unprotectedApiRouter);
-
-// Protected routes
-app.route("/api/protected", protectedApiRouter);
 
 const PORT = process.env.PORT || 8080;
 const isDev = process.env.NODE_ENV === "development";
 
-logger.info(`Starting NextGPT API server on port ${PORT} (Environment: ${isDev ? 'development' : 'production'})`);
+logger.info(
+  `Starting NextGPT API server on port ${PORT} (Environment: ${isDev ? "development" : "production"})`
+);
 
 serve(
   {

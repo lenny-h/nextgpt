@@ -1094,6 +1094,7 @@ packages:
   '@aws-sdk/credential-provider-web-identity@3.917.0':
     resolution: {integrity: sha512-pZncQhFbwW04pB0jcD5OFv3x2gAddDYCVxyJVixgyhSw7bKCYxqu6ramfq1NxyVpmm+qsw+ijwi/3cCmhUHF/A==}
     engines: {node: '>=18.0.0'}
+    deprecated: This version contains a compilation TypeScript error https://github.com/aws/aws-sdk-js-v3/issues/7457 - please use @aws-sdk/credential-providers@3.918.0 or higher
 
   '@aws-sdk/credential-providers@3.916.0':
     resolution: {integrity: sha512-wazu2awF69ohF3AaDlYkD+tanaqwJ309o9GawNg3o1oW7orhdcvh6P8BftSjuIzuAMiauvQquxcUrNTLxHtvOA==}
@@ -10869,7 +10870,7 @@ snapshots:
       c12: 3.3.1
       chalk: 5.6.2
       commander: 12.1.0
-      dotenv: 17.2.2
+      dotenv: 17.2.3
       drizzle-orm: 0.33.0(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(@types/react@19.1.12)(better-sqlite3@12.4.1)(kysely@0.28.7)(pg@8.16.3)(prisma@5.22.0)(react@19.1.1)
       get-tsconfig: 4.10.1
       jiti: 2.6.1

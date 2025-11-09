@@ -15,6 +15,7 @@ services:
     volumes:
       # - ./packages/server/src/drizzle/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql:ro # Only required for Firecrawl
       - ./packages/server/src/drizzle/0000_romantic_outlaw_kid.sql:/docker-entrypoint-initdb.d/0000_romantic_outlaw_kid.sql:ro
+      - ./packages/server/src/drizzle/__tests__/seed-test-users.sql:/docker-entrypoint-initdb.d/seed-test-users.sql:ro # Only required for automated testing
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -95,67 +96,67 @@ services:
     networks:
       - database_network
 
-  # Document processor - Convert various files to Markdown
-  document-processor:
-    container_name: document-processor
-    build:
-      context: .
-      dockerfile: apps/document-processor/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3006:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      PORT: 8080
-      ENVIRONMENT: development
-      API_URL: http://host.docker.internal:3004 # Use host.docker.internal to reach host machine from container
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: postgres:5432
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  # # Document processor - Convert various files to Markdown
+  # document-processor:
+  #   container_name: document-processor
+  #   build:
+  #     context: .
+  #     dockerfile: apps/document-processor/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3006:8080"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "python",
+  #         "-c",
+  #         "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     PORT: 8080
+  #     ENVIRONMENT: development
+  #     API_URL: http://host.docker.internal:3004 # Use host.docker.internal to reach host machine from container
+  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+  #     DATABASE_HOST: postgres:5432
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
 
-      USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
-      USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
-      USE_OPENAI_API: ${USE_OPENAI_API}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #     USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
+  #     USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
+  #     USE_OPENAI_API: ${USE_OPENAI_API}
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
-      # Local MinIO configuration
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+  #     # Local MinIO configuration
+  #     MINIO_ENDPOINT: http://minio:9000
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
-      # Cloudflare R2 configuration
-      R2_ENDPOINT: ${R2_ENDPOINT}
-      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+  #     # Cloudflare R2 configuration
+  #     R2_ENDPOINT: ${R2_ENDPOINT}
+  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
 
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
 
-      CLOUD_PROVIDER: ${CLOUD_PROVIDER}
+  #     CLOUD_PROVIDER: ${CLOUD_PROVIDER}
 
-      # Gcloud configuration
-      GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-      GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+  #     # Gcloud configuration
+  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
 
-      # Aws configuration
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-    networks:
-      - database_network
+  #     # Aws configuration
+  #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  #     AWS_REGION: ${AWS_REGION}
+  #   networks:
+  #     - database_network
 
   # The services below need not be run in Docker
   # It is better to run them using `pnpm run dev` due to hot-reloading
@@ -315,80 +316,80 @@ services:
   #   ports:
   #     - "3001:3000"
 
-  # Firecrawl
-  firecrawl-api:
-    image: firecrawl:latest
+  # # Firecrawl
+  # firecrawl-api:
+  #   image: firecrawl:latest
 
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
+  #   ulimits:
+  #     nofile:
+  #       soft: 65535
+  #       hard: 65535
   
-    environment:
-      HOST: "0.0.0.0"
-      PORT: 8080
-      EXTRACT_WORKER_PORT: 3004
-      WORKER_PORT: 3005
-      ENV: local
+  #   environment:
+  #     HOST: "0.0.0.0"
+  #     PORT: 8080
+  #     EXTRACT_WORKER_PORT: 3004
+  #     WORKER_PORT: 3005
+  #     ENV: local
 
-      REDIS_URL: redis://redis:6379
-      REDIS_RATE_LIMIT_URL: redis://redis:6379
-      PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
+  #     REDIS_URL: redis://redis:6379
+  #     REDIS_RATE_LIMIT_URL: redis://redis:6379
+  #     PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
 
-      NUQ_DATABASE_URL: postresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
+  #     NUQ_DATABASE_URL: postresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
 
-      USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
-      SUPABASE_URL: ${SUPABASE_URL}
-      SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
-      SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
-      SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
+  #     USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
+  #     SUPABASE_URL: ${SUPABASE_URL}
+  #     SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
+  #     SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
+  #     SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
 
-      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #     OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
-      MODEL_NAME: ${MODEL_NAME}
-      MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
+  #     MODEL_NAME: ${MODEL_NAME}
+  #     MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
+  #     OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
 
-      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+  #     SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
 
-      # Use if you've set up authentication and want to test with a real API key
-      TEST_API_KEY: ${TEST_API_KEY}
+  #     # Use if you've set up authentication and want to test with a real API key
+  #     TEST_API_KEY: ${TEST_API_KEY}
 
-      # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
-      BULL_AUTH_KEY: ${BULL_AUTH_KEY}
+  #     # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
+  #     BULL_AUTH_KEY: ${BULL_AUTH_KEY}
 
-      POSTHOG_HOST: ${POSTHOG_HOST}
-      POSTHOG_API_KEY: ${POSTHOG_API_KEY}
+  #     POSTHOG_HOST: ${POSTHOG_HOST}
+  #     POSTHOG_API_KEY: ${POSTHOG_API_KEY}
 
-      SERPER_API_KEY: ${SERPER_API_KEY}
-      SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
-      LOGGING_LEVEL: ${LOGGING_LEVEL}
-      PROXY_SERVER: ${PROXY_SERVER}
-      PROXY_USERNAME: ${PROXY_USERNAME}
-      PROXY_PASSWORD: ${PROXY_PASSWORD}
-      SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
-      SEARXNG_ENGINES: ${SEARXNG_ENGINES}
-      SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
-    depends_on:
-      - redis
-      - playwright-service
-    ports:
-      - "3007:8080"
-    command: node dist/src/harness.js --start-docker
-    networks:
-      - database_network
+  #     SERPER_API_KEY: ${SERPER_API_KEY}
+  #     SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
+  #     LOGGING_LEVEL: ${LOGGING_LEVEL}
+  #     PROXY_SERVER: ${PROXY_SERVER}
+  #     PROXY_USERNAME: ${PROXY_USERNAME}
+  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
+  #     SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
+  #     SEARXNG_ENGINES: ${SEARXNG_ENGINES}
+  #     SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+  #   depends_on:
+  #     - redis
+  #     - playwright-service
+  #   ports:
+  #     - "3007:8080"
+  #   command: node dist/src/harness.js --start-docker
+  #   networks:
+  #     - database_network
     
-  playwright-service:
-    image: firecrawl-playwright:latest
-    environment:
-      PORT: 3008
-      PROXY_SERVER: ${PROXY_SERVER}
-      PROXY_USERNAME: ${PROXY_USERNAME}
-      PROXY_PASSWORD: ${PROXY_PASSWORD}
-      BLOCK_MEDIA: ${BLOCK_MEDIA}
-    networks:
-      - database_network
+  # playwright-service:
+  #   image: firecrawl-playwright:latest
+  #   environment:
+  #     PORT: 3008
+  #     PROXY_SERVER: ${PROXY_SERVER}
+  #     PROXY_USERNAME: ${PROXY_USERNAME}
+  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
+  #     BLOCK_MEDIA: ${BLOCK_MEDIA}
+  #   networks:
+  #     - database_network
 
 volumes:
   postgres-data:
