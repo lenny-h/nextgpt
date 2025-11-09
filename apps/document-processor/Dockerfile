@@ -7,6 +7,8 @@ ENV PYTHONUNBUFFERED=1 \
 # System dependencies required by onnxruntime/rapidocr/opencv/tesseract
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -29,7 +31,7 @@ RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
 # Prefetch essential Docling models at build time
 # Only download the core models needed for basic PDF processing
 # Optional models (formula, code, etc.) will be downloaded at runtime when first used
-ARG MODELS_LIST="layout tableformer code_formula"
+ARG MODELS_LIST="layout tableformer code_formula easyocr"
 
 RUN echo "Downloading essential models..." && \
     HF_HUB_DOWNLOAD_TIMEOUT="90" \

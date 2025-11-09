@@ -3,7 +3,7 @@ Base interface for storage clients.
 All storage implementations must implement this protocol.
 """
 
-from typing import Protocol, Dict, Any
+from typing import Protocol
 
 
 class IStorageClient(Protocol):

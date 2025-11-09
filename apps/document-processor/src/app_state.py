@@ -12,7 +12,10 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 
 from utils.tokenizer import get_tokenizer
+from logger import setup_logger
 
+# Configure logger
+logger = setup_logger(__name__)
 
 # Singleton storage for lazy initialization
 _converter: Optional[DocumentConverter] = None
@@ -32,6 +35,7 @@ def get_converter() -> DocumentConverter:
         with _converter_lock:
             # Double-check after acquiring lock
             if _converter is None:
+                logger.info("Initializing Docling document converter with default pipeline options")
                 # Initialize with default pipeline options
                 pipeline_options = PdfPipelineOptions()
                 pipeline_options.do_ocr = False
@@ -40,12 +44,17 @@ def get_converter() -> DocumentConverter:
                 pipeline_options.do_table_structure = False
                 pipeline_options.do_picture_description = False
 
+                logger.debug("Pipeline options: OCR=False, Formula=False, Code=False, Table=False, Picture=False")
+
                 _converter = DocumentConverter(
                     format_options={
                         InputFormat.PDF: PdfFormatOption(
                             pipeline_options=pipeline_options)
                     }
                 )
+                logger.info("Docling document converter initialized successfully")
+    else:
+        logger.debug("Returning existing Docling converter instance")
     return _converter
 
 

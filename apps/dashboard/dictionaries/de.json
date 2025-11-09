@@ -36,7 +36,7 @@
   "correction": {
     "title": "Korrekturen",
     "solutionSheet": "Lösungsblatt",
-    "studentHandIns": "Studenteneinreichungen",
+    "studentHandIns": "Studentenabgaben",
     "customPrompt": "Benutzerdefinierter Prompt (Optional)",
     "customPromptDescription": "Wählen Sie einen benutzerdefinierten Prompt, um die KI anzuweisen, wie die Abgaben korrigiert werden sollen.",
     "selectPrompt": "Prompt auswählen",
@@ -46,11 +46,11 @@
     "noPromptsFound": "Keine Prompts gefunden",
     "addPrompt": "Prompt hinzufügen",
     "addNewPrompt": "Neuen Prompt hinzufügen",
-    "addPromptDescription": "Geben Sie an, wie die KI die Einreichungen korrigieren soll.",
+    "addPromptDescription": "Geben Sie an, wie die KI die Abgaben korrigieren soll.",
     "startCorrection": "Korrektur starten",
     "filesNotCorrected": "Die folgenden Dateien konnten nicht korrigiert werden:",
     "correctionSuccess": "Korrektur erfolgreich abgeschlossen. Sie können die Ergebnisse unter 'Dokumente' abrufen",
-    "correctionFailed": "Einreichungen konnten nicht korrigiert werden"
+    "correctionFailed": "Abgaben konnten nicht korrigiert werden"
   },
   "correctionDropzone": {
     "dropFiles": "Dateien hier ablegen ...",

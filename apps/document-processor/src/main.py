@@ -9,6 +9,7 @@ Works across multiple cloud providers with unified storage interface.
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+
 from db.postgres import get_connection_pool
 
 # Import routers
@@ -17,19 +18,26 @@ from routes.convert import router as convert_router
 from routes.process_document import router as document_router
 from routes.process_pdf import router as pdf_router
 
+from logger import setup_logger
+
+# Configure logger
+logger = setup_logger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifecycle - initialize and cleanup resources."""
     # Startup: Initialize database connection pool
+    logger.info("Initializing database connection pool...")
     pool = await get_connection_pool()
-    print("Database connection pool initialized")
+    logger.info("Database connection pool initialized successfully")
 
     yield
 
     # Shutdown: Close database connection pool
+    logger.info("Shutting down database connection pool...")
     await pool.close()
-    print("Database connection pool closed")
+    logger.info("Database connection pool closed successfully")
 
 
 # Initialize FastAPI app
@@ -53,7 +61,7 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "8080"))
     is_dev = os.getenv("ENVIRONMENT", "production") == "development"
 
-    print(f"Starting Docling microservice on port {port}...")
+    logger.info(f"Starting Docling microservice on port {port} (Environment: {'development' if is_dev else 'production'})")
 
     uvicorn.run(
         "main:app",

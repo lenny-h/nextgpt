@@ -7,6 +7,11 @@ from access_clients import get_storage_client
 from db.postgres import update_status_to_failed
 from models.requests import DocumentUploadEvent
 
+from logger import setup_logger
+
+# Configure logger
+logger = setup_logger(__name__)
+
 
 def create_embedded_chunk(
     chunk: Union[PdfChunkData, DocumentChunkData],
@@ -27,15 +32,19 @@ def create_embedded_chunk(
 
 async def handle_processing_error(bucket: str, event: DocumentUploadEvent, error: Exception):
     """Handle errors during document/PDF processing with cleanup."""
+    logger.error(f"Processing error for file '{event.name}' (task_id={event.taskId}): {error}", exc_info=True)
+    
     try:
+        logger.info(f"Attempting to clean up source file: {event.name}")
         storage_client = get_storage_client()
         storage_client.delete_file(bucket, event.name)
+        logger.info(f"Successfully deleted source file: {event.name}")
     except Exception as e:
-        print(f"Failed to clean up source file: {e}")
+        logger.error(f"Failed to clean up source file '{event.name}': {e}", exc_info=True)
 
     try:
+        logger.info(f"Updating task status to failed for task_id={event.taskId}")
         await update_status_to_failed(event.taskId, event.bucketId)
+        logger.info(f"Successfully updated task status to failed for task_id={event.taskId}")
     except Exception as e:
-        print(f"Failed to update task status: {e}")
-
-    print(f"Error processing file: {error}")
+        logger.error(f"Failed to update task status to failed for task_id={event.taskId}: {e}", exc_info=True)
