@@ -1,7 +1,7 @@
-import { beforeAll, describe, expect, it } from "vitest";
-import app, { type ApiAppType } from "../src/index.js";
-import { TEST_USERS, getAuthHeaders, signInTestUser } from "./helpers/auth-helpers.js";
 import { testClient } from "hono/testing";
+import { beforeAll, describe, expect, it } from "vitest";
+import app, { type ApiAppType } from "../src/app.js";
+import { TEST_USERS, getAuthHeaders, signInTestUser } from "./helpers/auth-helpers.js";
 
 /**
  * Example test file demonstrating how to use the auth helpers

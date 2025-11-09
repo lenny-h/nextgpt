@@ -82,7 +82,7 @@ export async function isBucketOwner({
     .limit(1);
 
   if (result.length === 0) {
-    throw new HTTPException(404, { message: "NOT_FOUND" });
+    return false;
   }
   return result[0].owner === userId;
 }

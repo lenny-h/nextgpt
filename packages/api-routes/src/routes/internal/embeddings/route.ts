@@ -9,8 +9,12 @@ const app = new Hono()
   // Single embedding endpoint
   .post(
     "/single",
-    validator("json", async (value) => {
-      return singleEmbeddingSchema.parse(value);
+    validator("json", async (value, c) => {
+      const parsed = singleEmbeddingSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { text } = c.req.valid("json");
@@ -36,8 +40,12 @@ const app = new Hono()
   // Batch embeddings endpoint
   .post(
     "/batch",
-    validator("json", async (value) => {
-      return batchEmbeddingSchema.parse(value);
+    validator("json", async (value, c) => {
+      const parsed = batchEmbeddingSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { texts } = c.req.valid("json");

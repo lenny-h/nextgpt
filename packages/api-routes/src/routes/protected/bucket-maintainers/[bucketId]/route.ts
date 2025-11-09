@@ -26,8 +26,12 @@ const paramSchema = z.object({ bucketId: uuidSchema }).strict();
 const app = new Hono()
   .get(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { bucketId } = c.req.valid("param");
@@ -61,11 +65,19 @@ const app = new Hono()
   )
   .post(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     validator("json", async (value, c) => {
-      return bucketMaintainersSchema.parse(value);
+      const parsed = bucketMaintainersSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { bucketId } = c.req.valid("param");
@@ -97,11 +109,19 @@ const app = new Hono()
   )
   .delete(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     validator("json", async (value, c) => {
-      return bucketMaintainersSchema.parse(value);
+      const parsed = bucketMaintainersSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { bucketId } = c.req.valid("param");

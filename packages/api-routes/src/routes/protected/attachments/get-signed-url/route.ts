@@ -5,8 +5,12 @@ import { getSignedUrlSchema } from "./schema.js";
 
 const app = new Hono().post(
   "/",
-  validator("json", async (value) => {
-    return getSignedUrlSchema.parse(value);
+  validator("json", async (value, c) => {
+    const parsed = getSignedUrlSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { filename, fileSize, fileType } = c.req.valid("json");

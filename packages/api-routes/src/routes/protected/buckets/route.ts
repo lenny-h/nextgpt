@@ -6,7 +6,11 @@ import { createBucketPayloadSchema } from "./schema.js";
 const app = new Hono().post(
   "/",
   validator("json", async (value, c) => {
-    return createBucketPayloadSchema.parse(value);
+    const parsed = createBucketPayloadSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { values, type } = c.req.valid("json");

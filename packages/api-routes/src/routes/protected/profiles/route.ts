@@ -28,7 +28,11 @@ const app = new Hono()
   .patch(
     "/",
     validator("json", async (value, c) => {
-      return createProfileSchema.parse(value);
+      const parsed = createProfileSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { name, username, isPublic } = c.req.valid("json");
