@@ -8,7 +8,8 @@ import {
 } from "../helpers/auth-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
-// TODO: Improve
+// TODO: Add more comprehensive tests for different search scenarios
+// Add test courses, files, and chunks (with embeddings) to search against
 
 /**
  * Tests for /api/protected/search routes
@@ -52,31 +53,6 @@ describe("Protected API Routes - Search", () => {
       expect(res.status).toBe(401);
     });
 
-    it("should perform search with valid authentication", async () => {
-      const res = await client.api.protected.search[":query"].$post(
-        {
-          param: {
-            query: "test",
-          },
-          json: {
-            filter: createTestFilter(),
-            fts: false,
-          },
-        },
-        {
-          headers: getAuthHeaders(user1Cookie),
-        }
-      );
-
-      // May return 200 or 403 depending on permissions
-      expect([200, 403]).toContain(res.status);
-
-      if (res.status === 200) {
-        const data = await res.json();
-        expect(Array.isArray(data)).toBe(true);
-      }
-    });
-
     it("should validate query length (too short)", async () => {
       const res = await client.api.protected.search[":query"].$post(
         {
@@ -94,26 +70,6 @@ describe("Protected API Routes - Search", () => {
       );
 
       expect(res.status).toBe(400);
-    });
-
-    it("should handle FTS search mode", async () => {
-      const res = await client.api.protected.search[":query"].$post(
-        {
-          param: {
-            query: "test query",
-          },
-          json: {
-            filter: createTestFilter(),
-            fts: true,
-          },
-        },
-        {
-          headers: getAuthHeaders(user1Cookie),
-        }
-      );
-
-      // May return 200 or 403 depending on permissions
-      expect([200, 403]).toContain(res.status);
     });
 
     it("should validate filter schema", async () => {

@@ -1,9 +1,13 @@
 import { testClient } from "hono/testing";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
-import { TEST_USER_IDS } from "../helpers/auth-helpers.js";
-import { cleanupUserBuckets } from "../helpers/cleanup-helpers.js";
-import { getTestAuthHeaders } from "../helpers/session-helpers.js";
+import {
+  TEST_USERS,
+  TEST_USER_IDS,
+  getAuthHeaders,
+  signInTestUser,
+} from "../helpers/auth-helpers.js";
+import { cleanupUserBuckets } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -13,6 +17,21 @@ import { generateTestUUID } from "../helpers/test-utils.js";
 
 describe("Protected API Routes - Buckets", () => {
   const client = testClient<ApiAppType>(app);
+
+  let user1Cookie: string;
+  let user2Cookie: string;
+
+  beforeAll(async () => {
+    user1Cookie = await signInTestUser(
+      TEST_USERS.USER1_VERIFIED.email,
+      TEST_USERS.USER1_VERIFIED.password
+    );
+
+    user2Cookie = await signInTestUser(
+      TEST_USERS.USER2_VERIFIED.email,
+      TEST_USERS.USER2_VERIFIED.password
+    );
+  });
 
   afterAll(async () => {
     // Clean up test data
@@ -48,7 +67,7 @@ describe("Protected API Routes - Buckets", () => {
           json: bucketData,
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -71,7 +90,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -88,7 +107,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -107,7 +126,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -125,7 +144,7 @@ describe("Protected API Routes - Buckets", () => {
       const res = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -148,7 +167,7 @@ describe("Protected API Routes - Buckets", () => {
       const res1 = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
       const user1Buckets = await res1.json();
@@ -156,7 +175,7 @@ describe("Protected API Routes - Buckets", () => {
       const res2 = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER2_VERIFIED"),
+          headers: getAuthHeaders(user2Cookie),
         }
       );
       const user2Buckets = await res2.json();
@@ -184,7 +203,7 @@ describe("Protected API Routes - Buckets", () => {
       const res = await client.api.protected.buckets.used.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -205,7 +224,7 @@ describe("Protected API Routes - Buckets", () => {
       const res1 = await client.api.protected.buckets.used.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
       const user1Buckets = await res1.json();
@@ -213,7 +232,7 @@ describe("Protected API Routes - Buckets", () => {
       const res2 = await client.api.protected.buckets.used.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER2_VERIFIED"),
+          headers: getAuthHeaders(user2Cookie),
         }
       );
       const user2Buckets = await res2.json();
@@ -247,7 +266,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -262,7 +281,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -282,7 +301,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
 
@@ -292,7 +311,7 @@ describe("Protected API Routes - Buckets", () => {
       const bucketsRes = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getTestAuthHeaders("USER1_VERIFIED"),
+          headers: getAuthHeaders(user1Cookie),
         }
       );
       const buckets = await bucketsRes.json();
@@ -309,7 +328,7 @@ describe("Protected API Routes - Buckets", () => {
             },
           },
           {
-            headers: getTestAuthHeaders("USER2_VERIFIED"),
+            headers: getAuthHeaders(user2Cookie),
           }
         );
 

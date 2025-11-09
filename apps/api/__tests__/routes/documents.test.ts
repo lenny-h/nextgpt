@@ -1,8 +1,13 @@
 import { testClient } from "hono/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
-import { TEST_USERS, TEST_USER_IDS, getAuthHeaders, signInTestUser } from "../helpers/auth-helpers.js";
-import { cleanupUserDocuments } from "../helpers/cleanup-helpers.js";
+import {
+  TEST_USERS,
+  TEST_USER_IDS,
+  getAuthHeaders,
+  signInTestUser,
+} from "../helpers/auth-helpers.js";
+import { cleanupUserDocuments } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -12,7 +17,7 @@ import { generateTestUUID } from "../helpers/test-utils.js";
 
 describe("Protected API Routes - Documents", () => {
   const client = testClient<ApiAppType>(app);
-  
+
   let user1Cookie: string;
   let user2Cookie: string;
 
@@ -21,7 +26,7 @@ describe("Protected API Routes - Documents", () => {
       TEST_USERS.USER1_VERIFIED.email,
       TEST_USERS.USER1_VERIFIED.password
     );
-    
+
     user2Cookie = await signInTestUser(
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
@@ -64,7 +69,7 @@ describe("Protected API Routes - Documents", () => {
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(data).toHaveProperty("message");
       expect(data.message).toBe("Document inserted");
@@ -113,10 +118,10 @@ describe("Protected API Routes - Documents", () => {
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
-      
+
       data.forEach((doc) => {
         expect(doc).toHaveProperty("id");
         expect(doc).toHaveProperty("title");
@@ -169,7 +174,7 @@ describe("Protected API Routes - Documents", () => {
         }
       );
       const user1Docs = await res1.json();
-      
+
       const res2 = await client.api.protected.documents.$get(
         {
           query: {
@@ -186,7 +191,9 @@ describe("Protected API Routes - Documents", () => {
       // Documents should be isolated
       const user1DocIds = user1Docs.map((d) => d.id);
       const user2DocIds = user2Docs.map((d) => d.id);
-      const overlap = user1DocIds.filter((id: string) => user2DocIds.includes(id));
+      const overlap = user1DocIds.filter((id: string) =>
+        user2DocIds.includes(id)
+      );
       expect(overlap.length).toBe(0);
     });
   });
@@ -205,7 +212,7 @@ describe("Protected API Routes - Documents", () => {
 
     it("should return 404 for non-existent document", async () => {
       const nonExistentId = generateTestUUID();
-      
+
       const res = await client.api.protected.documents[":documentId"].$get(
         {
           param: {
@@ -239,7 +246,9 @@ describe("Protected API Routes - Documents", () => {
   describe("PATCH /api/protected/documents/content/:documentId", () => {
     it("should return 401 without authentication", async () => {
       const testId = generateTestUUID();
-      const res = await client.api.protected.documents.content[":documentId"].$patch({
+      const res = await client.api.protected.documents.content[
+        ":documentId"
+      ].$patch({
         param: {
           documentId: testId,
         },
@@ -252,7 +261,9 @@ describe("Protected API Routes - Documents", () => {
     });
 
     it("should validate UUID format", async () => {
-      const res = await client.api.protected.documents.content[":documentId"].$patch(
+      const res = await client.api.protected.documents.content[
+        ":documentId"
+      ].$patch(
         {
           param: {
             documentId: "not-a-uuid",
@@ -284,7 +295,7 @@ describe("Protected API Routes - Documents", () => {
 
     it("should return 404 when deleting non-existent document", async () => {
       const nonExistentId = generateTestUUID();
-      
+
       const res = await client.api.protected.documents[":documentId"].$delete(
         {
           param: {
@@ -367,7 +378,7 @@ describe("Protected API Routes - Documents", () => {
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
     });
@@ -386,5 +397,4 @@ describe("Protected API Routes - Documents", () => {
       expect(res.status).toBe(400);
     });
   });
-
 });

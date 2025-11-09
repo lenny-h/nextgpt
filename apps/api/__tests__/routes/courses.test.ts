@@ -10,7 +10,8 @@ import {
 import {
   cleanupBucketCourses,
   cleanupUserBuckets,
-} from "../helpers/cleanup-helpers.js";
+  createTestBucket,
+} from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -36,31 +37,12 @@ describe("Protected API Routes - Courses", () => {
       TEST_USERS.USER2_VERIFIED.password
     );
 
-    // Create a test bucket for user1
-    const bucketRes = await client.api.protected.buckets.$post(
-      {
-        json: {
-          values: {
-            bucketName: `Test Bucket for Courses ${Date.now()}`,
-          },
-          type: "small",
-        },
-      },
-      {
-        headers: getAuthHeaders(user1Cookie),
-      }
+    // Create a test bucket directly in the database for deterministic tests
+    testBucketId = await createTestBucket(
+      TEST_USER_IDS.USER1_VERIFIED,
+      `Test Bucket for Courses ${Date.now()}`,
+      "small"
     );
-
-    if (bucketRes.status === 200) {
-      const bucketsRes = await client.api.protected.buckets.maintained.$get(
-        {},
-        {
-          headers: getAuthHeaders(user1Cookie),
-        }
-      );
-      const buckets = await bucketsRes.json();
-      testBucketId = buckets[0]?.id;
-    }
   });
 
   afterAll(async () => {
@@ -240,7 +222,7 @@ describe("Protected API Routes - Courses", () => {
         }
       );
 
-      expect([403, 404]).toContain(res.status);
+      expect(res.status).toBe(404);
     });
   });
 
@@ -314,6 +296,30 @@ describe("Protected API Routes - Courses", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+    });
+
+    it("should return 403 when user doesn't have access to bucket", async () => {
+      if (!testBucketId) {
+        console.warn("Skipping test: no test bucket available");
+        return;
+      }
+
+      // user2 tries to access user1's bucket
+      const res = await client.api.protected.courses.ilike[":bucketId"].$get(
+        {
+          param: {
+            bucketId: testBucketId,
+          },
+          query: {
+            prefix: "test",
+          },
+        },
+        {
+          headers: getAuthHeaders(user2Cookie),
+        }
+      );
+
+      expect(res.status).toBe(403);
     });
   });
 });

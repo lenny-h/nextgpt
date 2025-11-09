@@ -10,7 +10,8 @@ import {
 import {
   cleanupBucketModels,
   cleanupUserBuckets,
-} from "../helpers/cleanup-helpers.js";
+  createTestBucket,
+} from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -36,31 +37,12 @@ describe("Protected API Routes - Models", () => {
       TEST_USERS.USER2_VERIFIED.password
     );
 
-    // Create a test bucket for user1
-    const bucketRes = await client.api.protected.buckets.$post(
-      {
-        json: {
-          values: {
-            bucketName: `Test Bucket for Models ${Date.now()}`,
-          },
-          type: "small",
-        },
-      },
-      {
-        headers: getAuthHeaders(user1Cookie),
-      }
+    // Create a test bucket directly in the database for deterministic tests
+    testBucketId = await createTestBucket(
+      TEST_USER_IDS.USER1_VERIFIED,
+      `Test Bucket for Models ${Date.now()}`,
+      "small"
     );
-
-    if (bucketRes.status === 200) {
-      const bucketsRes = await client.api.protected.buckets.maintained.$get(
-        {},
-        {
-          headers: getAuthHeaders(user1Cookie),
-        }
-      );
-      const buckets = await bucketsRes.json();
-      testBucketId = buckets[0]?.id;
-    }
   });
 
   afterAll(async () => {

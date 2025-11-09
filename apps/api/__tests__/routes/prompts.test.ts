@@ -7,7 +7,7 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { cleanupUserPrompts } from "../helpers/cleanup-helpers.js";
+import { cleanupUserPrompts } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**

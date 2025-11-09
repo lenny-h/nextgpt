@@ -1,6 +1,7 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import {
   buckets,
+  bucketUserRoles,
   chats,
   courses,
   documents,
@@ -8,6 +9,7 @@ import {
   models,
   prompts,
   tasks,
+  type BucketType,
 } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { TEST_USER_IDS } from "./auth-helpers.js";
@@ -16,6 +18,48 @@ import { TEST_USER_IDS } from "./auth-helpers.js";
  * Cleanup helpers for test data
  * These functions should be called in afterAll or afterEach hooks
  */
+
+/**
+ * Create a test bucket directly in the database
+ * Returns the bucket ID
+ */
+export async function createTestBucket(
+  userId: string,
+  name: string,
+  type: BucketType = "small"
+): Promise<string> {
+  const maxSizes: Record<BucketType, number> = {
+    small: 1024 * 1024 * 100, // 100MB
+    medium: 1024 * 1024 * 500, // 500MB
+    large: 1024 * 1024 * 1024, // 1GB
+    org: 1024 * 1024 * 1024 * 10, // 10GB
+  };
+
+  const [bucket] = await db
+    .insert(buckets)
+    .values({
+      owner: userId,
+      name,
+      type,
+      maxSize: maxSizes[type],
+      size: 0,
+      subscriptionId: "",
+    })
+    .returning({ id: buckets.id });
+
+  if (!bucket) {
+    throw new Error("Failed to create test bucket");
+  }
+
+  // Add the user as a maintainer of the bucket
+  await db.insert(bucketUserRoles).values({
+    bucketId: bucket.id,
+    userId,
+    role: "maintainer",
+  });
+
+  return bucket.id;
+}
 
 /**
  * Delete all prompts for a specific user
