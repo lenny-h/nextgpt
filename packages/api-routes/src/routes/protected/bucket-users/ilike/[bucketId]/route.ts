@@ -18,11 +18,19 @@ const querySchema = z.object({ prefix: prefixSchema }).strict();
 
 const app = new Hono().get(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
-  validator("query", (value) => {
-    return querySchema.parse(value);
+  validator("query", (value, c) => {
+    const parsed = querySchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { bucketId } = c.req.valid("param");

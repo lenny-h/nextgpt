@@ -22,8 +22,12 @@ const paramSchema = z.object({ courseId: uuidSchema }).strict();
 
 const app = new Hono().delete(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { courseId } = c.req.valid("param");

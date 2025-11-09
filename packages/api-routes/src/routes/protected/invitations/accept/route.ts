@@ -1,17 +1,21 @@
-import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
-import { validator } from "hono/validator";
 import {
   acceptBucketMaintainerInvitation,
   acceptCourseMaintainerInvitation,
   acceptUserInvitation,
 } from "@workspace/api-routes/lib/db/queries/invitations.js";
+import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
+import { validator } from "hono/validator";
 import { acceptInvitationSchema } from "./schema.js";
 
 const app = new Hono().post(
   "/",
-  validator("json", async (value) => {
-    return acceptInvitationSchema.parse(value);
+  validator("json", async (value, c) => {
+    const parsed = acceptInvitationSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { type, originUserId, resourceId } = c.req.valid("json");

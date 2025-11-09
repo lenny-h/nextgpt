@@ -6,18 +6,22 @@ import {
   getTaskDetails,
 } from "@workspace/api-routes/lib/db/queries/tasks.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
+import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
-import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 
 const paramSchema = z.object({ taskId: uuidSchema }).strict();
 
 const app = new Hono().delete(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { taskId } = c.req.valid("param");

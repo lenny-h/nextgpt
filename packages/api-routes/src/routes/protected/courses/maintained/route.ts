@@ -21,8 +21,12 @@ const querySchema = z
 
 const app = new Hono().get(
   "/",
-  validator("query", (value) => {
-    return querySchema.parse(value);
+  validator("query", (value, c) => {
+    const parsed = querySchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { pageNumber, itemsPerPage } = c.req.valid("query");

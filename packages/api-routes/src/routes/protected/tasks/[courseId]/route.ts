@@ -19,14 +19,19 @@ const querySchema = z
 
 const app = new Hono().get(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
-  validator("query", (value) => {
-    return querySchema.parse({
-      pageNumber: Number(value.pageNumber),
-      itemsPerPage: Number(value.itemsPerPage),
-    });
+  validator("query", (value, c) => {
+    const parsed = querySchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { courseId } = c.req.valid("param");

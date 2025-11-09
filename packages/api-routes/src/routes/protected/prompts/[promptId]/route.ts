@@ -14,11 +14,19 @@ const paramSchema = z.object({ promptId: uuidSchema }).strict();
 const app = new Hono()
   .patch(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     validator("json", async (value, c) => {
-      return patchPromptSchema.parse(value);
+      const parsed = patchPromptSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { promptId } = c.req.valid("param");
@@ -35,8 +43,12 @@ const app = new Hono()
   )
   .delete(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { promptId } = c.req.valid("param");

@@ -56,12 +56,8 @@ export const filenameWithExtensionSchema = z.string().refine(
 
     // Strip extension and validate base filename with existing filenameSchema
     const nameWithoutExt = value.slice(0, idx);
-    try {
-      filenameSchema.parse(nameWithoutExt);
-      return true;
-    } catch {
-      return false;
-    }
+
+    return filenameSchema.safeParse(nameWithoutExt).success;
   },
   {
     message:

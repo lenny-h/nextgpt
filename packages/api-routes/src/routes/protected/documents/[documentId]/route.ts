@@ -13,8 +13,12 @@ const paramSchema = z.object({ documentId: uuidSchema }).strict();
 const app = new Hono()
   .get(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { documentId } = c.req.valid("param");
@@ -37,18 +41,27 @@ const app = new Hono()
   )
   .delete(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { documentId } = c.req.valid("param");
       const user = c.get("user");
 
-      await db
+      const result = await db
         .delete(documents)
         .where(
           and(eq(documents.id, documentId), eq(documents.userId, user.id))
-        );
+        )
+        .returning({ id: documents.id });
+
+      if (result.length === 0) {
+        throw new HTTPException(404, { message: "NOT_FOUND" });
+      }
 
       return c.json({ message: "Document deleted" });
     }

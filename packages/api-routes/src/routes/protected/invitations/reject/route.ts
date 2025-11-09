@@ -10,8 +10,12 @@ import { rejectInvitationSchema } from "./schema.js";
 
 const app = new Hono().post(
   "/",
-  validator("json", async (value) => {
-    return rejectInvitationSchema.parse(value);
+  validator("json", async (value, c) => {
+    const parsed = rejectInvitationSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { type, originUserId, resourceId } = c.req.valid("json");

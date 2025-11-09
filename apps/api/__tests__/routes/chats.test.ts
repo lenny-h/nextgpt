@@ -1,7 +1,12 @@
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
-import { TEST_USERS, getAuthHeaders, signInTestUser } from "../helpers/auth-helpers.js";
+import {
+  TEST_USERS,
+  TEST_USER_IDS,
+  getAuthHeaders,
+} from "../helpers/auth-helpers.js";
+import { cleanupUserChats } from "../helpers/cleanup-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -11,20 +16,11 @@ import { generateTestUUID } from "../helpers/test-utils.js";
 
 describe("Protected API Routes - Chats", () => {
   const client = testClient<ApiAppType>(app);
-  
-  let user1Cookie: string;
-  let user2Cookie: string;
 
-  beforeAll(async () => {
-    user1Cookie = await signInTestUser(
-      TEST_USERS.USER1_VERIFIED.email,
-      TEST_USERS.USER1_VERIFIED.password
-    );
-    
-    user2Cookie = await signInTestUser(
-      TEST_USERS.USER2_VERIFIED.email,
-      TEST_USERS.USER2_VERIFIED.password
-    );
+  afterAll(async () => {
+    // Clean up test data
+    await cleanupUserChats(TEST_USER_IDS.USER1_VERIFIED);
+    await cleanupUserChats(TEST_USER_IDS.USER2_VERIFIED);
   });
 
   describe("GET /api/protected/chats", () => {
@@ -48,15 +44,15 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
-      
+
       // Each chat should have expected properties
       data.forEach((chat) => {
         expect(chat).toHaveProperty("id");
@@ -77,7 +73,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -92,7 +88,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -108,11 +104,11 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
       const user1Chats = await res1.json();
-      
+
       const res2 = await client.api.protected.chats.$get(
         {
           query: {
@@ -121,7 +117,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user2Cookie),
+          headers: getAuthHeaders("USER2_VERIFIED"),
         }
       );
       const user2Chats = await res2.json();
@@ -139,7 +135,9 @@ describe("Protected API Routes - Chats", () => {
       // No chat IDs should overlap
       const user1ChatIds = user1Chats.map((c) => c.id);
       const user2ChatIds = user2Chats.map((c) => c.id);
-      const overlap = user1ChatIds.filter((id: string) => user2ChatIds.includes(id));
+      const overlap = user1ChatIds.filter((id: string) =>
+        user2ChatIds.includes(id)
+      );
       expect(overlap.length).toBe(0);
     });
 
@@ -152,7 +150,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -175,7 +173,7 @@ describe("Protected API Routes - Chats", () => {
 
     it("should return 404 for non-existent chat", async () => {
       const nonExistentId = generateTestUUID();
-      
+
       const res = await client.api.protected.chats[":chatId"].$get(
         {
           param: {
@@ -183,7 +181,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -194,11 +192,11 @@ describe("Protected API Routes - Chats", () => {
       const res = await client.api.protected.chats[":chatId"].$get(
         {
           param: {
-            chatId: "not-a-uuid"
+            chatId: "not-a-uuid",
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -215,7 +213,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
       const user1Chats = await chatsRes.json();
@@ -231,7 +229,7 @@ describe("Protected API Routes - Chats", () => {
             },
           },
           {
-            headers: getAuthHeaders(user2Cookie),
+            headers: getAuthHeaders("USER2_VERIFIED"),
           }
         );
 
@@ -250,7 +248,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
       const user1Chats = await chatsRes.json();
@@ -266,12 +264,12 @@ describe("Protected API Routes - Chats", () => {
             },
           },
           {
-            headers: getAuthHeaders(user1Cookie),
+            headers: getAuthHeaders("USER1_VERIFIED"),
           }
         );
 
         expect(res.status).toBe(200);
-        
+
         const data = await res.json();
         expect(data).toHaveProperty("chat");
         expect(data.chat.id).toBe(user1ChatId);
@@ -294,7 +292,7 @@ describe("Protected API Routes - Chats", () => {
 
     it("should return 404 when deleting non-existent chat", async () => {
       const nonExistentId = generateTestUUID();
-      
+
       const res = await client.api.protected.chats[":chatId"].$delete(
         {
           param: {
@@ -302,7 +300,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -313,11 +311,11 @@ describe("Protected API Routes - Chats", () => {
       const res = await client.api.protected.chats[":chatId"].$delete(
         {
           param: {
-            chatId: "not-a-uuid"
+            chatId: "not-a-uuid",
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -334,7 +332,7 @@ describe("Protected API Routes - Chats", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders("USER1_VERIFIED"),
         }
       );
       const user1Chats = await chatsRes.json();
@@ -350,7 +348,7 @@ describe("Protected API Routes - Chats", () => {
             },
           },
           {
-            headers: getAuthHeaders(user2Cookie),
+            headers: getAuthHeaders("USER2_VERIFIED"),
           }
         );
 
@@ -365,7 +363,7 @@ describe("Protected API Routes - Chats", () => {
             },
           },
           {
-            headers: getAuthHeaders(user1Cookie),
+            headers: getAuthHeaders("USER1_VERIFIED"),
           }
         );
         expect(verifyRes.status).toBe(200);

@@ -3,8 +3,8 @@ import * as z from "zod";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
-  toolCallDocuments,
   documents,
+  toolCallDocuments,
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
@@ -27,8 +27,12 @@ const paramSchema = z
 
 const app = new Hono().get(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { documentId, fetchDocument } = c.req.valid("param");

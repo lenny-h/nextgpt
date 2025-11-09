@@ -32,8 +32,12 @@ const app = new Hono()
   })
   .patch(
     "/",
-    validator("query", (value) => {
-      return patchQuerySchema.parse(value);
+    validator("query", (value, c) => {
+      const parsed = patchQuerySchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { id, fav: isFavourite } = c.req.valid("query");
@@ -48,8 +52,12 @@ const app = new Hono()
   )
   .delete(
     "/",
-    validator("query", (value) => {
-      return deleteQuerySchema.parse(value);
+    validator("query", (value, c) => {
+      const parsed = deleteQuerySchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { id } = c.req.valid("query");

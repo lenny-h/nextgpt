@@ -6,8 +6,12 @@ import { requestAccessSchema } from "./schema.js";
 
 const app = new Hono().post(
   "/",
-  validator("json", async (value) => {
-    return requestAccessSchema.parse(value);
+  validator("json", async (value, c) => {
+    const parsed = requestAccessSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { courseId, key } = c.req.valid("json");

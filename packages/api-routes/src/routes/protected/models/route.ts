@@ -27,11 +27,12 @@ const querySchema = z
 const app = new Hono()
   .get(
     "/",
-    validator("query", (value) => {
-      return querySchema.parse({
-        pageNumber: Number(value.pageNumber),
-        itemsPerPage: Number(value.itemsPerPage),
-      });
+    validator("query", (value, c) => {
+      const parsed = querySchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { pageNumber, itemsPerPage } = c.req.valid("query");
@@ -69,7 +70,11 @@ const app = new Hono()
   .post(
     "/",
     validator("json", async (value, c) => {
-      return addModelFormSchema.parse(value);
+      const parsed = addModelFormSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const {

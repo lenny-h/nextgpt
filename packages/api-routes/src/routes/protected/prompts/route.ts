@@ -28,7 +28,11 @@ const app = new Hono()
   .post(
     "/",
     validator("json", async (value, c) => {
-      return insertPromptSchema.parse(value);
+      const parsed = insertPromptSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { name, content } = c.req.valid("json");

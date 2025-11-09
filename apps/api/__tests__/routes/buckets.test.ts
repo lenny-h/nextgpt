@@ -1,7 +1,9 @@
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
-import { TEST_USERS, getAuthHeaders, signInTestUser } from "../helpers/auth-helpers.js";
+import { TEST_USER_IDS } from "../helpers/auth-helpers.js";
+import { cleanupUserBuckets } from "../helpers/cleanup-helpers.js";
+import { getTestAuthHeaders } from "../helpers/session-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -11,20 +13,11 @@ import { generateTestUUID } from "../helpers/test-utils.js";
 
 describe("Protected API Routes - Buckets", () => {
   const client = testClient<ApiAppType>(app);
-  
-  let user1Cookie: string;
-  let user2Cookie: string;
 
-  beforeAll(async () => {
-    user1Cookie = await signInTestUser(
-      TEST_USERS.USER1_VERIFIED.email,
-      TEST_USERS.USER1_VERIFIED.password
-    );
-    
-    user2Cookie = await signInTestUser(
-      TEST_USERS.USER2_VERIFIED.email,
-      TEST_USERS.USER2_VERIFIED.password
-    );
+  afterAll(async () => {
+    // Clean up test data
+    await cleanupUserBuckets(TEST_USER_IDS.USER1_VERIFIED);
+    await cleanupUserBuckets(TEST_USER_IDS.USER2_VERIFIED);
   });
 
   describe("POST /api/protected/buckets", () => {
@@ -55,12 +48,12 @@ describe("Protected API Routes - Buckets", () => {
           json: bucketData,
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(data).toHaveProperty("message");
       expect(data.message).toBe("Bucket created");
@@ -78,7 +71,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -95,7 +88,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -114,7 +107,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -132,15 +125,15 @@ describe("Protected API Routes - Buckets", () => {
       const res = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
-      
+
       // Each bucket should have the expected properties
       data.forEach((bucket) => {
         expect(bucket).toHaveProperty("id");
@@ -155,15 +148,15 @@ describe("Protected API Routes - Buckets", () => {
       const res1 = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
       const user1Buckets = await res1.json();
-      
+
       const res2 = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getAuthHeaders(user2Cookie),
+          headers: getTestAuthHeaders("USER2_VERIFIED"),
         }
       );
       const user2Buckets = await res2.json();
@@ -171,9 +164,11 @@ describe("Protected API Routes - Buckets", () => {
       // Buckets should be isolated between users
       const user1BucketIds = user1Buckets.map((b) => b.id);
       const user2BucketIds = user2Buckets.map((b) => b.id);
-      
+
       // There should be no overlap unless they share buckets
-      const overlap = user1BucketIds.filter((id: string) => user2BucketIds.includes(id));
+      const overlap = user1BucketIds.filter((id: string) =>
+        user2BucketIds.includes(id)
+      );
       // In a clean test environment, there should be no shared buckets
       expect(overlap.length).toBe(0);
     });
@@ -189,15 +184,15 @@ describe("Protected API Routes - Buckets", () => {
       const res = await client.api.protected.buckets.used.$get(
         {},
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
-      
+
       // Each bucket should have the expected properties
       data.forEach((bucket) => {
         expect(bucket).toHaveProperty("bucketId");
@@ -210,15 +205,15 @@ describe("Protected API Routes - Buckets", () => {
       const res1 = await client.api.protected.buckets.used.$get(
         {},
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
       const user1Buckets = await res1.json();
-      
+
       const res2 = await client.api.protected.buckets.used.$get(
         {},
         {
-          headers: getAuthHeaders(user2Cookie),
+          headers: getTestAuthHeaders("USER2_VERIFIED"),
         }
       );
       const user2Buckets = await res2.json();
@@ -244,7 +239,7 @@ describe("Protected API Routes - Buckets", () => {
     it("should return 403 when trying to delete bucket without ownership", async () => {
       // Try to delete a non-existent or non-owned bucket
       const nonExistentId = generateTestUUID();
-      
+
       const res = await client.api.protected.buckets[":bucketId"].$delete(
         {
           param: {
@@ -252,7 +247,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -267,7 +262,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -287,7 +282,7 @@ describe("Protected API Routes - Buckets", () => {
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
 
@@ -297,7 +292,7 @@ describe("Protected API Routes - Buckets", () => {
       const bucketsRes = await client.api.protected.buckets.maintained.$get(
         {},
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getTestAuthHeaders("USER1_VERIFIED"),
         }
       );
       const buckets = await bucketsRes.json();
@@ -305,14 +300,16 @@ describe("Protected API Routes - Buckets", () => {
 
       if (targetBucket) {
         // Try to delete with user2 (should fail with 403)
-        const deleteRes = await client.api.protected.buckets[":bucketId"].$delete(
+        const deleteRes = await client.api.protected.buckets[
+          ":bucketId"
+        ].$delete(
           {
             param: {
               bucketId: targetBucket.id,
             },
           },
           {
-            headers: getAuthHeaders(user2Cookie),
+            headers: getTestAuthHeaders("USER2_VERIFIED"),
           }
         );
 

@@ -14,8 +14,12 @@ const paramSchema = z.object({ chatId: uuidSchema }).strict();
 const app = new Hono()
   .get(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { chatId } = c.req.valid("param");
@@ -36,11 +40,19 @@ const app = new Hono()
   )
   .patch(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
-    validator("json", (value) => {
-      return chatsTitleSchema.parse(value);
+    validator("json", (value, c) => {
+      const parsed = chatsTitleSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { chatId } = c.req.valid("param");

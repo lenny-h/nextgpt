@@ -23,13 +23,12 @@ const querySchema = z
 
 const app = new Hono().get(
   "/",
-  validator("query", (value) => {
-    return querySchema.parse({
-      bucketId: value.bucketId,
-      courseIds: value.courseIds,
-      pageNumber: Number(value.pageNumber),
-      itemsPerPage: Number(value.itemsPerPage),
-    });
+  validator("query", (value, c) => {
+    const parsed = querySchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { bucketId, courseIds, pageNumber, itemsPerPage } =

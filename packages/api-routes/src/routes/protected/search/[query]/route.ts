@@ -14,11 +14,19 @@ const paramSchema = z.object({ query: querySchema }).strict();
 
 const app = new Hono().post(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   validator("json", async (value, c) => {
-    return searchPayloadSchema.parse(value);
+    const parsed = await searchPayloadSchema.safeParseAsync(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { query } = c.req.valid("param");

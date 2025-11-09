@@ -14,15 +14,17 @@
     "@hono/node-server": "^1.19.1",
     "@workspace/api-routes": "workspace:*",
     "@workspace/server": "workspace:*",
+    "drizzle-orm": "0.44.5",
     "hono": "^4.9.6"
   },
   "devDependencies": {
     "@types/node": "^22.13.14",
+    "@vitest/coverage-v8": "^4.0.8",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "dotenv": "^17.2.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.8"
   }
 }

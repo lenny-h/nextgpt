@@ -1,14 +1,14 @@
 import * as z from "zod";
 
 import { insertDocument } from "@workspace/api-routes/lib/db/queries/documents.js";
-import { Hono } from "hono";
-import { validator } from "hono/validator";
-import { insertDocumentSchema } from "./schema.js";
-import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-schema.js";
 import { itemsPerPageSchema } from "@workspace/api-routes/schemas/items-per-page-schema.js";
+import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { documents } from "@workspace/server/drizzle/schema.js";
 import { eq, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { validator } from "hono/validator";
+import { insertDocumentSchema } from "./schema.js";
 
 const querySchema = z
   .object({
@@ -20,11 +20,12 @@ const querySchema = z
 const app = new Hono()
   .get(
     "/",
-    validator("query", (value) => {
-      return querySchema.parse({
-        pageNumber: Number(value.pageNumber),
-        itemsPerPage: Number(value.itemsPerPage),
-      });
+    validator("query", (value, c) => {
+      const parsed = querySchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { pageNumber, itemsPerPage } = c.req.valid("query");
@@ -51,7 +52,11 @@ const app = new Hono()
   .post(
     "/",
     validator("json", async (value, c) => {
-      return insertDocumentSchema.parse(value);
+      const parsed = insertDocumentSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { title, content, kind } = c.req.valid("json");

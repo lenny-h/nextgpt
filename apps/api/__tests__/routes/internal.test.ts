@@ -158,8 +158,8 @@ describe("Internal API Routes", () => {
         }
       );
 
-      // Should either return 400 for validation or 200 with empty embeddings
-      expect([200, 400]).toContain(res.status);
+      // Should return 400 due to validation
+      expect(res.status).toBe(400);
     });
   });
 });

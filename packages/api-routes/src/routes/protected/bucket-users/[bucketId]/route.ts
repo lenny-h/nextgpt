@@ -35,14 +35,19 @@ const deleteQuerySchema = z
 const app = new Hono()
   .get(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
-    validator("query", (value) => {
-      return querySchema.parse({
-        pageNumber: Number(value.pageNumber),
-        itemsPerPage: Number(value.itemsPerPage),
-      });
+    validator("query", (value, c) => {
+      const parsed = querySchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { bucketId } = c.req.valid("param");
@@ -74,11 +79,19 @@ const app = new Hono()
   )
   .post(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     validator("json", async (value, c) => {
-      return bucketUsersSchema.parse(value);
+      const parsed = bucketUsersSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { bucketId } = c.req.valid("param");
@@ -110,11 +123,19 @@ const app = new Hono()
   )
   .delete(
     "/",
-    validator("param", (value) => {
-      return paramSchema.parse(value);
+    validator("param", (value, c) => {
+      const parsed = paramSchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
-    validator("json", (value) => {
-      return deleteQuerySchema.parse(value);
+    validator("json", (value, c) => {
+      const parsed = deleteQuerySchema.safeParse(value);
+      if (!parsed.success) {
+        return c.text("BAD_REQUEST", 400);
+      }
+      return parsed.data;
     }),
     async (c) => {
       const { bucketId } = c.req.valid("param");

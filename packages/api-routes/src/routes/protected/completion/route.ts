@@ -14,8 +14,12 @@ const completionResponseSchema = z.object({
 
 const app = new Hono().post(
   "/",
-  validator("json", async (value) => {
-    return completionSchema.parse(value);
+  validator("json", async (value, c) => {
+    const parsed = completionSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { context } = c.req.valid("json");

@@ -24,11 +24,19 @@ const formSchema = z
 
 const app = new Hono().post(
   "/",
-  validator("param", (value) => {
-    return paramSchema.parse(value);
+  validator("param", (value, c) => {
+    const parsed = paramSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
-  validator("form", (value) => {
-    return formSchema.parse(value);
+  validator("form", (value, c) => {
+    const parsed = formSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.text("BAD_REQUEST", 400);
+    }
+    return parsed.data;
   }),
   async (c) => {
     const { bucketId } = c.req.valid("param");
