@@ -33,6 +33,11 @@ export const filterSchema = z
       .max(1, {
         message: "You can only select up to 1 document",
       }),
+    prompts: z.array(
+      z.object({
+        id: uuidSchema,
+      })
+    ),
   })
   .strict();
 

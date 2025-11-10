@@ -137,3 +137,54 @@ export const DocumentsList = memo(
     );
   },
 );
+
+interface Prompt extends ListItem {
+  id: string;
+  name: string;
+  content: string;
+}
+
+export const PromptsList = memo(({ open, inputValue, max }: Props) => {
+  const { sharedT } = useSharedTranslations();
+
+  const { filter, setFilter } = useFilter();
+
+  const togglePrompt = (item: ListItem) => {
+    const prompt = item as Prompt;
+    const promptIncluded = filter.prompts.map((p) => p.id).includes(prompt.id);
+
+    const newFilter = {
+      ...filter,
+      prompts: promptIncluded
+        ? filter.prompts.filter((p) => p.id !== prompt.id)
+        : [...filter.prompts, prompt],
+    };
+    setFilter(newFilter);
+  };
+
+  return (
+    <FilterableList
+      open={open}
+      inputValue={inputValue}
+      queryKey={["prompts"]}
+      queryFn={async () => {
+        const response = await apiFetcher(
+          (client) => client.prompts.$get(),
+          sharedT.apiCodes,
+        );
+        return response;
+      }}
+      ilikeQueryFn={async (prefix) => {
+        // TODO: implement server-side ilike filtering
+        const response = await apiFetcher(
+          (client) => client.prompts.ilike.$get({ query: { prefix } }),
+          sharedT.apiCodes,
+        );
+        return response;
+      }}
+      selectedItems={filter.prompts}
+      onToggleItem={togglePrompt}
+      maxItems={max}
+    />
+  );
+});

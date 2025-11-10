@@ -7,18 +7,20 @@ import { Badge } from "@workspace/ui/components/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { AddPromptForm } from "@workspace/ui/custom-components/add-prompt-form";
 import { cn } from "@workspace/ui/lib/utils";
 import { memo, useEffect, useState } from "react";
-import { DocumentsList, FilesList } from "./add-context-lists";
+import { DocumentsList, FilesList, PromptsList } from "./add-context-lists";
 import { SearchWithSelection } from "./search-with-selection";
 
 interface AddContextProps {
-  type: "files" | "documents";
+  type: "files" | "documents" | "prompts";
 }
 
 export const AddContext = memo(({ type }: AddContextProps) => {
@@ -27,10 +29,11 @@ export const AddContext = memo(({ type }: AddContextProps) => {
   const { isLoading, isError } = useFilter();
   const [isTemporary] = useIsTemporary();
 
-  const shortcut = type === "files" ? "j" : "k";
+  const shortcut = type === "files" ? "j" : type === "documents" ? "k" : "l";
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -64,7 +67,11 @@ export const AddContext = memo(({ type }: AddContextProps) => {
           )}
           onClick={() => setOpen((open) => !open)}
         >
-          {type === "files" ? webT.addContext.addFiles : webT.addContext.addDocuments}
+          {type === "files"
+            ? webT.addContext.addFiles
+            : type === "documents"
+              ? webT.addContext.addDocuments
+              : webT.addContext.addPrompts}
           <kbd className="bg-muted text-muted-foreground inline-flex h-4 items-center gap-1 rounded-xl border px-1.5 font-mono font-medium">
             <span className="text-xs">⌘</span>
             {shortcut}
@@ -73,27 +80,54 @@ export const AddContext = memo(({ type }: AddContextProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{type === "files" ? webT.addContext.searchFiles : webT.addContext.searchDocuments}</DialogTitle>
+          {addPromptDialogOpen ? (
+            <>
+              <DialogTitle>{webT.addContext.addPrompts}</DialogTitle>
+              <DialogDescription>
+                Create a new prompt to provide instructions to the LLM that you
+                can reuse across different requests. This is similar to memory.
+              </DialogDescription>
+            </>
+          ) : (
+            <DialogTitle>
+              {type === "files"
+                ? webT.addContext.searchFiles
+                : webT.addContext.searchDocuments}
+            </DialogTitle>
+          )}
         </DialogHeader>
-        <SearchWithSelection
-          type={type}
-          inputValue={inputValue}
-          onInputChange={(value) => setInputValue(value)}
-        />
-        {type === "files" ? (
-          <FilesList
-            open={open}
-            setOpen={setOpen}
-            inputValue={inputValue}
-            max={5}
-          />
+        {addPromptDialogOpen ? (
+          <AddPromptForm onClose={() => setAddPromptDialogOpen(false)} />
         ) : (
-          <DocumentsList
-            open={open}
-            setOpen={setOpen}
-            inputValue={inputValue}
-            max={1}
-          />
+          <>
+            <SearchWithSelection
+              type={type}
+              inputValue={inputValue}
+              onInputChange={(value) => setInputValue(value)}
+            />
+            {type === "files" ? (
+              <FilesList
+                open={open}
+                setOpen={setOpen}
+                inputValue={inputValue}
+                max={5}
+              />
+            ) : type === "documents" ? (
+              <DocumentsList
+                open={open}
+                setOpen={setOpen}
+                inputValue={inputValue}
+                max={1}
+              />
+            ) : (
+              <PromptsList
+                open={open}
+                setOpen={setOpen}
+                inputValue={inputValue}
+                max={5}
+              />
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>

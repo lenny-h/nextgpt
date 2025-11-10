@@ -34,4 +34,6 @@ export interface UserPermissionsCache {
   bucket_ids: string[];
   course_ids: string[];
   file_ids: string[];
+  document_ids: string[];
+  prompt_ids: string[];
 }

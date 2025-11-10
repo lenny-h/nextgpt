@@ -38,6 +38,8 @@ const app = new Hono().get(
       filterCourseIds: courseIds,
       filterFileIds: [],
       filterAttachments: [],
+      filterDocumentIds: [],
+      filterPromptIds: [],
     });
 
     if (!hasPermissions) {

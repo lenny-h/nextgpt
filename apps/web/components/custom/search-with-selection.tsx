@@ -6,7 +6,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Search, X } from "lucide-react";
 
 interface SearchWithSelectionProps {
-  type: "chats" | "courses" | "files" | "documents";
+  type: "chats" | "courses" | "files" | "documents" | "prompts";
   inputValue: string;
   onInputChange: (value: string) => void;
   showCurrentSelection?: boolean;
@@ -25,7 +25,9 @@ export function SearchWithSelection({
       ? filter.courses
       : type === "files"
         ? filter.files
-        : filter.documents) || [];
+        : type === "prompts"
+          ? filter.prompts
+          : filter.documents) || [];
 
   return (
     <div className="space-y-4">

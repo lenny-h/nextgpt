@@ -89,6 +89,7 @@ export const BucketSwitcher = () => {
                     courses: [],
                     files: [],
                     documents: [],
+                    prompts: [],
                   })
                 }
                 className="gap-2 p-2"

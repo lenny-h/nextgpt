@@ -12,7 +12,7 @@ import {
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { db } from "@workspace/server/drizzle/db.js";
-import { pages } from "@workspace/server/drizzle/schema.js";
+import { chunks } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -62,7 +62,7 @@ const app = new Hono().delete(
     const storageClient = getStorageClient();
 
     for (const file of files) {
-      await db.delete(pages).where(eq(pages.fileId, file.id)); // Delete page records from the database
+      await db.delete(chunks).where(eq(chunks.fileId, file.id)); // Delete chunks from the database
       await deleteFile({
         bucketId,
         fileId: file.id,

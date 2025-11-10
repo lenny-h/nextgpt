@@ -43,6 +43,7 @@ export function FilterProvider({ children }: Props) {
     courses: [],
     files: [],
     documents: [],
+    prompts: [],
   });
 
   const [studyMode, setStudyMode] = useState<StudyMode>("facts");
@@ -67,6 +68,7 @@ export function FilterProvider({ children }: Props) {
         courses: [],
         files: [],
         documents: [],
+        prompts: [],
       });
     }
   }, [buckets]);

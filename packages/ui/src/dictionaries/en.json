@@ -30,5 +30,16 @@
   },
   "socialLogins": {
     "loginWithInstitution": "Login With Your Institution"
+  },
+    "addPromptForm": {
+    "creating": "Creating prompt...",
+    "success": "Prompt created 🎉",
+    "errorSaving": "Failed to save document. Please try again later.",
+    "name": "Name",
+    "promptName": "Prompt Name",
+    "content": "Content",
+    "contentPlaceholder": "Enter your instructions here...",
+    "cancel": "Cancel",
+    "create": "Create"
   }
 }

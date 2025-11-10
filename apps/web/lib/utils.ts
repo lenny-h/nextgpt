@@ -96,5 +96,6 @@ export function stripFilter(
       ...(includePageRanges && f.pageRange ? { pageRange: f.pageRange } : {}),
     })),
     documents: filter.documents.map((doc) => ({ id: doc.id })),
+    prompts: filter.prompts.map((p) => ({ id: p.id })),
   };
 }

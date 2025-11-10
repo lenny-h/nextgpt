@@ -56,6 +56,7 @@ import processCsvRoute from "./process-csv/[bucketId]/route.js";
 import profilesIlike from "./profiles/ilike/route.js";
 import profilesRoute from "./profiles/route.js";
 import promptsDeleteRoute from "./prompts/[promptId]/route.js";
+import promptsIlike from "./prompts/ilike/route.js";
 import promptsRoute from "./prompts/route.js";
 import searchRoute from "./search/[query]/route.js";
 import tasksByCourseRoute from "./tasks/[courseId]/route.js";
@@ -163,6 +164,7 @@ const protectedApiRouter = new Hono()
   // Prompts
   .route("/prompts", promptsRoute)
   .route("/prompts/:promptId", promptsDeleteRoute)
+  .route("/prompts/ilike", promptsIlike)
 
   // Search
   .route("/search/:query", searchRoute)

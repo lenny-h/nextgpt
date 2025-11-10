@@ -39,6 +39,8 @@ const app = new Hono().post(
       filterCourseIds: filter.courses.map((c) => c.id),
       filterFileIds: filter.files.map((f) => f.id),
       filterAttachments: [],
+      filterDocumentIds: [],
+      filterPromptIds: [],
     });
 
     if (!hasPermission) {

@@ -1,6 +1,5 @@
 "use client";
 
-import { AddPromptForm } from "@/components/custom/add-prompt-form";
 import { promptsColumns } from "@/components/tables/prompts-columns";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -15,6 +14,7 @@ import {
 } from "@workspace/ui/components/dialog";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { AddPromptForm } from "@workspace/ui/custom-components/add-prompt-form";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useState } from "react";
 

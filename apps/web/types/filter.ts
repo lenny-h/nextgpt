@@ -19,4 +19,9 @@ export interface FrontendFilter {
     title: string;
     kind: ArtifactKind;
   }[];
+  prompts: {
+    id: string;
+    name: string;
+    content: string;
+  }[];
 }

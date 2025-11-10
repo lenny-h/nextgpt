@@ -1,18 +1,15 @@
 import { generateTitleFromUserMessage } from "@workspace/api-routes/utils/generate-title.js";
+import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { chatTitleModelIdx } from "@workspace/api-routes/utils/models.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
-import { CustomDocument } from "@workspace/server/drizzle/schema.js";
+import { type CustomDocument } from "@workspace/server/drizzle/schema.js";
 import {
   stepCountIs,
   streamText,
   type Tool,
   type UIMessageStreamWriter,
 } from "ai";
-import { HTTPException } from "hono/http-exception";
-import { type Filter } from "../../schemas/filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
-import { getDocument } from "../db/queries/documents.js";
 import { STANDARD_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
@@ -35,22 +32,7 @@ export class StandardChatHandler extends ChatHandler {
   }
 
   protected async validateSpecificRequirements(): Promise<void> {
-    const filter = this.request.filter as Filter;
-
-    if (filter.documents?.length) {
-      logger.debug("Validating document access", {
-        chatId: this.request.id,
-        documentId: filter.documents[0].id,
-      });
-
-      this.document = await getDocument({
-        id: filter.documents[0].id,
-      });
-
-      if (this.document && this.request.user.id !== this.document.userId) {
-        throw new HTTPException(403, { message: "FORBIDDEN" });
-      }
-    }
+    // No specific requirements for standard chat
   }
 
   protected async generateChatTitle(): Promise<string> {
@@ -119,7 +101,11 @@ export class StandardChatHandler extends ChatHandler {
       tools,
       experimental_context,
       onStepFinish: (step) => {
-        logger.info("Step finished:", { text: step.text, reasoning: step.reasoning, toolCalls: step.toolCalls });
+        logger.info("Step finished:", {
+          text: step.text,
+          reasoning: step.reasoning,
+          toolCalls: step.toolCalls,
+        });
         if (
           step.toolCalls.some(
             (call) =>
@@ -127,7 +113,9 @@ export class StandardChatHandler extends ChatHandler {
               call.toolName === "modifyDocument"
           )
         ) {
-          logger.debug("Disabling delta writes for document operations", { chatId: this.request.id });
+          logger.debug("Disabling delta writes for document operations", {
+            chatId: this.request.id,
+          });
           experimental_context.writeDeltas = false;
         }
       },

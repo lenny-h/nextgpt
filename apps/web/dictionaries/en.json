@@ -2,8 +2,10 @@
   "addContext": {
     "addFiles": "Add files",
     "addDocuments": "Add documents",
+    "addPrompts": "Add prompts",
     "searchFiles": "Search files",
     "searchDocuments": "Search documents",
+    "searchPrompts": "Search prompts",
     "search": "Search"
   },
   "chatHeader": {

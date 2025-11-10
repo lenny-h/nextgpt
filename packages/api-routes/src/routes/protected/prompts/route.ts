@@ -40,7 +40,7 @@ const app = new Hono()
 
       const promptsCount = await getPromptsCount(user.id);
 
-      if (promptsCount >= 6) {
+      if (promptsCount >= 10) {
         throw new HTTPException(403, { message: "PROMPT_LIMIT_REACHED" });
       }
 

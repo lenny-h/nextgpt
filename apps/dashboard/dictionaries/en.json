@@ -74,17 +74,6 @@
     "searchUsers": "Search users...",
     "errorProfiles": "Could not get profiles"
   },
-  "addPromptForm": {
-    "creating": "Creating prompt...",
-    "success": "Prompt created 🎉",
-    "errorSaving": "Failed to save document. Please try again later.",
-    "name": "Name",
-    "promptName": "Prompt Name",
-    "content": "Content",
-    "contentPlaceholder": "Enter your instructions here...",
-    "cancel": "Cancel",
-    "create": "Create"
-  },
   "tasks": {
     "loading": "Loading courses...",
     "errorLoading": "Courses could not be loaded. Please try again later.",

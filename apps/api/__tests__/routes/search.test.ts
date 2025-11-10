@@ -29,6 +29,7 @@ describe("Protected API Routes - Search", () => {
     courses: [],
     files: [],
     documents: [],
+    prompts: [],
   });
 
   beforeAll(async () => {
@@ -86,6 +87,7 @@ describe("Protected API Routes - Search", () => {
               courses: [],
               files: [],
               documents: [],
+              prompts: [],
             },
             fts: false,
           },

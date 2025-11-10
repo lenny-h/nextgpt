@@ -1,4 +1,5 @@
-import { useDashboardTranslations } from "@/contexts/dashboard-translations";
+import * as z from "zod";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -13,13 +14,12 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 
 export const promptFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(64, "Name is too long"),
@@ -37,7 +37,6 @@ interface AddPromptFormProps {
 
 export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
   const { sharedT } = useSharedTranslations();
-  const { dashboardT } = useDashboardTranslations();
 
   const queryClient = useQueryClient();
 
@@ -58,7 +57,7 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
             content: values.content,
           },
         }),
-      sharedT.apiCodes,
+      sharedT.apiCodes
     ).then(() => {
       queryClient.invalidateQueries({ queryKey: ["prompts"] });
       onClose();
@@ -80,10 +79,10 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{dashboardT.addPromptForm.name}</FormLabel>
+                <FormLabel>{sharedT.addPromptForm.name}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder={dashboardT.addPromptForm.promptName}
+                    placeholder={sharedT.addPromptForm.promptName}
                     {...field}
                   />
                 </FormControl>
@@ -96,10 +95,10 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{dashboardT.addPromptForm.content}</FormLabel>
+                <FormLabel>{sharedT.addPromptForm.content}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={dashboardT.addPromptForm.contentPlaceholder}
+                    placeholder={sharedT.addPromptForm.contentPlaceholder}
                     className="min-h-32"
                     {...field}
                   />
@@ -111,13 +110,13 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
         </div>
         <DialogFooter className="mt-4">
           <Button type="button" variant="secondary" onClick={onClose}>
-            {dashboardT.addPromptForm.cancel}
+            {sharedT.addPromptForm.cancel}
           </Button>
           <SubmitButton
             isPending={form.formState.isSubmitting}
             pendingText="Creating..."
           >
-            {dashboardT.addPromptForm.create}
+            {sharedT.addPromptForm.create}
           </SubmitButton>
         </DialogFooter>
       </form>

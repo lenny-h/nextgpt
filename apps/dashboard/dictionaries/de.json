@@ -74,17 +74,6 @@
     "searchUsers": "Benutzer suchen...",
     "errorProfiles": "Benutzer konnten nicht abgerufen werden"
   },
-  "addPromptForm": {
-    "creating": "Prompt wird erstellt...",
-    "success": "Prompt erstellt 🎉",
-    "errorSaving": "Fehler beim Speichern des Dokuments. Bitte versuchen Sie es später erneut.",
-    "name": "Name",
-    "promptName": "Name des Prompts",
-    "content": "Inhalt",
-    "contentPlaceholder": "Geben Sie hier Ihre Anweisungen ein...",
-    "cancel": "Abbrechen",
-    "create": "Erstellen"
-  },
   "tasks": {
     "loading": "Kurse werden geladen...",
     "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",

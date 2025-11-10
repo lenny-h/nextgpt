@@ -14,11 +14,11 @@ import {
 } from "@workspace/ui/components/dialog";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useUser } from "@workspace/ui/contexts/user-context";
+import { AddPromptForm } from "@workspace/ui/custom-components/add-prompt-form";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
-import { AddPromptForm } from "./add-prompt-form";
 import { CorrectionDropzone } from "./correction-dropzone";
 import { Selector } from "./selector";
 import { UploadList } from "./upload-list";

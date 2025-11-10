@@ -15,9 +15,28 @@ export const ContextFiles = memo(() => {
 
   const files = filter.files || [];
   const documents = filter.documents || [];
+  const prompts = filter.prompts || [];
 
   return (
     <div className="scrollbar-hidden mx-3 flex flex-row gap-2 overflow-x-scroll border-b py-1">
+      <AddContext type="prompts" />
+      {prompts.map((prompt) => (
+        <Badge key={prompt.id} variant="default">
+          {prompt.name}
+          <button
+            className="text-muted-foreground hover:text-destructive ml-2 cursor-pointer"
+            onClick={() =>
+              setFilter((prev) => ({
+                ...prev,
+                prompts: prev.prompts?.filter((p) => p.id !== prompt.id),
+              }))
+            }
+          >
+            <X size={12} />
+          </button>
+        </Badge>
+      ))}
+
       <AddContext type="files" />
       {files.map((file) => (
         <Badge key={file.id} variant="default">

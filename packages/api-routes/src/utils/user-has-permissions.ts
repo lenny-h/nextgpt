@@ -1,10 +1,12 @@
+import { db } from "@workspace/server/drizzle/db.js";
+import { documents, prompts } from "@workspace/server/drizzle/schema.js";
 import {
   getRedisClient,
   getUserPermissionsCacheKey,
   PERMISSIONS_CACHE_TTL,
   type UserPermissionsCache,
 } from "@workspace/server/utils/access-clients/redis-client.js";
-import { HTTPException } from "hono/http-exception";
+import { and, eq, inArray } from "drizzle-orm";
 import { isBucketUser } from "../lib/db/queries/buckets.js";
 import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
 import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
@@ -19,12 +21,16 @@ export async function userHasPermissions({
   filterCourseIds,
   filterFileIds,
   filterAttachments,
+  filterDocumentIds,
+  filterPromptIds,
 }: {
   userId: string;
   filterBucketId: string;
   filterCourseIds: string[];
   filterFileIds: string[];
   filterAttachments: Attachment[];
+  filterDocumentIds: string[];
+  filterPromptIds: string[];
 }): Promise<boolean> {
   let courseIds: string[] = [];
   let fileIds: string[] = filterFileIds;
@@ -40,6 +46,8 @@ export async function userHasPermissions({
     bucket_ids: [],
     course_ids: [],
     file_ids: [],
+    document_ids: [],
+    prompt_ids: [],
   };
 
   if (cachedData) {
@@ -96,8 +104,56 @@ export async function userHasPermissions({
   if (filterAttachments.length > 0) {
     for (const attachment of filterAttachments) {
       if (!attachment.filename.startsWith(userId)) {
-        throw new HTTPException(403, { message: "FORBIDDEN" });
+        return false;
       }
+    }
+  }
+
+  // Validate document access
+  if (filterDocumentIds.length > 0) {
+    if (
+      !filterDocumentIds.every((docId) => metadata.document_ids.includes(docId))
+    ) {
+      const userDocuments = await db
+        .select({
+          id: documents.id,
+        })
+        .from(documents)
+        .where(
+          and(
+            eq(documents.userId, userId),
+            inArray(documents.id, filterDocumentIds)
+          )
+        );
+
+      if (userDocuments.length !== filterDocumentIds.length) {
+        return false;
+      }
+
+      permissionsCached = false;
+    }
+  }
+
+  // Validate prompt access
+  if (filterPromptIds.length > 0) {
+    if (
+      !filterPromptIds.every((promptId) =>
+        metadata.prompt_ids.includes(promptId)
+      )
+    ) {
+      const userPrompts = await db
+        .select({
+          id: prompts.id,
+        })
+        .from(prompts)
+        .where(
+          and(eq(prompts.userId, userId), inArray(prompts.id, filterPromptIds))
+        );
+
+      if (userPrompts.length !== filterPromptIds.length) {
+        return false;
+      }
+      permissionsCached = false;
     }
   }
 
@@ -107,6 +163,12 @@ export async function userHasPermissions({
       bucket_ids: [...new Set([...metadata.bucket_ids, filterBucketId])],
       course_ids: [...new Set([...metadata.course_ids, ...courseIds])],
       file_ids: [...new Set([...metadata.file_ids, ...fileIds])],
+      document_ids: [
+        ...new Set([...metadata.document_ids, ...filterDocumentIds]),
+      ],
+      prompt_ids: [
+        ...new Set([...(metadata.prompt_ids || []), ...filterPromptIds]),
+      ],
     };
 
     await redis.set(cacheKey, JSON.stringify(updatedMetadata), {

@@ -49,6 +49,8 @@ const app = new Hono().get(
       filterCourseIds: [courseId],
       filterFileIds: [],
       filterAttachments: [],
+      filterDocumentIds: [],
+      filterPromptIds: [],
     });
 
     if (!hasPermissions) {
