@@ -30,6 +30,7 @@ The services are exposed on the following local ports:
 | Redis              | 6379       | 6379           |
 | MinIO              | 9000       | 9000           |
 | MinIO Console      | 9001       | 9001           |
+| Keycloak           | 8080       | 8080           |
 | App                | 3000       | 8080           |
 | Dashboard          | 3001       | 8080           |
 | API                | 3004       | 8080           |

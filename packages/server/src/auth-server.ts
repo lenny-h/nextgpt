@@ -3,13 +3,89 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
 import { admin, lastLoginMethod } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { db } from "./drizzle/db.js";
+import { user } from "./drizzle/schema.js";
 import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./email/send-email.js";
 import { getRedisClient } from "./utils/access-clients/redis-client.js";
+
+// Build plugins array and include SSO only when USE_SSO is "true"
+const plugins = [
+  admin(),
+  ...(process.env.USE_SSO === "true"
+    ? [
+        sso({
+          defaultSSO: [
+            // Keycloak SSO Configuration (for local testing)
+            {
+              domain: process.env.SSO_DOMAIN!,
+              providerId: process.env.SSO_PROVIDER_ID!,
+              oidcConfig: {
+                clientId: process.env.SSO_CLIENT_ID!,
+                clientSecret: process.env.SSO_CLIENT_SECRET!,
+                issuer: process.env.SSO_ISSUER!,
+                authorizationEndpoint: process.env.SSO_AUTHORIZATION_ENDPOINT!,
+                discoveryEndpoint: process.env.SSO_DISCOVERY_ENDPOINT!,
+                tokenEndpoint: process.env.SSO_TOKEN_ENDPOINT!,
+                jwksEndpoint: process.env.SSO_JWKS_ENDPOINT!,
+                scopes: ["openid", "email", "profile"],
+                pkce: true,
+              },
+            },
+          ],
+          provisionUser: async ({ user: newUser }) => {
+            try {
+              // Check if user already exists (idempotency)
+              const existingUser = await db.query.user.findFirst({
+                where: eq(user.email, newUser.email),
+              });
+
+              if (existingUser) {
+                return;
+              }
+
+              // Extract username from email
+              let username = newUser.email.split("@")[0];
+
+              // Check if username is already taken
+              const existingUsername = await db.query.user.findFirst({
+                where: eq(user.username, username),
+              });
+
+              // If username exists, append timestamp for uniqueness
+              if (existingUsername) {
+                username = `${username}${Date.now().toString().slice(-4)}`;
+              }
+
+              // Insert new user
+              await db.insert(user).values({
+                name: newUser.name,
+                username: username,
+                email: newUser.email,
+                emailVerified: true, // SSO users are pre-verified
+                image: newUser.image,
+                isPublic: true,
+              });
+            } catch (error) {
+              console.error("Error provisioning SSO user:", error);
+              throw new Error("Failed to provision user");
+            }
+          },
+          // Optional: Configure a mapping for SAML providers
+          disableImplicitSignUp: false,
+          trustEmailVerified: true,
+          providersLimit: 0, // No extra providers allowed so users cannot register new SSO providers
+        }),
+      ]
+    : []),
+  lastLoginMethod({
+    storeInDatabase: true,
+  }),
+];
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -80,13 +156,7 @@ export const auth = betterAuth({
       maxAge: 10 * 60, // Cache duration in seconds
     },
   },
-  plugins: [
-    admin(),
-    sso(),
-    lastLoginMethod({
-      storeInDatabase: true,
-    }),
-  ],
+  plugins: plugins,
   secondaryStorage: {
     get: async (key) => {
       const redis = await getRedisClient();

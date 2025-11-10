@@ -389,7 +389,19 @@ services:
   #     PROXY_PASSWORD: ${PROXY_PASSWORD}
   #     BLOCK_MEDIA: ${BLOCK_MEDIA}
   #   networks:
-  #     - database_network
+  #     - database_networ
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+      - database_network
 
 volumes:
   postgres-data:
