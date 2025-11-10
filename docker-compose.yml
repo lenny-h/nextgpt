@@ -8,14 +8,14 @@ services:
   # PostgreSQL Database with pgvector extension
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: firecrawl-postgres:latest # firecrawl-postgres for Firecrawl, else use pgvector/pgvector:pg18
     restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:
-      # - ./packages/server/src/drizzle/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql:ro # Only required for Firecrawl
+      - ./packages/server/src/drizzle/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql:ro # Only required for Firecrawl
       - ./packages/server/src/drizzle/0000_romantic_outlaw_kid.sql:/docker-entrypoint-initdb.d/0000_romantic_outlaw_kid.sql:ro
-      - ./packages/server/src/drizzle/__tests__/seed-test-users.sql:/docker-entrypoint-initdb.d/seed-test-users.sql:ro # Only required for automated testing
+      # - ./packages/server/src/drizzle/__tests__/seed-test-users.sql:/docker-entrypoint-initdb.d/seed-test-users.sql:ro # Only required for automated testing
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -30,11 +30,7 @@ services:
     command:
       - "postgres"
       - "-c"
-      - "shared_preload_libraries=vector"
-      # - "-c"
-      # - "max_connections=100" # Default is 100, adjust as needed
-      # - "-c"
-      # - "shared_buffers=128MB" # Default is 128MB, adjust as needed
+      - "shared_preload_libraries=vector,pg_cron" # pg_cron is only needed for Firecrawl
     networks:
       - database_network
 
@@ -316,92 +312,92 @@ services:
   #   ports:
   #     - "3001:3000"
 
-  # # Firecrawl
-  # firecrawl-api:
-  #   image: firecrawl:latest
+  # Firecrawl
+  firecrawl-api:
+    image: firecrawl:latest
 
-  #   ulimits:
-  #     nofile:
-  #       soft: 65535
-  #       hard: 65535
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
   
-  #   environment:
-  #     HOST: "0.0.0.0"
-  #     PORT: 8080
-  #     EXTRACT_WORKER_PORT: 3004
-  #     WORKER_PORT: 3005
-  #     ENV: local
-
-  #     REDIS_URL: redis://redis:6379
-  #     REDIS_RATE_LIMIT_URL: redis://redis:6379
-  #     PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
-
-  #     NUQ_DATABASE_URL: postresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
-
-  #     USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
-  #     SUPABASE_URL: ${SUPABASE_URL}
-  #     SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
-  #     SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
-  #     SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
-
-  #     OPENAI_BASE_URL: ${OPENAI_BASE_URL}
-  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
-
-  #     MODEL_NAME: ${MODEL_NAME}
-  #     MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
-  #     OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
-
-  #     SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
-
-  #     # Use if you've set up authentication and want to test with a real API key
-  #     TEST_API_KEY: ${TEST_API_KEY}
-
-  #     # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
-  #     BULL_AUTH_KEY: ${BULL_AUTH_KEY}
-
-  #     POSTHOG_HOST: ${POSTHOG_HOST}
-  #     POSTHOG_API_KEY: ${POSTHOG_API_KEY}
-
-  #     SERPER_API_KEY: ${SERPER_API_KEY}
-  #     SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
-  #     LOGGING_LEVEL: ${LOGGING_LEVEL}
-  #     PROXY_SERVER: ${PROXY_SERVER}
-  #     PROXY_USERNAME: ${PROXY_USERNAME}
-  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
-  #     SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
-  #     SEARXNG_ENGINES: ${SEARXNG_ENGINES}
-  #     SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
-  #   depends_on:
-  #     - redis
-  #     - playwright-service
-  #   ports:
-  #     - "3007:8080"
-  #   command: node dist/src/harness.js --start-docker
-  #   networks:
-  #     - database_network
-    
-  # playwright-service:
-  #   image: firecrawl-playwright:latest
-  #   environment:
-  #     PORT: 3008
-  #     PROXY_SERVER: ${PROXY_SERVER}
-  #     PROXY_USERNAME: ${PROXY_USERNAME}
-  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
-  #     BLOCK_MEDIA: ${BLOCK_MEDIA}
-  #   networks:
-  #     - database_networ
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    container_name: keycloak
-    command: start-dev
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      HOST: "0.0.0.0"
+      PORT: 8080
+      EXTRACT_WORKER_PORT: 3004
+      WORKER_PORT: 3005
+      ENV: local
+
+      REDIS_URL: redis://redis:6379
+      REDIS_RATE_LIMIT_URL: redis://redis:6379
+      PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
+
+      NUQ_DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
+
+      USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
+      SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
+      SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
+
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      MODEL_NAME: ${MODEL_NAME}
+      MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
+
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+
+      # Use if you've set up authentication and want to test with a real API key
+      TEST_API_KEY: ${TEST_API_KEY}
+
+      # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
+      BULL_AUTH_KEY: ${BULL_AUTH_KEY}
+
+      POSTHOG_HOST: ${POSTHOG_HOST}
+      POSTHOG_API_KEY: ${POSTHOG_API_KEY}
+
+      SERPER_API_KEY: ${SERPER_API_KEY}
+      SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
+      LOGGING_LEVEL: ${LOGGING_LEVEL}
+      PROXY_SERVER: ${PROXY_SERVER}
+      PROXY_USERNAME: ${PROXY_USERNAME}
+      PROXY_PASSWORD: ${PROXY_PASSWORD}
+      SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
+      SEARXNG_ENGINES: ${SEARXNG_ENGINES}
+      SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+    depends_on:
+      - redis
+      - playwright-service
     ports:
-      - "8080:8080"
+      - "3007:8080"
+    command: node dist/src/harness.js --start-docker
     networks:
       - database_network
+    
+  playwright-service:
+    image: firecrawl-playwright:latest
+    environment:
+      PORT: 3008
+      PROXY_SERVER: ${PROXY_SERVER}
+      PROXY_USERNAME: ${PROXY_USERNAME}
+      PROXY_PASSWORD: ${PROXY_PASSWORD}
+      BLOCK_MEDIA: ${BLOCK_MEDIA}
+    networks:
+      - database_network
+
+  # keycloak:
+  #   image: quay.io/keycloak/keycloak:latest
+  #   container_name: keycloak
+  #   command: start-dev
+  #   environment:
+  #     KEYCLOAK_ADMIN: admin
+  #     KEYCLOAK_ADMIN_PASSWORD: admin
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - database_network
 
 volumes:
   postgres-data:

@@ -29,6 +29,7 @@ export class ChatRequest {
   public readonly user: User;
 
   public readonly reasoningEnabled?: boolean;
+  public readonly timezone?: string; // User's timezone from browser
 
   constructor(
     id: string,
@@ -36,7 +37,8 @@ export class ChatRequest {
     selectedChatModel: number,
     isTemporary: boolean,
     user: User,
-    reasoningEnabled?: boolean
+    reasoningEnabled?: boolean,
+    timezone?: string
   ) {
     this.id = id;
     this.messages = messages;
@@ -57,6 +59,7 @@ export class ChatRequest {
     this.user = user;
 
     this.reasoningEnabled = reasoningEnabled;
+    this.timezone = timezone;
 
     logger.debug("ChatRequest constructed", {
       chatId: id,
@@ -66,6 +69,7 @@ export class ChatRequest {
       isTemporary,
       selectedChatModel,
       reasoningEnabled,
+      timezone,
     });
   }
 
@@ -85,6 +89,7 @@ export class ChatRequest {
       modelIdx: selectedChatModel,
       isTemp: isTemporary,
       reasoning: reasoningEnabled,
+      timezone,
     } = validatedPayload;
 
     logger.debug("Retrieving previous messages");
@@ -125,7 +130,8 @@ export class ChatRequest {
       selectedChatModel,
       isTemporary,
       user,
-      reasoningEnabled
+      reasoningEnabled,
+      timezone
     );
   }
 

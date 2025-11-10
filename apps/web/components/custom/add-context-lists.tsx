@@ -175,7 +175,6 @@ export const PromptsList = memo(({ open, inputValue, max }: Props) => {
         return response;
       }}
       ilikeQueryFn={async (prefix) => {
-        // TODO: implement server-side ilike filtering
         const response = await apiFetcher(
           (client) => client.prompts.ilike.$get({ query: { prefix } }),
           sharedT.apiCodes,

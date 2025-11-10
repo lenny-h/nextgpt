@@ -122,6 +122,7 @@ export function Chat({
               modelIdx: selectedChatModel.id,
               isTemp: isTemporary,
               reasoning: selectedChatModel.reasoning && reasoningEnabled,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             },
           };
         },
@@ -131,7 +132,11 @@ export function Chat({
   return (
     <>
       <div className="flex h-dvh flex-col">
-        <ChatHeader chatId={chatId} isEmpty={messages.length === 0} isLoading={status === "submitted" || status === "streaming"} />
+        <ChatHeader
+          chatId={chatId}
+          isEmpty={messages.length === 0}
+          isLoading={status === "submitted" || status === "streaming"}
+        />
 
         {messages.length === 0 ? (
           <Introduction />

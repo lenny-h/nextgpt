@@ -1,6 +1,6 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import { prompts } from "@workspace/server/drizzle/schema.js";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 export async function getPrompt(promptId: string) {
@@ -14,6 +14,19 @@ export async function getPrompt(promptId: string) {
     throw new HTTPException(404, { message: "NOT_FOUND" });
   }
   return result[0].content;
+}
+
+export async function getPromptsByIds(promptIds: string[]) {
+  if (promptIds.length === 0) {
+    return [];
+  }
+
+  const result = await db
+    .select({ id: prompts.id, content: prompts.content })
+    .from(prompts)
+    .where(inArray(prompts.id, promptIds));
+
+  return result;
 }
 
 export async function insertPrompt({

@@ -14,6 +14,8 @@ const basePayloadSchema = z.object({
   isTemp: z.boolean(),
   reasoning: z.boolean().optional(),
   trigger: z.string().max(128).optional(),
+  // Client-side location information
+  timezone: z.string().optional(), // e.g., "America/New_York"
 });
 
 export const chatPayloadSchema = basePayloadSchema.strict();

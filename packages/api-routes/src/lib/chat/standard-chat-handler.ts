@@ -10,6 +10,7 @@ import {
   type UIMessageStreamWriter,
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
+import { getPromptsByIds } from "../db/queries/prompts.js";
 import { STANDARD_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
@@ -33,6 +34,72 @@ export class StandardChatHandler extends ChatHandler {
 
   protected async validateSpecificRequirements(): Promise<void> {
     // No specific requirements for standard chat
+  }
+
+  private async buildSystemPrompt(): Promise<string> {
+    let finalPrompt = this.systemPrompt;
+
+    // Add current date and time information
+    const currentDate = new Date();
+    const dateString = currentDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    const timeString = currentDate.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+
+    finalPrompt += `\n\n## Current Context\n\n`;
+    finalPrompt += `Today's date is ${dateString} at ${timeString}.\n`;
+
+    // Add user location if available
+    if (this.request.timezone) {
+      finalPrompt += `The user is in the timezone: ${this.request.timezone}.\n`;
+    }
+
+    // Check if the filter has prompts
+    if (
+      "prompts" in this.request.filter &&
+      this.request.filter.prompts.length > 0
+    ) {
+      const promptIds = this.request.filter.prompts.map((p) => p.id);
+
+      logger.debug("Fetching custom prompts", {
+        chatId: this.request.id,
+        promptCount: promptIds.length,
+      });
+
+      const userPrompts = await getPromptsByIds(promptIds);
+
+      if (userPrompts.length > 0) {
+        // Create a map to preserve the order from the filter
+        const promptMap = new Map(userPrompts.map((p) => [p.id, p.content]));
+
+        // Build the custom instructions section in the order provided by the user
+        const orderedPrompts = promptIds.map((id) => promptMap.get(id));
+
+        if (orderedPrompts.length > 0) {
+          finalPrompt += "\n\n## Custom Instructions\n\n";
+          finalPrompt +=
+            "The user has provided the following custom instructions. Please follow them carefully:\n\n";
+
+          orderedPrompts.forEach((content, index) => {
+            finalPrompt += `### Instruction ${index + 1}\n${content}\n\n`;
+          });
+
+          logger.info(
+            "Added custom prompts to system prompt. Final system prompt:\n\n",
+            finalPrompt
+          );
+        }
+      }
+    }
+
+    return finalPrompt;
   }
 
   protected async generateChatTitle(): Promise<string> {
@@ -87,8 +154,10 @@ export class StandardChatHandler extends ChatHandler {
   protected async executeChat(
     writer: UIMessageStreamWriter<MyUIMessage>
   ): Promise<void> {
+    const systemPrompt = await this.buildSystemPrompt();
+
     const streamConfig = await this.createStreamTextConfig({
-      systemPrompt: this.systemPrompt,
+      systemPrompt,
     });
 
     const tools = this.retrieveToolSet(writer);
