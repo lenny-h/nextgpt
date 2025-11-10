@@ -5,20 +5,20 @@ import {
   bucketUserRoles,
   buckets,
   chats,
+  chunks,
   courseKeys,
   courseMaintainerInvitations,
   courseUserRoles,
   courses,
   documents,
-  documentToolCalls,
   feedback,
   files,
   messages,
   models,
-  pages,
   prompts,
   ssoProvider,
   tasks,
+  toolCallDocuments,
   user,
   userInvitations,
 } from "./schema.js";
@@ -84,7 +84,7 @@ export const chatsRelations = relations(chats, ({ one, many }) => ({
     references: [user.id],
   }),
   messages: many(messages),
-  documentToolCalls: many(documentToolCalls),
+  toolCallDocuments: many(toolCallDocuments),
 }));
 
 export const messagesRelations = relations(messages, ({ one, many }) => ({
@@ -102,7 +102,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   users: many(courseUserRoles),
   keys: many(courseKeys),
   files: many(files),
-  pages: many(pages),
+  chunks: many(chunks),
   courseMaintainerInvitations: many(courseMaintainerInvitations),
   tasks: many(tasks),
 }));
@@ -140,16 +140,16 @@ export const filesRelations = relations(files, ({ one, many }) => ({
     fields: [files.courseId],
     references: [courses.id],
   }),
-  pages: many(pages),
+  chunks: many(chunks),
 }));
 
-export const pagesRelations = relations(pages, ({ one }) => ({
+export const chunksRelations = relations(chunks, ({ one }) => ({
   file: one(files, {
-    fields: [pages.fileId],
+    fields: [chunks.fileId],
     references: [files.id],
   }),
   course: one(courses, {
-    fields: [pages.courseId],
+    fields: [chunks.courseId],
     references: [courses.id],
   }),
 }));
@@ -236,15 +236,15 @@ export const courseKeysRelations = relations(courseKeys, ({ one }) => ({
   }),
 }));
 
-export const documentToolCallsRelations = relations(
-  documentToolCalls,
+export const toolCallDocumentsRelations = relations(
+  toolCallDocuments,
   ({ one }) => ({
     message: one(chats, {
-      fields: [documentToolCalls.chatId],
+      fields: [toolCallDocuments.chatId],
       references: [chats.id],
     }),
     user: one(user, {
-      fields: [documentToolCalls.userId],
+      fields: [toolCallDocuments.userId],
       references: [user.id],
     }),
   })

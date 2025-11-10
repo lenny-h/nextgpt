@@ -18,7 +18,7 @@ class PdfChunkData(BaseModel):
     contextualized_content: str
     chunk_index: int
     page_index: int
-    bbox: Optional[Dict[str, float]] = None  # {x0, y0, x1, y1} coordinates
+    bbox: Optional[tuple[float, float, float, float]] = None  # {x0, y0, x1, y1} coordinates
 
 
 class DocumentChunkData(BaseModel):

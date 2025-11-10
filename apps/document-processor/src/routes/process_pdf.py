@@ -68,7 +68,7 @@ def _create_converter_with_options(pipeline_options: Optional[object]) -> Docume
     )
 
 
-def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[dict]]:
+def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[tuple[float, float, float, float]]]:
     """Extract page number and bounding box from chunk."""
     page_index = doc_chunk.meta.doc_items[0].prov[0].page_no
 
@@ -76,12 +76,11 @@ def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[dict]]:
         [prov_item.bbox for item in doc_chunk.meta.doc_items for prov_item in item.prov]
     )
 
-    bbox_dict = None
+    bbox_tuple = None
     if bbox_obj:
-        x0, y0, x1, y1 = bbox_obj.as_tuple()
-        bbox_dict = {"x0": x0, "y0": y0, "x1": x1, "y1": y1}
+        bbox_tuple = bbox_obj.as_tuple()
 
-    return page_index, bbox_dict
+    return page_index, bbox_tuple
 
 
 @router.post("/process-pdf")
@@ -189,13 +188,13 @@ async def _convert_pdf_to_chunks(
     for idx, chunk in enumerate(chunk_iter):
         contextualized_text = chunker.contextualize(chunk=chunk)
         doc_chunk = DocChunk.model_validate(chunk)
-        page_index, bbox_dict = _extract_chunk_metadata(doc_chunk)
+        page_index, bbox_tuple = _extract_chunk_metadata(doc_chunk)
 
         chunks.append(PdfChunkData(
             contextualized_content=contextualized_text,
             chunk_index=idx,
             page_index=page_index,
-            bbox=bbox_dict
+            bbox=bbox_tuple
         ))
 
     logger.debug(f"Created {len(chunks)} chunks from PDF")

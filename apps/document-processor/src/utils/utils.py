@@ -18,8 +18,7 @@ def create_embedded_chunk(
     embedding: List[float]
 ) -> EmbeddedChunk:
     """Create an EmbeddedChunk from a chunk (PDF or Document) and its embedding."""
-    page_index = chunk.page_index if isinstance(
-        chunk, PdfChunkData) and chunk.page_index else 0
+    page_index = chunk.page_index if hasattr(chunk, 'page_index') else 0
 
     return EmbeddedChunk(
         page_id=str(uuid4()),
@@ -27,6 +26,7 @@ def create_embedded_chunk(
         page_index=page_index,
         embedding=embedding,
         content=chunk.contextualized_content,
+        bbox=chunk.bbox if hasattr(chunk, 'bbox') else None
     )
 
 

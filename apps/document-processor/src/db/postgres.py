@@ -56,16 +56,16 @@ class EmbeddedChunk:
     def __init__(
         self,
         page_id: str,
-        chunk_index: int,
         page_index: int,
         embedding: List[float],
         content: str,
+        bbox: Optional[tuple[float, float, float, float]] = None,
     ):
         self.page_id = page_id
-        self.chunk_index = chunk_index
         self.page_index = page_index
         self.embedding = embedding
         self.content = content
+        self.bbox = bbox
 
 
 async def upload_to_postgres_db(
@@ -125,7 +125,7 @@ async def upload_to_postgres_db(
                 for i in range(0, len(processed_chunks), CHUNK_SIZE):
                     chunk_batch = processed_chunks[i:i + CHUNK_SIZE]
 
-                    pages_to_insert = []
+                    chunks_to_insert = []
                     for chunk_data in chunk_batch:
                         # Build row tuple
                         row = (
@@ -136,21 +136,22 @@ async def upload_to_postgres_db(
                             course_name,
                             chunk_data.embedding,
                             chunk_data.content,
-                            chunk_data.chunk_index,
+                            chunk_data.page_index,
                             max(0, chunk_data.page_index +
-                                1 - page_number_offset)
+                                1 - page_number_offset),
+                            chunk_data.bbox
                         )
-                        pages_to_insert.append(row)
+                        chunks_to_insert.append(row)
 
                     # Batch insert pages using executemany
                     await cursor.executemany(
                         """
                         INSERT INTO pages
                         (id, file_id, file_name, course_id, course_name, embedding, content,
-                         page_index, page_number)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                         page_index, page_number, bbox)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
-                        pages_to_insert
+                        chunks_to_insert
                     )
 
                 await conn.commit()

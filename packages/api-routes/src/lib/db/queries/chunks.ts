@@ -3,10 +3,10 @@ import { type PracticeFilter } from "@workspace/api-routes/schemas/practice-filt
 import { type DocumentSource } from "@workspace/api-routes/types/document-source.js";
 import { parsePageRange } from "@workspace/api-routes/utils/parse-page-range.js";
 import { db } from "@workspace/server/drizzle/db.js";
-import { pages } from "@workspace/server/drizzle/schema.js";
+import { chunks } from "@workspace/server/drizzle/schema.js";
 import { and, cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
 
-export async function matchDocuments({
+export async function searchChunksByVs({
   queryEmbedding,
   filter,
   retrieveContent = false,
@@ -19,31 +19,31 @@ export async function matchDocuments({
   matchThreshold?: number;
   matchCount?: number;
 }) {
-  const similarity = sql<number>`1 - (${cosineDistance(pages.embedding, queryEmbedding)})`;
+  const similarity = sql<number>`1 - (${cosineDistance(chunks.embedding, queryEmbedding)})`;
 
   const baseQuery = db
     .select({
-      id: pages.id,
-      fileId: pages.fileId,
-      fileName: pages.fileName,
-      courseId: pages.courseId,
-      courseName: pages.courseName,
-      pageIndex: pages.pageIndex,
-      ...(retrieveContent ? { content: pages.content } : {}),
+      id: chunks.id,
+      fileId: chunks.fileId,
+      fileName: chunks.fileName,
+      courseId: chunks.courseId,
+      courseName: chunks.courseName,
+      pageIndex: chunks.pageIndex,
+      ...(retrieveContent ? { content: chunks.content } : {}),
       similarity,
     })
-    .from(pages);
+    .from(chunks);
 
   const conditions = [gt(similarity, matchThreshold)];
 
   if (filter.files.length > 0) {
     if ("studyMode" in filter) {
       const fileIds = filter.files.map((f) => f.id);
-      conditions.push(inArray(pages.fileId, fileIds));
+      conditions.push(inArray(chunks.fileId, fileIds));
     } else {
       conditions.push(
         inArray(
-          pages.fileId,
+          chunks.fileId,
           filter.files.map((f) => f.id)
         )
       );
@@ -51,7 +51,7 @@ export async function matchDocuments({
   } else if (filter.courses.length > 0) {
     conditions.push(
       inArray(
-        pages.courseId,
+        chunks.courseId,
         filter.courses.map((c) => c.id)
       )
     );
@@ -78,7 +78,7 @@ export async function matchDocuments({
   });
 }
 
-export async function searchPagesByContent({
+export async function searchChunksByFts({
   searchQuery,
   filter,
   retrieveContent = false,
@@ -97,40 +97,40 @@ export async function searchPagesByContent({
   const baseQuery = retrieveContent
     ? db
         .select({
-          id: pages.id,
-          fileId: pages.fileId,
-          fileName: pages.fileName,
-          courseId: pages.courseId,
-          courseName: pages.courseName,
-          pageIndex: pages.pageIndex,
-          pageNumber: pages.pageNumber,
-          content: pages.content,
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
+          pageNumber: chunks.pageNumber,
+          content: chunks.content,
         })
-        .from(pages)
+        .from(chunks)
     : db
         .select({
-          id: pages.id,
-          fileId: pages.fileId,
-          fileName: pages.fileName,
-          courseId: pages.courseId,
-          courseName: pages.courseName,
-          pageIndex: pages.pageIndex,
-          pageNumber: pages.pageNumber,
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
+          pageNumber: chunks.pageNumber,
         })
-        .from(pages);
+        .from(chunks);
 
   const conditions = [
-    sql`to_tsvector('english', ${pages.content}) @@ to_tsquery('english', ${formattedQuery})`,
+    sql`to_tsvector('english', ${chunks.content}) @@ to_tsquery('english', ${formattedQuery})`,
   ];
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
       const fileIds = filter.files.map((f) => f.id);
-      conditions.push(inArray(pages.fileId, fileIds));
+      conditions.push(inArray(chunks.fileId, fileIds));
     } else {
       conditions.push(
         inArray(
-          pages.fileId,
+          chunks.fileId,
           filter.files.map((f) => f.id)
         )
       );
@@ -138,7 +138,7 @@ export async function searchPagesByContent({
   } else if (filter.courses && filter.courses.length > 0) {
     conditions.push(
       inArray(
-        pages.courseId,
+        chunks.courseId,
         filter.courses.map((c) => c.id)
       )
     );
@@ -162,7 +162,7 @@ export async function searchPagesByContent({
   });
 }
 
-export async function retrievePagesByPageNumbers({
+export async function retrieveChunksByPageNumber({
   pageNumbers,
   filter,
   retrieveContent = false,
@@ -174,36 +174,36 @@ export async function retrievePagesByPageNumbers({
   const baseQuery = retrieveContent
     ? db
         .select({
-          id: pages.id,
-          fileId: pages.fileId,
-          fileName: pages.fileName,
-          courseId: pages.courseId,
-          courseName: pages.courseName,
-          pageIndex: pages.pageIndex,
-          content: pages.content,
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
+          content: chunks.content,
         })
-        .from(pages)
+        .from(chunks)
     : db
         .select({
-          id: pages.id,
-          fileId: pages.fileId,
-          fileName: pages.fileName,
-          courseId: pages.courseId,
-          courseName: pages.courseName,
-          pageIndex: pages.pageIndex,
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
         })
-        .from(pages);
+        .from(chunks);
 
-  const conditions = [inArray(pages.pageNumber, pageNumbers)];
+  const conditions = [inArray(chunks.pageNumber, pageNumbers)];
 
   if (filter.files && filter.files.length > 0) {
     if ("studyMode" in filter) {
       const fileIds = filter.files.map((f) => f.id);
-      conditions.push(inArray(pages.fileId, fileIds));
+      conditions.push(inArray(chunks.fileId, fileIds));
     } else {
       conditions.push(
         inArray(
-          pages.fileId,
+          chunks.fileId,
           filter.files.map((file) => file.id)
         )
       );
@@ -211,7 +211,7 @@ export async function retrievePagesByPageNumbers({
   } else if (filter.courses && filter.courses.length > 0) {
     conditions.push(
       inArray(
-        pages.courseId,
+        chunks.courseId,
         filter.courses.map((c) => c.id)
       )
     );
@@ -235,7 +235,7 @@ export async function retrievePagesByPageNumbers({
   });
 }
 
-export async function retrieveRandomSources({
+export async function retrieveRandomChunks({
   filter,
   retrieveContent = false,
 }: {
@@ -251,16 +251,16 @@ export async function retrieveRandomSources({
     fileIds.length > 0
       ? db
           .select({
-            id: pages.id,
-            fileId: pages.fileId,
-            fileName: pages.fileName,
-            courseId: pages.courseId,
-            courseName: pages.courseName,
-            pageIndex: pages.pageIndex,
-            ...(retrieveContent ? { content: pages.content } : {}),
+            id: chunks.id,
+            fileId: chunks.fileId,
+            fileName: chunks.fileName,
+            courseId: chunks.courseId,
+            courseName: chunks.courseName,
+            pageIndex: chunks.pageIndex,
+            ...(retrieveContent ? { content: chunks.content } : {}),
           })
-          .from(pages)
-          .where(inArray(pages.fileId, fileIds))
+          .from(chunks)
+          .where(inArray(chunks.fileId, fileIds))
           .orderBy(sql`random()`)
           .limit(4)
       : Promise.resolve([]);
@@ -269,19 +269,19 @@ export async function retrieveRandomSources({
     const pageNumbers = parsePageRange(fileObject.pageRange!);
     return db
       .select({
-        id: pages.id,
-        fileId: pages.fileId,
-        fileName: pages.fileName,
-        courseId: pages.courseId,
-        courseName: pages.courseName,
-        pageIndex: pages.pageIndex,
-        ...(retrieveContent ? { content: pages.content } : {}),
+        id: chunks.id,
+        fileId: chunks.fileId,
+        fileName: chunks.fileName,
+        courseId: chunks.courseId,
+        courseName: chunks.courseName,
+        pageIndex: chunks.pageIndex,
+        ...(retrieveContent ? { content: chunks.content } : {}),
       })
-      .from(pages)
+      .from(chunks)
       .where(
         and(
-          eq(pages.fileId, fileObject.id),
-          inArray(pages.pageNumber, pageNumbers)
+          eq(chunks.fileId, fileObject.id),
+          inArray(chunks.pageNumber, pageNumbers)
         )
       )
       .orderBy(sql`random()`)
@@ -317,7 +317,7 @@ export async function retrieveRandomSources({
 
 export async function getFilePages({ fileId }: { fileId: string }) {
   return await db
-    .select({ id: pages.id })
-    .from(pages)
-    .where(eq(pages.fileId, fileId));
+    .select({ id: chunks.id })
+    .from(chunks)
+    .where(eq(chunks.fileId, fileId));
 }

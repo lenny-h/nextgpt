@@ -332,8 +332,8 @@ export const tsvector = customType<{
   },
 });
 
-export const pages = pgTable(
-  "pages",
+export const chunks = pgTable(
+  "chunks",
   {
     id: uuid("id").notNull(),
     fileId: uuid("file_id")
@@ -345,13 +345,14 @@ export const pages = pgTable(
       .references(() => courses.id),
     courseName: varchar("course_name", { length: 128 }).notNull(),
     embedding: vector("embedding", { dimensions: 768 }).notNull(),
-    content: text("content").notNull(),
-    pageIndex: smallint("page_index").notNull(),
+    pageIndex: integer("page_index").notNull(),
     pageNumber: smallint("page_number"),
+    content: text("content").notNull(),
+    bbox: json("bbox").$type<[number, number, number, number]>(),
     fts: tsvector("fts")
       .notNull()
       .generatedAlwaysAs(
-        (): SQL => sql`to_tsvector('english', ${pages.content})`
+        (): SQL => sql`to_tsvector('english', ${chunks.content})`
       ),
   },
   (table) => [
@@ -360,7 +361,7 @@ export const pages = pgTable(
   ]
 );
 
-export type Page = InferSelectModel<typeof pages>;
+export type Chunk = InferSelectModel<typeof chunks>;
 
 // User invitations table
 export const userInvitations = pgTable(

@@ -1,9 +1,9 @@
 import { embed } from "ai";
 import {
-  matchDocuments,
-  retrievePagesByPageNumbers,
-  searchPagesByContent,
-} from "../lib/db/queries/pages.js";
+  retrieveChunksByPageNumber,
+  searchChunksByFts,
+  searchChunksByVs,
+} from "../lib/db/queries/chunks.js";
 import { getEmbeddingModel } from "../lib/embeddings-providers.js";
 import { type Filter } from "../schemas/filter-schema.js";
 import { type PracticeFilter } from "../schemas/practice-filter-schema.js";
@@ -44,7 +44,7 @@ export async function retrieveDocumentSources({
 
   if (embedding) {
     queries.push(
-      matchDocuments({
+      searchChunksByVs({
         queryEmbedding: embedding,
         filter,
         retrieveContent,
@@ -56,7 +56,7 @@ export async function retrieveDocumentSources({
 
   if (ftsQuery?.trim()) {
     queries.push(
-      searchPagesByContent({
+      searchChunksByFts({
         searchQuery: ftsQuery,
         filter,
         retrieveContent,
@@ -67,7 +67,7 @@ export async function retrieveDocumentSources({
 
   if (pageNumbers && pageNumbers.length > 0) {
     queries.push(
-      retrievePagesByPageNumbers({ pageNumbers, filter, retrieveContent })
+      retrieveChunksByPageNumber({ pageNumbers, filter, retrieveContent })
     );
   }
 
