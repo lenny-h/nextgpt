@@ -46,17 +46,17 @@ output "setup_instructions" {
     
     📋 DEPLOYMENT SETUP
     
-    1️⃣  Add DNS A Record
+    1️⃣ Add DNS A Record
        terraform output dns_a_record
        → Add to your DNS provider
        → Points api.${var.site_url} to ${google_compute_global_address.lb_ip.address}
     
-    2️⃣  Configure GitHub Secret
+    2️⃣ Configure GitHub Secret
        terraform output -raw github_secret | base64 -d > sa-key.json
        → Copy contents to: Settings > Secrets > GCP_SA_KEY
        → Delete sa-key.json after copying
     
-    3️⃣  Configure GitHub Variables
+    3️⃣ Configure GitHub Variables
        terraform output github_variables
        → Add to: Settings > Secrets and variables > Actions > Variables
     

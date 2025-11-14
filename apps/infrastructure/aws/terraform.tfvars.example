@@ -41,8 +41,8 @@ cloudflare_access_key_id     = "your-cloudflare-access-key-id"
 cloudflare_secret_access_key = "your-cloudflare-secret-access-key"
 
 # AI models
-embeddings_model = "text-embedding-004"
-llm_models       = "gemini-2.5-flash,gemini-2.5-pro"
+embeddings_model = ""
+llm_models       = ""
 
 # Firecrawl
 use_firecrawl     = false

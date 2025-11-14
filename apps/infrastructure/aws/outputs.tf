@@ -3,15 +3,6 @@
 # ========================================
 # Add these to your DNS provider (Cloudflare, Route53, etc.)
 
-output "dns_cname_record" {
-  description = "Add this CNAME record to your DNS"
-  value = {
-    type  = "CNAME"
-    name  = "api.${var.site_url}"
-    value = aws_lb.main.dns_name
-  }
-}
-
 output "dns_ssl_validation" {
   description = "Add these DNS records to validate your SSL certificate"
   value = {
@@ -20,6 +11,15 @@ output "dns_ssl_validation" {
       name  = dvo.resource_record_name
       value = dvo.resource_record_value
     }
+  }
+}
+
+output "dns_cname_record" {
+  description = "Add this CNAME record to your DNS"
+  value = {
+    type  = "CNAME"
+    name  = "api.${var.site_url}"
+    value = aws_lb.main.dns_name
   }
 }
 
@@ -47,16 +47,16 @@ output "setup_instructions" {
     
     📋 DEPLOYMENT SETUP
     
-    1️⃣  Add DNS Records (Required for SSL)
+    1️⃣ Add DNS Records (Required for SSL)
        terraform output dns_ssl_validation
        → Add these records to your DNS provider
        → Wait 5-10 minutes for validation
     
-    2️⃣  Add DNS CNAME
+    2️⃣ Add DNS CNAME
        terraform output dns_cname_record
        → Points api.${var.site_url} to your load balancer
     
-    3️⃣  Configure GitHub Variables
+    3️⃣ Configure GitHub Variables
        terraform output github_variables
        → Add to: Settings > Secrets and variables > Actions > Variables
     

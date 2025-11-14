@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Key } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -26,7 +27,9 @@ const ssoFormSchema = z.object({
 type SSOFormData = z.infer<typeof ssoFormSchema>;
 
 export const SSO = memo(() => {
-  const { sharedT } = useSharedTranslations();
+  const { sharedT, locale } = useSharedTranslations();
+
+  const router = useRouter();
 
   const form = useForm<SSOFormData>({
     resolver: zodResolver(ssoFormSchema),
@@ -36,10 +39,22 @@ export const SSO = memo(() => {
   });
 
   async function onSubmit(values: SSOFormData) {
-    const ssoLoginPromise = client.signIn.sso({
-      email: values.email,
-      callbackURL: window.location.origin,
-    });
+    console.log("SSO form submitted with values:", values);
+
+    const ssoLoginPromise = client.signIn.sso(
+      {
+        email: values.email,
+        callbackURL: window.location.origin,
+      },
+      {
+        onSuccess() {
+          router.push(`/${locale}/`);
+        },
+        onError(context) {
+          throw new Error(context.error.message);
+        },
+      }
+    );
 
     toast.promise(ssoLoginPromise, {
       loading: "Redirecting to institution SSO...",
