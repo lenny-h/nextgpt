@@ -1,8 +1,8 @@
 # Provider configuration
 provider "google" {
-  project = var.project_id
-  region  = var.gcp_region
-  zone    = var.gcp_zone
+  project = var.google_vertex_project
+  region  = var.google_vertex_location
+  zone    = var.google_zone
 }
 
 # Cloudflare provider

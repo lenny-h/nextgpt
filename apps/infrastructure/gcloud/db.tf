@@ -1,14 +1,14 @@
 # Enable Cloud SQL Admin API
 resource "google_project_service" "sqladmin" {
-  project = var.project_id
+  project = var.google_vertex_project
   service = "sqladmin.googleapis.com"
 }
 
 # Cloud SQL Instance
 resource "google_sql_database_instance" "postgres" {
   name                = "postgres"
-  project             = var.project_id
-  region              = var.gcp_region
+  project             = var.google_vertex_project
+  region              = var.google_vertex_location
   database_version    = "POSTGRES_18"
   deletion_protection = false
 
@@ -22,7 +22,7 @@ resource "google_sql_database_instance" "postgres" {
     backup_configuration {
       enabled                        = true
       start_time                     = "02:00"
-      location                       = var.gcp_region
+      location                       = var.google_vertex_location
       point_in_time_recovery_enabled = true
       transaction_log_retention_days = 7
       backup_retention_settings {
@@ -82,6 +82,6 @@ resource "google_sql_database_instance" "postgres" {
 resource "google_sql_user" "postgres_user" {
   name     = "postgres"
   instance = google_sql_database_instance.postgres.name
-  password = var.db_password
-  project  = var.project_id
+  password = var.database_password
+  project  = var.google_vertex_project
 }

@@ -38,6 +38,32 @@ resource "aws_ecr_repository" "pdf_exporter" {
   }
 }
 
+resource "aws_ecr_repository" "firecrawl_api" {
+  name                 = "${var.aws_project_name}/firecrawl-api"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${var.aws_project_name}-firecrawl-api"
+  }
+}
+
+resource "aws_ecr_repository" "firecrawl_playwright" {
+  name                 = "${var.aws_project_name}/firecrawl-playwright"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${var.aws_project_name}-firecrawl-playwright"
+  }
+}
+
 # ECR Lifecycle Policies
 resource "aws_ecr_lifecycle_policy" "api" {
   repository = aws_ecr_repository.api.name
@@ -79,6 +105,44 @@ resource "aws_ecr_lifecycle_policy" "document_processor" {
 
 resource "aws_ecr_lifecycle_policy" "pdf_exporter" {
   repository = aws_ecr_repository.pdf_exporter.name
+
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "Keep last 5 images"
+      selection = {
+        tagStatus   = "any"
+        countType   = "imageCountMoreThan"
+        countNumber = 5
+      }
+      action = {
+        type = "expire"
+      }
+    }]
+  })
+}
+
+resource "aws_ecr_lifecycle_policy" "firecrawl_api" {
+  repository = aws_ecr_repository.firecrawl_api.name
+
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "Keep last 5 images"
+      selection = {
+        tagStatus   = "any"
+        countType   = "imageCountMoreThan"
+        countNumber = 5
+      }
+      action = {
+        type = "expire"
+      }
+    }]
+  })
+}
+
+resource "aws_ecr_lifecycle_policy" "firecrawl_playwright" {
+  repository = aws_ecr_repository.firecrawl_playwright.name
 
   policy = jsonencode({
     rules = [{

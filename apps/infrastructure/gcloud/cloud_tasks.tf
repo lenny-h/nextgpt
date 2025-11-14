@@ -1,13 +1,13 @@
 # Enable the Cloud Tasks API
 resource "google_project_service" "cloud_tasks" {
-  project = var.project_id
+  project = var.google_vertex_project
   service = "cloudtasks.googleapis.com"
 }
 
 # Create a Cloud Tasks
 resource "google_cloud_tasks_queue" "document_processing_queue" {
   name     = "document-processing-queue"
-  location = var.gcp_region
+  location = var.google_vertex_location
 
   rate_limits {
     max_concurrent_dispatches = 10

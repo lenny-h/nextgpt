@@ -12,7 +12,7 @@ resource "aws_secretsmanager_secret" "db_password" {
 
 resource "aws_secretsmanager_secret_version" "db_password" {
   secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = var.db_password
+  secret_string = var.database_password
 }
 
 # Better Auth secret
@@ -45,20 +45,6 @@ resource "aws_secretsmanager_secret_version" "resend_api_key" {
   secret_string = var.resend_api_key
 }
 
-# Google OAuth client secret
-resource "aws_secretsmanager_secret_version" "google_client_secret" {
-  secret_id     = aws_secretsmanager_secret.google_client_secret.id
-  secret_string = var.google_client_secret
-}
-
-resource "aws_secretsmanager_secret" "google_client_secret" {
-  name        = "${var.aws_project_name}-google-client-secret"
-  description = "Google OAuth client secret"
-  tags = {
-    Name = "${var.aws_project_name}-google-client-secret"
-  }
-}
-
 # Cloudflare R2 access key ID
 resource "aws_secretsmanager_secret" "cloudflare_r2_access_key_id" {
   name        = "${var.aws_project_name}-r2-access-key-id"
@@ -71,7 +57,7 @@ resource "aws_secretsmanager_secret" "cloudflare_r2_access_key_id" {
 
 resource "aws_secretsmanager_secret_version" "cloudflare_r2_access_key_id" {
   secret_id     = aws_secretsmanager_secret.cloudflare_r2_access_key_id.id
-  secret_string = var.cloudflare_r2_access_key_id
+  secret_string = var.cloudflare_access_key_id
 }
 
 # Cloudflare R2 secret access key
@@ -86,7 +72,7 @@ resource "aws_secretsmanager_secret" "cloudflare_r2_secret_access_key" {
 
 resource "aws_secretsmanager_secret_version" "cloudflare_r2_secret_access_key" {
   secret_id     = aws_secretsmanager_secret.cloudflare_r2_secret_access_key.id
-  secret_string = var.cloudflare_r2_secret_access_key
+  secret_string = var.cloudflare_secret_access_key
 }
 
 # Encryption key for sensitive data
@@ -102,4 +88,78 @@ resource "aws_secretsmanager_secret" "encryption_key" {
 resource "aws_secretsmanager_secret_version" "encryption_key" {
   secret_id     = aws_secretsmanager_secret.encryption_key.id
   secret_string = var.encryption_key
+}
+
+# Google OAuth client secret
+resource "aws_secretsmanager_secret_version" "google_client_secret" {
+  secret_id     = aws_secretsmanager_secret.google_client_secret.id
+  secret_string = var.google_client_secret
+}
+
+resource "aws_secretsmanager_secret" "google_client_secret" {
+  name        = "${var.aws_project_name}-google-client-secret"
+  description = "Google OAuth client secret"
+  tags = {
+    Name = "${var.aws_project_name}-google-client-secret"
+  }
+}
+
+# GitHub OAuth client secret
+resource "aws_secretsmanager_secret" "github_client_secret" {
+  name        = "${var.aws_project_name}-github-client-secret"
+  description = "GitHub OAuth client secret"
+
+  tags = {
+    Name = "${var.aws_project_name}-github-client-secret"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "github_client_secret" {
+  secret_id     = aws_secretsmanager_secret.github_client_secret.id
+  secret_string = var.github_client_secret
+}
+
+# GitLab OAuth client secret
+resource "aws_secretsmanager_secret" "gitlab_client_secret" {
+  name        = "${var.aws_project_name}-gitlab-client-secret"
+  description = "GitLab OAuth client secret"
+
+  tags = {
+    Name = "${var.aws_project_name}-gitlab-client-secret"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "gitlab_client_secret" {
+  secret_id     = aws_secretsmanager_secret.gitlab_client_secret.id
+  secret_string = var.gitlab_client_secret
+}
+
+# SSO client secret
+resource "aws_secretsmanager_secret" "sso_client_secret" {
+  name        = "${var.aws_project_name}-sso-client-secret"
+  description = "SSO client secret"
+
+  tags = {
+    Name = "${var.aws_project_name}-sso-client-secret"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "sso_client_secret" {
+  secret_id     = aws_secretsmanager_secret.sso_client_secret.id
+  secret_string = var.sso_client_secret
+}
+
+# Firecrawl API key
+resource "aws_secretsmanager_secret" "firecrawl_api_key" {
+  name        = "${var.aws_project_name}-firecrawl-api-key"
+  description = "Firecrawl API key"
+
+  tags = {
+    Name = "${var.aws_project_name}-firecrawl-api-key"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "firecrawl_api_key" {
+  secret_id     = aws_secretsmanager_secret.firecrawl_api_key.id
+  secret_string = var.firecrawl_api_key
 }

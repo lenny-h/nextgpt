@@ -16,7 +16,7 @@ resource "google_service_account" "api_sa" {
 
 # IAM Binding to allow api service account to use vertex AI API
 resource "google_project_iam_member" "api_vertex_ai_user" {
-  project = var.project_id
+  project = var.google_vertex_project
   role    = "roles/aiplatform.user"
   member  = "serviceAccount:${google_service_account.api_sa.email}"
 }
@@ -60,7 +60,7 @@ resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_deleter"
 
 # IAM Binding to allow api service account to manage Cloud Tasks
 resource "google_project_iam_member" "api_cloud_tasks_admin" {
-  project = var.project_id
+  project = var.google_vertex_project
   role    = "roles/cloudtasks.admin"
   member  = "serviceAccount:${google_service_account.api_sa.email}"
 }
@@ -142,7 +142,7 @@ resource "google_service_account" "document_processor_sa" {
 
 # IAM Binding to allow document_processor to use vertex AI API
 resource "google_project_iam_member" "document_processor_vertex_ai_user" {
-  project = var.project_id
+  project = var.google_vertex_project
   role    = "roles/aiplatform.user"
   member  = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
@@ -227,6 +227,36 @@ resource "google_service_account_iam_member" "ci_cd_act_as_document_processor_sa
 # Allow CI/CD SA to act as Pdf exporter service account
 resource "google_service_account_iam_member" "ci_cd_act_as_pdf_exporter_sa" {
   service_account_id = google_service_account.pdf_exporter_sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
+}
+
+# Allow CI/CD service account to deploy Firecrawl API
+resource "google_cloud_run_v2_service_iam_member" "firecrawl_api_deployer" {
+  name     = google_cloud_run_v2_service.firecrawl_api.name
+  location = google_cloud_run_v2_service.firecrawl_api.location
+  role     = "roles/run.admin"
+  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
+}
+
+# Allow CI/CD service account to deploy Firecrawl Playwright
+resource "google_cloud_run_v2_service_iam_member" "firecrawl_playwright_deployer" {
+  name     = google_cloud_run_v2_service.firecrawl_playwright.name
+  location = google_cloud_run_v2_service.firecrawl_playwright.location
+  role     = "roles/run.admin"
+  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
+}
+
+# Allow CI/CD SA to act as Firecrawl API service account
+resource "google_service_account_iam_member" "ci_cd_act_as_firecrawl_api_sa" {
+  service_account_id = google_service_account.firecrawl_api_sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
+}
+
+# Allow CI/CD SA to act as Firecrawl Playwright service account
+resource "google_service_account_iam_member" "ci_cd_act_as_firecrawl_playwright_sa" {
+  service_account_id = google_service_account.firecrawl_playwright_sa.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }

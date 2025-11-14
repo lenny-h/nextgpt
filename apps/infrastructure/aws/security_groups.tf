@@ -82,6 +82,14 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.ecs_tasks.id]
   }
 
+  ingress {
+    description     = "PostgreSQL from Firecrawl services"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.firecrawl_services.id]
+  }
+
   egress {
     description = "Allow all outbound"
     from_port   = 0
@@ -109,6 +117,14 @@ resource "aws_security_group" "redis" {
     security_groups = [aws_security_group.ecs_tasks.id]
   }
 
+  ingress {
+    description     = "Redis from Firecrawl services"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.firecrawl_services.id]
+  }
+
   egress {
     description = "Allow all outbound"
     from_port   = 0
@@ -119,5 +135,42 @@ resource "aws_security_group" "redis" {
 
   tags = {
     Name = "${var.aws_project_name}-redis-sg"
+  }
+}
+
+# Security Group for Firecrawl Services (internal only)
+resource "aws_security_group" "firecrawl_services" {
+  name        = "${var.aws_project_name}-firecrawl-sg"
+  description = "Security group for Firecrawl services (API and Playwright)"
+  vpc_id      = aws_vpc.main.id
+
+  # Allow API service to access Firecrawl API
+  ingress {
+    description     = "Allow traffic from API service"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs_tasks.id]
+  }
+
+  # Allow Firecrawl API to access Firecrawl Playwright
+  ingress {
+    description = "Allow traffic between Firecrawl services"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    self        = true
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.aws_project_name}-firecrawl-sg"
   }
 }

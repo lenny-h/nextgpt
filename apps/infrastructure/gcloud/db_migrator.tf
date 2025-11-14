@@ -1,6 +1,6 @@
 # Enable Cloud Run API
 resource "google_project_service" "run" {
-  project = var.project_id
+  project = var.google_vertex_project
   service = "run.googleapis.com"
 }
 
@@ -13,8 +13,8 @@ resource "google_service_account" "db_migrator_sa" {
 # Cloud Run Job for database migrations
 resource "google_cloud_run_v2_job" "db_migrator" {
   name     = "db-migrator"
-  location = var.gcp_region
-  project  = var.project_id
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
 
   depends_on = [
     google_project_service.run,
@@ -26,7 +26,7 @@ resource "google_cloud_run_v2_job" "db_migrator" {
       service_account = google_service_account.db_migrator_sa.email
 
       containers {
-        image = "${var.gcp_region}-docker.pkg.dev/${var.project_id}/app-artifact-repository/db-migrator:latest"
+        image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/db-migrator:latest"
 
         # Non-sensitive environment variables
         env {

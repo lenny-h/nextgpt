@@ -1,21 +1,21 @@
 # Enable Service Networking API
 resource "google_project_service" "servicenetworking" {
-  project = var.project_id
+  project = var.google_vertex_project
   service = "servicenetworking.googleapis.com"
 }
 
 # VPC Network for private communication
 resource "google_compute_network" "private_network" {
   name                    = "backend-vpc"
-  project                 = var.project_id
+  project                 = var.google_vertex_project
   auto_create_subnetworks = false
 }
 
 # Subnet for the VPC
 resource "google_compute_subnetwork" "private_subnet" {
   name          = "backend-subnet"
-  project       = var.project_id
-  region        = var.gcp_region
+  project       = var.google_vertex_project
+  region        = var.google_vertex_location
   network       = google_compute_network.private_network.id
   ip_cidr_range = "10.0.0.0/24"
 }
@@ -23,7 +23,7 @@ resource "google_compute_subnetwork" "private_subnet" {
 # Reserve IP range for private services
 resource "google_compute_global_address" "private_ip_address" {
   name          = "backend-private-ip"
-  project       = var.project_id
+  project       = var.google_vertex_project
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16

@@ -31,8 +31,8 @@ output "github_secret" {
 output "github_variables" {
   description = "Add these as GitHub repository variables"
   value = {
-    PROJECT_ID = var.project_id
-    REGION     = var.gcp_region
+    PROJECT_ID = var.google_vertex_project
+    REGION     = var.google_vertex_location
   }
 }
 

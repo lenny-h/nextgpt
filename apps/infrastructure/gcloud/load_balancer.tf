@@ -27,7 +27,7 @@ resource "google_compute_security_policy" "armor_policy" {
 resource "google_compute_region_network_endpoint_group" "api_neg" {
   name                  = "api-neg"
   network_endpoint_type = "SERVERLESS"
-  region                = var.gcp_region
+  region                = var.google_vertex_location
   cloud_run {
     service = google_cloud_run_v2_service.api.name
   }
@@ -36,7 +36,7 @@ resource "google_compute_region_network_endpoint_group" "api_neg" {
 resource "google_compute_region_network_endpoint_group" "pdf_exporter_neg" {
   name                  = "pdf-exporter-neg"
   network_endpoint_type = "SERVERLESS"
-  region                = var.gcp_region
+  region                = var.google_vertex_location
   cloud_run {
     service = google_cloud_run_v2_service.pdf_exporter.name
   }
@@ -156,22 +156,22 @@ resource "google_compute_global_forwarding_rule" "http_forwarding_rule" {
 
 # Allow Cloud Load Balancing to invoke API service
 resource "google_cloud_run_v2_service_iam_binding" "api_lb_invoker" {
-  project  = var.project_id
-  location = var.gcp_region
+  project  = var.google_vertex_project
+  location = var.google_vertex_location
   name     = google_cloud_run_v2_service.api.name
   role     = "roles/run.invoker"
   members = [
-    "serviceAccount:service-${var.project_id}@gcp-gae-service.iam.gserviceaccount.com",
+    "serviceAccount:service-${var.google_vertex_project}@gcp-gae-service.iam.gserviceaccount.com",
   ]
 }
 
 # Allow Cloud Load Balancing to invoke PDF Exporter service
 resource "google_cloud_run_v2_service_iam_binding" "pdf_exporter_lb_invoker" {
-  project  = var.project_id
-  location = var.gcp_region
+  project  = var.google_vertex_project
+  location = var.google_vertex_location
   name     = google_cloud_run_v2_service.pdf_exporter.name
   role     = "roles/run.invoker"
   members = [
-    "serviceAccount:service-${var.project_id}@gcp-gae-service.iam.gserviceaccount.com",
+    "serviceAccount:service-${var.google_vertex_project}@gcp-gae-service.iam.gserviceaccount.com",
   ]
 }

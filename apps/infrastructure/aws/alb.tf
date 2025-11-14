@@ -41,33 +41,6 @@ resource "aws_lb_target_group" "api" {
   }
 }
 
-# Target Group for Document Processor
-resource "aws_lb_target_group" "document_processor" {
-  name        = "${var.aws_project_name}-doc-proc-tg"
-  port        = 8080
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
-  target_type = "ip"
-
-  health_check {
-    enabled             = true
-    healthy_threshold   = 2
-    interval            = 30
-    matcher             = "200"
-    path                = "/health"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 3
-  }
-
-  deregistration_delay = 30
-
-  tags = {
-    Name = "${var.aws_project_name}-doc-proc-tg"
-  }
-}
-
 # Target Group for PDF Exporter
 resource "aws_lb_target_group" "pdf_exporter" {
   name        = "${var.aws_project_name}-pdf-exp-tg"
