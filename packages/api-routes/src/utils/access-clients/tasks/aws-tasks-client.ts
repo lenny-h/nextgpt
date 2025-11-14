@@ -1,14 +1,14 @@
 import {
-  SchedulerClient,
   CreateScheduleCommand,
   DeleteScheduleCommand,
   FlexibleTimeWindowMode,
+  SchedulerClient,
 } from "@aws-sdk/client-scheduler";
 import { createLogger } from "../../logger.js";
 import {
+  CancelTaskParams,
   ITasksClient,
   ScheduleProcessingTaskParams,
-  CancelTaskParams,
 } from "../interfaces/tasks-client.interface.js";
 
 const logger = createLogger("aws-tasks-client");
@@ -49,7 +49,7 @@ export class AwsTasksClient implements ITasksClient {
 
     const schedulerClient = this.getSchedulerClient();
 
-    const scheduleGroup = process.env.AWS_SCHEDULER_GROUP || "default";
+    const scheduleGroup = process.env.AWS_SCHEDULER_GROUP;
     const targetArn = process.env.AWS_SCHEDULER_TARGET_ARN;
     const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN;
 
@@ -93,7 +93,7 @@ export class AwsTasksClient implements ITasksClient {
     const { taskId } = params;
 
     const schedulerClient = this.getSchedulerClient();
-    const scheduleGroup = process.env.AWS_SCHEDULER_GROUP || "default";
+    const scheduleGroup = process.env.AWS_SCHEDULER_GROUP;
 
     const command = new DeleteScheduleCommand({
       Name: taskId,

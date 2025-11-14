@@ -1,8 +1,8 @@
 import { CloudTasksClient } from "@google-cloud/tasks";
 import {
+  CancelTaskParams,
   ITasksClient,
   ScheduleProcessingTaskParams,
-  CancelTaskParams,
 } from "../interfaces/tasks-client.interface.js";
 
 /**
@@ -21,18 +21,16 @@ export class GoogleTasksClient implements ITasksClient {
     const { taskId, processorUrl, endpoint, payload, scheduleTime } = params;
 
     const projectId = process.env.GOOGLE_VERTEX_PROJECT;
-    const serviceAccountEmail = process.env.CLOUD_TASKS_SA;
-    const queuePath = process.env.TASK_QUEUE_PATH;
+    const location = process.env.GOOGLE_VERTEX_LOCATION;
+    const queue = process.env.GOOGLE_PROCESSING_QUEUE;
+    const serviceAccountEmail = `cloud-tasks-sa@${projectId}.iam.gserviceaccount.com`;
+    const queuePath = `projects/${projectId}/locations/${location}/queues/${queue}`;
 
-    if (!projectId || !serviceAccountEmail || !queuePath) {
+    if (!projectId || !location || !queue) {
       throw new Error(
-        "Missing required environment variables: GOOGLE_VERTEX_PROJECT, CLOUD_TASKS_SA, or TASK_QUEUE_PATH"
+        "Missing required environment variables: GOOGLE_VERTEX_PROJECT, GOOGLE_VERTEX_LOCATION, or GOOGLE_PROCESSING_QUEUE"
       );
     }
-
-    const queuePathParts = queuePath.split("/");
-    const location = queuePathParts[3];
-    const queue = queuePathParts[queuePathParts.length - 1];
 
     const fullTaskPath = this.client.taskPath(
       projectId,
@@ -69,17 +67,14 @@ export class GoogleTasksClient implements ITasksClient {
     const { taskId } = params;
 
     const projectId = process.env.CLOUD_PROJECT_ID;
-    const queuePath = process.env.TASK_QUEUE_PATH;
+    const location = process.env.GOOGLE_VERTEX_LOCATION;
+    const queue = process.env.GOOGLE_PROCESSING_QUEUE;
 
-    if (!projectId || !queuePath) {
+    if (!projectId || !location || !queue) {
       throw new Error(
-        "Missing required environment variables: CLOUD_PROJECT_ID or TASK_QUEUE_PATH"
+        "Missing required environment variables: CLOUD_PROJECT_ID, GOOGLE_VERTEX_LOCATION, or GOOGLE_PROCESSING_QUEUE"
       );
     }
-
-    const queuePathParts = queuePath.split("/");
-    const location = queuePathParts[3];
-    const queue = queuePathParts[queuePathParts.length - 1];
 
     const fullTaskPath = this.client.taskPath(
       projectId,

@@ -5,10 +5,13 @@ import { createLogger } from "../../utils/logger.js";
 
 const logger = createLogger("scrape-tool");
 
-const app = new FirecrawlApp({
-  apiUrl: process.env.FIRECRAWL_API_URL,
+const firecrawlOptions: { apiUrl?: string; apiKey: string } = {
   apiKey: process.env.FIRECRAWL_API_KEY || "dummy-key",
-});
+};
+if (process.env.FIRECRAWL_API_URL) {
+  firecrawlOptions.apiUrl = process.env.FIRECRAWL_API_URL;
+}
+const app = new FirecrawlApp(firecrawlOptions);
 
 export const scrapeTool = tool({
   description:
@@ -22,7 +25,7 @@ export const scrapeTool = tool({
   }),
   execute: async ({ urlToScrape }) => {
     logger.debug("Scraping URL:", urlToScrape);
-    
+
     try {
       const scrapeResponse = await app.scrape(urlToScrape, {
         formats: ["markdown"],

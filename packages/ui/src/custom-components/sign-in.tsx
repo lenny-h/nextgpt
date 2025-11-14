@@ -28,6 +28,19 @@ export const SignIn = memo(() => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const enableEmailSignup =
+    process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP === "true";
+  const enableOAuthLogin =
+    process.env.NEXT_PUBLIC_ENABLE_OAUTH_LOGIN === "true";
+  const enableSSO = process.env.NEXT_PUBLIC_ENABLE_SSO === "true";
+
+  // Count enabled auth methods to determine if dividers are needed
+  const authMethodsCount = [
+    enableEmailSignup,
+    enableOAuthLogin,
+    enableSSO,
+  ].filter(Boolean).length;
+
   useEffect(() => {
     const token = searchParams.get("token");
 
@@ -91,82 +104,96 @@ export const SignIn = memo(() => {
     <div className="flex flex-col gap-6">
       <div className="grid gap-6">
         <h1 className="w-full text-center text-2xl font-semibold">NextGPT</h1>
-        <SocialLogins />
-        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-          <span className="bg-background text-muted-foreground relative z-10 px-2">
-            Or sign in with SSO
-          </span>
-        </div>
-        <SSO />
-        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-          <span className="bg-background text-muted-foreground relative z-10 px-2">
-            Or continue with
-          </span>
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-6">
-              <div className="grid gap-2">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="m@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
+        {enableOAuthLogin && <SocialLogins />}
+
+        {enableOAuthLogin && enableSSO && (
+          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+            <span className="bg-background text-muted-foreground relative z-10 px-2">
+              Or sign in with SSO
+            </span>
+          </div>
+        )}
+
+        {enableSSO && <SSO />}
+
+        {enableEmailSignup && authMethodsCount > 1 && (
+          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+            <span className="bg-background text-muted-foreground relative z-10 px-2">
+              Or continue with
+            </span>
+          </div>
+        )}
+
+        {enableEmailSignup && (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="grid gap-6">
+                <div className="grid gap-2">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="m@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center">
+                          <FormLabel>Password</FormLabel>
+                          <Link
+                            className="ml-auto text-sm underline-offset-4 hover:underline"
+                            href={`/${locale}/forgot-password`}
+                          >
+                            Forgot your password?
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Your password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <SubmitButton
+                  className="w-full"
+                  isPending={form.formState.isSubmitting}
+                  pendingText="Signing in..."
+                >
+                  Sign in
+                </SubmitButton>
               </div>
-              <div className="grid gap-2">
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center">
-                        <FormLabel>Password</FormLabel>
-                        <Link
-                          className="ml-auto text-sm underline-offset-4 hover:underline"
-                          href={`/${locale}/forgot-password`}
-                        >
-                          Forgot your password?
-                        </Link>
-                      </div>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Your password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <SubmitButton
-                className="w-full"
-                isPending={form.formState.isSubmitting}
-                pendingText="Signing in..."
-              >
-                Sign in
-              </SubmitButton>
-            </div>
-          </form>
-        </Form>
-        <div className="text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link
-            className="underline underline-offset-4"
-            href={`/${locale}/sign-up`}
-          >
-            Sign up
-          </Link>
-        </div>
+            </form>
+          </Form>
+        )}
+
+        {enableEmailSignup && (
+          <div className="text-center text-sm">
+            Don&apos;t have an account?{" "}
+            <Link
+              className="underline underline-offset-4"
+              href={`/${locale}/sign-up`}
+            >
+              Sign up
+            </Link>
+          </div>
+        )}
       </div>
       <div className="text-muted-foreground hover:[&_a]:text-primary text-balance text-center text-xs [&_a]:underline [&_a]:underline-offset-4">
         By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}

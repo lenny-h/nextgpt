@@ -120,14 +120,13 @@ services:
   #     PORT: 8080
   #     ENVIRONMENT: development
   #     API_URL: http://host.docker.internal:3004 # Use host.docker.internal to reach host machine from container
+
   #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
   #     DATABASE_HOST: postgres:5432
   #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
 
   #     USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
   #     USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
-  #     USE_OPENAI_API: ${USE_OPENAI_API}
-  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
   #     # Local MinIO configuration
   #     MINIO_ENDPOINT: http://minio:9000
@@ -139,8 +138,6 @@ services:
   #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
   #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
 
-  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-
   #     CLOUD_PROVIDER: ${CLOUD_PROVIDER}
 
   #     # Gcloud configuration
@@ -148,9 +145,11 @@ services:
   #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
 
   #     # Aws configuration
-  #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  #     AWS_PROJECT_NAME: ${AWS_PROJECT_NAME}
   #     AWS_REGION: ${AWS_REGION}
+
+  #     # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  #     # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   #   networks:
   #     - database_network
 
@@ -188,23 +187,52 @@ services:
   #     PORT: 8080
   #     NODE_ENV: development
 
+  #     # ==============================
+  #     # Authentication configuration
+  #     # ==============================
+
+  #     # Better Auth configuration and Resend email service (for sending verification emails)
+  #     BETTER_AUTH_URL: http://localhost:3004
+  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+
+  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
+  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
+
+  #     ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
+  #     # Google OAuth
+  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  #     # GitHub OAuth
+  #     GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+  #     GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+  #     # Gitlab OAuth
+  #     GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
+  #     GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
+
+  #     # SSO Configuration
+  #     ENABLE_SSO: ${ENABLE_SSO}
+  #     SSO_DOMAIN: ${SSO_DOMAIN}
+  #     SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
+  #     SSO_CLIENT_ID: ${SSO_CLIENT_ID}
+  #     SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
+  #     SSO_ISSUER: ${SSO_ISSUER}
+  #     SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
+  #     SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
+  #     SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
+  #     SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
+
+  #     RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
+  #     RESEND_API_KEY: ${RESEND_API_KEY}
+
+  #     # ==============================
+  #     # Application configuration
+  #     # ==============================
+  
   #     BASE_URL: http://localhost:3000
   #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
 
   #     # Document processor
   #     DOCUMENT_PROCESSOR_URL: http://document-processor:8080
-
-  #     # Better Auth configuration and Resend email service (for sending verification emails)
-  #     BETTER_AUTH_URL: http://localhost:3004
-  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
-  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
-  #     RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
-  #     RESEND_API_KEY: ${RESEND_API_KEY}
-
-  #     # Google OAuth
-  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
 
   #     # Database and Redis
   #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
@@ -228,23 +256,40 @@ services:
   #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
   #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
 
+  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+  #     LLM_MODELS: ${LLM_MODELS}
+
+  #     # ==============================
+  #     # Firecrawl configuration
+  #     # =============================
+
+  #     USE_FIRECRAWL = ${USE_FIRECRAWL}
+  #     FIRECRAWL_API_URL = http://firecrawl-api:8080
+  #     FIRECRAWL_API_KEY = ${FIRECRAWL_API_KEY}
+
+  #     # ==============================
+  #     # Cloud provider configuration
+  #     # =============================
+
   #     CLOUD_PROVIDER: ${CLOUD_PROVIDER}
 
   #     # Gcloud configuration
   #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
   #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-  #     CLOUD_TASKS_SA: ${CLOUD_TASKS_SA}
-  #     TASK_QUEUE_PATH: ${TASK_QUEUE_PATH}
+  #     GOOGLE_PROCESSING_QUEUE: document-processing-queue
 
   #     # Aws configuration
+  #     AWS_REGION: ${AWS_REGION}
+  #     AWS_PROJECT_NAME: ${AWS_PROJECT_NAME}
+
   #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-  #     AWS_REGION: ${AWS_REGION}
+
   #     SQS_QUEUE_URL: ${SQS_QUEUE_URL}
 
-  #     # Configuration common to all cloud providers
-  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-  #     LLM_MODELS: ${LLM_MODELS}
+  #     AWS_SCHEDULER_GROUP = "your-aws-scheduler-group"
+  #     AWS_SCHEDULER_TARGET_ARN = "your-aws-scheduler-target-arn"
+  #     AWS_SCHEDULER_ROLE_ARN = "your-aws-scheduler-role-arn"
   #   networks:
   #     - database_network
 
@@ -291,6 +336,9 @@ services:
   #       NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
   #       NEXT_PUBLIC_API_URL: http://localhost:3004
   #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  #       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP = "true"
+  #       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN = "true"
+  #       NEXT_PUBLIC_ENABLE_SSO = "true"
   #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
   #   restart: unless-stopped
   #   ports:
@@ -307,6 +355,9 @@ services:
   #       NEXT_PUBLIC_CHAT_URL: http://localhost:3000
   #       NEXT_PUBLIC_API_URL: http://localhost:3004
   #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  #       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP = "true"
+  #       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN = "true"
+  #       NEXT_PUBLIC_ENABLE_SSO = "true"
   #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
   #   restart: unless-stopped
   #   ports:

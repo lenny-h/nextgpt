@@ -13,10 +13,10 @@ import {
 } from "./email/send-email.js";
 import { getRedisClient } from "./utils/access-clients/redis-client.js";
 
-// Build plugins array and include SSO only when USE_SSO is "true"
+// Build plugins array and include SSO only when ENABLE_SSO is "true"
 const plugins = [
   admin(),
-  ...(process.env.USE_SSO === "true"
+  ...(process.env.ENABLE_SSO === "true"
     ? [
         sso({
           defaultSSO: [
