@@ -44,7 +44,7 @@ export const SSO = memo(() => {
     const ssoLoginPromise = client.signIn.sso(
       {
         email: values.email,
-        callbackURL: window.location.origin,
+        callbackURL: `${window.location.origin}/${locale}/`,
       },
       {
         onSuccess() {

@@ -24,7 +24,14 @@ export const user = pgTable("user", {
     .primaryKey()
     .default(sql`uuid_generate_v4()`),
   name: text("name").notNull(),
-  username: text("username").notNull().unique(),
+  // generate a short unique username like "user_a1b2c3d4" when not provided
+  username: text("username")
+    .notNull()
+    .default(
+      // take first 8 chars of uuid (without dashes) to keep username short and unique
+      sql`'user_' || substring(replace(uuid_generate_v4()::text, '-', '') from 1 for 8)`
+    )
+    .unique(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
