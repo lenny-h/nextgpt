@@ -13,9 +13,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./packages/server/src/drizzle/nuq.sql:/docker-entrypoint-initdb.d/nuq.sql:ro # Only required for Firecrawl
-      - ./packages/server/src/drizzle/0000_romantic_outlaw_kid.sql:/docker-entrypoint-initdb.d/0000_romantic_outlaw_kid.sql:ro
-      # - ./packages/server/src/drizzle/__tests__/seed-test-users.sql:/docker-entrypoint-initdb.d/seed-test-users.sql:ro # Only required for automated testing
+      - ./packages/server/src/drizzle/0000_sloppy_micromacro.sql:/docker-entrypoint-initdb.d/0000_sloppy_micromacro.sql:ro # Only required for Firecrawl
+      - ./packages/server/src/drizzle/0001_tearful_firedrake.sql:/docker-entrypoint-initdb.d/0001_tearful_firedrake.sql:ro
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]

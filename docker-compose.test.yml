@@ -1,0 +1,57 @@
+name: mono
+
+services:
+  # PostgreSQL Database with pgvector extension
+  postgres:
+    container_name: postgres
+    image: pgvector/pgvector:pg18 # firecrawl-postgres for Firecrawl, else use pgvector/pgvector:pg18
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./packages/server/src/drizzle/0000_sloppy_micromacro.sql:/docker-entrypoint-initdb.d/0000_sloppy_micromacro.sql:ro # Only required for Firecrawl
+      - ./packages/server/src/drizzle/0001_tearful_firedrake.sql:/docker-entrypoint-initdb.d/0001_tearful_firedrake.sql:ro
+      - ./packages/server/src/drizzle/__tests__/seed-test-users.sql:/docker-entrypoint-initdb.d/seed-test-users.sql:ro # Only required for automated testing
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: postgres
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=vector,pg_cron" # pg_cron is only needed for Firecrawl
+    networks:
+      - database_network
+
+  # Redis Cache for local development
+  redis:
+    container_name: redis
+    image: redis:7.2.11-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - database_network
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  database_network:
+    driver: bridge
