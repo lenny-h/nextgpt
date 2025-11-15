@@ -1,4 +1,0 @@
-aws_project_name = "your-project-name"
-aws_region       = "us-east-1"
-aws_zones        = "us-east-1a"
-database_password = "your-secure-database-password"
