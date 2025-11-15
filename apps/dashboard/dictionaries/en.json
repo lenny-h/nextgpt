@@ -29,6 +29,7 @@
     "filterLabel": "course name"
   },
   "files": {
+    "upload": "Upload files",
     "noCourses": "No courses available. Create one to see the corresponding files here.",
     "selectCourse": "Please select a course to view its files",
     "errorLoading": "Could not fetch the files of this course. Please try again later."
@@ -82,5 +83,11 @@
     "selectCourse": "Please select a course to view its tasks",
     "errorLoadingTasks": "Could not fetch the tasks of this course. Please try again later.",
     "filterLabel": "task name"
+  },
+  "prompts": {
+    "manage": "Manage Prompts"
+  },
+  "models": {
+    "add": "Add models"
   }
 }

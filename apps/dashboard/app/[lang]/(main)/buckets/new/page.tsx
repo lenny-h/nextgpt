@@ -5,10 +5,11 @@ import * as z from "zod";
 import { bucketSubscriptions } from "@/lib/bucket-subscriptions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { BucketType } from "@workspace/server/drizzle/schema";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,6 +39,7 @@ export default function CreateBucketPage() {
     resolver: zodResolver(createBucketFormSchema),
     defaultValues: {
       bucketName: "",
+      public: false,
     },
   });
 
@@ -95,6 +97,29 @@ export default function CreateBucketPage() {
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="public"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  Make bucket available to all authenticated users
+                </FormLabel>
+                <FormDescription>
+                  All users with an account will be able to access this bucket.
+                  You can still restrict access to courses by setting passwords.
+                </FormDescription>
+              </div>
             </FormItem>
           )}
         />
@@ -156,7 +181,7 @@ export default function CreateBucketPage() {
               isPending={form.formState.isSubmitting}
               pendingText="Processing..."
             >
-              Continue to payment
+              Create bucket
             </SubmitButton>
           </>
         )}

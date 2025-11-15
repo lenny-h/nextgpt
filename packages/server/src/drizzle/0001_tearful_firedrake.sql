@@ -1,3 +1,11 @@
+-- Enable pgvector extension
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Enable other useful extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+-- Main schema creation
 CREATE TYPE "public"."bucket_type" AS ENUM('small', 'medium', 'large', 'org');--> statement-breakpoint
 CREATE TYPE "public"."document_kind" AS ENUM('code', 'text');--> statement-breakpoint
 CREATE TYPE "public"."role" AS ENUM('user', 'assistant', 'system');--> statement-breakpoint
@@ -42,7 +50,7 @@ CREATE TABLE "buckets" (
 	"size" bigint DEFAULT 0 NOT NULL,
 	"max_size" bigint NOT NULL,
 	"type" "bucket_type" NOT NULL,
-	"subscription_id" varchar(128) DEFAULT '' NOT NULL,
+	"public" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -264,4 +272,5 @@ CREATE INDEX "idx_content_search" ON "chunks" USING gin ("fts");--> statement-br
 CREATE INDEX "idx_course_users_course_id" ON "course_users" USING btree ("course_id");--> statement-breakpoint
 CREATE INDEX "idx_course_users_user_id" ON "course_users" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "idx_course_users_user_id_role" ON "course_users" USING btree ("user_id","role");--> statement-breakpoint
-CREATE INDEX "idx_course_users_course_id_role" ON "course_users" USING btree ("course_id","role");
+CREATE INDEX "idx_course_users_course_id_role" ON "course_users" USING btree ("course_id","role");--> statement-breakpoint
+CREATE INDEX "idx_buckets_public" ON "buckets" USING btree ("public");

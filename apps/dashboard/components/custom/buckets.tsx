@@ -8,7 +8,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { memo, useEffect, useState } from "react";
@@ -16,14 +15,10 @@ import { AddBucketUsers } from "./add-bucket-users";
 import { CSVUploader } from "./csv-uploader";
 import { DeleteDialogWithConfirmation } from "./delete-dialog-with-confirmation";
 
-interface Props {
-  locale: Locale;
-}
-
-export const Buckets = memo(({ locale }: Props) => {
-  const { sharedT } = useSharedTranslations();
+export const Buckets = memo(() => {
+  const { locale, sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
-  
+
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -161,7 +156,7 @@ export const Buckets = memo(({ locale }: Props) => {
                   createdAt: new Date(bucket.createdAt),
                 };
                 setSelectedBucket(bucketData);
-                
+
                 // Update URL with bucketId search parameter
                 const params = new URLSearchParams(searchParams);
                 params.set("bucketId", bucket.id);
@@ -174,7 +169,7 @@ export const Buckets = memo(({ locale }: Props) => {
                     createdAt: new Date(bucket.createdAt),
                   };
                   setSelectedBucket(bucketData);
-                  
+
                   // Update URL with bucketId search parameter
                   const params = new URLSearchParams(searchParams);
                   params.set("bucketId", bucket.id);

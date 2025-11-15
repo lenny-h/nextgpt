@@ -6,19 +6,14 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
 import { tasksColumns } from "../tables/tasks-columns";
 import { CoursesSelector } from "./courses-selector";
 
-interface Props {
-  locale: Locale;
-}
-
-export const Tasks = ({ locale }: Props) => {
-  const { sharedT } = useSharedTranslations();
+export const Tasks = memo(() => {
+  const { locale, sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
@@ -106,7 +101,9 @@ export const Tasks = ({ locale }: Props) => {
           {dashboardT.tasks.noCourses}
         </h1>
         <Button asChild>
-          <Link href={`/${locale}/courses/new`}>{dashboardT.tasks.createCourse}</Link>
+          <Link href={`/${locale}/courses/new`}>
+            {dashboardT.tasks.createCourse}
+          </Link>
         </Button>
       </div>
     );
@@ -155,4 +152,4 @@ export const Tasks = ({ locale }: Props) => {
       )}
     </div>
   );
-};
+});

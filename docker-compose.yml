@@ -193,6 +193,8 @@ services:
   #     # Better Auth configuration and Resend email service (for sending verification emails)
   #     BETTER_AUTH_URL: http://localhost:3004
   #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+  #     ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS = ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
+  #     ADMIN_USER_IDS = ${ADMIN_USER_IDS}
 
   #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
   #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
@@ -437,6 +439,8 @@ services:
     networks:
       - database_network
 
+  # Keycloak for testing SSO integration
+  # Set valid redirect URI in Keycloak to http://localhost:3004/api/auth/sso/callback/keycloak-test
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak

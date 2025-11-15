@@ -164,6 +164,7 @@ export const ProfileForm = memo(() => {
               )}
             />
             <SubmitButton
+              className="w-full"
               isPending={form.formState.isSubmitting}
               pendingText="Updating profile..."
             >

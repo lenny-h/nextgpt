@@ -14,6 +14,13 @@ export async function getBuckets({ userId }: { userId: string }) {
   return await db.select().from(buckets).where(eq(buckets.owner, userId));
 }
 
+export async function getPublicBuckets() {
+  return await db
+    .select()
+    .from(buckets)
+    .where(eq(buckets.public, true));
+}
+
 export async function getBucketOwner({ bucketId }: { bucketId: string }) {
   const result = await db
     .select({ owner: buckets.owner, name: buckets.name })
@@ -91,10 +98,12 @@ export async function createBucket({
   userId,
   name,
   type,
+  public: isPublic = false,
 }: {
   userId: string;
   name: string;
   type: "small" | "medium" | "large";
+  public?: boolean;
 }) {
   const maxSize = maxFileSizes[type] * 1024 * 1024 * 1024;
 
@@ -107,6 +116,7 @@ export async function createBucket({
         name,
         type,
         maxSize,
+        public: isPublic,
       })
       .returning({ id: buckets.id });
 

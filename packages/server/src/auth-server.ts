@@ -13,7 +13,11 @@ import { getRedisClient } from "./utils/access-clients/redis-client.js";
 
 // Build plugins array and include SSO only when ENABLE_SSO is "true"
 const plugins = [
-  admin(),
+  admin({
+    adminUserIds: process.env.ADMIN_USER_IDS
+      ? process.env.ADMIN_USER_IDS.split(",")
+      : [],
+  }),
   ...(process.env.ENABLE_SSO === "true"
     ? [
         sso({

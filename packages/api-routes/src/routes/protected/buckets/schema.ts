@@ -10,6 +10,7 @@ const createBucketFormSchema = z
       .max(128, {
         message: "Bucket name must be less than 128 characters.",
       }),
+    public: z.boolean(),
   })
   .strict();
 

@@ -137,13 +137,12 @@ export const buckets = pgTable(
     size: bigint("size", { mode: "number" }).notNull().default(0),
     maxSize: bigint("max_size", { mode: "number" }).notNull(),
     type: bucketTypeEnum("type").notNull(),
-    subscriptionId: varchar("subscription_id", { length: 128 })
-      .notNull()
-      .default(""),
+    public: boolean("public").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex("buckets_owner_name_unique").on(table.owner, table.name),
+    index("idx_buckets_public").on(table.public),
   ]
 );
 

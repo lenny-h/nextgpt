@@ -1,7 +1,5 @@
 "use client";
 
-import { type Locale } from "@workspace/ui/lib/i18n.config";
-
 import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -9,17 +7,13 @@ import { useSharedTranslations } from "@workspace/ui/contexts/shared-translation
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import Link from "next/link";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { filesColumns } from "../tables/files-columns";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
 import { CoursesSelector } from "./courses-selector";
 
-interface Props {
-  locale: Locale;
-}
-
-export const Files = ({ locale }: Props) => {
-  const { sharedT } = useSharedTranslations();
+export const Files = memo(() => {
+  const { locale, sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
 
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
@@ -152,4 +146,4 @@ export const Files = ({ locale }: Props) => {
       )}
     </div>
   );
-};
+});

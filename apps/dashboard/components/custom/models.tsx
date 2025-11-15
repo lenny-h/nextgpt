@@ -6,16 +6,12 @@ import { DataTable } from "@workspace/ui/components/data-table";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
+import { memo } from "react";
 import { modelsColumns } from "../tables/models-columns";
 
-interface Props {
-  locale: Locale;
-}
-
-export const Models = ({ locale }: Props) => {
-  const { sharedT } = useSharedTranslations();
+export const Models = memo(() => {
+  const { locale, sharedT } = useSharedTranslations();
 
   const {
     data: models,
@@ -85,4 +81,4 @@ export const Models = ({ locale }: Props) => {
       />
     </div>
   );
-};
+});

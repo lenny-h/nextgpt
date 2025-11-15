@@ -1,21 +1,21 @@
+"use client";
+
 import { Files } from "@/components/custom/files";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
-import { Locale } from "@workspace/ui/lib/i18n.config";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import Link from "next/link";
 
-export default async function FilePage({
-  params,
-}: {
-  params: Promise<{ lang: Locale }>;
-}) {
-  const lang = (await params).lang;
+export default function FilePage() {
+  const { locale } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   return (
     <>
       <Button asChild className="absolute right-4 top-4">
-        <Link href={`/${lang}/files/new`}>Upload files</Link>
+        <Link href={`/${locale}/files/new`}>{dashboardT.files.upload}</Link>
       </Button>
-      <Files locale={lang} />
+      <Files />
     </>
   );
 }

@@ -1,21 +1,23 @@
+"use client";
+
 import { Courses } from "@/components/custom/courses";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import Link from "next/link";
 
-export default async function CoursesPage({
-  params,
-}: {
-  params: Promise<{ lang: Locale }>;
-}) {
-  const lang = (await params).lang;
+export default function CoursesPage() {
+  const { locale } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   return (
     <>
       <Button asChild className="absolute right-4 top-4">
-        <Link href={`/${lang}/courses/new`}>Create a course</Link>
+        <Link href={`/${locale}/courses/new`}>
+          {dashboardT.courses.createCourse}
+        </Link>
       </Button>
-      <Courses locale={lang} />
+      <Courses />
     </>
   );
 }

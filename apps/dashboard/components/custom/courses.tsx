@@ -6,17 +6,13 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
 import Link from "next/link";
+import { memo } from "react";
 import { coursesColumns } from "../tables/courses-columns";
 import { InfiniteDataTable } from "../tables/infinite-data-table";
 
-interface Props {
-  locale: Locale;
-}
-
-export const Courses = ({ locale }: Props) => {
-  const { sharedT } = useSharedTranslations();
+export const Courses = memo(() => {
+  const { locale, sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
 
   const {
@@ -100,4 +96,4 @@ export const Courses = ({ locale }: Props) => {
       />
     </div>
   );
-};
+});

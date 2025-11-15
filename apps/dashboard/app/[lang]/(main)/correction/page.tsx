@@ -1,19 +1,19 @@
+"use client";
+
 import { Correction } from "@/components/custom/correction";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
-import { type Locale } from "@workspace/ui/lib/i18n.config";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import Link from "next/link";
 
-export default async function CorrectionPage({
-  params,
-}: {
-  params: Promise<{ lang: Locale }>;
-}) {
-  const lang = (await params).lang;
+export default function CorrectionPage() {
+  const { locale } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   return (
     <>
       <Button asChild className="absolute right-4 top-4">
-        <Link href={`/${lang}/prompts`}>Manage prompts</Link>
+        <Link href={`/${locale}/prompts`}>{dashboardT.prompts.manage}</Link>
       </Button>
       <Correction />
     </>

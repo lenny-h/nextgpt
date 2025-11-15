@@ -29,6 +29,7 @@
     "filterLabel": "Kursname"
   },
   "files": {
+    "upload": "Dateien hochladen",
     "noCourses": "Keine Kurse verfügbar. Erstellen Sie einen, um die entsprechenden Dateien hier zu sehen.",
     "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Dateien anzuzeigen",
     "errorLoading": "Die Dateien dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
@@ -82,5 +83,11 @@
     "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Aufgaben anzuzeigen",
     "errorLoadingTasks": "Die Aufgaben dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
     "filterLabel": "Aufgabenname"
+  },
+  "prompts": {
+    "manage": "Prompts verwalten"
+  },
+  "models": {
+    "add": "Modelle hinzufügen"
   }
 }
