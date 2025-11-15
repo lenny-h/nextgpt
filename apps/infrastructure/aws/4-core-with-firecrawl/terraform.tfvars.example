@@ -1,0 +1,55 @@
+# AWS Configuration
+aws_project_name = "my-project"
+aws_region       = "us-east-1"
+
+# Site Configuration
+site_url = "example.com"
+
+# Authentication
+better_auth_secret               = "your-secure-secret-key"
+only_allow_admin_to_create_buckets = false
+admin_user_ids                   = "user-id-1,user-id-2"
+enable_email_signup              = true
+allowed_email_domains            = "example.com,company.com"
+enable_oauth_login               = true
+
+# OAuth Providers
+google_client_id     = "your-google-client-id"
+google_client_secret = "your-google-client-secret"
+github_client_id     = "your-github-client-id"
+github_client_secret = "your-github-client-secret"
+gitlab_client_id     = "your-gitlab-client-id"
+gitlab_client_secret = "your-gitlab-client-secret"
+
+# SSO Configuration
+enable_sso                 = false
+sso_domain                 = ""
+sso_provider_id            = ""
+sso_client_id              = ""
+sso_client_secret          = ""
+sso_issuer                 = ""
+sso_authorization_endpoint = ""
+sso_discovery_endpoint     = ""
+sso_token_endpoint         = ""
+sso_jwks_endpoint          = ""
+
+# Email Configuration
+resend_sender_email = "noreply@example.com"
+resend_api_key      = "your-resend-api-key"
+
+# Application Security
+encryption_key = "your-64-character-encryption-key-here-replace-with-actual"
+
+# Storage Configuration (Cloudflare R2)
+use_cloudflare_r2            = true
+cloudflare_access_key_id     = "your-r2-access-key-id"
+cloudflare_secret_access_key = "your-r2-secret-access-key"
+r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
+
+# AI Models
+embeddings_model = "amazon.titan-embed-text-v1"
+llm_models       = "anthropic.claude-3-5-sonnet-20240620-v1:0,anthropic.claude-3-haiku-20240307-v1:0"
+
+# Firecrawl Configuration
+use_firecrawl     = true
+firecrawl_api_key = "your-firecrawl-api-key-if-using-external-service"

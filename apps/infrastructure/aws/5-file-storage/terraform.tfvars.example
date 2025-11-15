@@ -1,0 +1,6 @@
+# AWS Configuration
+aws_project_name = "my-project"
+aws_region       = "us-east-1"
+
+# Site Configuration
+site_url = "example.com"

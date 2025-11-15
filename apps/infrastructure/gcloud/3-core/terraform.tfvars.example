@@ -1,0 +1,40 @@
+# Copy this file to terraform.tfvars and fill in your values
+
+project_id   = "your-gcp-project-id"
+region       = "us-central1"
+project_name = "myapp"
+environment  = "production"
+
+# Domain configuration
+domain = "api.example.com"
+
+# API scaling configuration
+api_cpu           = "1"
+api_memory        = "512Mi"
+api_min_instances = 1
+api_max_instances = 10
+
+# Document Processor scaling
+document_processor_cpu           = "2"
+document_processor_memory        = "2Gi"
+document_processor_min_instances = 0
+document_processor_max_instances = 5
+
+# PDF Exporter scaling
+pdf_exporter_cpu           = "1"
+pdf_exporter_memory        = "1Gi"
+pdf_exporter_min_instances = 0
+pdf_exporter_max_instances = 5
+
+# OAuth Configuration
+google_client_id     = "your-google-client-id"
+google_client_secret = "your-google-client-secret"
+github_client_id     = "your-github-client-id"
+github_client_secret = "your-github-client-secret"
+
+# Auth Configuration
+nextauth_secret = "your-nextauth-secret-min-32-chars"
+nextauth_url    = "https://api.example.com"
+
+# Encryption
+encryption_key = "your-encryption-key-min-32-chars"

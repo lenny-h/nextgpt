@@ -53,9 +53,7 @@ firecrawl_api_key = "your-firecrawl-api-key"
 # AWS specific
 aws_project_name = "your-aws-project-name"
 aws_region       = "your-aws-region"
-aws_zones        = "your-aws-zones"
+aws_zone         = "your-aws-zone"
 
 # SQS
 sqs_queue_url = "your-aws-sqs-queue-url"
-
-github_repository = "your-github-repository"
