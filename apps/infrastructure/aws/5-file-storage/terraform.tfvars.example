@@ -1,0 +1,3 @@
+site_url         = "example.com"
+aws_project_name = "your-project-name"
+aws_region       = "us-east-1"
