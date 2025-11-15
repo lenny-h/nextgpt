@@ -1,4 +1,5 @@
 import { usePdf } from "@/contexts/pdf-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useRefs } from "@workspace/ui/contexts/refs-context";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export const SourcesList = ({ sources, isLoading }: Props) => {
+  const { webT } = useWebTranslations();
   const isMobile = useIsMobile();
 
   const { panelRef, size } = useRefs();
@@ -51,7 +53,7 @@ export const SourcesList = ({ sources, isLoading }: Props) => {
   if (sources.length === 0) {
     return (
       <p className="text-muted-foreground w-full py-8 text-center text-sm">
-        No results found
+        {webT.documentsList.noResultsFound}
       </p>
     );
   }
@@ -95,11 +97,11 @@ export const SourcesList = ({ sources, isLoading }: Props) => {
             <div className="flex flex-1 flex-col space-y-1 overflow-x-hidden">
               <div className="flex items-center gap-2">
                 <h2 className="flex-1 truncate text-left text-lg font-semibold">
-                  {source.fileName}, page {source.pageIndex + 1}
+                  {source.fileName}, p. {source.pageIndex + 1}
                 </h2>
                 {!isPdf && (
                   <span className="text-muted-foreground text-[10px] italic">
-                    Preview unavailable
+                    {webT.documentsList.previewUnavailable}
                   </span>
                 )}
               </div>

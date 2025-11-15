@@ -16,6 +16,7 @@
 
 "use client";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { cn } from "@workspace/ui/lib/utils";
 import { ChevronDownIcon, Loader } from "lucide-react";
 import { LazyMotion } from "motion/react";
@@ -34,6 +35,8 @@ export function MessageReasoning({
   isLoading,
   reasoning,
 }: MessageReasoningProps) {
+  const { webT } = useWebTranslations();
+
   const [isExpanded, setIsExpanded] = useState(true);
 
   const variants = {
@@ -56,13 +59,15 @@ export function MessageReasoning({
       <div className="flex flex-row items-center gap-2">
         {isLoading ? (
           <>
-            <div className="font-medium">Reasoning</div>
+            <div className="font-medium">{webT.reasoningButton.reasoning}</div>
             <div className="animate-spin">
               <Loader className="size-4" />
             </div>
           </>
         ) : (
-          <div className="font-medium">Reasoned for a few seconds</div>
+          <div className="font-medium">
+            {webT.reasoningButton.reasonedForAFewSeconds}
+          </div>
         )}
         <div
           className="cursor-pointer"

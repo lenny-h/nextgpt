@@ -49,7 +49,7 @@ export class LocalTasksClient implements ITasksClient {
                 "Content-Type": "application/json",
                 // "Content-Length": Buffer.byteLength(requestBody),
               },
-              timeout: 120 * 60 * 1000, // 2 hours total timeout (for large OCR jobs)
+              timeout: 60 * 60 * 1000, // 1 hour total timeout (for large OCR jobs)
             },
             (res) => {
               let responseBody = "";
@@ -81,8 +81,8 @@ export class LocalTasksClient implements ITasksClient {
 
           req.on("timeout", () => {
             req.destroy();
-            logger.error(`Task timed out after 2 hours`);
-            reject(new Error("Request timeout after 2 hours"));
+            logger.error(`Task timed out after 1 hour`);
+            reject(new Error("Request timeout after 1 hour"));
           });
 
           req.on("error", (error) => {

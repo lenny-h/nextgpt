@@ -1,9 +1,12 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { cn } from "@workspace/ui/lib/utils";
 import { memo } from "react";
 
 const PureWebSearchButton = () => {
+  const { webT } = useWebTranslations();
+
   const { webSearchEnabled, setWebSearchEnabled } = useChatModel();
   const [isTemporary] = useIsTemporary();
 
@@ -25,7 +28,7 @@ const PureWebSearchButton = () => {
       }}
       type="button"
     >
-      Web Search
+      {webT.multimodal.webSearch}
     </button>
   );
 };

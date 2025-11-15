@@ -1,5 +1,6 @@
 import * as m from "motion/react-m";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useEditor } from "@workspace/ui/contexts/editor-context";
 import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { updateCodeEditorWithDispatch } from "@workspace/ui/editors/utils";
@@ -27,6 +28,8 @@ export const CodeBlock = ({
   style,
   ...props
 }: CodeBlockProps) => {
+  const { webT } = useWebTranslations();
+
   const { panelRef, codeEditorRef } = useRefs();
   const [, setEditorMode] = useEditor();
 
@@ -61,7 +64,7 @@ export const CodeBlock = ({
             ) : (
               <Copy size={14} />
             )}
-            <span className="text-xs">Copy</span>
+            <span className="text-xs">{webT.codeBlock.copy}</span>
           </button>
           <button
             className="flex cursor-pointer items-center space-x-1 text-slate-50"
@@ -89,7 +92,7 @@ export const CodeBlock = ({
             ) : (
               <Pencil size={14} />
             )}
-            <span className="text-xs">Edit</span>
+            <span className="text-xs">{webT.codeBlock.edit}</span>
           </button>
         </div>
       </div>

@@ -1,9 +1,12 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { cn } from "@workspace/ui/lib/utils";
 import { memo } from "react";
 
 const PureReasoningButton = () => {
+  const { webT } = useWebTranslations();
+
   const { selectedChatModel, reasoningEnabled, setReasoningEnabled } =
     useChatModel();
   const [isTemporary] = useIsTemporary();
@@ -25,7 +28,7 @@ const PureReasoningButton = () => {
       }}
       type="button"
     >
-      Reasoning
+      {webT.reasoningButton.reasoning}
     </button>
   );
 };

@@ -2,6 +2,7 @@
 
 import * as m from "motion/react-m";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -41,7 +42,7 @@ function PureUserMessage({
   setMessages,
   regenerate,
 }: UserMessageProps) {
-  console.log("Rendering UserMessage");
+  const { webT } = useWebTranslations();
 
   const [_, copyToClipboard] = useCopyToClipboard();
   const [mode, setMode] = useState<"view" | "edit">("view");
@@ -80,13 +81,13 @@ function PureUserMessage({
                       className="text-muted-foreground size-6 opacity-0 group-hover/message:opacity-100"
                       onClick={async () => {
                         await copyToClipboard(textContent);
-                        toast.success("Copied to clipboard!");
+                        toast.success(webT.messageActions.copiedToClipboard);
                       }}
                     >
                       <Copy className="size-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Copy message</TooltipContent>
+                  <TooltipContent>{webT.messageActions.copy}</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -100,7 +101,9 @@ function PureUserMessage({
                       <Pencil className="size-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Edit message</TooltipContent>
+                  <TooltipContent>
+                    {webT.messageActions.editMessage}
+                  </TooltipContent>
                 </Tooltip>
                 <div className="bg-muted max-w-3/4 w-fit whitespace-pre-wrap rounded-2xl px-4 py-2">
                   {textContent}

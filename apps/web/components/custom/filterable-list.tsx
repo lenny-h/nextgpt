@@ -1,3 +1,4 @@
+import { useWebTranslations } from "@/contexts/web-translations";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query";
@@ -40,6 +41,8 @@ export const FilterableList = memo(
     enabled = true,
     maxItems = 5,
   }: FilterableListProps<T>) => {
+    const { webT } = useWebTranslations();
+
     const [ilikeItems, setIlikeItems] = useState<T[]>([]);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
     const listRef = useRef<HTMLDivElement>(null);
@@ -117,7 +120,12 @@ export const FilterableList = memo(
       const itemIncluded = selectedItems.map((i) => i.id).includes(item.id);
 
       if (!itemIncluded && selectedItems.length >= maxItems) {
-        toast.error(`You can only select up to ${maxItems} items`);
+        toast.error(
+          webT.filterableList.maxItemsError.replace(
+            "{maxItems}",
+            maxItems.toString(),
+          ),
+        );
         return;
       }
 
@@ -161,7 +169,7 @@ export const FilterableList = memo(
       return (
         <div className="max-h-80 space-y-1 overflow-y-auto pr-1">
           <p className="text-muted-foreground py-8 text-center text-sm">
-            Error loading {queryKey[0]}
+            {webT.filterableList.errorLoading.replace("{type}", queryKey[0])}
           </p>
         </div>
       );
@@ -189,7 +197,7 @@ export const FilterableList = memo(
         ))}
         {itemsToDisplay.length === 0 && (
           <p className="text-muted-foreground py-8 text-center text-sm">
-            No results found
+            {webT.filterableList.noResultsFound}
           </p>
         )}
         {hasNextPage && (

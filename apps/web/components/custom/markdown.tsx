@@ -59,8 +59,8 @@ const processChildrenWithLineBreaks = (children: React.ReactNode) => {
 // New: rehype plugin to convert <doc-source>id</doc-source> and <web-source>id</web-source>
 const rehypeSourceRefs = () => {
   return (tree: any) => {
-    const docSourceRegex = /<doc-source>(.*?)<\/doc-source>/g;
-    const webSourceRegex = /<web-source>(.*?)<\/web-source>/g;
+    // const docSourceRegex = /<doc-source>(.*?)<\/doc-source>/g;
+    // const webSourceRegex = /<web-source>(.*?)<\/web-source>/g;
 
     const transform = (parent: any) => {
       if (!parent || !Array.isArray(parent.children)) return;

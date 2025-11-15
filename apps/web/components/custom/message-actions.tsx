@@ -8,6 +8,7 @@ import {
 import { useEditor } from "@workspace/ui/contexts/editor-context";
 import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn, resizeEditor } from "@workspace/ui/lib/utils";
 import type { ChatRequestOptions } from "ai";
@@ -47,11 +48,12 @@ export const MessageActions = memo(
     previousMessageId,
   }: MessageActionsProps) => {
     const { sharedT } = useSharedTranslations();
+    const { webT } = useWebTranslations();
 
     const { panelRef, textEditorRef } = useRefs();
     const [, setEditorMode] = useEditor();
 
-    const [_, copyToClipboard] = useCopyToClipboard();
+    const [, copyToClipboard] = useCopyToClipboard();
     const [liked, setLiked] = useState<null | boolean>(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -74,7 +76,7 @@ export const MessageActions = memo(
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => {
         setIsSpeaking(false);
-        toast.error("Failed to read message");
+        toast.error(webT.messageActions.failedRead);
       };
 
       window.speechSynthesis.speak(utterance);
@@ -93,13 +95,13 @@ export const MessageActions = memo(
                 variant="ghost"
                 onClick={async () => {
                   await copyToClipboard(content);
-                  toast.success("Copied to clipboard!");
+                  toast.success(webT.messageActions.copiedToClipboard);
                 }}
               >
                 <Copy />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Copy message</TooltipContent>
+            <TooltipContent>{webT.messageActions.copy}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -113,7 +115,7 @@ export const MessageActions = memo(
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {isSpeaking ? "Stop reading" : "Read aloud"}
+              {isSpeaking ? webT.messageActions.stopReading : webT.messageActions.readAloud}
             </TooltipContent>
           </Tooltip>
 
@@ -139,16 +141,14 @@ export const MessageActions = memo(
                     });
                   } catch (error) {
                     console.error("Error during retry:", error);
-                    toast.error(
-                      "Failed to process retry operation. Please try again.",
-                    );
+                    toast.error(webT.messageActions.retryFailed);
                   }
                 }}
               >
                 <RefreshCcw />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Retry</TooltipContent>
+            <TooltipContent>{webT.messageActions.retry}</TooltipContent>
           </Tooltip>
 
           <div className="flex flex-row items-center space-x-2">
@@ -166,7 +166,7 @@ export const MessageActions = memo(
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>Like</TooltipContent>
+              <TooltipContent>{webT.messageActions.like}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -182,7 +182,7 @@ export const MessageActions = memo(
                   />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>Dislike</TooltipContent>
+              <TooltipContent>{webT.messageActions.dislike}</TooltipContent>
             </Tooltip>
           </div>
 
@@ -201,7 +201,7 @@ export const MessageActions = memo(
             }}
           >
             <Pencil className="size-4" />
-            <span className="text-muted-foreground text-xs">Editor</span>
+            <span className="text-muted-foreground text-xs">{webT.messageActions.editor}</span>
           </button>
         </div>
       </TooltipProvider>

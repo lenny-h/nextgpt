@@ -1,3 +1,5 @@
+import { useFilter } from "@/contexts/filter-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -12,7 +14,6 @@ import { Trash2 } from "lucide-react";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useFilter } from "@/contexts/filter-context";
 
 // NOTE: schema is created per-component instance below because it
 // depends on the file's pageCount which is only available at runtime.
@@ -30,6 +31,7 @@ interface PageRangeFormProps {
 
 export const PageRangeForm = memo(
   ({ fileId, currentPageRange, onUpdate, onClear }: PageRangeFormProps) => {
+    const { webT } = useWebTranslations();
     const { filter } = useFilter();
     const file = filter.files.find((f) => f.id === fileId);
 
@@ -72,7 +74,10 @@ export const PageRangeForm = memo(
             return true;
           },
           {
-            message: `Enter page ranges like: 1,3-5,7 and ensure pages are between 1 and ${pageCount}`,
+            message: webT.pageRange.invalid.replace(
+              "{pageCount}",
+              pageCount.toString(),
+            ),
           },
         ),
     });
@@ -104,20 +109,25 @@ export const PageRangeForm = memo(
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormControl>
-                    <Input placeholder="e.g., 1,3-5,7" {...field} />
+                    <Input
+                      placeholder={webT.pageRange.placeholder}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" variant="outline">
-              Set
+              {webT.pageRange.set}
             </Button>
           </form>
         </Form>
         {currentPageRange && (
           <div className="bg-muted/30 hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md border px-2 py-1 transition-colors">
-            <span className="font-medium">Pages: {currentPageRange}</span>
+            <span className="font-medium">
+              {webT.pageRange.pagesPrefix} {currentPageRange}
+            </span>
             <Button variant="ghost" onClick={() => onClear(fileId)}>
               <Trash2 className="size-4" />
             </Button>

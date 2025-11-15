@@ -41,6 +41,7 @@ import { AttachmentPreview } from "./attachment-preview";
 import { ContextFiles } from "./context-files";
 import { Textarea } from "./text-area";
 import { TextAreaControl } from "./text-area-control";
+import { useWebTranslations } from "@/contexts/web-translations";
 
 interface MultimodalInputProps {
   sendMessage: (
@@ -65,6 +66,7 @@ const PureMultimodalInput = ({
   isPractice = false,
 }: MultimodalInputProps) => {
   const { locale } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const { filter } = useFilter();
   const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
@@ -144,7 +146,7 @@ const PureMultimodalInput = ({
 
   const submitForm = useCallback(() => {
     if (!filter.bucket.id) {
-      toast.error("Please select a bucket before submitting your question");
+      toast.error(webT.validation.selectBucket);
       return;
     }
 
@@ -156,7 +158,7 @@ const PureMultimodalInput = ({
       const document = filter.documents[0];
 
       if (!document) {
-        toast.error("Document not found in the filter");
+        toast.error(webT.validation.documentNotFound);
         return;
       }
 
@@ -204,7 +206,7 @@ const PureMultimodalInput = ({
     >
       {isDragging && (
         <div className="border-primary/50 bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-2xl border-2 border-dashed">
-          <span className="text-muted-foreground text-sm">Drop files here</span>
+          <span className="text-muted-foreground text-sm">{webT.multimodal.dropFiles}</span>
         </div>
       )}
 

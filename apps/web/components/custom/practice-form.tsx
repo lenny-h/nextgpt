@@ -3,6 +3,7 @@
 import * as z from "zod";
 
 import { useFilter } from "@/contexts/filter-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { studyModes, studyModeSchema } from "@/lib/study-modes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
@@ -38,6 +39,7 @@ interface PracticeFormProps {
 
 export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
   const { filter, setFilter, studyMode, setStudyMode } = useFilter();
+  const { webT } = useWebTranslations();
 
   const [expandedFiles, setExpandedFiles] = useState<string[]>([]);
 
@@ -90,10 +92,9 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
     <div className="flex-1 overflow-y-scroll px-6 pb-3 pt-8">
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center space-y-8">
         <div className="flex flex-col space-y-4 text-center">
-          <h1 className="text-2xl font-semibold">Let's practice! 🚀</h1>
+          <h1 className="text-2xl font-semibold">{webT.practice.title}</h1>
           <p className="text-muted-foreground font-medium">
-            Select the files whose content you want to practice. You can also
-            practice specific page ranges of PDF files by adding them below.
+            {webT.practice.description}
           </p>
         </div>
 
@@ -136,7 +137,7 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
                         />
                       ) : (
                         <p className="text-muted-foreground italic">
-                          Page range selection is only available for PDF files.
+                          {webT.pageRange.onlyForPdf}
                         </p>
                       )}
                     </div>
@@ -159,7 +160,7 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-lg font-medium">
-                      Study Mode
+                      {webT.practice.studyMode}
                     </FormLabel>
                     <FormControl>
                       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -191,9 +192,9 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
             <div className="mt-6 flex w-full justify-center">
               <SubmitButton
                 isPending={practiceForm.formState.isSubmitting}
-                pendingText="Starting..."
+                pendingText={webT.practice.starting}
               >
-                Start
+                {webT.practice.start}
               </SubmitButton>
             </div>
           </form>

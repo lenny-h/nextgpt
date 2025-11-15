@@ -84,8 +84,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
             <>
               <DialogTitle>{webT.addContext.addPrompts}</DialogTitle>
               <DialogDescription>
-                Create a new prompt to provide instructions to the LLM that you
-                can reuse across different requests. This is similar to memory.
+                {webT.addContext.description}
               </DialogDescription>
             </>
           ) : (

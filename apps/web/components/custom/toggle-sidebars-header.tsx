@@ -1,5 +1,6 @@
 "use client";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar-left";
 import {
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const Header = memo(({ showCourseSelector }: Props) => {
+  const { webT } = useWebTranslations();
   const { panelRef } = useRefs();
 
   return (
@@ -39,7 +41,7 @@ export const Header = memo(({ showCourseSelector }: Props) => {
               <PanelRightIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Toggle sidebar</TooltipContent>
+          <TooltipContent>{webT.chatHeader.toggleSidebar}</TooltipContent>
         </Tooltip>
       </div>
     </header>

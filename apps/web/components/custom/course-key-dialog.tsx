@@ -2,6 +2,7 @@
 
 import * as z from "zod";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -50,6 +51,7 @@ export const CourseKeyDialog = memo(
     onSuccess,
   }: CourseKeyDialogProps) => {
     const { sharedT } = useSharedTranslations();
+    const { webT } = useWebTranslations();
 
     const form = useForm<CourseKeyData>({
       resolver: zodResolver(courseKeySchema),
@@ -77,9 +79,10 @@ export const CourseKeyDialog = memo(
       });
 
       toast.promise(requestAccessPromise, {
-        loading: "Requesting course access...",
-        success: "Course access granted!",
-        error: (error) => error.message || "Failed to request course access",
+        loading: webT.courseKeyDialog.requestingAccess,
+        success: webT.courseKeyDialog.accessGranted,
+        error: (error) =>
+          error.message || webT.courseKeyDialog.failedToRequestAccess,
       });
     };
 
@@ -87,9 +90,14 @@ export const CourseKeyDialog = memo(
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Course Access Required</DialogTitle>
+            <DialogTitle>
+              {webT.courseKeyDialog.courseAccessRequired}
+            </DialogTitle>
             <DialogDescription>
-              Please enter the access key for "{courseName}" to continue.
+              {webT.courseKeyDialog.enterAccessKey.replace(
+                "{courseName}",
+                courseName,
+              )}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -100,10 +108,12 @@ export const CourseKeyDialog = memo(
                   name="key"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Course Key</FormLabel>
+                      <FormLabel>{webT.courseKeyDialog.courseKey}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter course access key"
+                          placeholder={
+                            webT.courseKeyDialog.enterCourseAccessKey
+                          }
                           type="password"
                           {...field}
                         />
@@ -119,9 +129,9 @@ export const CourseKeyDialog = memo(
                   variant="secondary"
                   onClick={() => onOpenChange(false)}
                 >
-                  Cancel
+                  {webT.courseKeyDialog.cancel}
                 </Button>
-                <Button type="submit">Submit</Button>
+                <Button type="submit">{webT.courseKeyDialog.submit}</Button>
               </DialogFooter>
             </form>
           </Form>

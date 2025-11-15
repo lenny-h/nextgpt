@@ -1,6 +1,7 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -17,6 +18,7 @@ import { SearchWithSelection } from "./search-with-selection";
 
 export const FileSelector = memo(() => {
   const { isLoading, isError, filter } = useFilter();
+  const { webT } = useWebTranslations();
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -52,7 +54,10 @@ export const FileSelector = memo(() => {
           onClick={() => setOpen((open) => !open)}
           variant="outline"
         >
-          {filter.files.length} files selected
+          {webT.fileSelector.filesSelected.replace(
+            "{count}",
+            filter.files.length.toString(),
+          )}
           <kbd className="bg-muted text-muted-foreground inline-flex h-5 items-center gap-1 rounded-xl border px-1.5 font-mono font-medium">
             <span className="text-xs">⌘</span>j
           </kbd>
@@ -60,7 +65,7 @@ export const FileSelector = memo(() => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Search files</DialogTitle>
+          <DialogTitle>{webT.fileSelector.searchFiles}</DialogTitle>
         </DialogHeader>
         <SearchWithSelection
           type="files"

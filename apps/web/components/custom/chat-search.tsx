@@ -1,5 +1,6 @@
 "use client";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,8 @@ import { ChatsList } from "../editors/load-button-lists";
 import { SearchWithSelection } from "./search-with-selection";
 
 export const ChatSearch = memo(({ children }: { children: ReactNode }) => {
+  const { webT } = useWebTranslations();
+
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
@@ -32,7 +35,7 @@ export const ChatSearch = memo(({ children }: { children: ReactNode }) => {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Search chats</DialogTitle>
+          <DialogTitle>{webT.chatSearch.searchChats}</DialogTitle>
         </DialogHeader>
         <SearchWithSelection
           type="chats"

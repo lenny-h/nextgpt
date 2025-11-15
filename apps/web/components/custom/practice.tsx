@@ -4,6 +4,7 @@ import { useDiff } from "@/contexts/diff-context";
 import { useFilter } from "@/contexts/filter-context";
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
 import {
   getMessageCountAfterLastStart,
@@ -38,8 +39,8 @@ export function Practice({
   chatId: string;
   initialMessages: Array<MyUIMessage>;
 }) {
-  const { locale } = useSharedTranslations();
-  const { sharedT } = useSharedTranslations();
+  const { locale, sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const queryClient = useQueryClient();
 
@@ -89,7 +90,7 @@ export function Practice({
           codeDiffPrev,
           setCodeDiffNext,
         }),
-      onError: () => toast.error("An error occurred, please try again!"),
+      onError: () => toast.error(webT.chat.errorOccurred),
       transport: new DefaultChatTransport({
         api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/practice`,
         credentials: "include",
@@ -138,7 +139,7 @@ export function Practice({
 
   const submitForm = useCallback(() => {
     if (!filter.bucket.id) {
-      toast.error("Please select a bucket before submitting your question");
+      toast.error(webT.validation.selectBucket);
       return;
     }
 
@@ -199,7 +200,7 @@ export function Practice({
             }}
             variant="outline"
           >
-            New question
+            {webT.practice.newQuestion}
           </Button>
         )}
 

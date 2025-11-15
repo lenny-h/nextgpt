@@ -1,3 +1,4 @@
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
@@ -9,7 +10,6 @@ import { useInfiniteQueryWithRPC } from "@workspace/ui/hooks/use-infinite-query"
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { cn } from "@workspace/ui/lib/utils";
 import { FileText, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 interface Props {
   documents: Omit<CustomDocument, "userId">[];
@@ -21,6 +21,7 @@ export const DocumentsList = ({
   isSearching,
 }: Props) => {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const { panelRef, size } = useRefs();
 
@@ -73,7 +74,9 @@ export const DocumentsList = ({
   if (error || !documents) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-lg font-semibold">Error loading documents</h1>
+        <h1 className="text-lg font-semibold">
+          {webT.documentsList.errorLoadingDocuments}
+        </h1>
       </div>
     );
   }
@@ -83,7 +86,7 @@ export const DocumentsList = ({
   if (documentsToDisplay.length === 0) {
     return (
       <p className="text-muted-foreground w-full py-8 text-center text-sm">
-        No results found
+        {webT.documentsList.noResultsFound}
       </p>
     );
   }
