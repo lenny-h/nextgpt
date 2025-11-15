@@ -30,8 +30,6 @@ RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
 # ENV TESSDATA_PREFIX=/usr/share/tesseract/tessdata/
 
 # Prefetch essential Docling models at build time
-# Only download the core models needed for basic PDF processing
-# Optional models (formula, code, etc.) will be downloaded at runtime when first used
 ARG MODELS_LIST="layout tableformer rapidocr"
 
 RUN echo "Downloading essential models..." && \
@@ -40,6 +38,9 @@ RUN echo "Downloading essential models..." && \
     docling-tools models download -o "${DOCLING_ARTIFACTS_PATH}" ${MODELS_LIST} && \
     chown -R appuser:appuser ${DOCLING_ARTIFACTS_PATH} ${HF_HOME} && \
     chmod -R g=u ${DOCLING_ARTIFACTS_PATH} ${HF_HOME}
+
+RUN chown -R appuser:appuser /usr/local/lib/python3.12/site-packages/rapidocr && \
+    chmod -R u+w /usr/local/lib/python3.12/site-packages/rapidocr
 
 # Copy application source (again: paths are from repo root)
 COPY --chown=appuser:appuser apps/document-processor/src ./src

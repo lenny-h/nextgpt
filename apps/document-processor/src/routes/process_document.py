@@ -132,7 +132,6 @@ async def _convert_document_to_chunks(
     converter = get_converter()
     result = converter.convert(source)
     logger.debug(f"Document conversion completed")
-    logger.debug(f"Result: {result}")
 
     logger.debug(f"Initializing chunker and processing document")
     chunker = HybridChunker(tokenizer=get_tokenizer())
@@ -141,6 +140,12 @@ async def _convert_document_to_chunks(
     chunks: List[DocumentChunkData] = []
     for idx, chunk in enumerate(chunk_iter):
         contextualized_text = chunker.contextualize(chunk=chunk)
+
+        logger.debug(f"Created chunk {idx}: {contextualized_text[:60]}... (length: {len(contextualized_text)} characters)")
+
+        if not contextualized_text.strip():
+            logger.debug(f"Skipping empty chunk at index {idx}")
+            continue
 
         chunks.append(DocumentChunkData(
             contextualized_content=contextualized_text,

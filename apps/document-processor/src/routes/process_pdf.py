@@ -178,7 +178,6 @@ async def _convert_pdf_to_chunks(
     result = doc_converter.convert(source)
     page_count = result.document.num_pages()
     logger.debug(f"PDF conversion completed ({page_count} pages)")
-    logger.debug(f"Result: {result}")
 
     logger.debug(f"Initializing chunker and processing PDF")
     chunker = HybridChunker(tokenizer=get_tokenizer())
@@ -187,8 +186,15 @@ async def _convert_pdf_to_chunks(
     chunks: List[PdfChunkData] = []
     for idx, chunk in enumerate(chunk_iter):
         contextualized_text = chunker.contextualize(chunk=chunk)
+
         doc_chunk = DocChunk.model_validate(chunk)
         page_index, bbox_tuple = _extract_chunk_metadata(doc_chunk)
+
+        logger.debug(f"Created chunk {idx}: {contextualized_text[:60]}... (length: {len(contextualized_text)} characters)")
+
+        if not contextualized_text.strip():
+            logger.debug(f"Skipping empty chunk at index {idx}")
+            continue
 
         chunks.append(PdfChunkData(
             contextualized_content=contextualized_text,

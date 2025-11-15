@@ -17,7 +17,7 @@ def embed_content(contents: List[str]) -> List[List[float]]:
     Generate embeddings for a list of text contents using the internal API.
 
     Args:
-        contents: List of text strings to embed (max 100 per batch)
+        contents: List of text strings to embed (max 60 per batch)
 
     Returns:
         List of embedding vectors (each is a list of floats)
@@ -39,34 +39,42 @@ def embed_content(contents: List[str]) -> List[List[float]]:
         logger.error("ENCRYPTION_KEY environment variable not set")
         raise ValueError("INTERNAL_API_SECRET environment variable not set")
 
-    # Use batch endpoint for multiple contents
-    endpoint = f"{api_url}/api/internal/embeddings/batch"
-    headers = {
-        "Content-Type": "application/json",
-        "x-internal-secret": internal_secret
-    }
-    payload = {"texts": contents}
+    # Process contents in batches of up to 60
+    batch_size = 60
+    all_embeddings = []
+    for i in range(0, len(contents), batch_size):
+        batch = contents[i:i + batch_size]
+        logger.debug(f"Processing batch of {len(batch)} texts")
+        
+        endpoint = f"{api_url}/api/internal/embeddings/batch"
+        headers = {
+            "Content-Type": "application/json",
+            "x-internal-secret": internal_secret
+        }
+        payload = {"texts": batch}
 
-    try:
-        logger.debug(f"Sending embedding request to {endpoint}")
-        with httpx.Client(timeout=30.0) as client:
-            response = client.post(endpoint, json=payload, headers=headers)
-            response.raise_for_status()
+        try:
+            logger.debug(f"Sending embedding request to {endpoint}")
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(endpoint, json=payload, headers=headers)
+                response.raise_for_status()
 
-            data = response.json()
+                data = response.json()
 
-            if "embeddings" not in data or not data["embeddings"]:
-                logger.error("No embeddings returned from API")
-                raise ValueError("No embeddings returned from API")
+                if "embeddings" not in data or not data["embeddings"]:
+                    logger.error("No embeddings returned from API")
+                    raise ValueError("No embeddings returned from API")
 
-            logger.debug(f"Successfully received {len(data['embeddings'])} embeddings from API")
-            return data["embeddings"]
+                logger.debug(f"Successfully received {len(data['embeddings'])} embeddings from API")
+                all_embeddings.extend(data["embeddings"])
 
-    except httpx.HTTPStatusError as e:
-        logger.error(f"API request failed with status {e.response.status_code}: {e.response.text}")
-        raise Exception(
-            f"API request failed with status {e.response.status_code}: {e.response.text}"
-        )
-    except httpx.RequestError as e:
-        logger.error(f"Failed to connect to embeddings API: {str(e)}")
-        raise Exception(f"Failed to connect to API: {str(e)}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"API request failed with status {e.response.status_code}: {e.response.text}")
+            raise Exception(
+                f"API request failed with status {e.response.status_code}: {e.response.text}"
+            )
+        except httpx.RequestError as e:
+            logger.error(f"Failed to connect to embeddings API: {str(e)}")
+            raise Exception(f"Failed to connect to API: {str(e)}")
+    
+    return all_embeddings
