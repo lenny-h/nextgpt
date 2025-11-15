@@ -107,12 +107,17 @@ export default function CreateBucketPage() {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl>
                 <Checkbox
+                  id="public"
+                  className="peer"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>
+                <FormLabel
+                  htmlFor="public"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
                   Make bucket available to all authenticated users
                 </FormLabel>
                 <FormDescription>
@@ -135,56 +140,35 @@ export default function CreateBucketPage() {
               )}
               onClick={() => setSelectedType(index)}
             >
-              <div className="flex w-full items-center justify-between">
-                <h3 className="text-lg font-semibold">{subscription.type}</h3>
-                {subscription.type === "University" ? (
-                  <p className="text-sm font-semibold">Custom</p>
-                ) : (
-                  <p className="text-sm font-semibold">
-                    ${subscription.price}/month
-                  </p>
-                )}
-              </div>
+              <h3 className="text-lg font-semibold">{subscription.type}</h3>
               <p className="text-left text-sm">{subscription.description}</p>
               <Separator orientation="horizontal" />
               <ul className="list-disc pl-4 text-left">
                 <li className="text-muted-foreground font-medium">
                   Capacity:{" "}
                   <span className="text-primary">
-                    {subscription.type === "University"
-                      ? "Custom"
-                      : `${subscription.capacity} users`}
+                    {subscription.capacity} users
                   </span>
                 </li>
                 <li className="text-muted-foreground font-medium">
                   Max file size:{" "}
                   <span className="text-primary">
-                    {subscription.type === "University"
-                      ? "Custom"
-                      : `${subscription.maxFileSize} GB`}
+                    {subscription.maxFileSize} GB
                   </span>
                 </li>
               </ul>
             </button>
           ))}
         </div>
-        {selectedType === 3 ? (
-          <h2 className="mt-12 text-center text-xl font-semibold">
-            To create a university cluster, please get in touch with us
-          </h2>
-        ) : (
-          <>
-            <h2 className="mt-12 text-center text-xl font-semibold">
-              Users can be added after the bucket has been created
-            </h2>
-            <SubmitButton
-              isPending={form.formState.isSubmitting}
-              pendingText="Processing..."
-            >
-              Create bucket
-            </SubmitButton>
-          </>
-        )}
+        <h2 className="mt-12 text-center text-xl font-semibold">
+          Users can be added after the bucket has been created
+        </h2>
+        <SubmitButton
+          isPending={form.formState.isSubmitting}
+          pendingText="Processing..."
+        >
+          Create bucket
+        </SubmitButton>
       </form>
     </Form>
   );
