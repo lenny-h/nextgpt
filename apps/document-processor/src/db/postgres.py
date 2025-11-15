@@ -3,6 +3,7 @@ PostgreSQL database operations for storing processed documents and chunks
 """
 
 import os
+import json
 import asyncio
 from typing import List, Optional
 
@@ -127,7 +128,9 @@ async def upload_to_postgres_db(
 
                     chunks_to_insert = []
                     for chunk_data in chunk_batch:
-                        # Build row tuple
+                        # Convert bbox tuple to JSON-compatible list
+                        bbox_json = json.dumps(list(chunk_data.bbox)) if chunk_data.bbox else None
+
                         row = (
                             chunk_data.page_id,
                             inserted_file_id,
@@ -139,7 +142,7 @@ async def upload_to_postgres_db(
                             chunk_data.page_index,
                             max(0, chunk_data.page_index +
                                 1 - page_number_offset),
-                            chunk_data.bbox
+                            bbox_json
                         )
                         chunks_to_insert.append(row)
 

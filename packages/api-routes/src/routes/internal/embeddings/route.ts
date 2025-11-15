@@ -19,10 +19,11 @@ const app = new Hono()
     async (c) => {
       const { text } = c.req.valid("json");
 
-      const { model } = await getEmbeddingModel();
+      const { model, providerOptions } = await getEmbeddingModel();
 
       const { embedding } = await embed({
         model,
+        providerOptions,
         value: text,
       });
 

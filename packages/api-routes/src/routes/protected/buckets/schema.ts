@@ -17,7 +17,7 @@ const createBucketFormSchema = z
 export const createBucketPayloadSchema = z
   .object({
     values: createBucketFormSchema,
-    type: z.enum(["small", "medium", "large"]),
+    type: z.enum(["small", "medium", "large", "org"]),
   })
   .strict();
 

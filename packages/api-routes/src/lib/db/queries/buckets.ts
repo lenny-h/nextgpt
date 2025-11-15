@@ -1,13 +1,17 @@
 import { db } from "@workspace/server/drizzle/db.js";
-import { buckets, bucketUserRoles } from "@workspace/server/drizzle/schema.js";
+import {
+  buckets,
+  type BucketType,
+  bucketUserRoles,
+} from "@workspace/server/drizzle/schema.js";
 import { and, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 const maxFileSizes = {
-  small: 2,
-  medium: 5,
-  large: 10,
-  org: 50,
+  small: 5,
+  medium: 20,
+  large: 100,
+  org: 1000,
 };
 
 export async function getBuckets({ userId }: { userId: string }) {
@@ -115,7 +119,7 @@ export async function createBucket({
 }: {
   userId: string;
   name: string;
-  type: "small" | "medium" | "large";
+  type: BucketType;
   public?: boolean;
 }) {
   const maxSize = maxFileSizes[type] * 1024 * 1024 * 1024;

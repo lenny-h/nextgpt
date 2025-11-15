@@ -5,6 +5,7 @@ import * as z from "zod";
 import { bucketSubscriptions } from "@/lib/bucket-subscriptions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { type BucketType } from "@workspace/server/drizzle/schema";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   Form,
@@ -55,10 +56,7 @@ export default function CreateBucketPage() {
         client["buckets"].$post({
           json: {
             values,
-            type: subscription.type.toLowerCase() as
-              | "small"
-              | "medium"
-              | "large",
+            type: subscription.type as BucketType,
           },
         }),
       sharedT.apiCodes,
@@ -140,7 +138,7 @@ export default function CreateBucketPage() {
               )}
               onClick={() => setSelectedType(index)}
             >
-              <h3 className="text-lg font-semibold">{subscription.type}</h3>
+              <h3 className="text-lg font-semibold">{subscription.label}</h3>
               <p className="text-left text-sm">{subscription.description}</p>
               <Separator orientation="horizontal" />
               <ul className="list-disc pl-4 text-left">
