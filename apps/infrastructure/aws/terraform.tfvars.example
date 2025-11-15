@@ -1,16 +1,18 @@
 site_url = "your-site-url"
 
 # Authentication configuration
-better_auth_secret    = "your-better-auth-secret"
-enable_email_signup   = true
-allowed_email_domains = ""
-enable_oauth_login    = true
-google_client_id      = "your-google-client-id"
-google_client_secret  = "your-google-client-secret"
-github_client_id      = "your-github-client-id"
-github_client_secret  = "your-github-client-secret"
-gitlab_client_id      = "your-gitlab-client-id"
-gitlab_client_secret  = "your-gitlab-client-secret"
+better_auth_secret                 = "your-better-auth-secret"
+only_allow_admin_to_create_buckets = false
+admin_user_ids                     = ""
+enable_email_signup                = true
+allowed_email_domains              = ""
+enable_oauth_login                 = true
+google_client_id                   = "your-google-client-id"
+google_client_secret               = "your-google-client-secret"
+github_client_id                   = "your-github-client-id"
+github_client_secret               = "your-github-client-secret"
+gitlab_client_id                   = "your-gitlab-client-id"
+gitlab_client_secret               = "your-gitlab-client-secret"
 
 # SSO Configuration
 enable_sso                 = false

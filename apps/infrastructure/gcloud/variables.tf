@@ -10,6 +10,16 @@ variable "better_auth_secret" {
   sensitive   = true
 }
 
+variable "only_allow_admin_to_create_buckets" {
+  type        = bool
+  description = "Only allow admin users to create buckets"
+}
+
+variable "admin_user_ids" {
+  type        = string
+  description = "Comma-separated list of admin user IDs"
+}
+
 variable "enable_email_signup" {
   type        = bool
   description = "Enable email/password sign-up"

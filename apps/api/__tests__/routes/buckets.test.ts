@@ -45,6 +45,7 @@ describe("Protected API Routes - Buckets", () => {
         json: {
           values: {
             bucketName: "Test Bucket",
+            public: false,
           },
           type: "small",
         },
@@ -58,6 +59,7 @@ describe("Protected API Routes - Buckets", () => {
       const bucketData = {
         values: {
           bucketName: uniqueName,
+          public: false,
         },
         type: "small" as const,
       };
@@ -85,6 +87,7 @@ describe("Protected API Routes - Buckets", () => {
           json: {
             values: {
               bucketName: "ab", // Less than 3 characters
+              public: false,
             },
             type: "small",
           },
@@ -102,6 +105,7 @@ describe("Protected API Routes - Buckets", () => {
           json: {
             values: {
               bucketName: "a".repeat(129), // More than 128 characters
+              public: false,
             },
             type: "small",
           },
@@ -120,6 +124,7 @@ describe("Protected API Routes - Buckets", () => {
           json: {
             values: {
               bucketName: "Test Bucket",
+              public: false,
             },
             // @ts-expect-error - Testing invalid type
             type: "invalid-type",
@@ -296,6 +301,7 @@ describe("Protected API Routes - Buckets", () => {
           json: {
             values: {
               bucketName: uniqueName,
+              public: false,
             },
             type: "small",
           },

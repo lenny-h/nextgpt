@@ -14,7 +14,7 @@ const app = new Hono().get("/", async (c) => {
       size: buckets.size,
       maxSize: buckets.maxSize,
       type: buckets.type,
-      subscriptionId: buckets.subscriptionId,
+      public: buckets.public,
       createdAt: buckets.createdAt,
     })
     .from(bucketUserRoles)

@@ -43,7 +43,7 @@ export async function createTestBucket(
       type,
       maxSize: maxSizes[type],
       size: 0,
-      subscriptionId: "",
+      public: false,
     })
     .returning({ id: buckets.id });
 

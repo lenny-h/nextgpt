@@ -14,13 +14,6 @@ export async function getBuckets({ userId }: { userId: string }) {
   return await db.select().from(buckets).where(eq(buckets.owner, userId));
 }
 
-export async function getPublicBuckets() {
-  return await db
-    .select()
-    .from(buckets)
-    .where(eq(buckets.public, true));
-}
-
 export async function getBucketOwner({ bucketId }: { bucketId: string }) {
   const result = await db
     .select({ owner: buckets.owner, name: buckets.name })
@@ -54,6 +47,19 @@ export async function getUserBuckets({ userId }: { userId: string }) {
     .where(eq(bucketUserRoles.userId, userId));
 }
 
+export async function isBucketPublic({ bucketId }: { bucketId: string }) {
+  const result = await db
+    .select({ public: buckets.public })
+    .from(buckets)
+    .where(eq(buckets.id, bucketId))
+    .limit(1);
+
+  if (result.length === 0) {
+    return false;
+  }
+  return result[0].public;
+}
+
 export async function isBucketUser({
   userId,
   bucketId,
@@ -61,6 +67,13 @@ export async function isBucketUser({
   userId: string;
   bucketId: string;
 }) {
+  // Check if bucket is public first
+  const isPublic = await isBucketPublic({ bucketId });
+  if (isPublic) {
+    return true;
+  }
+
+  // Otherwise check if user has explicit access
   const result = await db
     .select({ bucketId: bucketUserRoles.bucketId })
     .from(bucketUserRoles)

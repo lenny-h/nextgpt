@@ -63,20 +63,16 @@ resource "aws_ecs_task_definition" "api" {
         value = "production"
       },
       {
-        name  = "BASE_URL"
-        value = "https://app.${var.site_url}"
-      },
-      {
-        name  = "ALLOWED_ORIGINS"
-        value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
-      },
-      {
-        name  = "DOCUMENT_PROCESSOR_URL"
-        value = "http://document-processor.${var.aws_project_name}.local:8080"
-      },
-      {
         name  = "BETTER_AUTH_URL"
         value = "https://api.${var.site_url}"
+      },
+      {
+        name  = "ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS"
+        value = tostring(var.only_allow_admin_to_create_buckets)
+      },
+      {
+        name  = "ADMIN_USER_IDS"
+        value = var.admin_user_ids
       },
       {
         name  = "ENABLE_EMAIL_SIGNUP"
@@ -141,6 +137,18 @@ resource "aws_ecs_task_definition" "api" {
       {
         name  = "RESEND_SENDER_EMAIL"
         value = var.resend_sender_email
+      },
+      {
+        name  = "BASE_URL"
+        value = "https://app.${var.site_url}"
+      },
+      {
+        name  = "ALLOWED_ORIGINS"
+        value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
+      },
+      {
+        name  = "DOCUMENT_PROCESSOR_URL"
+        value = "http://document-processor.${var.aws_project_name}.local:8080"
       },
       {
         name  = "DATABASE_HOST"

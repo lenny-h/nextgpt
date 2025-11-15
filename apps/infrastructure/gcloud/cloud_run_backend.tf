@@ -24,6 +24,14 @@ resource "google_cloud_run_v2_service" "api" {
         value = "https://api.${var.site_url}"
       }
       env {
+        name  = "ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS"
+        value = tostring(var.only_allow_admin_to_create_buckets)
+      }
+      env {
+        name  = "ADMIN_USER_IDS"
+        value = var.admin_user_ids
+      }
+      env {
         name  = "ENABLE_EMAIL_SIGNUP"
         value = tostring(var.enable_email_signup)
       }
