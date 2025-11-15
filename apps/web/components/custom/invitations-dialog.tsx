@@ -82,7 +82,7 @@ export function InvitationsDialog({
       );
 
       toast.success(
-        webT.invitations.accepted.replace(
+        sharedT.invitations.accepted.replace(
           "{resourceName}",
           invitation.resourceName,
         ),
@@ -90,7 +90,7 @@ export function InvitationsDialog({
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
       queryClient.invalidateQueries({ queryKey: ["buckets"] });
     } catch (error) {
-      toast.error(webT.invitations.failedAccept);
+      toast.error(sharedT.invitations.failedAccept);
       console.error(error);
     } finally {
       setProcessingId(null);
@@ -113,10 +113,10 @@ export function InvitationsDialog({
         sharedT.apiCodes,
       );
 
-      toast.success(webT.invitations.rejected);
+      toast.success(sharedT.invitations.rejected);
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
     } catch (error) {
-      toast.error(webT.invitations.failedReject);
+      toast.error(sharedT.invitations.failedReject);
       console.error(error);
     } finally {
       setProcessingId(null);
@@ -127,7 +127,7 @@ export function InvitationsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{webT.invitations.title}</DialogTitle>
+          <DialogTitle>{sharedT.invitations.title}</DialogTitle>
         </DialogHeader>
         <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
           {isPending ? (
@@ -141,7 +141,7 @@ export function InvitationsDialog({
             </>
           ) : error ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              {webT.invitations.errorLoading}
+              {sharedT.invitations.errorLoading}
             </p>
           ) : invitations && invitations.length > 0 ? (
             <>
@@ -152,7 +152,7 @@ export function InvitationsDialog({
                 >
                   <div>
                     <p className="text-sm font-medium">
-                      {webT.invitations.invitedYouToJoin.replace(
+                      {sharedT.invitations.invitedYouToJoin.replace(
                         "{username}",
                         invitation.originUsername,
                       )}
@@ -177,7 +177,7 @@ export function InvitationsDialog({
                       ) : (
                         <X className="mr-1 h-4 w-4" />
                       )}
-                      {webT.invitations.reject}
+                      {sharedT.invitations.reject}
                     </Button>
                     <Button
                       variant="default"
@@ -191,7 +191,7 @@ export function InvitationsDialog({
                       ) : (
                         <Check className="mr-1 h-4 w-4" />
                       )}
-                      {webT.invitations.accept}
+                      {sharedT.invitations.accept}
                     </Button>
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export function InvitationsDialog({
             </>
           ) : (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              {webT.invitations.noInvitations}
+              {sharedT.invitations.noInvitations}
             </p>
           )}
         </div>

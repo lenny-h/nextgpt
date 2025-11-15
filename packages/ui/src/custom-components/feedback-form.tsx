@@ -44,8 +44,8 @@ export const FeedbackForm = memo(() => {
     });
 
     toast.promise(feedbackPromise, {
-      loading: "Submitting...",
-      success: "Thank you for your feedback! We appreciate your input.",
+      loading: sharedT.feedbackForm.submitting,
+      success: sharedT.feedbackForm.success,
       error: (error) => `Error submitting feedback: ${error.message}`,
     });
   }
@@ -58,10 +58,11 @@ export const FeedbackForm = memo(() => {
             className="flex w-full flex-col"
             onSubmit={form.handleSubmit(onSubmit)}
           >
-            <h1 className="text-2xl font-medium">Feedback</h1>
+            <h1 className="text-2xl font-medium">
+              {sharedT.feedbackForm.title}
+            </h1>
             <p className="text-muted-foreground text-sm">
-              We value your feedback! Please share your thoughts with us. You
-              can also request a new feature or report a bug.
+              {sharedT.feedbackForm.description}
             </p>
             <div className="mt-6 flex flex-col gap-5 [&>input]:mb-3">
               <FormField
@@ -69,9 +70,12 @@ export const FeedbackForm = memo(() => {
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject</FormLabel>
+                    <FormLabel>{sharedT.feedbackForm.subject}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Subject" {...field} />
+                      <Input
+                        placeholder={sharedT.feedbackForm.subjectPlaceholder}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -82,11 +86,11 @@ export const FeedbackForm = memo(() => {
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content</FormLabel>
+                    <FormLabel>{sharedT.feedbackForm.content}</FormLabel>
                     <FormControl>
                       <Textarea
                         className="max-h-80 min-h-32"
-                        placeholder="Describe your feedback here..."
+                        placeholder={sharedT.feedbackForm.contentPlaceholder}
                         {...field}
                       />
                     </FormControl>
@@ -97,15 +101,15 @@ export const FeedbackForm = memo(() => {
               <SubmitButton
                 className="w-full"
                 isPending={form.formState.isSubmitting}
-                pendingText="Submitting..."
+                pendingText={sharedT.feedbackForm.submitting}
               >
-                Submit
+                {sharedT.feedbackForm.submit}
               </SubmitButton>
               <Link
                 className="text-muted-foreground text-balance text-center text-xs"
                 href={`/${locale}`}
               >
-                Back to home
+                {sharedT.feedbackForm.backToHome}
               </Link>
             </div>
           </form>

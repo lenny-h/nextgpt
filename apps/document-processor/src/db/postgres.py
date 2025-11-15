@@ -119,7 +119,7 @@ async def upload_to_postgres_db(
                 )
                 inserted_file_id = task_id
 
-                # Prepare pages/chunks data for batch insert
+                # Prepare chunks data for batch insert
                 CHUNK_SIZE = 100
 
                 for i in range(0, len(processed_chunks), CHUNK_SIZE):
@@ -143,10 +143,10 @@ async def upload_to_postgres_db(
                         )
                         chunks_to_insert.append(row)
 
-                    # Batch insert pages using executemany
+                    # Batch insert chunks using executemany
                     await cursor.executemany(
                         """
-                        INSERT INTO pages
+                        INSERT INTO chunks
                         (id, file_id, file_name, course_id, course_name, embedding, content,
                          page_index, page_number, bbox)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -163,7 +163,7 @@ async def upload_to_postgres_db(
                 if inserted_file_id:
                     try:
                         await cursor.execute(
-                            "DELETE FROM pages WHERE file_id = %s",
+                            "DELETE FROM chunks WHERE file_id = %s",
                             (inserted_file_id,)
                         )
                         await cursor.execute(

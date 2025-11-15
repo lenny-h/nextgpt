@@ -23,7 +23,7 @@ import {
 import { SubmitButton } from "./submit-button";
 
 export const ForgotPassword = memo(() => {
-  const { locale } = useSharedTranslations();
+  const { locale, sharedT } = useSharedTranslations();
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordFormSchema),
@@ -46,9 +46,12 @@ export const ForgotPassword = memo(() => {
       });
 
     toast.promise(resetPromise, {
-      loading: "Sending email...",
-      success: "A password reset link has been sent to your email.",
-      error: (error) => error.message || "Failed to send reset email",
+      loading: sharedT.forgotPassword.sendingEmail,
+      success: sharedT.forgotPassword.success,
+      error: (error) =>
+        error.message ||
+        sharedT.forgotPassword.errorSending ||
+        "Failed to send reset email",
     });
   }
 
@@ -58,14 +61,14 @@ export const ForgotPassword = memo(() => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex w-full flex-col"
       >
-        <h1 className="text-2xl font-medium">Reset password</h1>
+        <h1 className="text-2xl font-medium">{sharedT.forgotPassword.title}</h1>
         <p className="text-sm">
-          Back to sign in?{" "}
+          {sharedT.forgotPassword.backToSignIn}{" "}
           <Link
             className="text-primary font-medium underline"
             href={`/${locale}/sign-in`}
           >
-            Sign in
+            {sharedT.forgotPassword.signIn}
           </Link>
         </p>
         <div className="mt-6 flex flex-col gap-5 [&>input]:mb-3">
@@ -74,7 +77,7 @@ export const ForgotPassword = memo(() => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{sharedT.forgotPassword.email}</FormLabel>
                 <FormControl>
                   <Input placeholder="m@example.com" {...field} />
                 </FormControl>
@@ -85,9 +88,9 @@ export const ForgotPassword = memo(() => {
           <SubmitButton
             className="w-full"
             isPending={form.formState.isSubmitting}
-            pendingText="Sending email..."
+            pendingText={sharedT.forgotPassword.sendingEmail}
           >
-            Reset Password
+            {sharedT.forgotPassword.resetButton}
           </SubmitButton>
         </div>
       </form>

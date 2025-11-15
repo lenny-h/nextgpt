@@ -129,19 +129,6 @@
   "reasoningButton": {
     "reasoning": "Reasoning",
     "reasonedForAFewSeconds": "Reasoned for a few seconds"
-  }
-  ,
-  "invitations": {
-    "title": "Invitations",
-    "errorLoading": "Error loading invitations",
-    "noInvitations": "No invitations found",
-    "accept": "Accept",
-    "reject": "Reject",
-    "accepted": "You've joined {resourceName}",
-    "failedAccept": "Failed to accept invitation",
-    "rejected": "Invitation rejected",
-    "failedReject": "Failed to reject invitation",
-    "invitedYouToJoin": "{username} invited you to join"
   },
   "messageActions": {
     "copy": "Copy message",

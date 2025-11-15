@@ -128,19 +128,6 @@
   "reasoningButton": {
     "reasoning": "Denken",
     "reasonedForAFewSeconds": "Einige Sekunden lang überlegt"
-  }
-  ,
-  "invitations": {
-    "title": "Einladungen",
-    "errorLoading": "Fehler beim Laden der Einladungen",
-    "noInvitations": "Keine Einladungen gefunden",
-    "accept": "Annehmen",
-    "reject": "Ablehnen",
-    "accepted": "Sie sind {resourceName} beigetreten",
-    "failedAccept": "Fehler beim Akzeptieren der Einladung",
-    "rejected": "Einladung abgelehnt",
-    "failedReject": "Fehler beim Ablehnen der Einladung",
-    "invitedYouToJoin": "{username} hat Sie eingeladen, beizutreten"
   },
   "messageActions": {
     "copy": "Nachricht kopieren",

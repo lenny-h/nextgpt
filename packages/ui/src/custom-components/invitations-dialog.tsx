@@ -120,7 +120,7 @@ export function InvitationsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Invitations</DialogTitle>
+          <DialogTitle>{sharedT.invitations.title}</DialogTitle>
         </DialogHeader>
         <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
           {isPending ? (
@@ -134,7 +134,7 @@ export function InvitationsDialog({
             </>
           ) : error ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              Error loading invitations
+              {sharedT.invitations.errorLoading}
             </p>
           ) : invitations && invitations.length > 0 ? (
             <>
@@ -145,7 +145,10 @@ export function InvitationsDialog({
                 >
                   <div>
                     <p className="text-sm font-medium">
-                      {invitation.originUsername} invited you to join
+                      {sharedT.invitations.invitedYouToJoin.replace(
+                        "{username}",
+                        invitation.originUsername
+                      )}
                     </p>
                     <p className="text-base font-semibold">
                       {invitation.resourceName}
@@ -167,7 +170,7 @@ export function InvitationsDialog({
                       ) : (
                         <X className="mr-1 h-4 w-4" />
                       )}
-                      Reject
+                      {sharedT.invitations.reject}
                     </Button>
                     <Button
                       variant="default"
@@ -181,7 +184,7 @@ export function InvitationsDialog({
                       ) : (
                         <Check className="mr-1 h-4 w-4" />
                       )}
-                      Accept
+                      {sharedT.invitations.accept}
                     </Button>
                   </div>
                 </div>
@@ -199,7 +202,7 @@ export function InvitationsDialog({
             </>
           ) : (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              No invitations found
+              {sharedT.invitations.noInvitations}
             </p>
           )}
         </div>

@@ -21,7 +21,7 @@ import {
 import { SubmitButton } from "./submit-button";
 
 export const ResetPassword = memo(() => {
-  const { locale } = useSharedTranslations();
+  const { locale, sharedT } = useSharedTranslations();
 
   const router = useRouter();
 
@@ -35,7 +35,7 @@ export const ResetPassword = memo(() => {
 
   async function onSubmit(values: ResetPasswordFormData) {
     if (values.password !== values.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(sharedT.resetPassword.passwordsDontMatch);
       return;
     }
 
@@ -53,9 +53,12 @@ export const ResetPassword = memo(() => {
       });
 
     toast.promise(resetPromise, {
-      loading: "Resetting password...",
-      success: "Password reset successfully!",
-      error: (error) => error.message || "Failed to reset password",
+      loading: sharedT.resetPassword.resetting,
+      success: sharedT.resetPassword.success,
+      error: (error) =>
+        error.message ||
+        sharedT.resetPassword.error ||
+        "Failed to reset password",
     });
   }
 
@@ -65,17 +68,20 @@ export const ResetPassword = memo(() => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex w-full flex-col"
       >
-        <h1 className="text-2xl font-medium">Reset password</h1>
-        <p className="text-sm">Please enter your new password below.</p>
+        <h1 className="text-2xl font-medium">{sharedT.resetPassword.title}</h1>
+        <p className="text-sm">{sharedT.resetPassword.description}</p>
         <div className="mt-6 flex flex-col gap-5 [&>input]:mb-3">
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{sharedT.resetPassword.password}</FormLabel>
                 <FormControl>
-                  <Input placeholder="New password" {...field} />
+                  <Input
+                    placeholder={sharedT.resetPassword.passwordPlaceholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -86,9 +92,14 @@ export const ResetPassword = memo(() => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{sharedT.resetPassword.confirmPassword}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Confirm password" {...field} />
+                  <Input
+                    placeholder={
+                      sharedT.resetPassword.confirmPasswordPlaceholder
+                    }
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -97,9 +108,9 @@ export const ResetPassword = memo(() => {
           <SubmitButton
             className="w-full"
             isPending={form.formState.isSubmitting}
-            pendingText="Resetting password..."
+            pendingText={sharedT.resetPassword.resetting}
           >
-            Reset password
+            {sharedT.resetPassword.resetButton}
           </SubmitButton>
         </div>
       </form>

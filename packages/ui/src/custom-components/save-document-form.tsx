@@ -97,10 +97,11 @@ export const SaveDocumentForm = memo(
         <form
           onSubmit={form.handleSubmit((values) => {
             toast.promise(onSubmit(values), {
-              loading: "Saving...",
-              success: "Document saved!",
+              loading: sharedT.saveDocumentForm.saving,
+              success: sharedT.saveDocumentForm.saved,
               error: (error) =>
                 error.message ||
+                sharedT.saveDocumentForm.error ||
                 "Failed to save document. Please try again later.",
             });
           })}
@@ -111,9 +112,12 @@ export const SaveDocumentForm = memo(
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{sharedT.saveDocumentForm.titleLabel}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Document Title" {...field} />
+                    <Input
+                      placeholder={sharedT.saveDocumentForm.titlePlaceholder}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,9 +126,9 @@ export const SaveDocumentForm = memo(
           </div>
           <DialogFooter className="mt-4">
             <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
+              {sharedT.saveDocumentForm.cancel}
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">{sharedT.saveDocumentForm.save}</Button>
           </DialogFooter>
         </form>
       </Form>

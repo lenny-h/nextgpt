@@ -68,7 +68,7 @@ export const NavUser = memo(() => {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {username ?? "No username"}
+                  {username ?? sharedT.navUser.noUsername}
                 </span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
@@ -91,7 +91,7 @@ export const NavUser = memo(() => {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {username ?? "Unnamed"}
+                    {username ?? sharedT.navUser.unnamed}
                   </span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
@@ -106,11 +106,13 @@ export const NavUser = memo(() => {
                 }}
               >
                 <User />
-                {isLoading ? "Loading..." : "Update profile"}
+                {isLoading
+                  ? sharedT.navUser.loading
+                  : sharedT.navUser.updateProfile}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setInvitationsOpen(true)}>
                 <PartyPopper />
-                Invitations
+                {sharedT.navUser.invitations}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -125,7 +127,7 @@ export const NavUser = memo(() => {
               }}
             >
               <LogOut />
-              Log out
+              {sharedT.navUser.logOut}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

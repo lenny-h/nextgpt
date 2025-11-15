@@ -22,7 +22,6 @@ def create_embedded_chunk(
 
     return EmbeddedChunk(
         page_id=str(uuid4()),
-        chunk_index=chunk.chunk_index,
         page_index=page_index,
         embedding=embedding,
         content=chunk.contextualized_content,

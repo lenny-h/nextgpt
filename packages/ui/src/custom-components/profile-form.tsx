@@ -71,8 +71,8 @@ export const ProfileForm = memo(() => {
     });
 
     toast.promise(updatePromise, {
-      loading: "Updating profile...",
-      success: "Profile updated successfully 🎉",
+      loading: sharedT.profileForm.updating,
+      success: sharedT.profileForm.success,
       error: (error) => `Error updating profile: ${error.message}`,
     });
   }
@@ -86,7 +86,9 @@ export const ProfileForm = memo(() => {
             onSubmit={form.handleSubmit(onSubmit)}
           >
             <h1 className="text-2xl font-medium">
-              {isPending ? "Loading..." : "Update profile"}
+              {isPending
+                ? sharedT.profileForm.loading
+                : sharedT.profileForm.update}
             </h1>
             <FormField
               control={form.control}
@@ -94,7 +96,9 @@ export const ProfileForm = memo(() => {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center justify-between">
-                    <FormLabel htmlFor="name">Name</FormLabel>
+                    <FormLabel htmlFor="name">
+                      {sharedT.profileForm.name}
+                    </FormLabel>
                     <div className="hidden items-center space-x-1 md:flex">
                       <TooltipProvider>
                         <Tooltip>
@@ -102,15 +106,21 @@ export const ProfileForm = memo(() => {
                             <Info className="text-primary size-4" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            The name is only used to address you inside the app.
+                            {sharedT.profileForm.nameTooltip}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <span className="text-primary text-sm">Private</span>
+                      <span className="text-primary text-sm">
+                        {sharedT.profileForm.privateLabel}
+                      </span>
                     </div>
                   </div>
                   <FormControl>
-                    <Input placeholder="Boss" disabled={isPending} {...field} />
+                    <Input
+                      placeholder="John Doe"
+                      disabled={isPending}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +132,9 @@ export const ProfileForm = memo(() => {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center justify-between">
-                    <FormLabel htmlFor="username">Username</FormLabel>
+                    <FormLabel htmlFor="username">
+                      {sharedT.profileForm.username}
+                    </FormLabel>
                     <div className="hidden items-center space-x-1 md:flex">
                       <TooltipProvider>
                         <Tooltip>
@@ -130,17 +142,21 @@ export const ProfileForm = memo(() => {
                             <Info className="text-primary size-4" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            The username is visible to other users. This is
-                            required so that they can send you invitations.
-                            Usernames must be unique.
+                            {sharedT.profileForm.usernameTooltip}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <span className="text-primary text-sm">Public</span>
+                      <span className="text-primary text-sm">
+                        {sharedT.profileForm.publicLabel}
+                      </span>
                     </div>
                   </div>
                   <FormControl>
-                    <Input placeholder="Hugo" disabled={isPending} {...field} />
+                    <Input
+                      placeholder="johndoe"
+                      disabled={isPending}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,7 +174,7 @@ export const ProfileForm = memo(() => {
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Let other people invite you</FormLabel>
+                    <FormLabel>{sharedT.profileForm.letInvite}</FormLabel>
                   </div>
                 </FormItem>
               )}
@@ -166,15 +182,15 @@ export const ProfileForm = memo(() => {
             <SubmitButton
               className="w-full"
               isPending={form.formState.isSubmitting}
-              pendingText="Updating profile..."
+              pendingText={sharedT.profileForm.updating}
             >
-              Update profile
+              {sharedT.profileForm.update}
             </SubmitButton>
             <Link
               className="text-muted-foreground text-balance text-center text-xs"
               href={`/${locale}`}
             >
-              Go back home
+              {sharedT.profileForm.goBackHome}
             </Link>
           </form>
         </Form>
