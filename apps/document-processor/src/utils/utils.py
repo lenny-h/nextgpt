@@ -44,7 +44,7 @@ async def handle_processing_error(bucket: str, event: DocumentUploadEvent, error
 
     try:
         logger.info(f"Updating task status to failed for task_id={event.taskId}")
-        await update_status_to_failed(event.taskId, event.bucketId)
+        await update_status_to_failed(event.taskId, event.bucketId, str(error))
         logger.info(f"Successfully updated task status to failed for task_id={event.taskId}")
     except Exception as e:
         logger.error(f"Failed to update task status to failed for task_id={event.taskId}: {e}", exc_info=True)

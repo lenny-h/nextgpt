@@ -1,15 +1,15 @@
 FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-# OMP_NUM_THREADS=4 # Uncomment if desired locally
+    PIP_NO_CACHE_DIR=1 \
+    OMP_NUM_THREADS=4
 
 # System dependencies required by onnxruntime/rapidocr/opencv/tesseract
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libgl1 \
-        libglib2.0-0 \
-        # libgomp1 \
+    libgl1 \
+    libglib2.0-0 \
+    # libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN useradd -m -u 1000 appuser
 # NOTE: Build context is the monorepo root, so reference files with their app path
 COPY apps/document-processor/requirements.txt ./requirements.txt
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu
+    && pip install -r requirements.txt modelscope --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu
 
 ENV DOCLING_ARTIFACTS_PATH=/app/.cache/docling/models
 RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
@@ -32,7 +32,7 @@ RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
 # Prefetch essential Docling models at build time
 # Only download the core models needed for basic PDF processing
 # Optional models (formula, code, etc.) will be downloaded at runtime when first used
-ARG MODELS_LIST="layout tableformer code_formula easyocr"
+ARG MODELS_LIST="layout tableformer rapidocr"
 
 RUN echo "Downloading essential models..." && \
     HF_HUB_DOWNLOAD_TIMEOUT="90" \

@@ -40,7 +40,8 @@ export function Chat({
 
   const [input, setInput] = useState("");
 
-  const { selectedChatModel, reasoningEnabled } = useChatModel();
+  const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
+    useChatModel();
   const [isTemporary] = useIsTemporary();
   const { setFilter } = useFilter();
 
@@ -122,6 +123,7 @@ export function Chat({
               modelIdx: selectedChatModel.id,
               isTemp: isTemporary,
               reasoning: selectedChatModel.reasoning && reasoningEnabled,
+              webSearch: webSearchEnabled,
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             },
           };

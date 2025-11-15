@@ -24,6 +24,21 @@ export type TaskTableColumns = {
   status: TaskStatus;
   createdAt: string;
   pubDate: string;
+  errorMessage: string;
+};
+
+// Reusable date sorting function for columns that hold date-like values.
+// Converts values to timestamps (handles Date objects, ISO strings, and missing values).
+const dateSortingFn = (rowA: any, rowB: any, columnId: string) => {
+  const a = rowA.getValue(columnId);
+  const b = rowB.getValue(columnId);
+  const toTs = (v: any) => {
+    if (!v) return 0; // treat missing values as 0 (oldest)
+    if (v instanceof Date) return v.getTime();
+    const parsed = Date.parse(String(v));
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+  return toTs(a) - toTs(b);
 };
 
 export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
@@ -71,17 +86,57 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Created At",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Created At
+          <ArrowUpDown className="size-4" />
+        </Button>
+      );
+    },
+    sortingFn: dateSortingFn,
     cell: ({ row }) => {
       return new Date(row.getValue("createdAt")).toLocaleString();
     },
   },
   {
     accessorKey: "pubDate",
-    header: "Scheduled For",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Scheduled For
+          <ArrowUpDown className="size-4" />
+        </Button>
+      );
+    },
+    sortingFn: dateSortingFn,
     cell: ({ row }) => {
       const pubDate = row.getValue("pubDate");
       return pubDate ? new Date(pubDate as string).toLocaleString() : "ASAP";
+    },
+  },
+  {
+    accessorKey: "errorMessage",
+    header: "Error Message",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      const errorMessage = row.getValue("errorMessage") as string;
+      
+      if (status !== "failed" || !errorMessage) {
+        return <span className="text-muted-foreground">—</span>;
+      }
+      
+      return (
+        <span className="text-red-500 text-sm max-w-md truncate block" title={errorMessage}>
+          {errorMessage}
+        </span>
+      );
     },
   },
   {

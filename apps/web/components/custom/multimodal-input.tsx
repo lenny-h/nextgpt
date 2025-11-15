@@ -67,7 +67,8 @@ const PureMultimodalInput = ({
   const { locale } = useSharedTranslations();
 
   const { filter } = useFilter();
-  const { selectedChatModel, reasoningEnabled } = useChatModel();
+  const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
+    useChatModel();
   const [isTemporary] = useIsTemporary();
 
   const { uploadQueue, handleFileChange } = useFileUpload();
@@ -184,6 +185,7 @@ const PureMultimodalInput = ({
     chatId,
     selectedChatModel,
     reasoningEnabled,
+    webSearchEnabled,
     isTemporary,
     attachments,
   ]);

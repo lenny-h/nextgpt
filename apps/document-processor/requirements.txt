@@ -3,7 +3,7 @@ fastapi==0.117.0
 uvicorn[standard]==0.36.0
 
 # Docling - document conversion library
-docling[easyocr]==2.59.0
+docling[rapidocr]==2.59.0
 
 # Transformers for HuggingFace tokenizer (used in chunking)
 transformers==4.56.2

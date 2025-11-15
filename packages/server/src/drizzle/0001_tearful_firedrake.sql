@@ -183,6 +183,7 @@ CREATE TABLE "tasks" (
 	"file_size" bigint NOT NULL,
 	"name" varchar(128) NOT NULL,
 	"status" "task_status" DEFAULT 'scheduled' NOT NULL,
+	"error_message" text DEFAULT '' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"pub_date" timestamp
 );

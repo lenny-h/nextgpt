@@ -143,7 +143,7 @@ export class StandardChatHandler extends ChatHandler {
       });
     }
 
-    if (process.env.USE_FIRECRAWL === "true") {
+    if (process.env.USE_FIRECRAWL === "true" && this.request.webSearchEnabled) {
       tools.scrape = scrapeTool;
       tools.search = searchTool;
     }

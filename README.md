@@ -542,10 +542,10 @@ docker-compose up -d
 
 - This setup is intended for development and testing only
 - Make sure to update all default passwords and secrets before any shared usage
-- Keycloak admin credentials (admin/admin) should be changed in production
-- MinIO credentials should be updated from default values
+- The `USE_LOCAL_TASKS_CLIENT` flag determines whether to use a local tasks client or a cloud-based tasks client. If using cloud-based, the corresponding infrastructure must be set up.
 - The `USE_LOCAL_FILE_STORAGE` flag determines whether to use MinIO (true) or cloud storage (false)
 - If using cloud storage, the `USE_CLOUDFLRARE_R2` flag determines whether Cloudflare R2 or the configured cloud storage is used
+- The `USE_OPENAI_API` flag determines whether to use OpenAI's API. If false, the api from the configured cloud provider is used.
 
 # Hosted on Google Cloud
 
@@ -603,7 +603,7 @@ The setup can be hosted on Google Cloud by following the following steps (in the
 10. **Push to GitHub** Push your code to GitHub, which will trigger the GitHub Actions workflows. The workflows will:
     - Run database migrations
     - Deploy web and dashboard apps to Cloudflare Workers
-    - Deploy API, document-processor, and pdf-exporter to Google Cloud Run
+    - Deploy api, document-processor, and pdf-exporter to Google Cloud Run
 
 # Hosted on AWS
 
@@ -683,4 +683,4 @@ The setup can also be hosted on AWS by following these steps (in the given order
 11. **Push to GitHub** Push your code to GitHub, which will trigger the GitHub Actions workflows. The workflows will:
     - Run database migrations
     - Deploy web and dashboard apps to Cloudflare Workers
-    - Deploy API, document-processor, and pdf-exporter to AWS ECS (Elastic Container Service)
+    - Deploy api, document-processor, and pdf-exporter to AWS ECS (Elastic Container Service)

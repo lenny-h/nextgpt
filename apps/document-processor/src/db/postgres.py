@@ -202,19 +202,24 @@ async def update_status_to_finished(task_id: str) -> None:
             await conn.commit()
 
 
-async def update_status_to_failed(task_id: str, bucket_id: str) -> None:
+async def update_status_to_failed(task_id: str, bucket_id: str, error_message: str = "") -> None:
     """
-    Update task status to 'failed' and adjust bucket size.
+    Update task status to 'failed', set error message, and adjust bucket size.
     Performs atomic transaction.
+    
+    Args:
+        task_id: Task identifier
+        bucket_id: Bucket identifier
+        error_message: Error message to store (defaults to empty string)
     """
     pool = await get_connection_pool()
     async with pool.connection() as conn:
         async with conn.cursor() as cursor:
             try:
-                # Update task status to failed
+                # Update task status to failed and set error message
                 await cursor.execute(
-                    "UPDATE tasks SET status = 'failed' WHERE id = %s",
-                    (task_id,)
+                    "UPDATE tasks SET status = 'failed', error_message = %s WHERE id = %s",
+                    (error_message, task_id)
                 )
 
                 # Update bucket size by subtracting the file size

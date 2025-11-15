@@ -13,6 +13,7 @@ const basePayloadSchema = z.object({
     .max(chatModels.length - 1),
   isTemp: z.boolean(),
   reasoning: z.boolean().optional(),
+  webSearch: z.boolean().optional(),
   trigger: z.string().max(128).optional(),
   // Client-side location information
   timezone: z.string().optional(), // e.g., "America/New_York"

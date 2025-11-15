@@ -23,6 +23,8 @@ interface ChatModelContextType {
   setSelectedChatModel: React.Dispatch<React.SetStateAction<ChatModel>>;
   reasoningEnabled: boolean;
   setReasoningEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  webSearchEnabled: boolean;
+  setWebSearchEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ChatModelContext = createContext<ChatModelContextType | undefined>(
@@ -42,6 +44,7 @@ export function ChatModelProvider({ children }: Props) {
   });
 
   const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
 
   return (
     <ChatModelContext.Provider
@@ -50,6 +53,8 @@ export function ChatModelProvider({ children }: Props) {
         setSelectedChatModel,
         reasoningEnabled,
         setReasoningEnabled,
+        webSearchEnabled,
+        setWebSearchEnabled,
       }}
     >
       {children}

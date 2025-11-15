@@ -46,6 +46,7 @@ const app = new Hono().get(
         status: tasks.status,
         createdAt: tasks.createdAt,
         pubDate: tasks.pubDate,
+        errorMessage: tasks.errorMessage,
       })
       .from(tasks)
       .innerJoin(courseUserRoles, eq(courseUserRoles.courseId, tasks.courseId))

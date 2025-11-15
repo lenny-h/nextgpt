@@ -1,10 +1,11 @@
 import React, { type ChangeEvent } from "react";
 import { AttachmentsButton } from "./attachments-button";
-import { SendButton } from "./send-button";
-import { StopButton } from "./stop-button";
+import { MicrophoneButton } from "./microphone-button";
 import { ModelSelector } from "./model-selector";
 import { ReasoningButton } from "./reasoning-button";
-import { MicrophoneButton } from "./microphone-button";
+import { SendButton } from "./send-button";
+import { StopButton } from "./stop-button";
+import { WebSearchButton } from "./web-search-button";
 
 interface TextAreaControlProps {
   input: string;
@@ -30,6 +31,7 @@ export const TextAreaControl: React.FC<TextAreaControlProps> = ({
       <div className="flex min-w-0 flex-1 items-center space-x-2">
         <ModelSelector />
         <ReasoningButton />
+        <WebSearchButton />
       </div>
 
       <div className="flex items-center space-x-2">

@@ -390,8 +390,8 @@ resource "google_cloud_run_v2_service" "document_processor" {
 
       resources {
         limits = {
-          cpu    = "2"
-          memory = "4Gi"
+          cpu    = "4"
+          memory = "2Gi"
         }
       }
     }

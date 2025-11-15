@@ -451,6 +451,7 @@ export const tasks = pgTable("tasks", {
   fileSize: bigint("file_size", { mode: "number" }).notNull(),
   name: varchar("name", { length: 128 }).notNull(),
   status: taskStatusEnum("status").notNull().default("scheduled"),
+  errorMessage: text("error_message").notNull().default(""),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   pubDate: timestamp("pub_date"),
 });
