@@ -1,47 +1,25 @@
-terraform {
-  required_version = ">= 1.0"
+# Provider configuration
+provider "google" {
+  project = var.google_vertex_project
+  region  = var.google_vertex_location
+  zone    = var.google_zone
+}
 
+terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 6.10"
+      version = "~> 7.2"
     }
   }
-
-  # For production, use Cloud Storage backend
-  # backend "gcs" {
-  #   bucket = "your-terraform-state-bucket"
-  #   prefix = "terraform/state/5-file-storage"
-  # }
+  required_version = ">= 1.0"
 }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Import state from previous layers
-data "terraform_remote_state" "repository" {
-  backend = "local"
-
-  config = {
-    path = "../1-repository/terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "db_storage" {
-  backend = "local"
-
-  config = {
-    path = "../2-db-storage/terraform.tfstate"
-  }
-}
-
+# Import service accounts from 3-core
 data "terraform_remote_state" "core" {
   backend = "local"
 
   config = {
-    # Change this to ../4-core-with-firecrawl/terraform.tfstate if you deployed that layer
     path = "../3-core/terraform.tfstate"
   }
 }

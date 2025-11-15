@@ -1,28 +1,52 @@
-# DB Migrator Cloud Run Job
+# Enable Cloud Run API
+resource "google_project_service" "run" {
+  project = var.google_vertex_project
+  service = "run.googleapis.com"
+}
+
+# Service Account for DB Migrator
+resource "google_service_account" "db_migrator_sa" {
+  account_id   = "db-migrator-sa"
+  display_name = "DB Migrator Service Account"
+}
+
+# Cloud Run Job for database migrations
 resource "google_cloud_run_v2_job" "db_migrator" {
-  name     = "${var.project_name}-db-migrator"
-  location = var.region
+  name     = "db-migrator"
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
+
+  depends_on = [
+    google_project_service.run,
+    google_sql_database_instance.postgres,
+  ]
 
   template {
     template {
-      service_account = google_service_account.cloud_run.email
-
-      vpc_access {
-        connector = google_vpc_access_connector.connector.id
-        egress    = "PRIVATE_RANGES_ONLY"
-      }
+      service_account = google_service_account.db_migrator_sa.email
 
       containers {
-        image = data.terraform_remote_state.repository.outputs.db_migrator_image_url
+        image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/db-migrator:latest"
 
-        env {
-          name  = "DATABASE_URL"
-          value = "postgresql://${google_sql_user.user.name}:${random_password.db_password.result}@${google_sql_database_instance.postgres.private_ip_address}:5432/${google_sql_database.database.name}"
-        }
-
+        # Non-sensitive environment variables
         env {
           name  = "NODE_ENV"
-          value = var.environment
+          value = "production"
+        }
+        env {
+          name  = "DATABASE_HOST"
+          value = google_sql_database_instance.postgres.private_ip_address
+        }
+
+        # Sensitive secrets from Secret Manager
+        env {
+          name = "DATABASE_PASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.db_password.secret_id
+              version = "latest"
+            }
+          }
         }
 
         resources {
@@ -33,21 +57,28 @@ resource "google_cloud_run_v2_job" "db_migrator" {
         }
       }
 
-      timeout     = "600s"
-      max_retries = 3
-      task_count  = 1
-      parallelism = 1
-    }
-  }
+      vpc_access {
+        network_interfaces {
+          network    = google_compute_network.private_network.id
+          subnetwork = google_compute_subnetwork.private_subnet.id
+        }
+        egress = "PRIVATE_RANGES_ONLY"
+      }
 
-  labels = {
-    project     = var.project_name
-    environment = var.environment
+      timeout = "600s"
+    }
   }
 
   lifecycle {
     ignore_changes = [
-      template[0].template[0].containers[0].image
+      template[0].template[0].containers[0].image,
     ]
   }
+}
+
+# IAM binding to allow db_migrator service account to access secrets
+resource "google_secret_manager_secret_iam_member" "db_migrator_db_password_accessor" {
+  secret_id = google_secret_manager_secret.db_password.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.db_migrator_sa.email}"
 }

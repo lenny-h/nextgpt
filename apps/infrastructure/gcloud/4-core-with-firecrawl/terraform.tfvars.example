@@ -1,48 +1,56 @@
-# Copy this file to terraform.tfvars and fill in your values
+# GCP configuration
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
+google_zone            = "us-central1-a"
 
-project_id   = "your-gcp-project-id"
-region       = "us-central1"
-project_name = "myapp"
-environment  = "production"
+# Site Configuration
+site_url = "example.com"
 
-# Domain configuration
-domain = "api.example.com"
+# Authentication
+better_auth_secret               = "your-secure-secret-key"
+only_allow_admin_to_create_buckets = false
+admin_user_ids                   = "user-id-1,user-id-2"
+enable_email_signup              = true
+allowed_email_domains            = "example.com,company.com"
+enable_oauth_login               = true
 
-# API scaling configuration
-api_cpu           = "1"
-api_memory        = "512Mi"
-api_min_instances = 1
-api_max_instances = 10
-
-# Document Processor scaling
-document_processor_cpu           = "2"
-document_processor_memory        = "2Gi"
-document_processor_min_instances = 0
-document_processor_max_instances = 5
-
-# PDF Exporter scaling
-pdf_exporter_cpu           = "1"
-pdf_exporter_memory        = "1Gi"
-pdf_exporter_min_instances = 0
-pdf_exporter_max_instances = 5
-
-# OAuth Configuration
+# OAuth Providers
 google_client_id     = "your-google-client-id"
 google_client_secret = "your-google-client-secret"
 github_client_id     = "your-github-client-id"
 github_client_secret = "your-github-client-secret"
+gitlab_client_id     = "your-gitlab-client-id"
+gitlab_client_secret = "your-gitlab-client-secret"
 
-# Auth Configuration
-nextauth_secret = "your-nextauth-secret-min-32-chars"
-nextauth_url    = "https://api.example.com"
+# SSO Configuration
+enable_sso                 = false
+sso_domain                 = ""
+sso_provider_id            = ""
+sso_client_id              = ""
+sso_client_secret          = ""
+sso_issuer                 = ""
+sso_authorization_endpoint = ""
+sso_discovery_endpoint     = ""
+sso_token_endpoint         = ""
+sso_jwks_endpoint          = ""
 
-# Encryption
-encryption_key = "your-encryption-key-min-32-chars"
+# Email Configuration
+resend_sender_email = "noreply@example.com"
+resend_api_key      = "your-resend-api-key"
+
+# Application Security
+encryption_key = "your-64-character-encryption-key-here-replace-with-actual"
+
+# Storage Configuration (Cloudflare R2)
+use_cloudflare_r2            = true
+cloudflare_access_key_id     = "your-r2-access-key-id"
+cloudflare_secret_access_key = "your-r2-secret-access-key"
+r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
+
+# AI Models
+embeddings_model = "text-embedding-004"
+llm_models       = "gemini-2.5-flash,gemini-2.5-pro"
 
 # Firecrawl Configuration
-use_firecrawl        = true
-firecrawl_api_key    = "your-firecrawl-api-key"
-firecrawl_api_cpu    = "1"
-firecrawl_api_memory = "2Gi"
-firecrawl_playwright_cpu    = "1"
-firecrawl_playwright_memory = "2Gi"
+use_firecrawl     = true
+firecrawl_api_key = "your-firecrawl-api-key-if-using-external-service"

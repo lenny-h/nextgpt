@@ -1,41 +1,81 @@
-# Permanent file storage bucket
-resource "google_storage_bucket" "permanent_files" {
-  name          = "${var.project_name}-permanent-files-${var.project_id}"
-  location      = var.region
-  force_destroy = false
+# Enable Cloud Storage API
+resource "google_project_service" "storage" {
+  project = var.google_vertex_project
+  service = "storage.googleapis.com"
+}
 
+# GCS bucket for permanent file storage
+resource "google_storage_bucket" "files_bucket" {
+  name     = "${var.google_vertex_project}-files-bucket"
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
+
+  # Prevent public access
+  public_access_prevention = "enforced"
+
+  # Enable uniform bucket-level access
   uniform_bucket_level_access = true
 
+  # Disable object versioning
   versioning {
-    enabled = var.enable_versioning
+    enabled = false
   }
 
+  # Disable soft delete
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
+
+  # Add CORS configuration
+  cors {
+    origin          = ["https://app.${var.site_url}", "https://dashboard.${var.site_url}"]
+    method          = ["GET", "POST", "DELETE", "PUT", "HEAD"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
+
+  depends_on = [google_project_service.storage]
+}
+
+# GCS bucket for temporary file storage
+resource "google_storage_bucket" "temporary_files_bucket" {
+  name     = "${var.google_vertex_project}-temporary-files-bucket"
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
+
+  # Prevent public access
+  public_access_prevention = "enforced"
+
+  # Enable uniform bucket-level access
+  uniform_bucket_level_access = true
+
+  # Disable object versioning
+  versioning {
+    enabled = false
+  }
+
+  # Disable soft delete
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
+
+  # Add CORS configuration
+  cors {
+    origin          = ["https://app.${var.site_url}", "https://dashboard.${var.site_url}"]
+    method          = ["GET", "POST", "DELETE", "PUT", "HEAD"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
+
+  # Lifecycle rule to delete objects after 30 days
   lifecycle_rule {
     condition {
-      num_newer_versions = 3
+      age = 30
     }
     action {
       type = "Delete"
     }
   }
 
-  cors {
-    origin          = ["*"]
-    method          = ["GET", "HEAD", "PUT", "POST", "DELETE"]
-    response_header = ["*"]
-    max_age_seconds = 3600
-  }
-
-  labels = {
-    project     = var.project_name
-    environment = var.environment
-    type        = "permanent"
-  }
-}
-
-# Grant Cloud Run service account access
-resource "google_storage_bucket_iam_member" "permanent_files_api" {
-  bucket = google_storage_bucket.permanent_files.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email}"
+  depends_on = [google_project_service.storage]
 }

@@ -1,105 +1,70 @@
-# Layer 5: File Storage (Cloud Storage)
+# 5-file-storage - Google Cloud Storage for Permanent Files
 
-This layer creates a permanent Cloud Storage bucket for file storage with versioning and IAM permissions.
+This folder sets up Google Cloud Storage (GCS) for permanent file storage.
 
-## Resources Created
+## What it provisions
 
-- **Cloud Storage Bucket**: Permanent file storage with versioning
-- **IAM Bindings**: Grants Cloud Run services access to the bucket
-- **Lifecycle Policy**: Keeps last 3 versions of each object
+- GCS bucket for permanent file storage
+- CORS configuration for web access
+- Uniform bucket-level access for consistent permissions
+- Public access prevention for security
 
-## Prerequisites
+## When to use this
 
-- Layer 1, 2, and 3 (or 4) must be deployed
-- Choose this layer if you want to use Google Cloud Storage
+Use this module if you want to store files in Google Cloud Storage instead of Cloudflare R2. This is typically chosen when:
 
-## Configuration
+- You want to keep all infrastructure within GCP
+- You need GCP-specific features or integrations
+- You prefer GCP's pricing model for storage
 
-1. Copy the example variables file:
+## Dependencies
+
+This module is standalone but should be used instead of `6-cloudflare-storage`, not in addition to it.
+
+## Usage
+
+1. Initialize Terraform:
+
+```bash
+terraform init
+```
+
+2. Copy and configure variables:
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
 ```
 
-2. Edit `terraform.tfvars`:
-
-```hcl
-project_id        = "your-gcp-project-id"
-region            = "us-central1"
-project_name      = "myapp"
-enable_versioning = true
-```
-
-3. **IMPORTANT**: Update `providers.tf` if you deployed layer 4:
-
-```hcl
-data "terraform_remote_state" "core" {
-  backend = "local"
-  config = {
-    path = "../4-core-with-firecrawl/terraform.tfstate"  # Change this line
-  }
-}
-```
-
-## Deployment
+3. Apply the configuration:
 
 ```bash
-# Initialize Terraform
-terraform init
-
-# Review the plan
-terraform plan
-
-# Apply the configuration
 terraform apply
 ```
 
-## Update Cloud Run Services
+4. Update your application configuration:
 
-After deploying storage, update your Cloud Run services with the bucket name:
+After deployment, you need to:
 
-```bash
-# Get bucket name
-BUCKET_NAME=$(terraform output -raw permanent_storage_bucket_name)
+- Set `USE_CLOUDFLARE_R2=false` in your application environment variables
+- Update the core infrastructure (3-core or 4-core-with-firecrawl) to uncomment GCS IAM permissions
+- Remove or comment out Cloudflare R2 related environment variables
 
-# Update API service environment variable
-gcloud run services update ${PROJECT_NAME}-api \
-  --update-env-vars PERMANENT_STORAGE_BUCKET=$BUCKET_NAME \
-  --region us-central1
-```
+## Important Notes
 
-## Storage Features
+- This bucket is for **permanent** file storage (no automatic deletion)
+- The temporary files bucket is created in `2-db-storage` with 1-day retention
+- CORS is configured for your application domains
+- Public access is prevented for security
+- Uniform bucket-level access is enabled for consistent IAM
 
-- **Versioning**: Enabled by default, keeps last 3 versions
-- **CORS**: Configured for web uploads
-- **IAM**: Cloud Run service account has objectAdmin role
-- **Encryption**: Server-side encryption enabled by default
-- **Location**: Regional storage for lower latency
+## IAM Configuration
 
-## Cost Estimate
+You'll need to grant your application service accounts access to this bucket. In your core infrastructure (3-core or 4-core-with-firecrawl), uncomment the GCS IAM bindings for:
 
-Monthly costs (approximate):
+- API service account
+- Document Processor service account
 
-| Resource                 | Storage                         | Cost     |
-| ------------------------ | ------------------------------- | -------- |
-| Cloud Storage (Standard) | 100GB                           | $2-3     |
-| Cloud Storage (Standard) | 1TB                             | $20-26   |
-| Operations (per 10k)     | Class A: $0.05, Class B: $0.004 | Variable |
+## Alternative
 
-## Alternative: Cloudflare R2
-
-If you want to use Cloudflare R2 instead (no egress fees), destroy this layer and deploy layer 6:
-
-```bash
-terraform destroy
-cd ../6-cloudflare-storage
-```
-
-## Next Steps
-
-Your infrastructure is now complete! You can:
-
-1. Test file uploads/downloads
-2. Configure additional lifecycle policies
-3. Set up monitoring and alerts
-4. Implement backup strategies
+If you prefer to use Cloudflare R2 for file storage, use `6-cloudflare-storage` instead.

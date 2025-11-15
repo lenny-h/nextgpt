@@ -1,14 +1,21 @@
+# Enable Cloud Run API
+resource "google_project_service" "run" {
+  project = var.google_vertex_project
+  service = "run.googleapis.com"
+}
+
 # API Service
 resource "google_cloud_run_v2_service" "api" {
-  name     = "${var.project_name}-api"
-  location = var.region
+  name     = "api"
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
-    service_account = data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email
+    service_account = google_service_account.api_sa.email
 
     containers {
-      image = data.terraform_remote_state.repository.outputs.api_image_url
+      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/api:latest"
       ports {
         container_port = 8080
       }
@@ -16,43 +23,31 @@ resource "google_cloud_run_v2_service" "api" {
       # Non-sensitive environment variables
       env {
         name  = "NODE_ENV"
-        value = var.environment
+        value = "production"
       }
       env {
-        name  = "NEXTAUTH_URL"
-        value = var.nextauth_url
+        name  = "BETTER_AUTH_URL"
+        value = "https://api.${var.site_url}"
       }
       env {
-        name  = "DATABASE_URL"
-        value = data.terraform_remote_state.db_storage.outputs.database_url
+        name  = "ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS"
+        value = tostring(var.only_allow_admin_to_create_buckets)
       }
       env {
-        name  = "REDIS_URL"
-        value = data.terraform_remote_state.db_storage.outputs.redis_url
+        name  = "ADMIN_USER_IDS"
+        value = var.admin_user_ids
       }
       env {
-        name  = "DOCUMENT_PROCESSOR_URL"
-        value = google_cloud_run_v2_service.document_processor.uri
+        name  = "ENABLE_EMAIL_SIGNUP"
+        value = tostring(var.enable_email_signup)
       }
       env {
-        name  = "PDF_EXPORTER_URL"
-        value = google_cloud_run_v2_service.pdf_exporter.uri
+        name  = "ALLOWED_EMAIL_DOMAINS"
+        value = var.allowed_email_domains
       }
       env {
-        name  = "CLOUD_TASKS_QUEUE"
-        value = google_cloud_tasks_queue.document_processing.id
-      }
-      env {
-        name  = "TEMPORARY_STORAGE_BUCKET"
-        value = google_storage_bucket.temporary_files.name
-      }
-      env {
-        name  = "USE_FIRECRAWL"
-        value = tostring(var.use_firecrawl)
-      }
-      env {
-        name  = "FIRECRAWL_API_URL"
-        value = var.use_firecrawl ? google_cloud_run_v2_service.firecrawl_api[0].uri : ""
+        name  = "ENABLE_OAUTH_LOGIN"
+        value = tostring(var.enable_oauth_login)
       }
       env {
         name  = "GOOGLE_CLIENT_ID"
@@ -62,13 +57,126 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "GITHUB_CLIENT_ID"
         value = var.github_client_id
       }
+      env {
+        name  = "GITLAB_CLIENT_ID"
+        value = var.gitlab_client_id
+      }
+      env {
+        name  = "ENABLE_SSO"
+        value = tostring(var.enable_sso)
+      }
+      env {
+        name  = "SSO_DOMAIN"
+        value = var.sso_domain
+      }
+      env {
+        name  = "SSO_PROVIDER_ID"
+        value = var.sso_provider_id
+      }
+      env {
+        name  = "SSO_CLIENT_ID"
+        value = var.sso_client_id
+      }
+      env {
+        name  = "SSO_ISSUER"
+        value = var.sso_issuer
+      }
+      env {
+        name  = "SSO_AUTHORIZATION_ENDPOINT"
+        value = var.sso_authorization_endpoint
+      }
+      env {
+        name  = "SSO_DISCOVERY_ENDPOINT"
+        value = var.sso_discovery_endpoint
+      }
+      env {
+        name  = "SSO_TOKEN_ENDPOINT"
+        value = var.sso_token_endpoint
+      }
+      env {
+        name  = "SSO_JWKS_ENDPOINT"
+        value = var.sso_jwks_endpoint
+      }
+      env {
+        name  = "RESEND_SENDER_EMAIL"
+        value = var.resend_sender_email
+      }
+      env {
+        name  = "BASE_URL"
+        value = "https://app.${var.site_url}"
+      }
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
+      }
+      env {
+        name  = "DOCUMENT_PROCESSOR_URL"
+        value = google_cloud_run_v2_service.document_processor.uri
+      }
+      env {
+        name  = "DATABASE_HOST"
+        value = data.terraform_remote_state.db_storage.outputs.postgres_private_ip
+      }
+      env {
+        name  = "REDIS_URL"
+        value = data.terraform_remote_state.db_storage.outputs.redis_url
+      }
+      env {
+        name  = "USE_CLOUDFLARE_R2"
+        value = tostring(var.use_cloudflare_r2)
+      }
+      env {
+        name  = "R2_ENDPOINT"
+        value = var.r2_endpoint
+      }
+      env {
+        name  = "CLOUD_PROVIDER"
+        value = "gcloud"
+      }
+      env {
+        name  = "GOOGLE_VERTEX_PROJECT"
+        value = var.google_vertex_project
+      }
+      env {
+        name  = "GOOGLE_VERTEX_LOCATION"
+        value = var.google_vertex_location
+      }
+      env {
+        name  = "GOOGLE_PROCESSING_QUEUE"
+        value = google_cloud_tasks_queue.document_processing_queue.name
+      }
+      env {
+        name  = "EMBEDDINGS_MODEL"
+        value = var.embeddings_model
+      }
+      env {
+        name  = "LLM_MODELS"
+        value = var.llm_models
+      }
+      env {
+        name  = "USE_FIRECRAWL"
+        value = "true"
+      }
+      env {
+        name  = "FIRECRAWL_API_URL"
+        value = google_cloud_run_v2_service.firecrawl_api.uri
+      }
 
       # Sensitive secrets from Secret Manager
       env {
-        name = "NEXTAUTH_SECRET"
+        name = "BETTER_AUTH_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.nextauth_secret.secret_id
+            secret  = google_secret_manager_secret.better_auth_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "RESEND_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.resend_api_key.secret_id
             version = "latest"
           }
         }
@@ -92,6 +200,33 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
       env {
+        name = "GITLAB_CLIENT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.gitlab_client_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "SSO_CLIENT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.sso_client_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "DATABASE_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
         name = "ENCRYPTION_KEY"
         value_source {
           secret_key_ref {
@@ -101,10 +236,19 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
       env {
-        name = "FIRECRAWL_API_KEY"
+        name = "CLOUDFLARE_ACCESS_KEY_ID"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.firecrawl_api_key.secret_id
+            secret  = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "CLOUDFLARE_SECRET_ACCESS_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
             version = "latest"
           }
         }
@@ -112,8 +256,8 @@ resource "google_cloud_run_v2_service" "api" {
 
       resources {
         limits = {
-          cpu    = var.api_cpu
-          memory = var.api_memory
+          cpu    = "1"
+          memory = "512Mi"
         }
       }
     }
@@ -121,13 +265,13 @@ resource "google_cloud_run_v2_service" "api" {
     vpc_access {
       network_interfaces {
         network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
-        subnetwork = data.terraform_remote_state.db_storage.outputs.vpc_subnetwork_id
+        subnetwork = data.terraform_remote_state.db_storage.outputs.subnet_id
       }
     }
 
     scaling {
-      min_instance_count = var.api_min_instances
-      max_instance_count = var.api_max_instances
+      min_instance_count = 0
+      max_instance_count = 5
     }
 
     max_instance_request_concurrency = 30
@@ -145,45 +289,74 @@ resource "google_cloud_run_v2_service" "api" {
     ]
   }
 
+  depends_on          = [google_project_service.run]
   deletion_protection = false
-}
-
-# Allow unauthenticated access to API
-resource "google_cloud_run_service_iam_member" "api_noauth" {
-  location = google_cloud_run_v2_service.api.location
-  service  = google_cloud_run_v2_service.api.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
 }
 
 # Document Processor Service
 resource "google_cloud_run_v2_service" "document_processor" {
-  name     = "${var.project_name}-document-processor"
-  location = var.region
+  name     = "document-processor"
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
   ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
-    service_account = data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email
+    service_account = google_service_account.document_processor_sa.email
 
     containers {
-      image = data.terraform_remote_state.repository.outputs.document_processor_image_url
+      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/document-processor:latest"
       ports {
         container_port = 8080
       }
 
+      # Non-sensitive environment variables
       env {
-        name  = "DATABASE_URL"
-        value = data.terraform_remote_state.db_storage.outputs.database_url
+        name  = "ENVIRONMENT"
+        value = "production"
       }
       env {
-        name  = "REDIS_URL"
-        value = data.terraform_remote_state.db_storage.outputs.redis_url
+        name  = "API_URL"
+        value = "https://api.${var.site_url}"
       }
       env {
-        name  = "TEMPORARY_STORAGE_BUCKET"
-        value = google_storage_bucket.temporary_files.name
+        name  = "DATABASE_HOST"
+        value = data.terraform_remote_state.db_storage.outputs.postgres_private_ip
+      }
+      env {
+        name  = "USE_CLOUDFLARE_R2"
+        value = tostring(var.use_cloudflare_r2)
+      }
+      env {
+        name  = "R2_ENDPOINT"
+        value = var.r2_endpoint
+      }
+      env {
+        name  = "CLOUD_PROVIDER"
+        value = "gcloud"
+      }
+      env {
+        name  = "GOOGLE_VERTEX_PROJECT"
+        value = var.google_vertex_project
+      }
+      env {
+        name  = "GOOGLE_VERTEX_LOCATION"
+        value = var.google_vertex_location
+      }
+      env {
+        name  = "EMBEDDINGS_MODEL"
+        value = var.embeddings_model
       }
 
+      # Sensitive secrets from Secret Manager
+      env {
+        name = "DATABASE_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
+            version = "latest"
+          }
+        }
+      }
       env {
         name = "ENCRYPTION_KEY"
         value_source {
@@ -193,11 +366,29 @@ resource "google_cloud_run_v2_service" "document_processor" {
           }
         }
       }
+      env {
+        name = "CLOUDFLARE_ACCESS_KEY_ID"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "CLOUDFLARE_SECRET_ACCESS_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+            version = "latest"
+          }
+        }
+      }
 
       resources {
         limits = {
-          cpu    = var.document_processor_cpu
-          memory = var.document_processor_memory
+          cpu    = "4"
+          memory = "2Gi"
         }
       }
     }
@@ -205,13 +396,13 @@ resource "google_cloud_run_v2_service" "document_processor" {
     vpc_access {
       network_interfaces {
         network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
-        subnetwork = data.terraform_remote_state.db_storage.outputs.vpc_subnetwork_id
+        subnetwork = data.terraform_remote_state.db_storage.outputs.subnet_id
       }
     }
 
     scaling {
-      min_instance_count = var.document_processor_min_instances
-      max_instance_count = var.document_processor_max_instances
+      min_instance_count = 0
+      max_instance_count = 5
     }
 
     max_instance_request_concurrency = 30
@@ -224,41 +415,39 @@ resource "google_cloud_run_v2_service" "document_processor" {
     ]
   }
 
+  depends_on          = [google_project_service.run]
   deletion_protection = false
-}
-
-# Allow Cloud Tasks to invoke Document Processor
-resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker" {
-  location = google_cloud_run_v2_service.document_processor.location
-  name     = google_cloud_run_v2_service.document_processor.name
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudtasks.iam.gserviceaccount.com"
 }
 
 # PDF Exporter Service
 resource "google_cloud_run_v2_service" "pdf_exporter" {
-  name     = "${var.project_name}-pdf-exporter"
-  location = var.region
+  name     = "pdf-exporter"
+  location = var.google_vertex_location
+  project  = var.google_vertex_project
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
-    service_account = data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email
+    service_account = google_service_account.pdf_exporter_sa.email
 
     containers {
-      image = data.terraform_remote_state.repository.outputs.pdf_exporter_image_url
+      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/pdf-exporter:latest"
       ports {
         container_port = 8080
       }
 
       env {
         name  = "NODE_ENV"
-        value = var.environment
+        value = "production"
+      }
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
       }
 
       resources {
         limits = {
-          cpu    = var.pdf_exporter_cpu
-          memory = var.pdf_exporter_memory
+          cpu    = "1"
+          memory = "512Mi"
         }
       }
     }
@@ -267,8 +456,8 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     timeout                          = "30s"
 
     scaling {
-      min_instance_count = var.pdf_exporter_min_instances
-      max_instance_count = var.pdf_exporter_max_instances
+      min_instance_count = 0
+      max_instance_count = 5
     }
   }
 
@@ -283,140 +472,22 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     ]
   }
 
+  depends_on          = [google_project_service.run]
   deletion_protection = false
 }
 
-# Firecrawl API Service
-resource "google_cloud_run_v2_service" "firecrawl_api" {
-  count    = var.use_firecrawl ? 1 : 0
-  name     = "${var.project_name}-firecrawl-api"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
-
-  template {
-    service_account = data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email
-
-    containers {
-      image = data.terraform_remote_state.repository.outputs.firecrawl_api_image_url
-      ports {
-        container_port = 8080
-      }
-
-      env {
-        name  = "PLAYWRIGHT_MICROSERVICE_URL"
-        value = google_cloud_run_v2_service.firecrawl_playwright[0].uri
-      }
-      env {
-        name  = "REDIS_URL"
-        value = data.terraform_remote_state.db_storage.outputs.redis_url
-      }
-
-      env {
-        name = "FIRECRAWL_API_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.firecrawl_api_key.secret_id
-            version = "latest"
-          }
-        }
-      }
-
-      resources {
-        limits = {
-          cpu    = var.firecrawl_api_cpu
-          memory = var.firecrawl_api_memory
-        }
-      }
-    }
-
-    vpc_access {
-      network_interfaces {
-        network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
-        subnetwork = data.terraform_remote_state.db_storage.outputs.vpc_subnetwork_id
-      }
-    }
-
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 3
-    }
-
-    max_instance_request_concurrency = 30
-    timeout                          = "30s"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image,
-    ]
-  }
-
-  deletion_protection = false
-}
-
-# Allow API service to invoke Firecrawl
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_api_invoker" {
-  count    = var.use_firecrawl ? 1 : 0
-  location = google_cloud_run_v2_service.firecrawl_api[0].location
-  name     = google_cloud_run_v2_service.firecrawl_api[0].name
+# Allow the document processor service account to be invoked by Cloud Tasks
+resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker_tasks" {
+  name     = google_cloud_run_v2_service.document_processor.name
+  location = google_cloud_run_v2_service.document_processor.location
   role     = "roles/run.invoker"
-  member   = "serviceAccount:${data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email}"
+  member   = "serviceAccount:${google_service_account.cloud_tasks_sa.email}"
 }
 
-# Firecrawl Playwright Service
-resource "google_cloud_run_v2_service" "firecrawl_playwright" {
-  count    = var.use_firecrawl ? 1 : 0
-  name     = "${var.project_name}-firecrawl-playwright"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
-
-  template {
-    service_account = data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email
-
-    containers {
-      image = data.terraform_remote_state.repository.outputs.firecrawl_playwright_image_url
-      ports {
-        container_port = 8080
-      }
-
-      resources {
-        limits = {
-          cpu    = var.firecrawl_playwright_cpu
-          memory = var.firecrawl_playwright_memory
-        }
-      }
-    }
-
-    vpc_access {
-      network_interfaces {
-        network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
-        subnetwork = data.terraform_remote_state.db_storage.outputs.vpc_subnetwork_id
-      }
-    }
-
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 3
-    }
-
-    max_instance_request_concurrency = 30
-    timeout                          = "60s"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image,
-    ]
-  }
-
-  deletion_protection = false
-}
-
-# Allow Firecrawl API to invoke Playwright
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_playwright_invoker" {
-  count    = var.use_firecrawl ? 1 : 0
-  location = google_cloud_run_v2_service.firecrawl_playwright[0].location
-  name     = google_cloud_run_v2_service.firecrawl_playwright[0].name
+# Allow the document processor to be invoked by API service
+resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker_api" {
+  name     = google_cloud_run_v2_service.document_processor.name
+  location = google_cloud_run_v2_service.document_processor.location
   role     = "roles/run.invoker"
-  member   = "serviceAccount:${data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email}"
+  member   = "serviceAccount:${google_service_account.api_sa.email}"
 }

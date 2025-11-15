@@ -1,26 +1,25 @@
-terraform {
-  required_version = ">= 1.0"
+# Provider configuration
+provider "google" {
+  project = var.google_vertex_project
+  region  = var.google_vertex_location
+  zone    = var.google_zone
+}
 
+terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 6.10"
+      version = "~> 7.2"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.13"
     }
   }
-
-  # For production, use Cloud Storage backend
-  # backend "gcs" {
-  #   bucket = "your-terraform-state-bucket"
-  #   prefix = "terraform/state/2-db-storage"
-  # }
+  required_version = ">= 1.0"
 }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Import state from 1-repository layer
+# Data source to import state from 1-repository
 data "terraform_remote_state" "repository" {
   backend = "local"
 

@@ -8,7 +8,7 @@ resource "google_service_account" "cloud_tasks_sa" {
 # API Cloud Run App IAM
 # ===================================
 
-# Create Service Account for App
+# Create Service Account for API
 resource "google_service_account" "api_sa" {
   account_id   = "api-sa"
   display_name = "Api Service Account"
@@ -19,43 +19,6 @@ resource "google_project_iam_member" "api_vertex_ai_user" {
   project = var.google_vertex_project
   role    = "roles/aiplatform.user"
   member  = "serviceAccount:${google_service_account.api_sa.email}"
-}
-
-# # Uncomment if not using cloudflare r2 for file storage
-# # IAM Binding to allow api service account to read from files_bucket
-# resource "google_storage_bucket_iam_member" "api_files_bucket_viewer" {
-#   bucket = google_storage_bucket.files_bucket.name
-#   role   = "roles/storage.objectViewer"
-#   member = "serviceAccount:${google_service_account.api_sa.email}"
-# }
-
-# # Uncomment if not using cloudflare r2 for file storage
-# # IAM Binding to allow api service account to delete files from files_bucket
-# resource "google_storage_bucket_iam_member" "api_files_bucket_deleter" {
-#   bucket = google_storage_bucket.files_bucket.name
-#   role   = "roles/storage.objectAdmin"
-#   member = "serviceAccount:${google_service_account.api_sa.email}"
-# }
-
-# IAM Binding to allow api service account to read from temporary_files_bucket
-resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_viewer" {
-  bucket = google_storage_bucket.temporary_files_bucket.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${google_service_account.api_sa.email}"
-}
-
-# IAM Binding to allow api service account to write to temporary_files_bucket
-resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_writer" {
-  bucket = google_storage_bucket.temporary_files_bucket.name
-  role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${google_service_account.api_sa.email}"
-}
-
-# IAM Binding to allow api service account to delete files from temporary_files_bucket
-resource "google_storage_bucket_iam_member" "api_temporary_files_bucket_deleter" {
-  bucket = google_storage_bucket.temporary_files_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 # IAM Binding to allow api service account to manage Cloud Tasks
@@ -79,37 +42,61 @@ resource "google_service_account_key" "api_sa_key" {
 
 # IAM Binding to allow API service account to access secrets
 resource "google_secret_manager_secret_iam_member" "api_db_password_accessor" {
-  secret_id = google_secret_manager_secret.db_password.id
+  secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_better_auth_secret_accessor" {
-  secret_id = google_secret_manager_secret.better_auth_secret.id
+  secret_id = google_secret_manager_secret.better_auth_secret.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_resend_api_key_accessor" {
-  secret_id = google_secret_manager_secret.resend_api_key.id
+  secret_id = google_secret_manager_secret.resend_api_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_r2_access_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.id
+  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_r2_secret_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.id
+  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_encryption_key_accessor" {
-  secret_id = google_secret_manager_secret.encryption_key.id
+  secret_id = google_secret_manager_secret.encryption_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_google_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.google_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_github_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.github_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_gitlab_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.gitlab_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_sso_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.sso_client_secret.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
@@ -121,24 +108,8 @@ resource "google_secret_manager_secret_iam_member" "api_encryption_key_accessor"
 # Create Service Account for Document Processor
 resource "google_service_account" "document_processor_sa" {
   account_id   = "document-processor-sa"
-  display_name = "document Processor Service Account"
+  display_name = "Document Processor Service Account"
 }
-
-# # Uncomment if not using cloudflare r2 for file storage
-# # IAM Binding to allow document_processor to write to files_bucket
-# resource "google_storage_bucket_iam_member" "document_processor_files_bucket_writer" {
-#   bucket = google_storage_bucket.files_bucket.name
-#   role   = "roles/storage.objectCreator"
-#   member = "serviceAccount:${google_service_account.document_processor_sa.email}"
-# }
-
-# # Uncomment if not using cloudflare r2 for file storage
-# # IAM Binding to allow document_processor to delete files from files_bucket
-# resource "google_storage_bucket_iam_member" "document_processor_files_bucket_deleter" {
-#   bucket = google_storage_bucket.files_bucket.name
-#   role   = "roles/storage.objectAdmin"
-#   member = "serviceAccount:${google_service_account.document_processor_sa.email}"
-# }
 
 # IAM Binding to allow document_processor to use vertex AI API
 resource "google_project_iam_member" "document_processor_vertex_ai_user" {
@@ -149,35 +120,41 @@ resource "google_project_iam_member" "document_processor_vertex_ai_user" {
 
 # IAM Binding to allow Document Processor service account to access secrets
 resource "google_secret_manager_secret_iam_member" "document_processor_db_password_accessor" {
-  secret_id = google_secret_manager_secret.db_password.id
+  secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "document_processor_encryption_key_accessor" {
+  secret_id = google_secret_manager_secret.encryption_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "document_processor_r2_access_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.id
+  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "document_processor_r2_secret_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.id
+  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
 # ===================================
-# Pdf Exporter Cloud Run App IAM
+# PDF Exporter Cloud Run App IAM
 # ===================================
 
 # Create Service Account for PDF Exporter
 resource "google_service_account" "pdf_exporter_sa" {
   account_id   = "pdf-exporter-sa"
-  display_name = "pdf Exporter Service Account"
+  display_name = "PDF Exporter Service Account"
 }
 
 # ===================================
-# CI/CD User-Assigned Managed Identity
+# CI/CD Service Account
 # ===================================
 
 # Create Service Account for CI/CD
@@ -210,6 +187,14 @@ resource "google_cloud_run_v2_service_iam_member" "pdf_exporter_deployer" {
   member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
+# Allow CI/CD service account to execute DB migrator job
+resource "google_cloud_run_v2_job_iam_member" "db_migrator_invoker" {
+  name     = data.terraform_remote_state.db_storage.outputs.db_migrator_job_name
+  location = var.google_vertex_location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
+}
+
 # Allow CI/CD SA to act as Api service account
 resource "google_service_account_iam_member" "ci_cd_act_as_api_sa" {
   service_account_id = google_service_account.api_sa.name
@@ -224,39 +209,16 @@ resource "google_service_account_iam_member" "ci_cd_act_as_document_processor_sa
   member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
-# Allow CI/CD SA to act as Pdf exporter service account
+# Allow CI/CD SA to act as PDF exporter service account
 resource "google_service_account_iam_member" "ci_cd_act_as_pdf_exporter_sa" {
   service_account_id = google_service_account.pdf_exporter_sa.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
-# Allow CI/CD service account to deploy Firecrawl API
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_api_deployer" {
-  name     = google_cloud_run_v2_service.firecrawl_api.name
-  location = google_cloud_run_v2_service.firecrawl_api.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy Firecrawl Playwright
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_playwright_deployer" {
-  name     = google_cloud_run_v2_service.firecrawl_playwright.name
-  location = google_cloud_run_v2_service.firecrawl_playwright.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as Firecrawl API service account
-resource "google_service_account_iam_member" "ci_cd_act_as_firecrawl_api_sa" {
-  service_account_id = google_service_account.firecrawl_api_sa.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as Firecrawl Playwright service account
-resource "google_service_account_iam_member" "ci_cd_act_as_firecrawl_playwright_sa" {
-  service_account_id = google_service_account.firecrawl_playwright_sa.name
+# Allow CI/CD SA to act as db_migrator service account
+resource "google_service_account_iam_member" "ci_cd_act_as_db_migrator_sa" {
+  service_account_id = data.terraform_remote_state.db_storage.outputs.db_migrator_sa_name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }

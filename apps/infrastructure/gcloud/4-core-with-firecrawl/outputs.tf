@@ -1,64 +1,108 @@
-output "api_url" {
-  description = "API Cloud Run service URL"
-  value       = google_cloud_run_v2_service.api.uri
+# ========================================
+# DNS CONFIGURATION
+# ========================================
+output "dns_a_record" {
+  description = "Add this A record to your DNS"
+  value = {
+    type  = "A"
+    name  = "api.${var.site_url}"
+    value = google_compute_global_address.lb_ip.address
+  }
 }
 
-output "document_processor_url" {
-  description = "Document Processor Cloud Run service URL"
-  value       = google_cloud_run_v2_service.document_processor.uri
+# ========================================
+# GITHUB SECRETS
+# ========================================
+output "github_secret" {
+  description = "Add this as GCP_SA_KEY secret in GitHub"
+  value       = google_service_account_key.ci_cd_sa_key.private_key
+  sensitive   = true
 }
 
-output "pdf_exporter_url" {
-  description = "PDF Exporter Cloud Run service URL"
-  value       = google_cloud_run_v2_service.pdf_exporter.uri
+# ========================================
+# GITHUB VARIABLES
+# ========================================
+output "github_variables" {
+  description = "Add these as GitHub repository variables"
+  value = {
+    PROJECT_ID = var.google_vertex_project
+    REGION     = var.google_vertex_location
+  }
 }
 
+# ========================================
+# Load Balancer Outputs
+# ========================================
 output "load_balancer_ip" {
-  description = "Load Balancer IP address"
+  description = "The IP address of the load balancer"
   value       = google_compute_global_address.lb_ip.address
 }
 
-output "domain" {
-  description = "Configured domain"
-  value       = var.domain
+output "api_url" {
+  description = "The URL of the API service"
+  value       = "https://api.${var.site_url}"
 }
 
-output "temporary_storage_bucket" {
-  description = "Temporary storage bucket name"
-  value       = google_storage_bucket.temporary_files.name
+# ========================================
+# Service URLs
+# ========================================
+output "api_service_name" {
+  description = "The name of the API Cloud Run service"
+  value       = google_cloud_run_v2_service.api.name
 }
 
-output "cloud_tasks_queue_id" {
-  description = "Cloud Tasks queue ID"
-  value       = google_cloud_tasks_queue.document_processing.id
+output "document_processor_service_name" {
+  description = "The name of the Document Processor Cloud Run service"
+  value       = google_cloud_run_v2_service.document_processor.name
 }
 
-output "project_id" {
-  description = "GCP Project ID"
-  value       = var.project_id
+output "pdf_exporter_service_name" {
+  description = "The name of the PDF Exporter Cloud Run service"
+  value       = google_cloud_run_v2_service.pdf_exporter.name
 }
 
-output "region" {
-  description = "GCP Region"
-  value       = var.region
+# ========================================
+# Service Account Emails
+# ========================================
+output "api_sa_email" {
+  description = "The email of the API service account"
+  value       = google_service_account.api_sa.email
 }
 
-output "project_name" {
-  description = "Project name"
-  value       = var.project_name
+output "document_processor_sa_email" {
+  description = "The email of the Document Processor service account"
+  value       = google_service_account.document_processor_sa.email
 }
 
-output "cloud_run_service_account_email" {
-  description = "Cloud Run service account email"
-  value       = data.terraform_remote_state.db_storage.outputs.cloud_run_service_account_email
+output "pdf_exporter_sa_email" {
+  description = "The email of the PDF Exporter service account"
+  value       = google_service_account.pdf_exporter_sa.email
 }
 
-output "firecrawl_api_url" {
-  description = "Firecrawl API Cloud Run service URL"
-  value       = var.use_firecrawl ? google_cloud_run_v2_service.firecrawl_api[0].uri : null
-}
-
-output "firecrawl_playwright_url" {
-  description = "Firecrawl Playwright Cloud Run service URL"
-  value       = var.use_firecrawl ? google_cloud_run_v2_service.firecrawl_playwright[0].uri : null
+# ========================================
+# SETUP INSTRUCTIONS
+# ========================================
+output "setup_instructions" {
+  description = "Follow these steps to complete deployment"
+  value       = <<-EOT
+    
+    📋 DEPLOYMENT SETUP
+    
+    1️⃣ Add DNS A Record
+       terraform output dns_a_record
+       → Add to your DNS provider
+       → Points api.${var.site_url} to ${google_compute_global_address.lb_ip.address}
+    
+    2️⃣ Configure GitHub Secret
+       terraform output -raw github_secret | base64 -d > sa-key.json
+       → Copy contents to: Settings > Secrets > GCP_SA_KEY
+       → Delete sa-key.json after copying
+    
+    3️⃣ Configure GitHub Variables
+       terraform output github_variables
+       → Add to: Settings > Secrets and variables > Actions > Variables
+    
+    ✅ SSL certificates are automatically managed by Google after DNS is configured
+    
+  EOT
 }

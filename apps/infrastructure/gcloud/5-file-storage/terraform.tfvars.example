@@ -1,9 +1,5 @@
-# Copy this file to terraform.tfvars and fill in your values
+site_url = "example.com"
 
-project_id   = "your-gcp-project-id"
-region       = "us-central1"
-project_name = "myapp"
-environment  = "production"
-
-# Storage configuration
-enable_versioning = true
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
+google_zone            = "us-central1-a"

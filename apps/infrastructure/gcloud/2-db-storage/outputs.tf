@@ -1,112 +1,76 @@
-output "vpc_id" {
-  description = "VPC network ID"
-  value       = google_compute_network.vpc.id
+# Network outputs
+output "vpc_network_id" {
+  description = "The ID of the VPC network"
+  value       = google_compute_network.private_network.id
 }
 
-output "vpc_name" {
-  description = "VPC network name"
-  value       = google_compute_network.vpc.name
+output "vpc_network_name" {
+  description = "The name of the VPC network"
+  value       = google_compute_network.private_network.name
 }
 
 output "subnet_id" {
-  description = "Private subnet ID"
+  description = "The ID of the subnet"
   value       = google_compute_subnetwork.private_subnet.id
 }
 
 output "subnet_name" {
-  description = "Private subnet name"
+  description = "The name of the subnet"
   value       = google_compute_subnetwork.private_subnet.name
 }
 
-output "vpc_network_id" {
-  description = "VPC Network ID"
-  value       = google_compute_network.vpc.id
-}
-
-output "vpc_subnetwork_id" {
-  description = "VPC Subnetwork ID"
-  value       = google_compute_subnetwork.private_subnet.id
-}
-
+# Database outputs
 output "postgres_instance_name" {
-  description = "Cloud SQL PostgreSQL instance name"
+  description = "The name of the Cloud SQL instance"
   value       = google_sql_database_instance.postgres.name
 }
 
-output "postgres_connection_name" {
-  description = "Cloud SQL PostgreSQL connection name"
-  value       = google_sql_database_instance.postgres.connection_name
-}
-
 output "postgres_private_ip" {
-  description = "Cloud SQL PostgreSQL private IP address"
+  description = "The private IP address of the Cloud SQL instance"
   value       = google_sql_database_instance.postgres.private_ip_address
 }
 
-output "database_name" {
-  description = "PostgreSQL database name"
-  value       = google_sql_database.database.name
+output "postgres_connection_name" {
+  description = "The connection name of the Cloud SQL instance"
+  value       = google_sql_database_instance.postgres.connection_name
 }
 
-output "database_user" {
-  description = "PostgreSQL database user"
-  value       = google_sql_user.user.name
-  sensitive   = true
-}
-
-output "database_password_secret_id" {
-  description = "Secret Manager secret ID for database password"
-  value       = google_secret_manager_secret.db_password.secret_id
-}
-
-output "database_url" {
-  description = "PostgreSQL connection string"
-  value       = "postgresql://${google_sql_user.user.name}:${random_password.db_password.result}@${google_sql_database_instance.postgres.private_ip_address}:5432/${google_sql_database.database.name}"
-  sensitive   = true
-}
-
+# Redis outputs
 output "redis_host" {
-  description = "Redis host address"
+  description = "The host of the Redis instance"
   value       = google_redis_instance.redis.host
 }
 
 output "redis_port" {
-  description = "Redis port"
+  description = "The port of the Redis instance"
   value       = google_redis_instance.redis.port
 }
 
 output "redis_url" {
-  description = "Redis connection URL"
+  description = "The full Redis connection URL"
   value       = "redis://${google_redis_instance.redis.host}:${google_redis_instance.redis.port}"
   sensitive   = true
 }
 
-output "cloud_run_service_account_email" {
-  description = "Cloud Run service account email"
-  value       = google_service_account.cloud_run.email
+# Secret Manager outputs
+output "db_password_secret_id" {
+  description = "The ID of the database password secret"
+  value       = google_secret_manager_secret.db_password.secret_id
 }
 
-output "cloud_run_service_account_id" {
-  description = "Cloud Run service account ID"
-  value       = google_service_account.cloud_run.id
+# Service Account outputs
+output "db_migrator_sa_email" {
+  description = "The email of the DB Migrator service account"
+  value       = google_service_account.db_migrator_sa.email
 }
 
+output "db_migrator_sa_name" {
+  description = "The name of the DB Migrator service account"
+  value       = google_service_account.db_migrator_sa.name
+}
+
+# DB Migrator Job output
 output "db_migrator_job_name" {
-  description = "DB Migrator Cloud Run Job name"
+  description = "The name of the DB Migrator Cloud Run job"
   value       = google_cloud_run_v2_job.db_migrator.name
-}
-
-output "project_id" {
-  description = "GCP Project ID"
-  value       = var.project_id
-}
-
-output "region" {
-  description = "GCP Region"
-  value       = var.region
-}
-
-output "project_name" {
-  description = "Project name"
-  value       = var.project_name
 }

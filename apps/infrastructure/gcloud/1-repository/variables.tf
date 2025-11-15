@@ -1,21 +1,14 @@
-variable "project_id" {
-  description = "Google Cloud Project ID"
+variable "google_vertex_project" {
   type        = string
+  description = "GCP project ID"
 }
 
-variable "region" {
-  description = "Google Cloud region"
+variable "google_vertex_location" {
   type        = string
-  default     = "us-central1"
+  description = "GCP region"
 }
 
-variable "project_name" {
-  description = "Project name used for resource naming"
+variable "google_zone" {
   type        = string
-}
-
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, production)"
-  type        = string
-  default     = "production"
+  description = "GCP zone"
 }

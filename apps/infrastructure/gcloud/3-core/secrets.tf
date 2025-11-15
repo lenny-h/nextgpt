@@ -1,32 +1,84 @@
-# Store OAuth secrets
-resource "google_secret_manager_secret" "google_client_id" {
-  secret_id = "${var.project_name}-google-client-id"
+# Better Auth secret
+resource "google_secret_manager_secret" "better_auth_secret" {
+  project   = var.google_vertex_project
+  secret_id = "better-auth-secret"
 
   replication {
     auto {}
   }
+}
 
-  labels = {
-    project     = var.project_name
-    environment = var.environment
+resource "google_secret_manager_secret_version" "better_auth_secret" {
+  secret      = google_secret_manager_secret.better_auth_secret.id
+  secret_data = var.better_auth_secret
+}
+
+# Resend API key
+resource "google_secret_manager_secret" "resend_api_key" {
+  project   = var.google_vertex_project
+  secret_id = "resend-api-key"
+
+  replication {
+    auto {}
   }
 }
 
-resource "google_secret_manager_secret_version" "google_client_id" {
-  secret      = google_secret_manager_secret.google_client_id.id
-  secret_data = var.google_client_id
+resource "google_secret_manager_secret_version" "resend_api_key" {
+  secret      = google_secret_manager_secret.resend_api_key.id
+  secret_data = var.resend_api_key
 }
 
+# Cloudflare R2 access key ID
+resource "google_secret_manager_secret" "cloudflare_r2_access_key_id" {
+  project   = var.google_vertex_project
+  secret_id = "r2-access-key-id"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "cloudflare_r2_access_key_id" {
+  secret      = google_secret_manager_secret.cloudflare_r2_access_key_id.id
+  secret_data = var.cloudflare_access_key_id
+}
+
+# Cloudflare R2 secret access key
+resource "google_secret_manager_secret" "cloudflare_r2_secret_access_key" {
+  project   = var.google_vertex_project
+  secret_id = "r2-secret-access-key"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "cloudflare_r2_secret_access_key" {
+  secret      = google_secret_manager_secret.cloudflare_r2_secret_access_key.id
+  secret_data = var.cloudflare_secret_access_key
+}
+
+# Encryption key for sensitive data
+resource "google_secret_manager_secret" "encryption_key" {
+  project   = var.google_vertex_project
+  secret_id = "encryption-key"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "encryption_key" {
+  secret      = google_secret_manager_secret.encryption_key.id
+  secret_data = var.encryption_key
+}
+
+# Google OAuth client secret
 resource "google_secret_manager_secret" "google_client_secret" {
-  secret_id = "${var.project_name}-google-client-secret"
-
+  project   = var.google_vertex_project
+  secret_id = "google-client-secret"
   replication {
     auto {}
-  }
-
-  labels = {
-    project     = var.project_name
-    environment = var.environment
   }
 }
 
@@ -35,34 +87,13 @@ resource "google_secret_manager_secret_version" "google_client_secret" {
   secret_data = var.google_client_secret
 }
 
-resource "google_secret_manager_secret" "github_client_id" {
-  secret_id = "${var.project_name}-github-client-id"
-
-  replication {
-    auto {}
-  }
-
-  labels = {
-    project     = var.project_name
-    environment = var.environment
-  }
-}
-
-resource "google_secret_manager_secret_version" "github_client_id" {
-  secret      = google_secret_manager_secret.github_client_id.id
-  secret_data = var.github_client_id
-}
-
+# GitHub OAuth client secret
 resource "google_secret_manager_secret" "github_client_secret" {
-  secret_id = "${var.project_name}-github-client-secret"
+  project   = var.google_vertex_project
+  secret_id = "github-client-secret"
 
   replication {
     auto {}
-  }
-
-  labels = {
-    project     = var.project_name
-    environment = var.environment
   }
 }
 
@@ -71,40 +102,32 @@ resource "google_secret_manager_secret_version" "github_client_secret" {
   secret_data = var.github_client_secret
 }
 
-# Auth secrets
-resource "google_secret_manager_secret" "nextauth_secret" {
-  secret_id = "${var.project_name}-nextauth-secret"
+# GitLab OAuth client secret
+resource "google_secret_manager_secret" "gitlab_client_secret" {
+  project   = var.google_vertex_project
+  secret_id = "gitlab-client-secret"
 
   replication {
     auto {}
   }
-
-  labels = {
-    project     = var.project_name
-    environment = var.environment
-  }
 }
 
-resource "google_secret_manager_secret_version" "nextauth_secret" {
-  secret      = google_secret_manager_secret.nextauth_secret.id
-  secret_data = var.nextauth_secret
+resource "google_secret_manager_secret_version" "gitlab_client_secret" {
+  secret      = google_secret_manager_secret.gitlab_client_secret.id
+  secret_data = var.gitlab_client_secret
 }
 
-# Encryption key
-resource "google_secret_manager_secret" "encryption_key" {
-  secret_id = "${var.project_name}-encryption-key"
+# SSO client secret
+resource "google_secret_manager_secret" "sso_client_secret" {
+  project   = var.google_vertex_project
+  secret_id = "sso-client-secret"
 
   replication {
     auto {}
   }
-
-  labels = {
-    project     = var.project_name
-    environment = var.environment
-  }
 }
 
-resource "google_secret_manager_secret_version" "encryption_key" {
-  secret      = google_secret_manager_secret.encryption_key.id
-  secret_data = var.encryption_key
+resource "google_secret_manager_secret_version" "sso_client_secret" {
+  secret      = google_secret_manager_secret.sso_client_secret.id
+  secret_data = var.sso_client_secret
 }

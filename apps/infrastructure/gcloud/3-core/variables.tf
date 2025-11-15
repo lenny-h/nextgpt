@@ -1,142 +1,190 @@
-variable "project_id" {
-  description = "Google Cloud Project ID"
+variable "site_url" {
   type        = string
+  description = "Site URL (e.g. example.com)"
 }
 
-variable "region" {
-  description = "Google Cloud region"
+# Authentication configuration
+variable "only_allow_admin_to_create_buckets" {
+  type        = bool
+  description = "Only allow admin users to create buckets"
+}
+
+variable "admin_user_ids" {
   type        = string
-  default     = "us-central1"
+  description = "Comma-separated list of admin user IDs"
 }
 
-variable "project_name" {
-  description = "Project name used for resource naming"
+variable "enable_email_signup" {
+  type        = bool
+  description = "Enable email/password sign-up"
+}
+
+variable "allowed_email_domains" {
   type        = string
+  description = "Comma-separated list of allowed email domains for sign-up"
 }
 
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, production)"
-  type        = string
-  default     = "production"
+variable "enable_oauth_login" {
+  type        = bool
+  description = "Enable OAuth login"
 }
 
-variable "domain" {
-  description = "Domain name for the API (e.g., api.example.com)"
-  type        = string
-}
-
-variable "api_cpu" {
-  description = "CPU allocation for API service"
-  type        = string
-  default     = "1"
-}
-
-variable "api_memory" {
-  description = "Memory allocation for API service"
-  type        = string
-  default     = "512Mi"
-}
-
-variable "api_min_instances" {
-  description = "Minimum number of API instances"
-  type        = number
-  default     = 1
-}
-
-variable "api_max_instances" {
-  description = "Maximum number of API instances"
-  type        = number
-  default     = 10
-}
-
-variable "document_processor_cpu" {
-  description = "CPU allocation for Document Processor"
-  type        = string
-  default     = "2"
-}
-
-variable "document_processor_memory" {
-  description = "Memory allocation for Document Processor"
-  type        = string
-  default     = "2Gi"
-}
-
-variable "document_processor_min_instances" {
-  description = "Minimum number of Document Processor instances"
-  type        = number
-  default     = 0
-}
-
-variable "document_processor_max_instances" {
-  description = "Maximum number of Document Processor instances"
-  type        = number
-  default     = 5
-}
-
-variable "pdf_exporter_cpu" {
-  description = "CPU allocation for PDF Exporter"
-  type        = string
-  default     = "1"
-}
-
-variable "pdf_exporter_memory" {
-  description = "Memory allocation for PDF Exporter"
-  type        = string
-  default     = "1Gi"
-}
-
-variable "pdf_exporter_min_instances" {
-  description = "Minimum number of PDF Exporter instances"
-  type        = number
-  default     = 0
-}
-
-variable "pdf_exporter_max_instances" {
-  description = "Maximum number of PDF Exporter instances"
-  type        = number
-  default     = 5
-}
-
-# OAuth Configuration
 variable "google_client_id" {
-  description = "Google OAuth Client ID"
   type        = string
+  description = "Google OAuth client ID"
+}
+
+variable "github_client_id" {
+  type        = string
+  description = "GitHub OAuth client ID"
+}
+
+variable "gitlab_client_id" {
+  type        = string
+  description = "GitLab OAuth client ID"
+}
+
+# SSO Configuration
+variable "enable_sso" {
+  type        = bool
+  description = "Enable SSO"
+}
+
+variable "sso_domain" {
+  type        = string
+  description = "SSO domain"
+}
+
+variable "sso_provider_id" {
+  type        = string
+  description = "SSO provider id"
+}
+
+variable "sso_client_id" {
+  type        = string
+  description = "SSO client id"
+}
+
+variable "sso_issuer" {
+  type        = string
+  description = "SSO issuer"
+}
+
+variable "sso_authorization_endpoint" {
+  type        = string
+  description = "SSO authorization endpoint"
+}
+
+variable "sso_discovery_endpoint" {
+  type        = string
+  description = "SSO discovery endpoint"
+}
+
+variable "sso_token_endpoint" {
+  type        = string
+  description = "SSO token endpoint"
+}
+
+variable "sso_jwks_endpoint" {
+  type        = string
+  description = "SSO JWKS endpoint"
+}
+
+# Mail configuration
+variable "resend_sender_email" {
+  type        = string
+  description = "Sender email for Resend"
+}
+
+# Application configuration
+variable "use_cloudflare_r2" {
+  type        = bool
+  description = "Enable Cloudflare R2 usage"
+}
+
+variable "r2_endpoint" {
+  type        = string
+  description = "Cloudflare R2 endpoint"
+}
+
+# AI models
+variable "embeddings_model" {
+  type        = string
+  description = "Embeddings model"
+}
+
+variable "llm_models" {
+  type        = string
+  description = "Comma-separated list of allowed LLM models"
+}
+
+# Application secrets
+variable "better_auth_secret" {
+  type        = string
+  description = "Secret used for Better Auth"
+  sensitive   = true
+}
+
+variable "resend_api_key" {
+  type        = string
+  description = "Resend API key"
+  sensitive   = true
+}
+
+variable "encryption_key" {
+  type        = string
+  description = "Encryption key for sensitive data (64 chars)"
+  sensitive   = true
+}
+
+variable "cloudflare_access_key_id" {
+  type        = string
+  description = "Cloudflare access key id"
+  sensitive   = true
+}
+
+variable "cloudflare_secret_access_key" {
+  type        = string
+  description = "Cloudflare secret access key"
   sensitive   = true
 }
 
 variable "google_client_secret" {
-  description = "Google OAuth Client Secret"
   type        = string
-  sensitive   = true
-}
-
-variable "github_client_id" {
-  description = "GitHub OAuth Client ID"
-  type        = string
+  description = "Google OAuth client secret"
   sensitive   = true
 }
 
 variable "github_client_secret" {
-  description = "GitHub OAuth Client Secret"
   type        = string
+  description = "GitHub OAuth client secret"
   sensitive   = true
 }
 
-# Auth Configuration
-variable "nextauth_secret" {
-  description = "NextAuth secret key"
+variable "gitlab_client_secret" {
   type        = string
+  description = "GitLab OAuth client secret"
   sensitive   = true
 }
 
-variable "nextauth_url" {
-  description = "NextAuth URL"
+variable "sso_client_secret" {
   type        = string
+  description = "SSO client secret"
+  sensitive   = true
 }
 
-# Encryption
-variable "encryption_key" {
-  description = "Encryption key for sensitive data"
+# GCP specific configuration
+variable "google_vertex_project" {
   type        = string
-  sensitive   = true
+  description = "GCP project ID"
+}
+
+variable "google_vertex_location" {
+  type        = string
+  description = "GCP region"
+}
+
+variable "google_zone" {
+  type        = string
+  description = "GCP zone"
 }

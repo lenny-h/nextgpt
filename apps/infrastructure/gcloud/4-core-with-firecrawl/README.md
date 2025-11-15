@@ -1,181 +1,97 @@
-# Layer 4: Core Services (With Firecrawl)
+# 4-core-with-firecrawl - Core Application Services (With Firecrawl)
 
-This layer deploys the core application services using Cloud Run, WITH Firecrawl integration for web scraping capabilities.
+This folder sets up the core application services with Firecrawl integration for advanced web scraping.
 
-## Resources Created
+## What it provisions
 
-- **Cloud Run Services**: API, Document Processor, PDF Exporter, Firecrawl API, Firecrawl Playwright
-- **Global Load Balancer**: HTTPS load balancer with SSL certificate
-- **Cloud Tasks Queue**: For asynchronous document processing
-- **Cloud Scheduler**: Daily cleanup job for temporary files
-- **Cloud Storage**: Temporary file storage (1-day retention)
-- **Secret Manager**: OAuth credentials, auth secrets, encryption keys
+- **Cloud Run Services**:
+  - API service (public-facing via Load Balancer)
+  - Document Processor service (internal only)
+  - PDF Exporter service (public-facing via Load Balancer)
+  - Firecrawl API service (internal only, for web scraping)
+  - Firecrawl Playwright service (internal only, for browser automation)
+- **Application Load Balancer** with SSL/TLS certificate and Cloud Armor protection
+- **IAM roles and policies** for all services
+- **Cloud Tasks queue** for document processing
+- **Service accounts** with least-privilege permissions
+- **GitHub Actions CI/CD** service account for deployments
 
-## Prerequisites
+## Dependencies
 
-- Layer 1 (1-repository) deployed with images pushed
-- Layer 2 (2-db-storage) deployed with migrations run
-- Domain name configured and ready for DNS updates
+This module imports state from:
 
-## Configuration
+- `2-db-storage` - VPC, subnets, database endpoints, Redis, and secrets
 
-1. Copy the example variables file:
+## Usage
+
+1. Initialize Terraform:
+
+```bash
+terraform init
+```
+
+2. Copy and configure variables:
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
 ```
 
-2. Edit `terraform.tfvars` with your values:
-
-```hcl
-project_id   = "your-gcp-project-id"
-region       = "us-central1"
-project_name = "myapp"
-domain       = "api.example.com"
-
-# Add OAuth credentials, secrets, etc.
-```
-
-## Deployment
+3. Apply the configuration:
 
 ```bash
-# Initialize Terraform
-terraform init
-
-# Review the plan
-terraform plan
-
-# Apply the configuration
 terraform apply
 ```
 
-## Post-Deployment DNS Configuration
-
-After deployment, configure your DNS:
+4. Configure DNS:
 
 ```bash
-# Get the load balancer IP
+# Get DNS A record to add to your DNS provider
+terraform output dns_a_record
+
+# The load balancer IP
 terraform output load_balancer_ip
-
-# Add an A record to your DNS provider:
-# Type: A
-# Name: api (or your subdomain)
-# Value: <LOAD_BALANCER_IP>
 ```
 
-Wait 5-10 minutes for:
-
-- DNS propagation
-- SSL certificate provisioning (automatic via Google-managed certificate)
-
-## Service Architecture
-
-### API Service
-
-- **Port**: 3000
-- **Ingress**: Public (via Load Balancer)
-- **Scaling**: Min 1, Max 10 instances
-- **Features**: Authentication, business logic, API endpoints
-
-### Document Processor
-
-- **Port**: 5000
-- **Ingress**: Internal only (via Cloud Tasks)
-- **Scaling**: Min 0, Max 5 instances (scales to zero when idle)
-- **Features**: Document parsing, OCR, text extraction
-
-### PDF Exporter
-
-- **Port**: 8000
-- **Ingress**: Internal only
-- **Scaling**: Min 0, Max 5 instances (scales to zero when idle)
-- **Features**: PDF generation and export
-
-## Environment Variables
-
-Each service receives:
-
-- Database connection URL
-- Redis connection URL
-- Storage bucket names
-- Service discovery endpoints
-- OAuth credentials (from Secret Manager)
-- Feature flags (`USE_FIRECRAWL=false`)
-
-## Monitoring & Logs
-
-View logs for each service:
+5. Configure GitHub Actions:
 
 ```bash
-# API logs
-gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${PROJECT_NAME}-api" --limit 50
+# Add this as GCP_SA_KEY to GitHub repository secrets
+terraform output -raw github_secret > sa-key.json
 
-# Document Processor logs
-gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${PROJECT_NAME}-document-processor" --limit 50
-
-# PDF Exporter logs
-gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${PROJECT_NAME}-pdf-exporter" --limit 50
+# Add these as GitHub repository variables
+terraform output github_variables
 ```
 
-## Testing the Deployment
+6. Run database migrations:
+
+After deployment and DNS configuration, run the DB migrator job from `2-db-storage`:
 
 ```bash
-# Test API health endpoint
-curl https://api.example.com/api/health
-
-# Should return: {"status":"ok"}
+gcloud run jobs execute db-migrator \
+  --region=YOUR_REGION \
+  --project=YOUR_PROJECT_ID
 ```
 
-## Scaling Configuration
+## Important Notes
 
-Adjust scaling in `terraform.tfvars`:
+- This setup **INCLUDES** Firecrawl services for advanced web scraping
+- `USE_FIRECRAWL` is set to `true` in the API service
+- If you don't need Firecrawl, use `3-core` instead for a simpler setup
+- Firecrawl services require more resources (2 CPU, 2GB memory each)
+- SSL certificates are automatically managed by Google
+- Cloud Armor provides DDoS protection with rate limiting
 
-```hcl
-# For higher traffic
-api_min_instances = 2
-api_max_instances = 20
+## Firecrawl Services
 
-# For cost optimization (dev/staging)
-api_min_instances = 0  # Scale to zero when idle
-document_processor_min_instances = 0
-pdf_exporter_min_instances = 0
-```
+This setup includes:
 
-## Security Features
+- **Firecrawl API**: Main service that handles web scraping requests
+- **Firecrawl Playwright**: Browser automation service for JavaScript-heavy sites
 
-- All secrets stored in Secret Manager
-- Internal services only accessible via VPC
-- Cloud Tasks authentication for service-to-service calls
-- HTTPS-only via Load Balancer
-- Automatic SSL certificate management
+## Next Step
 
-## Next Steps
+After running this, proceed to either:
 
-After this layer is deployed, proceed to:
-
-- **Layer 5**: `5-file-storage` for permanent Cloud Storage
-- **Layer 6**: `6-cloudflare-storage` for Cloudflare R2 storage
-
-Or alternatively, deploy:
-
-- **Layer 4**: `4-core-with-firecrawl` if you need Firecrawl integration
-
-## Cost Estimate
-
-Monthly costs (approximate):
-
-| Resource                           | Configuration                | Cost              |
-| ---------------------------------- | ---------------------------- | ----------------- |
-| Cloud Run (API, 1 min instance)    | Always-on                    | $15-25            |
-| Cloud Run (Processors, scale to 0) | Per-request                  | $5-15             |
-| Load Balancer                      | Forwarding rules + bandwidth | $20-30            |
-| Cloud Tasks                        | 1M tasks free, then $0.40/M  | $0-5              |
-| Cloud Scheduler                    | 3 jobs free, then $0.10/job  | $0                |
-| Cloud Storage (Temporary)          | <10GB with 1-day lifecycle   | $0-1              |
-| **Total**                          |                              | **~$40-76/month** |
-
-Additional costs scale with:
-
-- Request volume (Cloud Run CPU time)
-- Document processing (more processor instances)
-- Egress bandwidth
+- `5-file-storage` for GCS permanent file storage
+- `6-cloudflare-storage` for Cloudflare R2 permanent file storage

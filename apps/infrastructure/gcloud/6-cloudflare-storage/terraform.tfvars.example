@@ -1,14 +1,3 @@
-# Copy this file to terraform.tfvars and fill in your values
-
-project_id   = "your-gcp-project-id"
-region       = "us-central1"
-project_name = "myapp"
-environment  = "production"
-
-# Cloudflare Configuration
-cloudflare_api_token  = "your-cloudflare-api-token"
 cloudflare_account_id = "your-cloudflare-account-id"
-
-# R2 Credentials (generate from Cloudflare dashboard)
-r2_access_key_id     = "your-r2-access-key-id"
-r2_secret_access_key = "your-r2-secret-access-key"
+cloudflare_api_token  = "your-cloudflare-api-token"
+r2_location           = "auto"

@@ -1,18 +1,5 @@
-# Copy this file to terraform.tfvars and fill in your values
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
+google_zone            = "us-central1-a"
 
-project_id   = "your-gcp-project-id"
-region       = "us-central1"
-project_name = "myapp"
-environment  = "production"
-
-# Database configuration
-db_tier      = "db-f1-micro"     # or db-g1-small, db-n1-standard-1, etc.
-db_disk_size = 10                 # GB
-
-# Redis configuration
-redis_tier           = "BASIC"    # or STANDARD_HA for high availability
-redis_memory_size_gb = 1          # GB
-
-# Network configuration
-vpc_cidr           = "10.0.0.0/16"
-availability_zones = ["us-central1-a", "us-central1-b", "us-central1-c"]
+database_password = "your-secure-database-password-here"
