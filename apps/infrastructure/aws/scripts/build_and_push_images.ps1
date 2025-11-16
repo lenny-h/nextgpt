@@ -57,25 +57,17 @@ foreach ($Service in $Services) {
         }
     }
 
-    # Build or pull the image with its original name if it doesn't exist
+    # Build the image with its original name if it doesn't exist
     $imageExists = docker images --format "{{.Repository}}:{{.Tag}}" | Select-String -Pattern "^$([regex]::Escape($LocalImage))$" -Quiet
     
     if (-not $imageExists) {
-        switch ($Service) {
-            "firecrawl-api" {
-                Write-Host "Pulling mendableai/firecrawl:latest and tagging as $LocalImage..." -ForegroundColor Cyan
-                docker pull mendableai/firecrawl:latest
-                docker tag mendableai/firecrawl:latest $LocalImage
-            }
-            "playwright-service" {
-                Write-Host "Pulling mendableai/firecrawl-playwright:latest and tagging as $LocalImage..." -ForegroundColor Cyan
-                docker pull mendableai/firecrawl-playwright:latest
-                docker tag mendableai/firecrawl-playwright:latest $LocalImage
-            }
-            default {
-                Write-Host "Building $Service from apps/$Service/Dockerfile..." -ForegroundColor Cyan
-                docker build -f "apps/$Service/Dockerfile" -t $LocalImage .
-            }
+        if ($Service -eq "firecrawl-api" -or $Service -eq "playwright-service") {
+            Write-Error "Error: $LocalImage must exist locally. Please build it first."
+            exit 1
+        }
+        else {
+            Write-Host "Building $Service from apps/$Service/Dockerfile..." -ForegroundColor Cyan
+            docker build -f "apps/$Service/Dockerfile" -t $LocalImage .
         }
     }
     else {

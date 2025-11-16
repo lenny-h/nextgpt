@@ -509,6 +509,10 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         value = var.sso_jwks_endpoint
       }
       env {
+        name  = "SITE_URL"
+        value = var.site_url
+      }
+      env {
         name  = "BASE_URL"
         value = "https://app.${var.site_url}"
       }
@@ -530,7 +534,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name = "BETTER_AUTH_SECRET"
         value_source {
           secret_key_ref {
-            secret  = "better-auth-secret"
+            secret  = google_secret_manager_secret.better_auth_secret.secret_id
             version = "latest"
           }
         }
@@ -539,7 +543,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name = "GOOGLE_CLIENT_SECRET"
         value_source {
           secret_key_ref {
-            secret  = "google-client-secret"
+            secret  = google_secret_manager_secret.google_client_secret.secret_id
             version = "latest"
           }
         }
@@ -548,7 +552,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name = "GITHUB_CLIENT_SECRET"
         value_source {
           secret_key_ref {
-            secret  = "github-client-secret"
+            secret  = google_secret_manager_secret.github_client_secret.secret_id
             version = "latest"
           }
         }
@@ -557,7 +561,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name = "GITLAB_CLIENT_SECRET"
         value_source {
           secret_key_ref {
-            secret  = "gitlab-client-secret"
+            secret  = google_secret_manager_secret.gitlab_client_secret.secret_id
             version = "latest"
           }
         }
@@ -566,7 +570,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name = "SSO_CLIENT_SECRET"
         value_source {
           secret_key_ref {
-            secret  = "sso-client-secret"
+            secret  = google_secret_manager_secret.sso_client_secret.secret_id
             version = "latest"
           }
         }
@@ -575,7 +579,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name = "DATABASE_PASSWORD"
         value_source {
           secret_key_ref {
-            secret  = "database-password"
+            secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
             version = "latest"
           }
         }
@@ -595,6 +599,13 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     scaling {
       min_instance_count = 0
       max_instance_count = 5
+    }
+
+    vpc_access {
+      network_interfaces {
+        network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
+        subnetwork = data.terraform_remote_state.db_storage.outputs.subnet_id
+      }
     }
   }
 

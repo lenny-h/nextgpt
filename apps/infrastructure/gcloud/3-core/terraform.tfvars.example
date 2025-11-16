@@ -14,36 +14,36 @@ allowed_email_domains            = "" # Comma-separated list of allowed email do
 
 # OAuth Providers
 enable_oauth_login   = true
-google_client_id     = ""
-google_client_secret = ""
-github_client_id     = ""
-github_client_secret = ""
-gitlab_client_id     = ""
-gitlab_client_secret = ""
+google_client_id     = "your-google-client-id"
+google_client_secret = "your-google-client-secret"
+github_client_id     = "your-github-client-id"
+github_client_secret = "your-github-client-secret"
+gitlab_client_id     = "your-gitlab-client-id"
+gitlab_client_secret = "your-gitlab-client-secret"
 
 # SSO Configuration
 enable_sso                 = false
-sso_domain                 = ""
-sso_provider_id            = ""
-sso_client_id              = ""
-sso_client_secret          = ""
-sso_issuer                 = ""
-sso_authorization_endpoint = ""
-sso_discovery_endpoint     = ""
-sso_token_endpoint         = ""
-sso_jwks_endpoint          = ""
+sso_domain                 = "your-sso-domain"
+sso_provider_id            = "your-sso-provider-id"
+sso_client_id              = "your-sso-client-id"
+sso_client_secret          = "your-sso-client-secret"
+sso_issuer                 = "your-sso-issuer"
+sso_authorization_endpoint = "your-sso-authorization-endpoint"
+sso_discovery_endpoint     = "your-sso-discovery-endpoint"
+sso_token_endpoint         = "your-sso-token-endpoint"
+sso_jwks_endpoint          = "your-sso-jwks-endpoint"
 
 # Email Configuration
 resend_sender_email = "noreply@example.com"
 resend_api_key      = "your-resend-api-key"
 
 # Application Security
-encryption_key = "your-64-character-encryption-key-here-replace-with-actual"
+encryption_key = "your-64-character-encryption-key"
 
 # Storage Configuration (Cloudflare R2)
 use_cloudflare_r2            = false
-cloudflare_access_key_id     = ""
-cloudflare_secret_access_key = ""
+cloudflare_access_key_id     = "your-cloudflare-access-key-id"
+cloudflare_secret_access_key = "your-cloudflare-secret-access-key"
 r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
 
 # AI Models

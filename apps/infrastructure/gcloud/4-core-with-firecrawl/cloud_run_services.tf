@@ -516,6 +516,10 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         value = var.sso_jwks_endpoint
       }
       env {
+        name  = "SITE_URL"
+        value = var.site_url
+      }
+      env {
         name  = "BASE_URL"
         value = "https://app.${var.site_url}"
       }

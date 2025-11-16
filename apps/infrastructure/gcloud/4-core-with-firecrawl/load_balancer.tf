@@ -13,11 +13,11 @@ resource "google_compute_security_policy" "armor_policy" {
       conform_action = "allow"
       exceed_action  = "deny(429)"
       rate_limit_threshold {
-        count        = 100
+        count        = 150
         interval_sec = 600
       }
     }
-    description = "Rate limit requests to 100 per 10 minutes"
+    description = "Rate limit requests to 150 per 10 minutes"
   }
 }
 

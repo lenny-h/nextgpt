@@ -67,10 +67,10 @@ resource "google_storage_bucket" "temporary_files_bucket" {
     max_age_seconds = 3600
   }
 
-  # Lifecycle rule to delete objects after 30 days
+  # Lifecycle rule to delete objects after 1 day
   lifecycle_rule {
     condition {
-      age = 30
+      age = 1
     }
     action {
       type = "Delete"

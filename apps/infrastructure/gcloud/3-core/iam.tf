@@ -148,6 +148,43 @@ resource "google_service_account" "pdf_exporter_sa" {
   display_name = "PDF Exporter Service Account"
 }
 
+# IAM Binding to allow PDF Exporter service account to access secrets
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_db_password_accessor" {
+  secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_better_auth_secret_accessor" {
+  secret_id = google_secret_manager_secret.better_auth_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_google_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.google_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_github_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.github_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_gitlab_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.gitlab_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_sso_client_secret_accessor" {
+  secret_id = google_secret_manager_secret.sso_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
 # ===================================
 # CI/CD Service Account Permissions
 # ===================================

@@ -43,16 +43,11 @@ for SERVICE in "${SERVICES[@]}"; do
     CLOUD_IMAGE="$REPO/$SERVICE:latest"
   fi
 
-  # Build or pull the image with its original name if it doesn't exist
+  # Build the image with its original name if it doesn't exist
   if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^$LOCAL_IMAGE$"; then
-    if [ "$SERVICE" == "firecrawl-api" ]; then
-      echo "Pulling mendableai/firecrawl:latest and tagging as $LOCAL_IMAGE..."
-      docker pull mendableai/firecrawl:latest
-      docker tag mendableai/firecrawl:latest $LOCAL_IMAGE
-    elif [ "$SERVICE" == "playwright-service" ]; then
-      echo "Pulling mendableai/firecrawl-playwright:latest and tagging as $LOCAL_IMAGE..."
-      docker pull mendableai/firecrawl-playwright:latest
-      docker tag mendableai/firecrawl-playwright:latest $LOCAL_IMAGE
+    if [ "$SERVICE" == "firecrawl-api" ] || [ "$SERVICE" == "playwright-service" ]; then
+      echo "Error: $LOCAL_IMAGE must exist locally. Please build it first."
+      exit 1
     else
       echo "Building $SERVICE from apps/$SERVICE/Dockerfile..."
       docker build -f apps/$SERVICE/Dockerfile -t $LOCAL_IMAGE .

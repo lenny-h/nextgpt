@@ -38,7 +38,7 @@ resend_sender_email = "noreply@example.com"
 resend_api_key      = "your-resend-api-key"
 
 # Application Security
-encryption_key = "your-64-character-encryption-key-here-replace-with-actual"
+encryption_key = "your-64-character-encryption-key"
 
 # Storage Configuration (Cloudflare R2)
 use_cloudflare_r2            = true

@@ -7,15 +7,16 @@ This directory contains automated tests for the API routes package.
 ### 1. Database Seeding
 
 Test users are automatically seeded when you start the Docker containers. The seed script is located at:
+
 - `packages/server/src/drizzle/__tests__/seed-test-users.sql`
 
 This script creates three test users:
 
-| User | Email | Password | Email Verified | ID |
-|------|-------|----------|----------------|-----|
-| Test User One | testuser1@example.com | Test12345! | ✅ Yes | a0000000-0000-4000-8000-000000000001 |
-| Test User Two | testuser2@example.com | Test12345! | ✅ Yes | a0000000-0000-4000-8000-000000000002 |
-| Test User Three | testuser3@example.com | Test12345! | ❌ No | a0000000-0000-4000-8000-000000000003 |
+| User            | Email                 | Password   | Email Verified | ID                                   |
+| --------------- | --------------------- | ---------- | -------------- | ------------------------------------ |
+| Test User One   | testuser1@example.com | Test12345! | ✅ Yes         | a0000000-0000-4000-8000-000000000001 |
+| Test User Two   | testuser2@example.com | Test12345! | ✅ Yes         | a0000000-0000-4000-8000-000000000002 |
+| Test User Three | testuser3@example.com | Test12345! | ❌ No          | a0000000-0000-4000-8000-000000000003 |
 
 The seed script runs automatically on container startup via `docker-compose.yml`.
 
@@ -27,8 +28,8 @@ Make sure your environment variables are properly set in `.env.local`:
 DATABASE_PASSWORD=postgres
 DATABASE_HOST=localhost:5432
 BETTER_AUTH_URL=http://localhost:8080
-BETTER_AUTH_SECRET=your-secret-here
-ENCRYPTION_KEY=your-encryption-key-here
+BETTER_AUTH_SECRET=your-better-auth-secret
+ENCRYPTION_KEY=your-encryption-key
 REDIS_URL=redis://localhost:6379
 ```
 
@@ -93,7 +94,10 @@ Convenience function that signs in and returns headers in one call.
 ```typescript
 import { getTestUserAuthHeaders } from "./helpers/auth-helpers.js";
 
-const headers = await getTestUserAuthHeaders("testuser1@example.com", "Test12345!");
+const headers = await getTestUserAuthHeaders(
+  "testuser1@example.com",
+  "Test12345!"
+);
 ```
 
 ### Available Constants
@@ -132,7 +136,11 @@ console.log(TEST_USER_IDS.USER1_VERIFIED); // "a0000000-0000-4000-8000-000000000
 ```typescript
 import { describe, it, expect, beforeAll } from "vitest";
 import app from "../src/index.js";
-import { TEST_USERS, signInTestUser, getAuthHeaders } from "./helpers/auth-helpers.js";
+import {
+  TEST_USERS,
+  signInTestUser,
+  getAuthHeaders,
+} from "./helpers/auth-helpers.js";
 
 describe("Protected Route Tests", () => {
   let userCookie: string;
@@ -149,10 +157,10 @@ describe("Protected Route Tests", () => {
     const request = new Request("http://localhost/api/protected/profiles", {
       headers: getAuthHeaders(userCookie),
     });
-    
+
     const response = await app.fetch(request);
     expect(response.status).toBe(200);
-    
+
     const data = await response.json();
     expect(data.username).toBe(TEST_USERS.USER1_VERIFIED.username);
   });
@@ -160,7 +168,7 @@ describe("Protected Route Tests", () => {
   it("should reject unauthenticated requests", async () => {
     const request = new Request("http://localhost/api/protected/profiles");
     const response = await app.fetch(request);
-    
+
     expect(response.status).toBe(401);
   });
 });
@@ -171,7 +179,11 @@ describe("Protected Route Tests", () => {
 ```typescript
 import { describe, it, expect, beforeAll } from "vitest";
 import app from "../src/index.js";
-import { TEST_USERS, signInTestUser, getAuthHeaders } from "./helpers/auth-helpers.js";
+import {
+  TEST_USERS,
+  signInTestUser,
+  getAuthHeaders,
+} from "./helpers/auth-helpers.js";
 
 describe("Multi-user Tests", () => {
   let user1Cookie: string;
@@ -182,7 +194,7 @@ describe("Multi-user Tests", () => {
       TEST_USERS.USER1_VERIFIED.email,
       TEST_USERS.USER1_VERIFIED.password
     );
-    
+
     user2Cookie = await signInTestUser(
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
@@ -196,14 +208,14 @@ describe("Multi-user Tests", () => {
     });
     const response1 = await app.fetch(request1);
     const user1Data = await response1.json();
-    
+
     // Request as user 2
     const request2 = new Request("http://localhost/api/protected/buckets", {
       headers: getAuthHeaders(user2Cookie),
     });
     const response2 = await app.fetch(request2);
     const user2Data = await response2.json();
-    
+
     // Verify isolation
     expect(user1Data).not.toEqual(user2Data);
   });
@@ -234,6 +246,7 @@ describe("Email Verification Tests", () => {
 ### Tests failing with "No set-cookie header"
 
 Make sure:
+
 1. Docker containers are running (`docker-compose up -d`)
 2. Database has been seeded with test users
 3. Environment variables are set correctly

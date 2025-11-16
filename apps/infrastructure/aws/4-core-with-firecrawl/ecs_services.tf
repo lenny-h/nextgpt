@@ -445,6 +445,10 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
         value = var.sso_jwks_endpoint
       },
       {
+        name  = "SITE_URL"
+        value = var.site_url
+      },
+      {
         name  = "BASE_URL"
         value = "https://app.${var.site_url}"
       },
