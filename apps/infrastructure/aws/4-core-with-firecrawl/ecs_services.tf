@@ -125,6 +125,10 @@ resource "aws_ecs_task_definition" "api" {
         value = var.resend_sender_email
       },
       {
+        name  = "SITE_URL"
+        value = var.site_url
+      },
+      {
         name  = "BASE_URL"
         value = "https://app.${var.site_url}"
       },
@@ -369,8 +373,118 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
         value = "production"
       },
       {
+        name  = "BETTER_AUTH_URL"
+        value = "https://api.${var.site_url}"
+      },
+      {
+        name  = "ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS"
+        value = tostring(var.only_allow_admin_to_create_buckets)
+      },
+      {
+        name  = "ADMIN_USER_IDS"
+        value = var.admin_user_ids
+      },
+      {
+        name  = "ENABLE_EMAIL_SIGNUP"
+        value = tostring(var.enable_email_signup)
+      },
+      {
+        name  = "ALLOWED_EMAIL_DOMAINS"
+        value = var.allowed_email_domains
+      },
+      {
+        name  = "ENABLE_OAUTH_LOGIN"
+        value = tostring(var.enable_oauth_login)
+      },
+      {
+        name  = "GOOGLE_CLIENT_ID"
+        value = var.google_client_id
+      },
+      {
+        name  = "GITHUB_CLIENT_ID"
+        value = var.github_client_id
+      },
+      {
+        name  = "GITLAB_CLIENT_ID"
+        value = var.gitlab_client_id
+      },
+      {
+        name  = "ENABLE_SSO"
+        value = tostring(var.enable_sso)
+      },
+      {
+        name  = "SSO_DOMAIN"
+        value = var.sso_domain
+      },
+      {
+        name  = "SSO_PROVIDER_ID"
+        value = var.sso_provider_id
+      },
+      {
+        name  = "SSO_CLIENT_ID"
+        value = var.sso_client_id
+      },
+      {
+        name  = "SSO_ISSUER"
+        value = var.sso_issuer
+      },
+      {
+        name  = "SSO_AUTHORIZATION_ENDPOINT"
+        value = var.sso_authorization_endpoint
+      },
+      {
+        name  = "SSO_DISCOVERY_ENDPOINT"
+        value = var.sso_discovery_endpoint
+      },
+      {
+        name  = "SSO_TOKEN_ENDPOINT"
+        value = var.sso_token_endpoint
+      },
+      {
+        name  = "SSO_JWKS_ENDPOINT"
+        value = var.sso_jwks_endpoint
+      },
+      {
+        name  = "BASE_URL"
+        value = "https://app.${var.site_url}"
+      },
+      {
         name  = "ALLOWED_ORIGINS"
         value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
+      },
+      {
+        name  = "DATABASE_HOST"
+        value = data.terraform_remote_state.db_storage.outputs.db_instance_endpoint
+      },
+      {
+        name  = "REDIS_URL"
+        value = "redis://${data.terraform_remote_state.db_storage.outputs.redis_endpoint}"
+      }
+    ]
+    secrets = [
+      {
+        name      = "BETTER_AUTH_SECRET"
+        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/better-auth-secret"
+      },
+      {
+        name      = "GOOGLE_CLIENT_SECRET"
+        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/google-client-secret"
+      },
+      {
+        name      = "GITHUB_CLIENT_SECRET"
+        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/github-client-secret"
+      },
+      {
+        name      = "GITLAB_CLIENT_SECRET"
+        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/gitlab-client-secret"
+      },
+      {
+        name      = "SSO_CLIENT_SECRET"
+        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/sso-client-secret"
+      },
+      {
+        name      = "DATABASE_PASSWORD"
+        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/database-password"
       }
     ]
     logConfiguration = {

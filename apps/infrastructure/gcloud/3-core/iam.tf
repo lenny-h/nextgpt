@@ -35,11 +35,6 @@ resource "google_service_account_iam_member" "handler_act_as_cloudtasks_sa" {
   member             = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
-# Create service account key for api
-resource "google_service_account_key" "api_sa_key" {
-  service_account_id = google_service_account.api_sa.name
-}
-
 # IAM Binding to allow API service account to access secrets
 resource "google_secret_manager_secret_iam_member" "api_db_password_accessor" {
   secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id

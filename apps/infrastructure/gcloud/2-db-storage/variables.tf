@@ -13,3 +13,8 @@ variable "database_password" {
   description = "Database password"
   sensitive   = true
 }
+
+variable "use_firecrawl" {
+  type        = bool
+  description = "Whether to use Firecrawl"
+}

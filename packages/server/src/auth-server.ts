@@ -22,16 +22,17 @@ const plugins = [
           defaultSSO: [
             // Keycloak SSO Configuration (for local testing)
             {
-              domain: process.env.SSO_DOMAIN!,
-              providerId: process.env.SSO_PROVIDER_ID!,
+              domain: process.env.SSO_DOMAIN || "",
+              providerId: process.env.SSO_PROVIDER_ID || "",
               oidcConfig: {
-                clientId: process.env.SSO_CLIENT_ID!,
-                clientSecret: process.env.SSO_CLIENT_SECRET!,
-                issuer: process.env.SSO_ISSUER!,
-                authorizationEndpoint: process.env.SSO_AUTHORIZATION_ENDPOINT!,
-                discoveryEndpoint: process.env.SSO_DISCOVERY_ENDPOINT!,
-                tokenEndpoint: process.env.SSO_TOKEN_ENDPOINT!,
-                jwksEndpoint: process.env.SSO_JWKS_ENDPOINT!,
+                clientId: process.env.SSO_CLIENT_ID || "",
+                clientSecret: process.env.SSO_CLIENT_SECRET || "",
+                issuer: process.env.SSO_ISSUER || "",
+                authorizationEndpoint:
+                  process.env.SSO_AUTHORIZATION_ENDPOINT || "",
+                discoveryEndpoint: process.env.SSO_DISCOVERY_ENDPOINT || "",
+                tokenEndpoint: process.env.SSO_TOKEN_ENDPOINT || "",
+                jwksEndpoint: process.env.SSO_JWKS_ENDPOINT || "",
                 scopes: ["openid", "email", "profile"],
                 pkce: true,
               },
@@ -67,7 +68,7 @@ export const auth = betterAuth({
     },
   },
   emailAndPassword: {
-    enabled: true,
+    enabled: process.env.ENABLE_EMAIL_SIGNUP === "true",
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url, token }, request) => {
       await sendPasswordResetEmail({
@@ -86,16 +87,35 @@ export const auth = betterAuth({
       });
     },
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-    // github: {
-    // 	clientId: process.env.GITHUB_CLIENT_ID || "",
-    // 	clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
-    // },
-  },
+  socialProviders:
+    process.env.ENABLE_OAUTH_LOGIN === "true"
+      ? {
+          ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+            ? {
+                google: {
+                  clientId: process.env.GOOGLE_CLIENT_ID,
+                  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                },
+              }
+            : {}),
+          ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+            ? {
+                github: {
+                  clientId: process.env.GITHUB_CLIENT_ID,
+                  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                },
+              }
+            : {}),
+          ...(process.env.GITLAB_CLIENT_ID && process.env.GITLAB_CLIENT_SECRET
+            ? {
+                gitlab: {
+                  clientId: process.env.GITLAB_CLIENT_ID,
+                  clientSecret: process.env.GITLAB_CLIENT_SECRET,
+                },
+              }
+            : {}),
+        }
+      : {},
   trustedOrigins: process.env.ALLOWED_ORIGINS?.split(","),
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 days
@@ -149,10 +169,14 @@ export const auth = betterAuth({
     database: {
       generateId: false,
     },
-    // crossSubDomainCookies: {
-    //   enabled: true,
-    //   domain: "nextgpt.cloud", // your domain
-    // },
+    ...(process.env.SITE_URL
+      ? {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: process.env.SITE_URL,
+          },
+        }
+      : {}),
   },
   logger: {
     disabled: false,

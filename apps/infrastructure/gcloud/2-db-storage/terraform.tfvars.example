@@ -2,3 +2,6 @@ google_vertex_project  = "your-gcp-project-id"
 google_vertex_location = "us-central1"
 
 database_password = "your-secure-database-password-here"
+
+# Firecrawl Configuration
+use_firecrawl = true

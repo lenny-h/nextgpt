@@ -38,6 +38,10 @@ resource "google_cloud_run_v2_job" "db_migrator" {
           name  = "DATABASE_HOST"
           value = google_sql_database_instance.postgres.private_ip_address
         }
+        env {
+          name  = "USE_FIRECRAWL"
+          value = tostring(var.use_firecrawl)
+        }
 
         # Sensitive secrets from Secret Manager
         env {

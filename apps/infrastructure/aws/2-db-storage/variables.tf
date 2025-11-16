@@ -10,11 +10,16 @@ variable "aws_region" {
 
 variable "aws_zone" {
   type        = string
-  description = "List of AWS availability zones"
+  description = "AWS availability zone"
 }
 
 variable "database_password" {
   type        = string
   description = "Database password"
   sensitive   = true
+}
+
+variable "use_firecrawl" {
+  type        = bool
+  description = "Whether to use Firecrawl"
 }

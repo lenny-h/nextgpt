@@ -14,5 +14,9 @@ RUN pnpm install
 COPY packages/server/drizzle.config.ts ./drizzle.config.ts
 COPY packages/server/src/drizzle ./src/drizzle
 
-# Run migrations
-CMD ["pnpm", "exec", "drizzle-kit", "migrate"]
+# Copy the migration wrapper script
+COPY apps/db-migrator/migrate.sh ./migrate.sh
+RUN chmod +x ./migrate.sh
+
+# Run migrations using the wrapper script
+CMD ["./migrate.sh"]

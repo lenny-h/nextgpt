@@ -37,8 +37,16 @@ resource "aws_ecs_task_definition" "db_migrator" {
     image = data.terraform_remote_state.repository.outputs.ecr_repository_db_migrator
     environment = [
       {
+        name  = "NODE_ENV"
+        value = "production"
+      },
+      {
         name  = "DATABASE_HOST"
         value = aws_db_instance.postgres.endpoint
+      },
+      {
+        name  = "USE_FIRECRAWL"
+        value = tostring(var.use_firecrawl)
       }
     ]
     secrets = [
