@@ -1,6 +1,6 @@
 import { type Context } from "hono";
 import DOMPurify from "isomorphic-dompurify";
-import puppeteer from "puppeteer";
+import { chromium } from "playwright";
 import { createPDFTemplate } from "../../utils/html-template.js";
 
 export interface ExportPdfEvent {
@@ -60,14 +60,14 @@ const exportPdf = async ({
     content: sanitizedContent,
   });
 
-  const browser = await puppeteer.launch({
+  const browser = await chromium.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const page = await browser.newPage();
   await page.setContent(htmlContent, {
-    waitUntil: "networkidle0",
+    waitUntil: "networkidle",
     timeout: 30000,
   });
 

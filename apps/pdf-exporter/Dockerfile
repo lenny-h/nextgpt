@@ -1,4 +1,4 @@
-FROM ghcr.io:puppeteer/puppeteer:latest AS base
+FROM node:22-bookworm-slim AS base
 
 FROM base AS builder
 # Enable pnpm via corepack
@@ -27,18 +27,42 @@ FROM base AS runner
 RUN corepack enable pnpm
 WORKDIR /app
 
+# Install Playwright dependencies for Chromium only (minimal footprint)
+RUN apt-get update && apt-get install -y \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Don't run production as root
-RUN addgroup --system --gid 1001 puppeteer
-RUN adduser --system --uid 1001 puppeteer
-USER puppeteer
+RUN addgroup --system --gid 1001 playwright
+RUN adduser --system --uid 1001 playwright
+USER playwright
 
 # Copy package files and install production dependencies only
 COPY --from=builder /app/out/json/ .
 RUN pnpm install --prod --frozen-lockfile
 
+# Install only Chromium browser for Playwright (smallest option)
+RUN npx playwright install chromium --with-deps
+
 # Copy built application
-COPY --from=installer --chown=puppeteer:puppeteer /app/apps/pdf-exporter/dist ./apps/pdf-exporter/dist
-COPY --from=installer --chown=puppeteer:puppeteer /app/packages ./packages
+COPY --from=installer --chown=playwright:playwright /app/apps/pdf-exporter/dist ./apps/pdf-exporter/dist
+COPY --from=installer --chown=playwright:playwright /app/packages ./packages
 
 EXPOSE 8080
 CMD ["node", "apps/pdf-exporter/dist/src/index.js"]
