@@ -4,7 +4,7 @@ services:
   # PostgreSQL Database with pgvector extension
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18 # firecrawl-postgres for Firecrawl, else use pgvector/pgvector:pg18
+    image: firecrawl-postgres:latest # firecrawl-postgres for Firecrawl, else use pgvector/pgvector:pg18
     restart: unless-stopped
     ports:
       - "5432:5432"

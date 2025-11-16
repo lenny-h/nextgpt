@@ -21,7 +21,7 @@
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "dotenv": "^17.2.2",
-    "drizzle-kit": "^0.31.5",
+    "drizzle-kit": "^0.31.7",
     "typescript": "^5.9.3"
   },
   "exports": {

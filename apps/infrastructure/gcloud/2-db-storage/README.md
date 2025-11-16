@@ -50,7 +50,7 @@ gcloud run jobs execute db-migrator \
 ## Important Notes
 
 - The Cloud SQL instance uses private IP only for security
-- Redis is configured for basic tier (1GB memory)
+- Redis is configured for basic tier
 - All secrets are stored in Secret Manager
 - Service accounts have least-privilege IAM permissions
 

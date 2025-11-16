@@ -3,7 +3,7 @@ name: mono
 services:
   postgres:
     container_name: postgres
-    image: pgvector/pgvector:pg18
+    image: firecrawl-postgres:latest
     restart: unless-stopped
     ports:
       - "5432:5432"
