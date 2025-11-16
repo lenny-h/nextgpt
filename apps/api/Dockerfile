@@ -30,11 +30,20 @@ RUN pnpm turbo build
 
 FROM base AS runner
 WORKDIR /app
+RUN corepack enable pnpm
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 hono
 RUN adduser --system --uid 1001 hono
+
+# Copy package files and install production dependencies only
+COPY --from=builder /app/out/json/ .
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built application
+COPY --from=installer --chown=hono:hono /app/apps/api/dist ./apps/api/dist
+COPY --from=installer --chown=hono:hono /app/packages ./packages
+
 USER hono
-COPY --from=installer /app .
 
 CMD ["node", "apps/api/dist/src/index.js"]

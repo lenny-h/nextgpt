@@ -1,0 +1,80 @@
+# Git and CI/CD
+.git
+.github
+.gitignore
+
+# Dependencies (will be installed fresh in container)
+**/node_modules
+**/.pnpm-store
+node_modules
+.pnpm-store
+
+# Python
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/*.so
+.Python
+**/*.egg-info
+**/venv
+**/env
+**/ENV
+.venv
+
+# Build outputs
+**/.next
+**/.open-next
+**/.wrangler
+**/.turbo
+**/out
+**/dist
+**/build
+.turbo
+
+# Testing
+**/__tests__
+**/coverage
+**/*.test.ts
+**/*.spec.ts
+**/*.test.py
+**/test_*.py
+**/*vitest.config.*
+
+# Development files
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+.vscode
+.idea
+**/.vscode
+**/.idea
+**/*.swp
+**/*.swo
+**/*~
+
+# Documentation
+*.md
+**/*.md
+!README.md
+
+# Docker files
+**/Dockerfile
+**/.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+**/.DS_Store
+**/Thumbs.db
+
+# Development entry points
+**/src/dev.ts
+
+# Infrastructure as Code (if not needed in container)
+apps/infrastructure
+
+# Postgres directory (typically not needed in app containers)
+apps/postgres

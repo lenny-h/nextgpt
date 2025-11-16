@@ -38,11 +38,17 @@ RUN pnpm turbo build
 # Stage 3: Production server
 FROM base AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-USER root
 
-# Copy only necessary files for production
-COPY --from=installer /app .
+USER root
+RUN corepack enable pnpm
+
+# Copy package files and install production dependencies only
+COPY --from=builder /app/out/json/ .
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built application
+COPY --from=installer /app/apps/pdf-exporter/dist ./apps/pdf-exporter/dist
+COPY --from=installer /app/packages ./packages
 
 RUN chown -R pptruser:pptruser /app
 USER pptruser
