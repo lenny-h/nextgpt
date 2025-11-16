@@ -1,0 +1,34 @@
+name: mono
+
+services:
+  postgres:
+    container_name: postgres
+    image: pgvector/pgvector:pg18
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-db-migrator-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test-password
+      POSTGRES_DB: postgres
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=vector,pg_cron"
+    networks:
+      - database_network
+
+volumes:
+  postgres-db-migrator-data:
+
+networks:
+  database_network:
+    driver: bridge

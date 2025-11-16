@@ -7,6 +7,7 @@ resource "google_project_service" "cloud_tasks" {
 # Create a Cloud Tasks queue
 resource "google_cloud_tasks_queue" "document_processing_queue" {
   name     = "document-processing-queue"
+  project  = var.google_vertex_project
   location = var.google_vertex_location
 
   rate_limits {

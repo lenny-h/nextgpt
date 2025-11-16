@@ -12,9 +12,10 @@ resource "google_service_account" "db_migrator_sa" {
 
 # Cloud Run Job for database migrations
 resource "google_cloud_run_v2_job" "db_migrator" {
-  name     = "db-migrator"
-  project  = var.google_vertex_project
-  location = var.google_vertex_location
+  name                = "db-migrator"
+  project             = var.google_vertex_project
+  location            = var.google_vertex_location
+  deletion_protection = false
 
   depends_on = [
     google_project_service.run,

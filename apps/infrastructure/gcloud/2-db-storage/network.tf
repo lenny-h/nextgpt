@@ -1,3 +1,9 @@
+# Enable Compute Engine API
+resource "google_project_service" "compute" {
+  project = var.google_vertex_project
+  service = "compute.googleapis.com"
+}
+
 # Enable Service Networking API
 resource "google_project_service" "servicenetworking" {
   project = var.google_vertex_project
@@ -9,6 +15,10 @@ resource "google_compute_network" "private_network" {
   name                    = "backend-vpc"
   project                 = var.google_vertex_project
   auto_create_subnetworks = false
+
+  depends_on = [
+    google_project_service.compute,
+  ]
 }
 
 # Subnet for the VPC
@@ -18,6 +28,10 @@ resource "google_compute_subnetwork" "private_subnet" {
   region        = var.google_vertex_location
   network       = google_compute_network.private_network.id
   ip_cidr_range = "10.0.0.0/24"
+
+  depends_on = [
+    google_project_service.compute,
+  ]
 }
 
 # Reserve IP range for private services

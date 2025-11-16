@@ -299,10 +299,6 @@ resource "aws_ecs_task_definition" "document_processor" {
       {
         name  = "AWS_REGION"
         value = var.aws_region
-      },
-      {
-        name  = "EMBEDDINGS_MODEL"
-        value = var.embeddings_model
       }
     ]
     secrets = [

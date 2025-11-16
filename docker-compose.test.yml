@@ -12,7 +12,7 @@ services:
       - ./packages/server/src/drizzle/0000_sloppy_micromacro.sql:/docker-entrypoint-initdb.d/0000_sloppy_micromacro.sql:ro # Only required for Firecrawl
       - ./packages/server/src/drizzle/0001_tearful_firedrake.sql:/docker-entrypoint-initdb.d/0001_tearful_firedrake.sql:ro
       - ./packages/server/src/drizzle/__tests__/seed-test-users.sql:/docker-entrypoint-initdb.d/seed-test-users.sql:ro # Only required for automated testing
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-test-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -44,13 +44,13 @@ services:
       retries: 5
     command: redis-server --appendonly yes
     volumes:
-      - redis-data:/data
+      - redis-test-data:/data
     networks:
       - database_network
 
 volumes:
-  postgres-data:
-  redis-data:
+  postgres-test-data:
+  redis-test-data:
 
 networks:
   database_network:

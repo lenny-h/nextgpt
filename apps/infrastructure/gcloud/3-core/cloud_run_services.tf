@@ -6,10 +6,11 @@ resource "google_project_service" "run" {
 
 # API Service
 resource "google_cloud_run_v2_service" "api" {
-  name     = "api"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  name                = "api"
+  project             = var.google_vertex_project
+  location            = var.google_vertex_location
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
     service_account = google_service_account.api_sa.email
@@ -285,16 +286,16 @@ resource "google_cloud_run_v2_service" "api" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
-  deletion_protection = false
+  depends_on = [google_project_service.run]
 }
 
 # Document Processor Service
 resource "google_cloud_run_v2_service" "document_processor" {
-  name     = "document-processor"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  name                = "document-processor"
+  project             = var.google_vertex_project
+  location            = var.google_vertex_location
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
     service_account = google_service_account.document_processor_sa.email
@@ -337,10 +338,6 @@ resource "google_cloud_run_v2_service" "document_processor" {
       env {
         name  = "GOOGLE_VERTEX_LOCATION"
         value = var.google_vertex_location
-      }
-      env {
-        name  = "EMBEDDINGS_MODEL"
-        value = var.embeddings_model
       }
 
       # Sensitive secrets from Secret Manager
@@ -411,16 +408,16 @@ resource "google_cloud_run_v2_service" "document_processor" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
-  deletion_protection = false
+  depends_on = [google_project_service.run]
 }
 
 # PDF Exporter Service
 resource "google_cloud_run_v2_service" "pdf_exporter" {
-  name     = "pdf-exporter"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  name                = "pdf-exporter"
+  project             = var.google_vertex_project
+  location            = var.google_vertex_location
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
     service_account = google_service_account.pdf_exporter_sa.email
@@ -468,8 +465,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
-  deletion_protection = false
+  depends_on = [google_project_service.run]
 }
 
 # Allow the document processor service account to be invoked by Cloud Tasks
