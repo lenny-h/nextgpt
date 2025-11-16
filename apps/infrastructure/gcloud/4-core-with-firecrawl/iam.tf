@@ -160,76 +160,10 @@ resource "google_service_account" "pdf_exporter_sa" {
 }
 
 # ===================================
-# CI/CD Service Account
+# CI/CD Service Account Permissions
 # ===================================
-
-# Create Service Account for CI/CD
-resource "google_service_account" "ci_cd_sa" {
-  account_id   = "ci-cd-sa"
-  display_name = "CI/CD Service Account"
-}
-
-# Allow CI/CD service account to deploy api
-resource "google_cloud_run_v2_service_iam_member" "api_deployer" {
-  name     = google_cloud_run_v2_service.api.name
-  location = google_cloud_run_v2_service.api.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy document processor
-resource "google_cloud_run_v2_service_iam_member" "document_processor_deployer" {
-  name     = google_cloud_run_v2_service.document_processor.name
-  location = google_cloud_run_v2_service.document_processor.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy pdf exporter
-resource "google_cloud_run_v2_service_iam_member" "pdf_exporter_deployer" {
-  name     = google_cloud_run_v2_service.pdf_exporter.name
-  location = google_cloud_run_v2_service.pdf_exporter.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to execute DB migrator job
-resource "google_cloud_run_v2_job_iam_member" "db_migrator_invoker" {
-  name     = data.terraform_remote_state.db_storage.outputs.db_migrator_job_name
-  location = var.google_vertex_location
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as Api service account
-resource "google_service_account_iam_member" "ci_cd_act_as_api_sa" {
-  service_account_id = google_service_account.api_sa.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as document processor service account
-resource "google_service_account_iam_member" "ci_cd_act_as_document_processor_sa" {
-  service_account_id = google_service_account.document_processor_sa.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as PDF exporter service account
-resource "google_service_account_iam_member" "ci_cd_act_as_pdf_exporter_sa" {
-  service_account_id = google_service_account.pdf_exporter_sa.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as db_migrator service account
-resource "google_service_account_iam_member" "ci_cd_act_as_db_migrator_sa" {
-  service_account_id = data.terraform_remote_state.db_storage.outputs.db_migrator_sa_name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Create service account key for ci_cd
-resource "google_service_account_key" "ci_cd_sa_key" {
-  service_account_id = google_service_account.ci_cd_sa.name
-}
+# Note: The CI/CD service account is created in step 2 (2-db-storage)
+# with project-level permissions:
+# - roles/run.admin (can deploy all Cloud Run services)
+# - roles/iam.serviceAccountUser (can act as all service accounts)
+# Therefore, no additional resource-level permissions are needed here.

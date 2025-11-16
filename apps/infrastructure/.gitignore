@@ -30,3 +30,5 @@ node_modules/
 .DS_Store
 
 *.pdf
+
+**/sa_key.json

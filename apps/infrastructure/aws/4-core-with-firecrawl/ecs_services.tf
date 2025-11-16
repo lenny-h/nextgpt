@@ -532,7 +532,7 @@ resource "aws_ecs_task_definition" "firecrawl_api" {
       },
       {
         name  = "PLAYWRIGHT_MICROSERVICE_URL"
-        value = "http://firecrawl-playwright.${var.aws_project_name}.local:8080"
+        value = "http://firecrawl-playwright.${var.aws_project_name}.local:8080/scrape"
       },
       {
         name  = "NUQ_DATABASE_URL"

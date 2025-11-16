@@ -28,33 +28,7 @@ resource "google_service_account" "firecrawl_playwright_sa" {
 # ===================================
 # CI/CD IAM for Firecrawl Services
 # ===================================
-
-# Allow CI/CD service account to deploy Firecrawl API
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_api_deployer" {
-  name     = google_cloud_run_v2_service.firecrawl_api.name
-  location = google_cloud_run_v2_service.firecrawl_api.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD service account to deploy Firecrawl Playwright
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_playwright_deployer" {
-  name     = google_cloud_run_v2_service.firecrawl_playwright.name
-  location = google_cloud_run_v2_service.firecrawl_playwright.location
-  role     = "roles/run.admin"
-  member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as Firecrawl API service account
-resource "google_service_account_iam_member" "ci_cd_act_as_firecrawl_api_sa" {
-  service_account_id = google_service_account.firecrawl_api_sa.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
-
-# Allow CI/CD SA to act as Firecrawl Playwright service account
-resource "google_service_account_iam_member" "ci_cd_act_as_firecrawl_playwright_sa" {
-  service_account_id = google_service_account.firecrawl_playwright_sa.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.ci_cd_sa.email}"
-}
+# Note: CI/CD permissions are granted at project level in step 2 (2-db-storage)
+# - roles/run.admin (can deploy all Cloud Run services including Firecrawl)
+# - roles/iam.serviceAccountUser (can act as all service accounts)
+# No additional resource-level permissions needed here.

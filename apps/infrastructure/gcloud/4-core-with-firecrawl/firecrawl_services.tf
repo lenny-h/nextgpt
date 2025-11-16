@@ -49,7 +49,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
       # Playwright microservice
       env {
         name  = "PLAYWRIGHT_MICROSERVICE_URL"
-        value = google_cloud_run_v2_service.firecrawl_playwright.uri
+        value = "${google_cloud_run_v2_service.firecrawl_playwright.uri}/scrape"
       }
 
       # Database configuration
