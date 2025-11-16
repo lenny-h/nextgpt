@@ -12,8 +12,8 @@ on:
   #     - "packages/server/src/drizzle/**"
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
   AWS_PROJECT_NAME: ${{ vars.AWS_PROJECT_NAME }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
 
 jobs:
   build-and-push-migration-image:

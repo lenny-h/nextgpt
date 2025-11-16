@@ -2,7 +2,7 @@
 
 import { deleteResource } from "@/lib/delete-resource";
 import type { ColumnDef } from "@tanstack/react-table";
-import { TaskStatus } from "@workspace/server/drizzle/schema";
+import { type TaskStatus } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -127,13 +127,16 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const errorMessage = row.getValue("errorMessage") as string;
-      
+
       if (status !== "failed" || !errorMessage) {
         return <span className="text-muted-foreground">—</span>;
       }
-      
+
       return (
-        <span className="text-red-500 text-sm max-w-md truncate block" title={errorMessage}>
+        <span
+          className="block max-w-md truncate text-sm text-red-500"
+          title={errorMessage}
+        >
           {errorMessage}
         </span>
       );

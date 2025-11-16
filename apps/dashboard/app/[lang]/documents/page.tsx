@@ -2,7 +2,7 @@
 
 import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { DocumentsList } from "@/components/custom/documents-list";
-import { CustomDocument } from "@workspace/server/drizzle/schema";
+import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Input } from "@workspace/ui/components/input";
 import {
   ResizableHandle,

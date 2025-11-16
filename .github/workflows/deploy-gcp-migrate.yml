@@ -73,32 +73,32 @@ jobs:
         run: |
           echo "Starting migration job execution..."
           gcloud run jobs execute db-migrator \
-            --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} \
+            --region=${{ env.REGION }} \
             --wait
 
       - name: Check migration job status
         run: |
           EXECUTION=$(gcloud run jobs executions list \
             --job=db-migrator \
-            --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} \
+            --region=${{ env.REGION }} \
             --limit=1 \
             --format="value(name)")
 
           echo "Latest execution: $EXECUTION"
 
           gcloud run jobs executions describe $EXECUTION \
-            --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }}
+            --region=${{ env.REGION }} \
 
       - name: Get migration logs
         if: always()
         run: |
           EXECUTION=$(gcloud run jobs executions list \
             --job=db-migrator \
-            --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} \
+            --region=${{ env.REGION }} \
             --limit=1 \
             --format="value(name)")
 

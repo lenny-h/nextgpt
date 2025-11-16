@@ -2,7 +2,7 @@
 
 import { useWebTranslations } from "@/contexts/web-translations";
 import { useQueryClient } from "@tanstack/react-query";
-import { Chat } from "@workspace/server/drizzle/schema";
+import { type Chat } from "@workspace/server/drizzle/schema";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -175,7 +175,7 @@ export const NavHistory = memo(() => {
         // Update the cache
         removeFromInfiniteCache(queryClient, ["chats"], chatId);
         removeFromInfiniteCache(queryClient, ["favourites"], chatId);
-        
+
         if (chatId === id) {
           router.push("/");
         }

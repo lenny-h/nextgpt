@@ -23,7 +23,7 @@ echo ""
 if [ -z "$1" ] || [ -z "$2" ]; then
   echo -e "${YELLOW}Warning: DATABASE_PASSWORD and DATABASE_HOST must be provided${NC}"
   echo "Usage: $0 <DATABASE_PASSWORD> <DATABASE_HOST>"
-  echo "Example: $0 'password' 'localhost:5432'"
+  echo "Example: $0 'password' 'host.docker.internal:5432'"
   exit 1
 fi
 

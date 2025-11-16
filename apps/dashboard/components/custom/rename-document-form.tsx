@@ -2,7 +2,7 @@ import * as z from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { CustomDocument } from "@workspace/server/drizzle/schema";
+import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import { DialogFooter } from "@workspace/ui/components/dialog";
 import {

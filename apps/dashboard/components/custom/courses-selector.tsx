@@ -1,4 +1,4 @@
-import { Course } from "@workspace/server/drizzle/schema";
+import { type Course } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import {
   Command,
@@ -16,7 +16,13 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type Dispatch, memo, type SetStateAction, useEffect, useState } from "react";
+import {
+  type Dispatch,
+  memo,
+  type SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 
 interface CourseSelectorProps {
   resourceName: "files" | "tasks";
@@ -88,10 +94,11 @@ export const CoursesSelector = memo(
                       key={c.id}
                       value={c.id}
                       onSelect={(currentValue) => {
-                        const newCourseId = currentValue === selectedCourseId ? "" : currentValue;
+                        const newCourseId =
+                          currentValue === selectedCourseId ? "" : currentValue;
                         setSelectedCourseId(newCourseId);
                         setCoursesPopoverOpen(false);
-                        
+
                         // Update URL with courseId search parameter
                         const params = new URLSearchParams(searchParams);
                         if (newCourseId) {

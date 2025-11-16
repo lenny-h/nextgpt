@@ -1,5 +1,5 @@
 import { useWebTranslations } from "@/contexts/web-translations";
-import { Chat } from "@workspace/server/drizzle/schema";
+import { type Chat } from "@workspace/server/drizzle/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,

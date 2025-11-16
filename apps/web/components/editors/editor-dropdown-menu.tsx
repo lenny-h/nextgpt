@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { CustomDocument } from "@workspace/server/drizzle/schema";
+import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,

@@ -3,9 +3,9 @@
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
 import {
-  BucketMaintainerInvitation,
-  CourseMaintainerInvitation,
-  UserInvitation,
+  type BucketMaintainerInvitation,
+  type CourseMaintainerInvitation,
+  type UserInvitation,
 } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";

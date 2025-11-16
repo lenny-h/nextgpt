@@ -1,4 +1,4 @@
-import { CustomDocument } from "@workspace/server/drizzle/schema";
+import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { useEditor } from "@workspace/ui/contexts/editor-context";
