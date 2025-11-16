@@ -2,7 +2,6 @@
 provider "google" {
   project = var.google_vertex_project
   region  = var.google_vertex_location
-  zone    = var.google_zone
 }
 
 terraform {

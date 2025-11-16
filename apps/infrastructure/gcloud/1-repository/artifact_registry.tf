@@ -6,19 +6,16 @@ resource "google_project_service" "artifactregistry" {
 
 # Artifact Registry Repository for Docker images
 resource "google_artifact_registry_repository" "app_repository" {
+  project       = var.google_vertex_project
   location      = var.google_vertex_location
   repository_id = "app-artifact-repository"
   description   = "Docker repository for application images"
   format        = "DOCKER"
-  project       = var.google_vertex_project
 
   cleanup_policies {
-    id     = "keep-last-5"
-    action = "DELETE"
-    condition {
-      tag_state  = "ANY"
-      older_than = "0s"
-    }
+    id     = "keep-latest-5"
+    action = "KEEP"
+
     most_recent_versions {
       keep_count = 5
     }

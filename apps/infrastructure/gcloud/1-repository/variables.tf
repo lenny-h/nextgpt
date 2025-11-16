@@ -7,8 +7,3 @@ variable "google_vertex_location" {
   type        = string
   description = "GCP region"
 }
-
-variable "google_zone" {
-  type        = string
-  description = "GCP zone"
-}

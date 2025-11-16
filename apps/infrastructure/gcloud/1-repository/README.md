@@ -15,6 +15,14 @@ This folder sets up the Artifact Registry repository for all container images.
 
 ## Usage
 
+1. Install Gcloud CLI and run:
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+gcloud auth application-default login
+```
+
 1. Initialize Terraform:
 
 ```bash
