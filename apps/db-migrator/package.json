@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/db-migrator",
+  "name": "db-migrator",
   "version": "0.0.0",
   "private": true,
   "description": "Job for database migrations using Drizzle Kit",

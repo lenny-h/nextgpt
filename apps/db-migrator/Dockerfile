@@ -41,7 +41,6 @@ COPY --from=builder /app/out/json/ .
 RUN pnpm install --prod --frozen-lockfile
 
 # Copy built application
-COPY --from=installer --chown=migrator:migrator /app/apps/db-migrator/dist ./apps/db-migrator/dist
 COPY --from=installer --chown=migrator:migrator /app/packages ./packages
 
 USER migrator
