@@ -31,7 +31,7 @@ if ($LASTEXITCODE -ne 0) {
 $Services = @("api", "pdf-exporter", "document-processor", "db-migrator")
 
 if (-not $SkipFirecrawl) {
-    $Services += @("firecrawl-postgres", "firecrawl-api", "playwright-service")
+    $Services += @("firecrawl-api", "playwright-service")
     Write-Host "Including Firecrawl services in build..." -ForegroundColor Yellow
 }
 else {
@@ -44,7 +44,7 @@ foreach ($Service in $Services) {
     # Define the original local image name and the ECR image name
     switch ($Service) {
         "firecrawl-api" {
-            $LocalImage = "firecrawl:latest"
+            $LocalImage = "firecrawl-api:latest"
             $EcrImage = "$Repo-firecrawl-api:latest"
         }
         "playwright-service" {

@@ -33,7 +33,7 @@ for SERVICE in "${SERVICES[@]}"; do
 
   # Define the original local image name and the cloud repository image name
   if [ "$SERVICE" == "firecrawl-api" ]; then
-    LOCAL_IMAGE="firecrawl:latest"
+    LOCAL_IMAGE="firecrawl-api:latest"
     CLOUD_IMAGE="$REPO/firecrawl-api:latest"
   elif [ "$SERVICE" == "playwright-service" ]; then
     LOCAL_IMAGE="firecrawl-playwright:latest"

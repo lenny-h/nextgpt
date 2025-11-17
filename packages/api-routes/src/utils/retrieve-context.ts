@@ -10,10 +10,11 @@ import { type PracticeFilter } from "../schemas/practice-filter-schema.js";
 import { type DocumentSource } from "../types/document-source.js";
 
 export async function retrieveEmbedding(text: string): Promise<number[]> {
-  const { model } = await getEmbeddingModel();
+  const { model, providerOptions } = await getEmbeddingModel();
 
   const { embedding } = await embed({
     model,
+    providerOptions,
     value: text,
   });
 

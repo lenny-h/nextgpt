@@ -412,7 +412,7 @@ services:
 
   # Firecrawl
   firecrawl-api:
-    image: firecrawl:latest
+    image: firecrawl-api:latest
 
     ulimits:
       nofile:

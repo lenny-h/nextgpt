@@ -30,7 +30,7 @@ RUN mkdir -p "$DOCLING_ARTIFACTS_PATH"
 # ENV TESSDATA_PREFIX=/usr/share/tesseract/tessdata/
 
 # Prefetch essential Docling models at build time
-ARG MODELS_LIST="layout tableformer rapidocr"
+ARG MODELS_LIST="layout tableformer rapidocr code"
 
 RUN echo "Downloading essential models..." && \
     HF_HUB_DOWNLOAD_TIMEOUT="90" \

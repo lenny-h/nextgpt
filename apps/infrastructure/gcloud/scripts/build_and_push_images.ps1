@@ -28,7 +28,7 @@ foreach ($Service in $Services) {
     # Define the original local image name and the cloud repository image name
     switch ($Service) {
         "firecrawl-api" {
-            $LocalImage = "firecrawl:latest"
+            $LocalImage = "firecrawl-api:latest"
             $CloudImage = "$Repo/firecrawl-api:latest"
         }
         "playwright-service" {
