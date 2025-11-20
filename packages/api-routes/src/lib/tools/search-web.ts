@@ -16,13 +16,13 @@ const app = new FirecrawlApp(firecrawlOptions);
 export const searchWebTool = tool({
   description: "Search the web for relevant information based on a user query.",
   inputSchema: z.object({
-    searchQuery: z.string().min(1).max(100).describe("The search query to use"),
+    searchTerms: z.string().min(1).max(100).describe("The search query to use"),
   }),
-  execute: async ({ searchQuery }) => {
-    logger.debug("Searching web for query:", searchQuery);
+  execute: async ({ searchTerms }) => {
+    logger.debug("Searching web for query:", searchTerms);
 
     try {
-      const searchResponse = await app.search(searchQuery, {
+      const searchResponse = await app.search(searchTerms, {
         limit: 6,
         scrapeOptions: {
           formats: ["markdown"],
@@ -30,12 +30,12 @@ export const searchWebTool = tool({
       });
 
       logger.debug("Search completed successfully:", {
-        query: searchQuery,
+        query: searchTerms,
         resultsCount: searchResponse.web?.length || 0,
       });
-      return searchResponse.web;
+      return searchResponse.web || [];
     } catch (error) {
-      logger.error("Search failed for query:", searchQuery, error);
+      logger.error("Search failed for query:", searchTerms, error);
       throw error;
     }
   },

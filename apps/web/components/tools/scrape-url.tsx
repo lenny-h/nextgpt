@@ -39,13 +39,11 @@ export const ScrapeUrlUI = memo(
             <p className="mb-1.5 text-sm font-medium">
               {webT.tools?.retrievingWebPages}
             </p>
-            {part.input.urls && part.input.urls.length > 0 && (
+            {part.input.urlToScrape && (
               <div className="space-y-1">
-                {part.input.urls.map((url: string, index: number) => (
-                  <div key={index} className="text-muted-foreground text-sm">
-                    • {url}
-                  </div>
-                ))}
+                <div className="text-muted-foreground text-sm">
+                  • {part.input.urlToScrape}
+                </div>
               </div>
             )}
           </div>
@@ -53,11 +51,10 @@ export const ScrapeUrlUI = memo(
       );
     }
 
-    if (part.state === "output-available" && part.output?.webSources) {
-      // Sort pages by URL
-      const pages = [...part.output.webSources].sort((a, b) =>
-        a.url.localeCompare(b.url),
-      );
+    if (part.state === "output-available" && part.output) {
+      // Output is markdown string
+      const preview =
+        typeof part.output === "string" ? part.output.substring(0, 300) : "";
 
       return (
         <Collapsible
@@ -68,31 +65,20 @@ export const ScrapeUrlUI = memo(
           <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-3 text-sm font-medium">
             <div className="flex items-center gap-2">
               <Globe size={16} className="text-primary" />
-              <span>
-                {webT.tools.retrievedPages} ({pages.length})
-              </span>
+              <span>{webT.tools.retrievedPages}</span>
             </div>
             <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={16} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="divide-y text-sm">
-              {pages.map((page, index) => (
-                <div
-                  key={index}
-                  className="hover:bg-muted/50 flex cursor-pointer items-start gap-2 px-3 py-2 transition-colors"
-                  onClick={() => window.open(page.url, "_blank")}
-                >
-                  <Globe size={14} className="text-primary mt-0.5 shrink-0" />
-                  <div className="flex-1 overflow-hidden">
-                    <span className="font-medium">{page.url}</span>
-                    {page.pageContent && (
-                      <p className="text-muted-foreground line-clamp-2 text-xs">
-                        {page.pageContent.substring(0, 150)}...
-                      </p>
-                    )}
-                  </div>
+            <div className="text-sm">
+              <div className="hover:bg-muted/50 px-3 py-2 transition-colors">
+                <Globe size={14} className="text-primary mb-2 shrink-0" />
+                <div className="overflow-hidden">
+                  <p className="text-muted-foreground whitespace-pre-wrap text-xs">
+                    {preview}...
+                  </p>
                 </div>
-              ))}
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

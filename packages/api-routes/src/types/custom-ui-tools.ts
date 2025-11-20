@@ -1,6 +1,5 @@
 import { type ArtifactKind } from "./artifact-kind.js";
 import { type DocumentSource } from "./document-source.js";
-import { type WebSource } from "./web-source.js";
 
 export type MyUITools = {
   searchDocuments: {
@@ -12,12 +11,17 @@ export type MyUITools = {
     output: { docSources: DocumentSource[] };
   };
   searchWeb: {
-    input: { searchTerms: string[] };
-    output: { webSources: WebSource[] };
+    input: { searchTerms: string };
+    output: {
+      url: string;
+      title?: string;
+      description?: string;
+      markdown?: string;
+    }[];
   };
   scrapeUrl: {
-    input: { urls: string[] };
-    output: { webSources: WebSource[] };
+    input: { urlToScrape: string };
+    output: string;
   };
   createDocument: {
     input: {

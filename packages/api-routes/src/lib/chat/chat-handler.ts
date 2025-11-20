@@ -9,9 +9,9 @@ import {
   type UIMessageStreamWriter,
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
+import { createLogger } from "../../utils/logger.js";
 import { getChatById, saveChat } from "../db/queries/chats.js";
 import { saveMessages } from "../db/queries/messages.js";
-import { createLogger } from "../../utils/logger.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatRequest } from "./chat-request.js";
 import { integrateAttachmentsIntoMessages } from "./process-attachments.js";

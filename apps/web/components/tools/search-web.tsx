@@ -20,6 +20,8 @@ export const SearchWebUI = memo(
     const { webT } = useWebTranslations();
     const [isOpen, setIsOpen] = useState(false);
 
+    console.log("SearchWebUI rendering with part:", part);
+
     if (part.state === "input-streaming") {
       return (
         <div className="bg-muted/30 flex items-center gap-3 rounded-md border p-3">
@@ -51,11 +53,9 @@ export const SearchWebUI = memo(
       );
     }
 
-    if (part.state === "output-available" && part.output?.webSources) {
+    if (part.state === "output-available" && part.output) {
       // Sort pages by URL
-      const pages = [...part.output.webSources].sort((a, b) =>
-        a.url.localeCompare(b.url),
-      );
+      const pages = [...part.output].sort((a, b) => a.url.localeCompare(b.url));
 
       return (
         <Collapsible
@@ -82,10 +82,12 @@ export const SearchWebUI = memo(
                 >
                   <Globe size={14} className="text-primary mt-0.5 shrink-0" />
                   <div className="flex-1 overflow-hidden">
-                    <span className="font-medium">{page.url}</span>
-                    {page.pageContent && (
+                    <span className="font-medium">
+                      {page.title || page.url}
+                    </span>
+                    {page.description && (
                       <p className="text-muted-foreground line-clamp-2 text-xs">
-                        {page.pageContent.substring(0, 150)}...
+                        {page.description}
                       </p>
                     )}
                   </div>

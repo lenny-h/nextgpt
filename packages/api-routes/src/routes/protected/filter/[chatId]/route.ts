@@ -36,13 +36,13 @@ const app = new Hono().get(
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
 
-    // Fetch the last message from the database
+    // Fetch the last user message for the given chatId
     const lastMessageResult = await db
       .select({
         metadata: messages.metadata,
       })
       .from(messages)
-      .where(eq(messages.chatId, chatId))
+      .where(and(eq(messages.chatId, chatId), eq(messages.role, "user")))
       .orderBy(desc(messages.createdAt))
       .limit(1);
 

@@ -46,9 +46,12 @@ jobs:
       NEXT_PUBLIC_DASHBOARD_URL: dashboard.${{ vars.SITE_URL }}
       NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
       NEXT_PUBLIC_PDF_EXPORTER_URL: api.${{ vars.SITE_URL }}
+
       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${{ vars.ENABLE_EMAIL_SIGNUP }}
       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${{ vars.ENABLE_OAUTH_LOGIN }}
       NEXT_PUBLIC_ENABLE_SSO: ${{ vars.ENABLE_SSO }}
+      NEXT_PUBLIC_USE_FIRECRAWL: ${{ vars.USE_FIRECRAWL }}
+
       NEXT_PUBLIC_CSP_ENDPOINTS: ${{ vars.CSP_ENDPOINTS }}
     steps:
       - name: Checkout repository
@@ -83,6 +86,12 @@ jobs:
             NEXT_PUBLIC_DASHBOARD_URL
             NEXT_PUBLIC_API_URL
             NEXT_PUBLIC_PDF_EXPORTER_URL
+
+            NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP
+            NEXT_PUBLIC_ENABLE_OAUTH_LOGIN
+            NEXT_PUBLIC_ENABLE_SSO
+            NEXT_PUBLIC_USE_FIRECRAWL
+
             NEXT_PUBLIC_CSP_ENDPOINTS
 
   # Deploy Dashboard App to Cloudflare Workers
@@ -96,9 +105,11 @@ jobs:
       NEXT_PUBLIC_CHAT_URL: app.${{ vars.SITE_URL }}
       NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
       NEXT_PUBLIC_PDF_EXPORTER_URL: api.${{ vars.SITE_URL }}
+
       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${{ vars.ENABLE_EMAIL_SIGNUP }}
       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${{ vars.ENABLE_OAUTH_LOGIN }}
       NEXT_PUBLIC_ENABLE_SSO: ${{ vars.ENABLE_SSO }}
+
       NEXT_PUBLIC_CSP_ENDPOINTS: ${{ vars.CSP_ENDPOINTS }}
     steps:
       - name: Checkout repository
@@ -133,4 +144,9 @@ jobs:
             NEXT_PUBLIC_CHAT_URL
             NEXT_PUBLIC_API_URL
             NEXT_PUBLIC_PDF_EXPORTER_URL
+
+            NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP
+            NEXT_PUBLIC_ENABLE_OAUTH_LOGIN
+            NEXT_PUBLIC_ENABLE_SSO
+
             NEXT_PUBLIC_CSP_ENDPOINTS

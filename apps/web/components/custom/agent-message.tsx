@@ -54,13 +54,18 @@ const PureAgentMessage = ({
     .filter((part) => part.type === "tool-searchDocuments")
     .flatMap((part) => part.output?.docSources ?? []);
 
-  // Aggregate web sources
+  // Aggregate web sources from searchWeb results
   const webSources = message.parts
-    .filter(
-      (part) =>
-        part.type === "tool-searchWeb" || part.type === "tool-scrapeUrl",
-    )
-    .flatMap((part) => part.output?.webSources ?? []);
+    .filter((part) => part.type === "tool-searchWeb")
+    .flatMap((part) => {
+      if (!part.output || !Array.isArray(part.output)) return [];
+      // Convert searchWeb results to WebSource format
+      return part.output.map((result, index) => ({
+        id: `${part.toolCallId}-${index}`,
+        url: result.url,
+        pageContent: result.description || result.markdown,
+      }));
+    });
 
   // Aggregate text content from all text parts for message actions
   const textContent = message.parts
@@ -99,6 +104,8 @@ const PureAgentMessage = ({
           ) : (
             <>
               {message.parts.map((part, index) => {
+                console.log("Rendering part:", part);
+
                 // Render text parts
                 if (part.type === "text") {
                   const parsedContent = parseContent(part.text);
