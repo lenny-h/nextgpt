@@ -294,83 +294,83 @@ services:
     networks:
       - database_network
 
-  # # PDF Exporter Service
-  # pdf-exporter:
-  #   container_name: pdf-exporter
-  #   build:
-  #     context: .
-  #     dockerfile: apps/pdf-exporter/Dockerfile
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3005:8080"
-  #   depends_on:
-  #     api:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD",
-  #         "wget",
-  #         "--no-verbose",
-  #         "--spider",
-  #         "http://localhost:8080/pdf-exporter/public/health",
-  #       ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   environment:
-  #     PORT: 8080
-  #     NODE_ENV: development
-  #
-  #     # ==============================
-  #     # Authentication configuration
-  #     # ==============================
-  #
-  #     BETTER_AUTH_URL: http://localhost:3004
-  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-  #     ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
-  #     ADMIN_USER_IDS: ${ADMIN_USER_IDS}
-  #
-  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
-  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
-  #
-  #     ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
-  #     # Google OAuth
-  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-  #     # GitHub OAuth
-  #     GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-  #     GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-  #     # Gitlab OAuth
-  #     GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
-  #     GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
-  #
-  #     # SSO Configuration
-  #     ENABLE_SSO: ${ENABLE_SSO}
-  #     SSO_DOMAIN: ${SSO_DOMAIN}
-  #     SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
-  #     SSO_CLIENT_ID: ${SSO_CLIENT_ID}
-  #     SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
-  #     SSO_ISSUER: ${SSO_ISSUER}
-  #     SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
-  #     SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
-  #     SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
-  #     SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
-  #
-  #     # ==============================
-  #     # Application configuration
-  #     # ==============================
-  #
-  #     BASE_URL: http://localhost:3000
-  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
-  #
-  #     # Database and Redis
-  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-  #     DATABASE_HOST: postgres:5432
-  #     REDIS_URL: "redis://redis:6379"
-  #   networks:
-  #     - database_network
+  # PDF Exporter Service
+  pdf-exporter:
+    container_name: pdf-exporter
+    build:
+      context: .
+      dockerfile: apps/pdf-exporter/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3005:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--spider",
+          "http://localhost:8080/pdf-exporter/public/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      PORT: 8080
+      NODE_ENV: development
+  
+      # ==============================
+      # Authentication configuration
+      # ==============================
+  
+      BETTER_AUTH_URL: http://localhost:3004
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
+      ADMIN_USER_IDS: ${ADMIN_USER_IDS}
+  
+      ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
+      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
+  
+      ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
+      # Google OAuth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      # GitHub OAuth
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      # Gitlab OAuth
+      GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
+      GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
+  
+      # SSO Configuration
+      ENABLE_SSO: ${ENABLE_SSO}
+      SSO_DOMAIN: ${SSO_DOMAIN}
+      SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
+      SSO_CLIENT_ID: ${SSO_CLIENT_ID}
+      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
+      SSO_ISSUER: ${SSO_ISSUER}
+      SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
+      SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
+      SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
+      SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
+  
+      # ==============================
+      # Application configuration
+      # ==============================
+  
+      BASE_URL: http://localhost:3000
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  
+      # Database and Redis
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_HOST: postgres:5432
+      REDIS_URL: "redis://redis:6379"
+    networks:
+      - database_network
 
   # Web interface (Next.js)
   web:
