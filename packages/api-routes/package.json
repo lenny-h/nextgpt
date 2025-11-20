@@ -3,6 +3,16 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "lint": "eslint \"src/**/*.ts*\" --max-warnings 0"
+  },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^3.0.54",
     "@ai-sdk/google-vertex": "^3.0.63",
@@ -32,6 +42,8 @@
     "typescript": "^5.9.3"
   },
   "exports": {
-    "./*": "./src/*.ts"
+    ".": "./dist/index.js",
+    "./*.js": "./dist/*.js",
+    "./*": "./dist/*.js"
   }
 }

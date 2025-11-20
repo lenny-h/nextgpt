@@ -1,11 +1,19 @@
 {
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
     "paths": {
-      "@workspace/api-routes/*": ["./src/*"],
-      "@workspace/server/*": ["../server/src/*"],
+      "@workspace/api-routes/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["."],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
