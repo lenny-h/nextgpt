@@ -6,6 +6,16 @@
 # Dependencies
 node_modules
 
+# Build outputs
+**/.next
+**/.open-next
+**/.wrangler
+**/.turbo
+**/out
+**/dist
+**/build
+.turbo
+
 # Testing
 __tests__
 coverage

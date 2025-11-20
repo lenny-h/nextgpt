@@ -1,23 +1,20 @@
 FROM node:lts-alpine AS base
-
-FROM base AS builder
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk update
 RUN apk add --no-cache libc6-compat
-# Enable pnpm via corepack
-RUN corepack enable pnpm
 # Set working directory
 WORKDIR /app
+
+FROM base AS builder
+# Enable pnpm via corepack
+RUN corepack enable pnpm
 RUN npm install -g turbo
 COPY . .
 RUN turbo prune api --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat
 RUN corepack enable pnpm
-WORKDIR /app
 
 # First install dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
@@ -46,4 +43,4 @@ COPY --from=installer --chown=hono:hono /app/packages ./packages
 
 USER hono
 
-CMD ["node", "apps/api/dist/src/index.js"]
+CMD ["node", "apps/api/dist/index.js"]

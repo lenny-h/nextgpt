@@ -1,10 +1,9 @@
 FROM node:22-bookworm-slim AS base
+WORKDIR /app
 
 FROM base AS builder
 # Enable pnpm via corepack
 RUN corepack enable pnpm
-# Set working directory
-WORKDIR /app
 RUN npm install -g turbo
 COPY . .
 RUN turbo prune pdf-exporter --docker
@@ -12,7 +11,6 @@ RUN turbo prune pdf-exporter --docker
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
 RUN corepack enable pnpm
-WORKDIR /app
 
 # First install dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
@@ -25,7 +23,6 @@ RUN pnpm turbo build
 
 FROM base AS runner
 RUN corepack enable pnpm
-WORKDIR /app
 
 # Install Playwright dependencies for Chromium only (minimal footprint)
 RUN apt-get update && apt-get install -y \
@@ -51,7 +48,6 @@ RUN apt-get update && apt-get install -y \
 # Don't run production as root
 RUN addgroup --system --gid 1001 playwright
 RUN adduser --system --uid 1001 playwright
-USER playwright
 
 # Copy package files and install production dependencies only
 COPY --from=builder /app/out/json/ .
@@ -64,5 +60,6 @@ RUN npx playwright install chromium --with-deps
 COPY --from=installer --chown=playwright:playwright /app/apps/pdf-exporter/dist ./apps/pdf-exporter/dist
 COPY --from=installer --chown=playwright:playwright /app/packages ./packages
 
-EXPOSE 8080
-CMD ["node", "apps/pdf-exporter/dist/src/index.js"]
+USER playwright
+
+CMD ["node", "apps/pdf-exporter/dist/index.js"]

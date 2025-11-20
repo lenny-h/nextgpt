@@ -1,8 +1,8 @@
 import "@workspace/server/types/hono.js";
 
 import { serve } from "@hono/node-server";
-import { authMiddleware } from "@workspace/server/auth-middleware.js";
-import { errorHandler } from "@workspace/server/error-handler.js";
+import { authMiddleware } from "@workspace/server/auth-middleware";
+import { errorHandler } from "@workspace/server/error-handler";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
 import { cors } from "hono/cors";

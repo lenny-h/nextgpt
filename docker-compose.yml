@@ -155,144 +155,144 @@ services:
   # The services below need not be run in Docker
   # It is better to run them using `pnpm run dev` due to hot-reloading
 
-  # # Custom API Service
-  # api:
-  #   container_name: api
-  #   build:
-  #     context: .
-  #     dockerfile: apps/api/Dockerfile
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3004:8080"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD",
-  #         "wget",
-  #         "--no-verbose",
-  #         "--spider",
-  #         "http://localhost:8080/api/public/health",
-  #       ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   environment:
-  #     PORT: 8080
-  #     NODE_ENV: development
+  # Custom API Service
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3004:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--spider",
+          "http://localhost:8080/api/public/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      PORT: 8080
+      NODE_ENV: development
 
-  #     # ==============================
-  #     # Authentication configuration
-  #     # ==============================
+      # ==============================
+      # Authentication configuration
+      # ==============================
 
-  #     # Better Auth configuration and Resend email service (for sending verification emails)
-  #     BETTER_AUTH_URL: http://localhost:3004
-  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-  #     ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS = ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
-  #     ADMIN_USER_IDS = ${ADMIN_USER_IDS}
+      # Better Auth configuration and Resend email service (for sending verification emails)
+      BETTER_AUTH_URL: http://localhost:3004
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
+      ADMIN_USER_IDS: ${ADMIN_USER_IDS}
 
-  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
-  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
+      ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
+      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
 
-  #     ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
-  #     # Google OAuth
-  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-  #     # GitHub OAuth
-  #     GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-  #     GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-  #     # Gitlab OAuth
-  #     GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
-  #     GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
+      ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
+      # Google OAuth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      # GitHub OAuth
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      # Gitlab OAuth
+      GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
+      GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
 
-  #     # SSO Configuration
-  #     ENABLE_SSO: ${ENABLE_SSO}
-  #     SSO_DOMAIN: ${SSO_DOMAIN}
-  #     SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
-  #     SSO_CLIENT_ID: ${SSO_CLIENT_ID}
-  #     SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
-  #     SSO_ISSUER: ${SSO_ISSUER}
-  #     SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
-  #     SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
-  #     SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
-  #     SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
+      # SSO Configuration
+      ENABLE_SSO: ${ENABLE_SSO}
+      SSO_DOMAIN: ${SSO_DOMAIN}
+      SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
+      SSO_CLIENT_ID: ${SSO_CLIENT_ID}
+      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
+      SSO_ISSUER: ${SSO_ISSUER}
+      SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
+      SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
+      SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
+      SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
 
-  #     RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
-  #     RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
+      RESEND_API_KEY: ${RESEND_API_KEY}
 
-  #     # ==============================
-  #     # Application configuration
-  #     # ==============================
+      # ==============================
+      # Application configuration
+      # ==============================
   
-  #     BASE_URL: http://localhost:3000
-  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+      BASE_URL: http://localhost:3000
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
 
-  #     # Document processor
-  #     DOCUMENT_PROCESSOR_URL: http://document-processor:8080
+      # Document processor
+      DOCUMENT_PROCESSOR_URL: http://document-processor:8080
 
-  #     # Database and Redis
-  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-  #     DATABASE_HOST: postgres:5432
-  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-  #     REDIS_URL: "redis://redis:6379"
+      # Database and Redis
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_HOST: postgres:5432
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      REDIS_URL: "redis://redis:6379"
 
-  #     USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
-  #     USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
-  #     USE_LOCAL_TASKS_CLIENT: ${USE_LOCAL_TASKS_CLIENT}
-  #     USE_OPENAI_API: ${USE_OPENAI_API}
-  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
+      USE_LOCAL_TASKS_CLIENT: ${USE_LOCAL_TASKS_CLIENT}
+      USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
+      USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
+      USE_OPENAI_API: ${USE_OPENAI_API}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 
-  #     # Local MinIO configuration
-  #     MINIO_ENDPOINT: http://minio:9000
-  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # Local MinIO configuration
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
-  #     # Cloudflare R2 configuration
-  #     R2_ENDPOINT: ${R2_ENDPOINT}
-  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
-  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+      # Cloudflare R2 configuration
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
 
-  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-  #     LLM_MODELS: ${LLM_MODELS}
+      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+      LLM_MODELS: ${LLM_MODELS}
 
-  #     # ==============================
-  #     # Firecrawl configuration
-  #     # =============================
+      # ==============================
+      # Firecrawl configuration
+      # =============================
 
-  #     USE_FIRECRAWL = ${USE_FIRECRAWL}
-  #     FIRECRAWL_API_URL = http://firecrawl-api:8080
-  #     FIRECRAWL_API_KEY = ${FIRECRAWL_API_KEY}
+      USE_FIRECRAWL: ${USE_FIRECRAWL}
+      FIRECRAWL_API_URL: http://firecrawl-api:8080
+      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}
 
-  #     # ==============================
-  #     # Cloud provider configuration
-  #     # =============================
+      # ==============================
+      # Cloud provider configuration
+      # =============================
 
-  #     CLOUD_PROVIDER: ${CLOUD_PROVIDER}
+      CLOUD_PROVIDER: ${CLOUD_PROVIDER}
 
-  #     # Gcloud configuration
-  #     GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
-  #     GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-  #     GOOGLE_PROCESSING_QUEUE: document-processing-queue
+      # # Gcloud configuration
+      # GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+      # GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+      # GOOGLE_PROCESSING_QUEUE: document-processing-queue
 
-  #     # Aws configuration
-  #     AWS_REGION: ${AWS_REGION}
-  #     AWS_PROJECT_NAME: ${AWS_PROJECT_NAME}
+      # # Aws configuration
+      # AWS_REGION: ${AWS_REGION}
+      # AWS_PROJECT_NAME: ${AWS_PROJECT_NAME}
 
-  #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
-  #     SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+      # SQS_QUEUE_URL: ${SQS_QUEUE_URL}
 
-  #     AWS_SCHEDULER_GROUP = "your-aws-scheduler-group"
-  #     AWS_SCHEDULER_TARGET_ARN = "your-aws-scheduler-target-arn"
-  #     AWS_SCHEDULER_ROLE_ARN = "your-aws-scheduler-role-arn"
-  #   networks:
-  #     - database_network
+      # AWS_SCHEDULER_GROUP: ${AWS_SCHEDULER_GROUP}
+      # AWS_SCHEDULER_TARGET_ARN: ${AWS_SCHEDULER_TARGET_ARN}
+      # AWS_SCHEDULER_ROLE_ARN: ${AWS_SCHEDULER_ROLE_ARN}
+    networks:
+      - database_network
 
   # # PDF Exporter Service
   # pdf-exporter:
@@ -372,43 +372,45 @@ services:
   #   networks:
   #     - database_network
 
-  # # Web interface (Next.js)
-  # web:
-  #   container_name: web
-  #   build:
-  #     context: .
-  #     dockerfile: apps/web/Dockerfile
-  #     args:
-  #       NEXT_PUBLIC_BASE_URL: http://localhost:3000
-  #       NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
-  #       NEXT_PUBLIC_API_URL: http://localhost:3004
-  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-  #       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP = "true"
-  #       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN = "true"
-  #       NEXT_PUBLIC_ENABLE_SSO = "true"
-  #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
+  # Web interface (Next.js)
+  web:
+    container_name: web
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3000
+        NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
+        NEXT_PUBLIC_API_URL: http://localhost:3004
+        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+        NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP}
+        NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${NEXT_PUBLIC_ENABLE_OAUTH_LOGIN}
+        NEXT_PUBLIC_ENABLE_SSO: ${NEXT_PUBLIC_ENABLE_SSO}
+        NEXT_PUBLIC_USE_FIRECRAWL: ${NEXT_PUBLIC_USE_FIRECRAWL}
+        NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
 
-  # # Dashboard interface (Next.js)
-  # dashboard:
-  #   container_name: dashboard
-  #   build:
-  #     context: .
-  #     dockerfile: apps/dashboard/Dockerfile
-  #     args:
-  #       NEXT_PUBLIC_BASE_URL: http://localhost:3001
-  #       NEXT_PUBLIC_CHAT_URL: http://localhost:3000
-  #       NEXT_PUBLIC_API_URL: http://localhost:3004
-  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-  #       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP = "true"
-  #       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN = "true"
-  #       NEXT_PUBLIC_ENABLE_SSO = "true"
-  #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3001:3000"
+  # Dashboard interface (Next.js)
+  dashboard:
+    container_name: dashboard
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3001
+        NEXT_PUBLIC_CHAT_URL: http://localhost:3000
+        NEXT_PUBLIC_API_URL: http://localhost:3004
+        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+        NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP}
+        NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${NEXT_PUBLIC_ENABLE_OAUTH_LOGIN}
+        NEXT_PUBLIC_ENABLE_SSO: ${NEXT_PUBLIC_ENABLE_SSO}
+        NEXT_PUBLIC_USE_FIRECRAWL: ${NEXT_PUBLIC_USE_FIRECRAWL}
+        NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
 
   # Firecrawl
   firecrawl-api:

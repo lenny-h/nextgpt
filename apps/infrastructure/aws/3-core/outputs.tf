@@ -64,3 +64,38 @@ output "document_processor_task_role_arn" {
   description = "Document Processor task role ARN"
   value       = aws_iam_role.document_processor_task.arn
 }
+
+# ========================================
+# SETUP INSTRUCTIONS
+# ========================================
+output "setup_instructions" {
+  description = "Follow these steps to complete deployment"
+  value       = <<-EOT
+  
+   1️⃣ Add DNS Validation Records (for SSL Certificate)
+     terraform output dns_validation_records
+     → Add these CNAME records to your DNS provider
+     → Required for AWS to issue SSL certificate
+     
+   2️⃣ Add DNS CNAME Record (for Load Balancer)
+     → Add CNAME record: api.<your-domain> → ${aws_lb.main.dns_name}
+     → This points your API domain to the AWS load balancer
+
+   3️⃣ GitHub Repository Variables & Secrets (for Frontend Deployment)
+     Go to: Settings → Secrets and variables → Actions
+     
+     Variables (Repository variables):
+     ✓ SITE_URL = ${var.site_url}
+     ✓ ENABLE_EMAIL_SIGNUP = ${var.enable_email_signup}
+     ✓ ENABLE_OAUTH_LOGIN = ${var.enable_oauth_login}
+     ✓ ENABLE_SSO = ${var.enable_sso}
+     ✓ USE_FIRECRAWL = false
+     ✓ CSP_ENDPOINTS = ${var.use_cloudflare_r2 ? "https://files-bucket.<your-account-id>.r2.cloudflarestorage.com https://temporary-files-bucket.<your-account-id>.r2.cloudflarestorage.com" : "https://${var.aws_project_name}-files-bucket.s3.${var.aws_region}.amazonaws.com https://${var.aws_project_name}-temporary-files-bucket.s3.${var.aws_region}.amazonaws.com"}
+     ✓ CLOUDFLARE_ACCOUNT_ID = <your Cloudflare account ID>
+     
+     Secrets (Repository secrets):
+     ✓ CLOUDFLARE_API_TOKEN = <your Cloudflare API token>
+     
+     → These enable the deploy-frontend.yml workflow to deploy web/dashboard to Cloudflare Workers
+  EOT
+}

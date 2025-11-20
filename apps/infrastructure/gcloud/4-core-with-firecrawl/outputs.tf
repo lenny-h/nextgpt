@@ -72,6 +72,22 @@ output "setup_instructions" {
      → Points api.${var.site_url} to ${google_compute_global_address.lb_ip.address}
 
    ✅ SSL certificates are automatically managed by Google after DNS is configured
-    
+
+   2️⃣ GitHub Repository Variables & Secrets (for Frontend Deployment)
+     Go to: Settings → Secrets and variables → Actions
+     
+     Variables (Repository variables):
+     ✓ SITE_URL = ${var.site_url}
+     ✓ ENABLE_EMAIL_SIGNUP = ${var.enable_email_signup}
+     ✓ ENABLE_OAUTH_LOGIN = ${var.enable_oauth_login}
+     ✓ ENABLE_SSO = ${var.enable_sso}
+     ✓ USE_FIRECRAWL = true
+     ✓ CSP_ENDPOINTS = ${var.use_cloudflare_r2 ? "https://files-bucket.<your-account-id>.r2.cloudflarestorage.com https://temporary-files-bucket.<your-account-id>.r2.cloudflarestorage.com" : "https://storage.googleapis.com/${var.google_vertex_project}-files-bucket https://storage.googleapis.com/${var.google_vertex_project}-temporary-files-bucket"}
+     ✓ CLOUDFLARE_ACCOUNT_ID = <your Cloudflare account ID>
+     
+     Secrets (Repository secrets):
+     ✓ CLOUDFLARE_API_TOKEN = <your Cloudflare API token>
+     
+     → These enable the deploy-frontend.yml workflow to deploy web/dashboard to Cloudflare Workers
   EOT
 }

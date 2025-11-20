@@ -1,7 +1,7 @@
 import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema.js";
 import {
-  MyUIMessage,
-  MyUIMessagePart,
+  type MyUIMessage,
+  type MyUIMessagePart,
 } from "@workspace/api-routes/types/custom-ui-message.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { createLogger } from "@workspace/api-routes/utils/logger.js";
@@ -28,7 +28,7 @@ function canDirectlyAttach(mediaType: string): boolean {
 
 async function convertToMarkdown(key: string): Promise<string> {
   const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
-  
+
   logger.debug("Converting document to markdown", {
     key,
     processorUrl,
@@ -62,14 +62,14 @@ export async function processAttachments(
 ): Promise<MyUIMessagePart[]> {
   logger.info("Processing attachments", {
     attachmentCount: attachments.length,
-    filenames: attachments.map(a => a.filename),
+    filenames: attachments.map((a) => a.filename),
   });
 
   const parts: MyUIMessagePart[] = [];
 
   for (const attachment of attachments) {
     const fileType = getFileType(attachment.filename);
-    
+
     logger.debug("Processing attachment", {
       filename: attachment.filename,
       detectedFileType: fileType,
