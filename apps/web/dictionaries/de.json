@@ -164,5 +164,20 @@
     "starting": "Starte...",
     "newQuestion": "Neue Frage",
     "studyMode": "Lernmodus"
+  },
+  "tools": {
+    "processingDocumentSearch": "Dokumentensuche wird verarbeitet...",
+    "searchingDocuments": "Dokumente werden durchsucht mit:",
+    "keywords": "Schlüsselwörter",
+    "questions": "Fragen",
+    "pageNumbers": "Seiten",
+    "documentSources": "Dokumentenquellen",
+    "page": "S",
+    "processingWebPages": "Webseiten werden abgerufen...",
+    "retrievingWebPages": "Webseiten werden abgerufen:",
+    "retrievedPages": "Abgerufene Seiten",
+    "processingWebSearch": "Websuche wird verarbeitet...",
+    "searchingWeb": "Web wird durchsucht mit:",
+    "webSources": "Webquellen"
   }
 }

@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 import { getBucketIdByCourseId } from "@workspace/api-routes/lib/db/queries/courses.js";
-import { filenameSchema } from "@workspace/api-routes/schemas/filename-schema.js";
+import { filenameWithExtensionSchema } from "@workspace/api-routes/schemas/filename-schema.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
@@ -28,7 +28,14 @@ const app = new Hono().get(
   async (c) => {
     const user = c.get("user");
     const { courseId, name } = c.req.valid("param");
-    const filename = filenameSchema.parse(decodeURIComponent(name));
+
+    const parsed = filenameWithExtensionSchema.safeParse(
+      decodeURIComponent(name)
+    );
+    if (!parsed.success) {
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
+    }
+    const filename = parsed.data;
 
     const bucketId = await getBucketIdByCourseId({ courseId });
 

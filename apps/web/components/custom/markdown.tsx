@@ -3,7 +3,7 @@ import { type WebSource } from "@workspace/api-routes/types/web-source";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import React, { memo, useMemo } from "react"; // remove Children import
+import React, { memo, useMemo } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -56,11 +56,10 @@ const processChildrenWithLineBreaks = (children: React.ReactNode) => {
   });
 };
 
-// New: rehype plugin to convert <doc-source>id</doc-source> and <web-source>id</web-source>
+// Rehype plugin to convert [[doc:id]] and [[web:id]] into custom elements
 const rehypeSourceRefs = () => {
   return (tree: any) => {
-    // const docSourceRegex = /<doc-source>(.*?)<\/doc-source>/g;
-    // const webSourceRegex = /<web-source>(.*?)<\/web-source>/g;
+    const regex = /\[\[(doc|web):([^\]]+)\]\]/g;
 
     const transform = (parent: any) => {
       if (!parent || !Array.isArray(parent.children)) return;
@@ -70,17 +69,14 @@ const rehypeSourceRefs = () => {
 
         if (node?.type === "text" && typeof node.value === "string") {
           const value: string = node.value;
-
-          // Combined regex to find both types of sources
-          const combinedRegex = /<(doc-source|web-source)>(.*?)<\/\1>/g;
-          combinedRegex.lastIndex = 0;
+          regex.lastIndex = 0;
 
           let match: RegExpExecArray | null;
           let lastIndex = 0;
           const newNodes: any[] = [];
 
           // Find and split around matches
-          while ((match = combinedRegex.exec(value)) !== null) {
+          while ((match = regex.exec(value)) !== null) {
             if (match.index > lastIndex) {
               newNodes.push({
                 type: "text",
@@ -88,16 +84,13 @@ const rehypeSourceRefs = () => {
               });
             }
 
-            const sourceType = match[1]; // "doc-source" or "web-source"
+            const sourceType = match[1]; // "doc" or "web"
             const sourceId = match[2]; // the ID
 
             newNodes.push({
               type: "element",
-              tagName:
-                sourceType === "doc-source"
-                  ? "doc-source-ref"
-                  : "web-source-ref",
-              properties: { sourceId },
+              tagName: "source-ref",
+              properties: { sourceType, sourceId },
               children: [],
             });
 
@@ -128,10 +121,9 @@ const rehypeSourceRefs = () => {
   };
 };
 
-// New: allow custom source ref tags in Components typing
+// Allow custom source-ref tag in Components typing
 type ComponentsWithSourceRef = Components & {
-  "doc-source-ref"?: (props: any) => React.ReactNode;
-  "web-source-ref"?: (props: any) => React.ReactNode;
+  "source-ref"?: (props: any) => React.ReactNode;
 };
 
 const getComponents = ({
@@ -141,44 +133,21 @@ const getComponents = ({
   docSources?: DocumentSource[];
   webSources?: WebSource[];
 }): Partial<ComponentsWithSourceRef> => ({
-  // Render our custom element produced by rehypeSourceRefs for document sources
-  "doc-source-ref": ({ node }: any) => {
+  // Render custom element produced by rehypeSourceRefs
+  "source-ref": ({ node }: any) => {
+    const sourceType = node?.properties?.sourceType ?? "";
     const sourceId = node?.properties?.sourceId ?? "";
 
-    if (!docSources) {
-      // Fallback: render original text if sources not available
-      return <>&lt;doc-source&gt;{sourceId}&lt;/doc-source&gt;</>;
+    if (sourceType === "doc") {
+      const source = docSources?.find((s) => s.id === sourceId);
+      return source ? <SourceBadge source={source} /> : null;
+    } else if (sourceType === "web") {
+      const source = webSources?.find((s) => s.id === sourceId);
+      return source ? <WebSourceBadge source={source} /> : null;
     }
 
-    const source = docSources.find((s) => s.id === sourceId);
-
-    if (!source) {
-      // Fallback: render original text if source not found
-      return <>&lt;doc-source&gt;{sourceId}&lt;/doc-source&gt;</>;
-    }
-
-    return <SourceBadge source={source} />;
+    return null;
   },
-
-  // Render our custom element produced by rehypeSourceRefs for web sources
-  "web-source-ref": ({ node }: any) => {
-    const sourceId = node?.properties?.sourceId ?? "";
-
-    if (!webSources) {
-      // Fallback: render original text if sources not available
-      return <>&lt;web-source&gt;{sourceId}&lt;/web-source&gt;</>;
-    }
-
-    const source = webSources.find((s) => s.id === sourceId);
-
-    if (!source) {
-      // Fallback: render original text if source not found
-      return <>&lt;web-source&gt;{sourceId}&lt;/web-source&gt;</>;
-    }
-
-    return <WebSourceBadge source={source} />;
-  },
-
   p: ({ children, ...props }) => {
     const childrenWithLineBreaks = processChildrenWithLineBreaks(children);
     return <p {...props}>{childrenWithLineBreaks}</p>;
@@ -342,15 +311,13 @@ export const Markdown = memo(
     webSources = [],
     parseSourceRefs = false,
   }: MarkdownProps) => {
-    // Memoize components and rehype plugins
     const components = useMemo(
       () => getComponents({ docSources, webSources }),
       [docSources, webSources],
     );
 
     const rehypePlugins = useMemo(() => {
-      const plugins: any[] = [];
-      // Insert our source-ref transformer before other rehype transforms
+      const plugins = [];
       if (parseSourceRefs) {
         plugins.push(rehypeSourceRefs);
       }

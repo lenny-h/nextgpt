@@ -29,6 +29,7 @@ export function SourceBadge({ source, className }: SourceBadgeProps) {
         source.courseId,
         source.fileName,
         source.pageIndex + 1,
+        source.bbox || null,
       );
     }
   };

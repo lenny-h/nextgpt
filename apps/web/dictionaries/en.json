@@ -165,5 +165,20 @@
     "starting": "Starting...",
     "newQuestion": "New question",
     "studyMode": "Study Mode"
+  },
+  "tools": {
+    "processingDocumentSearch": "Processing document search request...",
+    "searchingDocuments": "Searching documents with:",
+    "keywords": "Keywords",
+    "questions": "Questions",
+    "pageNumbers": "Pages",
+    "documentSources": "Document Sources",
+    "page": "p",
+    "processingWebPages": "Processing web page retrieval...",
+    "retrievingWebPages": "Retrieving web pages:",
+    "retrievedPages": "Retrieved Pages",
+    "processingWebSearch": "Processing web search request...",
+    "searchingWeb": "Searching web with:",
+    "webSources": "Web Sources"
   }
 }

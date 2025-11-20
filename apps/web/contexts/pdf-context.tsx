@@ -17,14 +17,16 @@ import { toast } from "sonner";
 
 interface PDFContextType {
   currentPdfUrl: string | null;
-  currentPage: number;
   currentFileName: string | null;
+  currentPage: number;
+  currentBbox: [number, number, number, number] | null;
   openPdf: (
     isMobile: boolean,
     panelRef: RefObject<ImperativePanelHandle | null>,
     courseId: string,
     filename: string,
     page?: number,
+    bbox?: [number, number, number, number] | null,
   ) => Promise<void>;
   isFetching: boolean;
 }
@@ -40,6 +42,9 @@ export function PDFProvider({ children }: { children: ReactNode }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
   const [currentPdfUrl, setCurrentPdfUrl] = useState<string | null>(null);
+  const [currentBbox, setCurrentBbox] = useState<
+    [number, number, number, number] | null
+  >(null);
 
   const [, setEditorMode] = useEditor();
 
@@ -79,10 +84,16 @@ export function PDFProvider({ children }: { children: ReactNode }) {
   );
 
   const loadPdf = useCallback(
-    async (courseId: string, filename: string, page: number) => {
-      // Set the current page
+    async (
+      courseId: string,
+      filename: string,
+      page: number,
+      bbox: [number, number, number, number] | null = null,
+    ) => {
+      // Set the current page and bbox
       setCurrentPage(page);
       setCurrentFileName(filename);
+      setCurrentBbox(bbox);
 
       setIsFetching(true);
 
@@ -108,7 +119,10 @@ export function PDFProvider({ children }: { children: ReactNode }) {
       courseId: string,
       filename: string,
       page = 1,
+      bbox: [number, number, number, number] | null = null,
     ) => {
+      console.log("Opening PDF with bbox:", bbox);
+
       if (isMobile) {
         try {
           const signedUrl = await getSignedUrl(courseId, filename);
@@ -120,10 +134,10 @@ export function PDFProvider({ children }: { children: ReactNode }) {
         }
       } else {
         resizeEditor(panelRef, false);
-        loadPdf(courseId, filename, page);
+        loadPdf(courseId, filename, page, bbox);
       }
     },
-    [getSignedUrl],
+    [getSignedUrl, loadPdf],
   );
 
   return (
@@ -132,6 +146,7 @@ export function PDFProvider({ children }: { children: ReactNode }) {
         currentPdfUrl,
         currentPage,
         currentFileName,
+        currentBbox,
         openPdf,
         isFetching,
       }}

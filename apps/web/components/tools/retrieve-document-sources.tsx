@@ -1,4 +1,5 @@
 import { usePdf } from "@/contexts/pdf-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { type MyUITools } from "@workspace/api-routes/types/custom-ui-tools";
 import {
   Collapsible,
@@ -21,8 +22,8 @@ export const RetrieveDocumentSourcesUI = memo(
     }>;
   }) => {
     console.log("RetrieveDocumentSourcesUI part:", part);
-    console.log("Part state:", part.state);
 
+    const { webT } = useWebTranslations();
     const [isOpen, setIsOpen] = useState(false);
     const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
 
@@ -62,7 +63,7 @@ export const RetrieveDocumentSourcesUI = memo(
         <div className="bg-muted/30 flex items-center gap-3 rounded-md border p-3">
           <Loader2 className="text-primary animate-spin" size={18} />
           <span className="text-sm font-medium">
-            Processing document search request...
+            {webT.tools.processingDocumentSearch}
           </span>
         </div>
       );
@@ -100,12 +101,14 @@ export const RetrieveDocumentSourcesUI = memo(
           <File className="text-primary mt-0.5" size={18} />
           <div className="flex-1">
             <p className="mb-1.5 text-sm font-medium">
-              Searching documents with:
+              {webT.tools?.searchingDocuments ?? "Searching documents with:"}
             </p>
             {currentItem && (
               <div className="mb-1">
                 <span className="text-muted-foreground text-sm">
-                  {currentItem.label}:{" "}
+                  {webT.tools?.[currentItem.type as keyof typeof webT.tools] ??
+                    currentItem.label}
+                  :{" "}
                 </span>
                 <span className="text-sm">
                   {Array.isArray(currentItem.data)
@@ -120,7 +123,12 @@ export const RetrieveDocumentSourcesUI = memo(
     }
 
     if (part.state === "output-available" && part.output?.docSources) {
-      const sources = part.output.docSources;
+      // Sort sources by filename, then by page number
+      const sources = [...part.output.docSources].sort((a, b) => {
+        const fileCompare = a.fileName.localeCompare(b.fileName);
+        if (fileCompare !== 0) return fileCompare;
+        return a.pageIndex - b.pageIndex;
+      });
 
       return (
         <Collapsible
@@ -131,54 +139,60 @@ export const RetrieveDocumentSourcesUI = memo(
           <CollapsibleTrigger className="bg-muted/50 flex w-full cursor-pointer items-center justify-between p-3 text-sm font-medium">
             <div className="flex items-center gap-2">
               <File size={16} className="text-primary" />
-              <span>Document Sources ({sources.length})</span>
+              <span>
+                {webT.tools.documentSources} ({sources.length})
+              </span>
             </div>
             <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={16} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="space-y-1.5 p-3 text-sm">
+            <div className="divide-y text-sm">
               {sources.map((source) => {
                 const isPdf = source.fileName.toLowerCase().endsWith(".pdf");
                 return (
                   <div
                     key={source.id}
                     className={cn(
-                      "flex flex-col gap-1.5 rounded-md border p-3 transition-colors",
+                      "flex items-center gap-2 px-3 py-2 transition-colors",
                       isPdf
-                        ? "bg-muted/30 hover:bg-muted/50 cursor-pointer"
-                        : "bg-muted/20 cursor-default opacity-75",
+                        ? "hover:bg-muted/50 cursor-pointer"
+                        : "cursor-default opacity-75",
                     )}
                     onClick={() => {
                       if (isPdf) {
+                        console.log("Opening PDF with bbox:", source.bbox);
                         openPdf(
                           isMobile,
                           panelRef,
                           source.courseId,
                           source.fileName,
                           source.pageIndex + 1,
+                          source.bbox || null,
                         );
                       }
                     }}
                   >
-                    <div className="flex items-center gap-2">
-                      <File
-                        size={14}
-                        className={
-                          isPdf ? "text-primary" : "text-muted-foreground"
-                        }
-                      />
-                      <span className="font-medium">
-                        {source.fileName}, page {source.pageIndex + 1}
+                    <File
+                      size={14}
+                      className={
+                        isPdf
+                          ? "text-primary shrink-0"
+                          : "text-muted-foreground shrink-0"
+                      }
+                    />
+                    <span className="font-medium">
+                      {source.fileName}, {webT.tools?.page ?? "p"}.
+                      {source.pageIndex + 1}
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">
+                      {source.courseName}
+                    </span>
+                    {!isPdf && (
+                      <span className="text-muted-foreground ml-auto text-xs italic">
+                        {webT.documentsList.previewUnavailable}
                       </span>
-                      {!isPdf && (
-                        <span className="text-muted-foreground ml-auto text-xs italic">
-                          Preview unavailable
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-muted-foreground ml-6 text-sm">
-                      Course: {source.courseName}
-                    </p>
+                    )}
                   </div>
                 );
               })}

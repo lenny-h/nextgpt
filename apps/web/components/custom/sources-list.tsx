@@ -88,6 +88,7 @@ export const SourcesList = ({ sources, isLoading }: Props) => {
                   source.courseId,
                   source.fileName,
                   source.pageIndex + 1,
+                  source.bbox || null,
                 );
               }
             }}

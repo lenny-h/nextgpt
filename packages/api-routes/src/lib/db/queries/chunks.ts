@@ -29,6 +29,7 @@ export async function searchChunksByVs({
       courseId: chunks.courseId,
       courseName: chunks.courseName,
       pageIndex: chunks.pageIndex,
+      bbox: chunks.bbox,
       ...(retrieveContent ? { content: chunks.content } : {}),
       similarity,
     })
@@ -70,6 +71,7 @@ export async function searchChunksByVs({
       courseId: doc.courseId,
       courseName: doc.courseName,
       pageIndex: doc.pageIndex,
+      bbox: (doc.bbox as [number, number, number, number] | null) || undefined,
     };
     if (retrieveContent && "content" in doc && doc.content) {
       return { ...base, pageContent: doc.content as string };
@@ -104,6 +106,7 @@ export async function searchChunksByFts({
           courseName: chunks.courseName,
           pageIndex: chunks.pageIndex,
           pageNumber: chunks.pageNumber,
+          bbox: chunks.bbox,
           content: chunks.content,
         })
         .from(chunks)
@@ -116,6 +119,7 @@ export async function searchChunksByFts({
           courseName: chunks.courseName,
           pageIndex: chunks.pageIndex,
           pageNumber: chunks.pageNumber,
+          bbox: chunks.bbox,
         })
         .from(chunks);
 
@@ -154,6 +158,7 @@ export async function searchChunksByFts({
       courseId: doc.courseId,
       courseName: doc.courseName,
       pageIndex: doc.pageIndex,
+      bbox: (doc.bbox as [number, number, number, number] | null) || undefined,
     };
     if (retrieveContent && "content" in doc && doc.content) {
       return { ...base, pageContent: doc.content as string };
@@ -180,6 +185,7 @@ export async function retrieveChunksByPageNumber({
           courseId: chunks.courseId,
           courseName: chunks.courseName,
           pageIndex: chunks.pageIndex,
+          bbox: chunks.bbox,
           content: chunks.content,
         })
         .from(chunks)
@@ -191,6 +197,7 @@ export async function retrieveChunksByPageNumber({
           courseId: chunks.courseId,
           courseName: chunks.courseName,
           pageIndex: chunks.pageIndex,
+          bbox: chunks.bbox,
         })
         .from(chunks);
 
@@ -227,6 +234,7 @@ export async function retrieveChunksByPageNumber({
       courseId: doc.courseId,
       courseName: doc.courseName,
       pageIndex: doc.pageIndex,
+      bbox: (doc.bbox as [number, number, number, number] | null) || undefined,
     };
     if ("content" in doc && doc.content) {
       return { ...base, pageContent: doc.content as string };
@@ -257,6 +265,7 @@ export async function retrieveRandomChunks({
             courseId: chunks.courseId,
             courseName: chunks.courseName,
             pageIndex: chunks.pageIndex,
+            bbox: chunks.bbox,
             ...(retrieveContent ? { content: chunks.content } : {}),
           })
           .from(chunks)
@@ -275,6 +284,7 @@ export async function retrieveRandomChunks({
         courseId: chunks.courseId,
         courseName: chunks.courseName,
         pageIndex: chunks.pageIndex,
+        bbox: chunks.bbox,
         ...(retrieveContent ? { content: chunks.content } : {}),
       })
       .from(chunks)
@@ -305,6 +315,7 @@ export async function retrieveRandomChunks({
       courseId: page.courseId,
       courseName: page.courseName,
       pageIndex: page.pageIndex,
+      bbox: (page.bbox as [number, number, number, number] | null) || undefined,
     };
     if (retrieveContent && "content" in page && page.content) {
       return { ...base, pageContent: page.content as string };
