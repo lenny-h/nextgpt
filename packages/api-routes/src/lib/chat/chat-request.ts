@@ -97,7 +97,16 @@ export class ChatRequest {
       timezone,
     } = validatedPayload;
 
-    logger.debug("Retrieving previous messages");
+    logger.debug("Creating ChatRequest from incoming request", {
+      chatId: id,
+      userId: user.id,
+      messageCount,
+      selectedChatModel,
+      isTemporary,
+      reasoningEnabled,
+      webSearchEnabled,
+      timezone,
+    });
 
     // For practice chats with lastStartMessageIndex, only retrieve messages after that index
     const prevMessages = await getMessagesByChatId({

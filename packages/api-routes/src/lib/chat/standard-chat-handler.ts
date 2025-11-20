@@ -15,9 +15,9 @@ import { STANDARD_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
 import { modifyDocumentTool } from "../tools/modify-document.js";
-import { retrieveDocumentSourcesTool } from "../tools/retrieve-document-sources.js";
-import { scrapeTool } from "../tools/scrape.js";
-import { searchTool } from "../tools/search.js";
+import { scrapeUrlTool } from "../tools/scrape-url.js";
+import { searchDocumentsTool } from "../tools/search-documents.js";
+import { searchWebTool } from "../tools/search-web.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
@@ -120,7 +120,7 @@ export class StandardChatHandler extends ChatHandler {
     writer: UIMessageStreamWriter<MyUIMessage>
   ): Record<string, Tool> {
     const tools: Record<string, Tool> = {
-      retrieveDocumentSources: retrieveDocumentSourcesTool({
+      searchDocuments: searchDocumentsTool({
         filter: this.request.filter,
         retrieveContent: true, // Always retrieve content to pass as context to the model
       }),
@@ -144,8 +144,8 @@ export class StandardChatHandler extends ChatHandler {
     }
 
     if (process.env.USE_FIRECRAWL === "true" && this.request.webSearchEnabled) {
-      tools.scrape = scrapeTool;
-      tools.search = searchTool;
+      tools.scrape = scrapeUrlTool;
+      tools.search = searchWebTool;
     }
 
     return tools;

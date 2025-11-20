@@ -9,11 +9,11 @@ import equal from "fast-deep-equal";
 import { LazyMotion } from "motion/react";
 import dynamic from "next/dynamic";
 import { memo } from "react";
-import { ModifyDocumentUI } from "../tools/modify-document";
 import { CreateDocumentUI } from "../tools/create-document";
-import { RetrieveDocumentSourcesUI } from "../tools/retrieve-document-sources";
-import { RetrieveWebPagesUI } from "../tools/retrieve-web-pages";
-import { RetrieveWebSourcesUI } from "../tools/retrieve-web-sources";
+import { ModifyDocumentUI } from "../tools/modify-document";
+import { ScrapeUrlUI } from "../tools/scrape-url";
+import { RetrieveDocumentSourcesUI } from "../tools/search-documents";
+import { SearchWebUI } from "../tools/search-web";
 import { Markdown } from "./markdown";
 import { MessageActions } from "./message-actions";
 import { StreamingIndicator } from "./streaming-indicator";
@@ -51,15 +51,14 @@ const PureAgentMessage = ({
 }: AgentMessageProps) => {
   // Aggregate document sources
   const docSources = message.parts
-    .filter((part) => part.type === "tool-retrieveDocumentSources")
+    .filter((part) => part.type === "tool-searchDocuments")
     .flatMap((part) => part.output?.docSources ?? []);
 
   // Aggregate web sources
   const webSources = message.parts
     .filter(
       (part) =>
-        part.type === "tool-retrieveWebSources" ||
-        part.type === "tool-retrieveWebPages",
+        part.type === "tool-searchWeb" || part.type === "tool-scrapeUrl",
     )
     .flatMap((part) => part.output?.webSources ?? []);
 
@@ -127,14 +126,14 @@ const PureAgentMessage = ({
                 }
 
                 // Render tool UI components
-                if (part.type === "tool-retrieveDocumentSources") {
+                if (part.type === "tool-searchDocuments") {
                   return <RetrieveDocumentSourcesUI key={index} part={part} />;
                 }
-                if (part.type === "tool-retrieveWebSources") {
-                  return <RetrieveWebSourcesUI key={index} part={part} />;
+                if (part.type === "tool-searchWeb") {
+                  return <SearchWebUI key={index} part={part} />;
                 }
-                if (part.type === "tool-retrieveWebPages") {
-                  return <RetrieveWebPagesUI key={index} part={part} />;
+                if (part.type === "tool-scrapeUrl") {
+                  return <ScrapeUrlUI key={index} part={part} />;
                 }
                 if (part.type === "tool-createDocument") {
                   return <CreateDocumentUI key={index} part={part} />;

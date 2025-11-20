@@ -1,5 +1,5 @@
-import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import { createLogger } from "@workspace/api-routes/utils/logger.js";
+import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import {
   stepCountIs,
   streamText,
@@ -10,8 +10,8 @@ import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { PRACTICE_SYSTEM_PROMPT } from "../prompts.js";
 import { createMultipleChoiceTool } from "../tools/create-multiple-choice.js";
-import { retrieveDocumentSourcesTool } from "../tools/retrieve-document-sources.js";
 import { retrieveRandomDocumentSourcesTool } from "../tools/retrieve-random-sources.js";
+import { searchDocumentsTool } from "../tools/search-documents.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
@@ -39,7 +39,7 @@ export class PracticeChatHandler extends ChatHandler {
         filter: this.request.filter as PracticeFilter,
         retrieveContent: true,
       }),
-      retrieveDocumentSources: retrieveDocumentSourcesTool({
+      searchDocuments: searchDocumentsTool({
         filter: this.request.filter,
         retrieveContent: true,
       }),
@@ -69,10 +69,10 @@ export class PracticeChatHandler extends ChatHandler {
                     (this.request.filter as PracticeFilter).studyMode ===
                       "multipleChoice"
                   ? ["createMultipleChoice"]
-                  : ["retrieveDocumentSources"],
+                  : ["searchDocuments"],
             toolChoice:
               stepNumber === 0
-                ? { type: "tool", toolName: "retrieveDocumentSources" }
+                ? { type: "tool", toolName: "searchDocuments" }
                 : stepNumber === 1
                   ? { type: "tool", toolName: "createMultipleChoice" }
                   : "none",
@@ -80,7 +80,7 @@ export class PracticeChatHandler extends ChatHandler {
         }
 
         return {
-          activeTools: ["retrieveDocumentSources"],
+          activeTools: ["searchDocuments"],
         };
       },
       stopWhen: stepCountIs(3),

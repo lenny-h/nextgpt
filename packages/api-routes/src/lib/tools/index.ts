@@ -6,7 +6,7 @@ import { uuidSchema } from "../../schemas/uuid-schema.js";
 import { artifactKindSchema } from "../../types/artifact-kind.js";
 
 export const tools = {
-  retrieveDocumentSources: tool({
+  searchDocuments: tool({
     description: "Retrieves document sources based on keywords and questions",
     inputSchema: z.object({
       keywords: z.array(z.string()),

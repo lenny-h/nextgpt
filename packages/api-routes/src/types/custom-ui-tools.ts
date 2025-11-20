@@ -3,7 +3,7 @@ import { type DocumentSource } from "./document-source.js";
 import { type WebSource } from "./web-source.js";
 
 export type MyUITools = {
-  retrieveDocumentSources: {
+  searchDocuments: {
     input: {
       keywords: string[];
       questions: string[];
@@ -11,11 +11,11 @@ export type MyUITools = {
     };
     output: { docSources: DocumentSource[] };
   };
-  retrieveWebSources: {
+  searchWeb: {
     input: { searchTerms: string[] };
     output: { webSources: WebSource[] };
   };
-  retrieveWebPages: {
+  scrapeUrl: {
     input: { urls: string[] };
     output: { webSources: WebSource[] };
   };

@@ -1,8 +1,8 @@
 import * as z from "zod";
 
 import {
-  retrieveDocumentSources,
   retrieveEmbedding,
+  searchDocuments,
 } from "@workspace/api-routes/utils/retrieve-context.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
 import { Hono } from "hono";
@@ -54,7 +54,7 @@ const app = new Hono().post(
       embedding = await retrieveEmbedding(query);
     }
 
-    const sources = await retrieveDocumentSources({
+    const sources = await searchDocuments({
       filter,
       retrieveContent: false,
       embedding,

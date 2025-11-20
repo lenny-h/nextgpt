@@ -25,7 +25,7 @@ export async function retrieveEmbedding(text: string): Promise<number[]> {
   return embedding;
 }
 
-export async function retrieveDocumentSources({
+export async function searchDocuments({
   filter,
   retrieveContent,
   embedding,

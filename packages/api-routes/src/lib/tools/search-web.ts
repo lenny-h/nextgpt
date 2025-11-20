@@ -13,7 +13,7 @@ if (process.env.FIRECRAWL_API_URL) {
 }
 const app = new FirecrawlApp(firecrawlOptions);
 
-export const searchTool = tool({
+export const searchWebTool = tool({
   description: "Search the web for relevant information based on a user query.",
   inputSchema: z.object({
     searchQuery: z.string().min(1).max(100).describe("The search query to use"),

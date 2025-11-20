@@ -6,15 +6,15 @@ import {
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible";
 import { type ToolUIPart } from "ai";
-import { ChevronDownIcon, Globe, Loader2, Search } from "lucide-react";
+import { ChevronDownIcon, Globe, Loader2 } from "lucide-react";
 import { memo, useState } from "react";
 
-export const RetrieveWebSourcesUI = memo(
+export const ScrapeUrlUI = memo(
   ({
     part,
   }: {
     part: ToolUIPart<{
-      retrieveWebSources: MyUITools["retrieveWebSources"];
+      scrapeUrl: MyUITools["scrapeUrl"];
     }>;
   }) => {
     const { webT } = useWebTranslations();
@@ -25,7 +25,7 @@ export const RetrieveWebSourcesUI = memo(
         <div className="bg-muted/30 flex items-center gap-3 rounded-md border p-3">
           <Loader2 className="text-primary animate-spin" size={18} />
           <span className="text-sm font-medium">
-            {webT.tools.processingWebSearch}
+            {webT.tools.processingWebPages}
           </span>
         </div>
       );
@@ -34,16 +34,18 @@ export const RetrieveWebSourcesUI = memo(
     if (part.state === "input-available") {
       return (
         <div className="bg-muted/30 flex items-start gap-3 rounded-md border p-3">
-          <Search className="text-primary mt-0.5" size={18} />
+          <Globe className="text-primary mt-0.5" size={18} />
           <div className="flex-1">
             <p className="mb-1.5 text-sm font-medium">
-              {webT.tools.searchingWeb}
+              {webT.tools?.retrievingWebPages}
             </p>
-            {part.input.searchTerms && (
+            {part.input.urls && part.input.urls.length > 0 && (
               <div className="space-y-1">
-                <div className="text-muted-foreground text-sm">
-                  • {part.input.searchTerms}
-                </div>
+                {part.input.urls.map((url: string, index: number) => (
+                  <div key={index} className="text-muted-foreground text-sm">
+                    • {url}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -67,7 +69,7 @@ export const RetrieveWebSourcesUI = memo(
             <div className="flex items-center gap-2">
               <Globe size={16} className="text-primary" />
               <span>
-                {webT.tools.webSources} ({pages.length})
+                {webT.tools.retrievedPages} ({pages.length})
               </span>
             </div>
             <ChevronDownIcon className={isOpen ? "rotate-180" : ""} size={16} />

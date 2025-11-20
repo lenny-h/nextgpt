@@ -13,7 +13,7 @@ if (process.env.FIRECRAWL_API_URL) {
 }
 const app = new FirecrawlApp(firecrawlOptions);
 
-export const scrapeTool = tool({
+export const scrapeUrlTool = tool({
   description:
     "Scrape the content of a given URL and return it in markdown format.",
   inputSchema: z.object({
