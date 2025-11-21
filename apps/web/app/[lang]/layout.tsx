@@ -19,8 +19,9 @@ export const metadata: Metadata = {
     default: "NextGpt",
     template: "%s - NextGpt",
   },
-  description: "NextGpt is a chatbot developed for educational institutions.",
-  keywords: ["nextgpt", "education", "chatbot"],
+  description:
+    "NextGpt is a chatbot framework that can easily be hosted on the cloud.",
+  keywords: ["nextgpt", "chatbot"],
   robots: {
     index: true,
     follow: true,
