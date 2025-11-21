@@ -1,31 +1,49 @@
 #!/bin/bash
 set -e
 
-# Usage: bash build_and_push_images.sh <project_id> <region> [--skip-firecrawl]
+# Usage: bash build_and_push_images.sh <project_id> <region> [--skip-firecrawl] [--service <service_name>]
 PROJECT_ID=$1
 REGION=$2
 REPO="$REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository"
 SKIP_FIRECRAWL=false
+declare -a FILTER_SERVICES=()
 
-# Check for skip-firecrawl flag
-for arg in "$@"; do
-  if [ "$arg" == "--skip-firecrawl" ]; then
-    SKIP_FIRECRAWL=true
-  fi
+# Parse arguments
+shift 2 # Skip PROJECT_ID and REGION
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --skip-firecrawl)
+      SKIP_FIRECRAWL=true
+      shift
+      ;;
+    --service)
+      FILTER_SERVICES+=("$2")
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
 done
 
 if [ -z "$PROJECT_ID" ] || [ -z "$REGION" ]; then
-  echo "Usage: bash build_and_push_images.sh <project_id> <region> [--skip-firecrawl]"
+  echo "Usage: bash build_and_push_images.sh <project_id> <region> [--skip-firecrawl] [--service <service_name>]"
   exit 1
 fi
 
-declare -a SERVICES=("api" "pdf-exporter" "document-processor" "db-migrator")
+declare -a SERVICES=()
 
-if [ "$SKIP_FIRECRAWL" = false ]; then
-  SERVICES+=("firecrawl-api" "playwright-service")
-  echo "Including Firecrawl services in build..."
+if [ ${#FILTER_SERVICES[@]} -gt 0 ]; then
+  SERVICES=("${FILTER_SERVICES[@]}")
+  echo "Building specific services: ${SERVICES[*]}"
 else
-  echo "Skipping Firecrawl services..."
+  SERVICES=("api" "pdf-exporter" "document-processor" "db-migrator")
+  if [ "$SKIP_FIRECRAWL" = false ]; then
+    SERVICES+=("firecrawl-api" "playwright-service")
+    echo "Including Firecrawl services in build..."
+  else
+    echo "Skipping Firecrawl services..."
+  fi
 fi
 
 for SERVICE in "${SERVICES[@]}"; do
@@ -33,32 +51,25 @@ for SERVICE in "${SERVICES[@]}"; do
 
   # Define the original local image name and the cloud repository image name
   if [ "$SERVICE" == "firecrawl-api" ]; then
-    LOCAL_IMAGE="firecrawl-api:latest"
     CLOUD_IMAGE="$REPO/firecrawl-api:latest"
   elif [ "$SERVICE" == "playwright-service" ]; then
-    LOCAL_IMAGE="firecrawl-playwright:latest"
     CLOUD_IMAGE="$REPO/firecrawl-playwright:latest"
   else
-    LOCAL_IMAGE="$SERVICE:latest"
     CLOUD_IMAGE="$REPO/$SERVICE:latest"
   fi
 
   # Build the image with its original name if it doesn't exist
-  if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^$LOCAL_IMAGE$"; then
+  if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^$CLOUD_IMAGE$"; then
     if [ "$SERVICE" == "firecrawl-api" ] || [ "$SERVICE" == "playwright-service" ]; then
-      echo "Error: $LOCAL_IMAGE must exist locally. Please build it first."
+      echo "Error: $CLOUD_IMAGE must exist locally. Please build it first."
       exit 1
     else
       echo "Building $SERVICE from apps/$SERVICE/Dockerfile..."
-      docker build -f apps/$SERVICE/Dockerfile -t $LOCAL_IMAGE .
+      docker buildx build --platform linux/amd64 -f apps/$SERVICE/Dockerfile -t $CLOUD_IMAGE .
     fi
   else
-    echo "Image $LOCAL_IMAGE already exists locally. Skipping build."
+    echo "Image $CLOUD_IMAGE already exists locally. Skipping build."
   fi
-
-  # Tag the local image for the cloud repository
-  echo "Tagging $LOCAL_IMAGE as $CLOUD_IMAGE..."
-  docker tag $LOCAL_IMAGE $CLOUD_IMAGE
 
   # Push to cloud repository
   echo "Pushing $CLOUD_IMAGE..."

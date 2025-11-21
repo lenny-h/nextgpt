@@ -8,7 +8,10 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectName,
     
-    [switch]$SkipFirecrawl
+    [switch]$SkipFirecrawl,
+
+    [Parameter(Mandatory = $false)]
+    [string[]]$Service
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,14 +31,27 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-$Services = @("api", "pdf-exporter", "document-processor", "db-migrator")
-
-if (-not $SkipFirecrawl) {
-    $Services += @("firecrawl-api", "playwright-service")
-    Write-Host "Including Firecrawl services in build..." -ForegroundColor Yellow
+if ($Service) {
+    $Services = $Service
+    Write-Host "Building specific services: $($Services -join ', ')" -ForegroundColor Yellow
 }
 else {
-    Write-Host "Skipping Firecrawl services..." -ForegroundColor Yellow
+    $Services = @("api", "pdf-exporter", "document-processor", "db-migrator")
+
+    if (-not $SkipFirecrawl) {
+        $Services += @("firecrawl-api", "playwright-service")
+        Write-Host "Including Firecrawl services in build..." -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "Skipping Firecrawl services..." -ForegroundColor Yellow
+    }
+}
+
+# Install QEMU emulation support for cross-platform builds
+Write-Host "Installing QEMU emulation support..." -ForegroundColor Cyan
+docker run --privileged --rm tonistiigi/binfmt --install all
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Failed to install QEMU emulation support. Cross-platform builds might fail."
 }
 
 foreach ($Service in $Services) {
@@ -44,43 +60,44 @@ foreach ($Service in $Services) {
     # Define the original local image name and the ECR image name
     switch ($Service) {
         "firecrawl-api" {
-            $LocalImage = "firecrawl-api:latest"
             $EcrImage = "$Repo-firecrawl-api:latest"
         }
         "playwright-service" {
-            $LocalImage = "firecrawl-playwright:latest"
             $EcrImage = "$Repo-playwright-service:latest"
         }
         default {
-            $LocalImage = "${Service}:latest"
             $EcrImage = "$Repo-${Service}:latest"
         }
     }
 
     # Build the image with its original name if it doesn't exist
-    $imageExists = docker images --format "{{.Repository}}:{{.Tag}}" | Select-String -Pattern "^$([regex]::Escape($LocalImage))$" -Quiet
+    $imageExists = docker images --format "{{.Repository}}:{{.Tag}}" | Select-String -Pattern "^$([regex]::Escape($EcrImage))$" -Quiet
     
     if (-not $imageExists) {
         if ($Service -eq "firecrawl-api" -or $Service -eq "playwright-service") {
-            Write-Error "Error: $LocalImage must exist locally. Please build it first."
+            Write-Error "Error: $EcrImage must exist locally. Please build it first."
             exit 1
         }
         else {
             Write-Host "Building $Service from apps/$Service/Dockerfile..." -ForegroundColor Cyan
-            docker build -f "apps/$Service/Dockerfile" -t $LocalImage .
+            docker buildx build --platform linux/amd64 -f "apps/$Service/Dockerfile" -t $EcrImage .
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Docker build failed for $Service"
+                exit 1
+            }
         }
     }
     else {
-        Write-Host "Image $LocalImage already exists locally. Skipping build." -ForegroundColor Yellow
+        Write-Host "Image $EcrImage already exists locally. Skipping build." -ForegroundColor Yellow
     }
-
-    # Tag the local image for ECR
-    Write-Host "Tagging $LocalImage as $EcrImage..." -ForegroundColor Cyan
-    docker tag $LocalImage $EcrImage
 
     # Push to ECR
     Write-Host "Pushing $EcrImage..." -ForegroundColor Cyan
     docker push $EcrImage
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Docker push failed for $EcrImage"
+        exit 1
+    }
 }
 
 Write-Host "All images have been built and pushed successfully." -ForegroundColor Green

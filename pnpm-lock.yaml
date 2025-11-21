@@ -180,9 +180,6 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.1
         version: 1.19.1(hono@4.9.6)
-      '@workspace/api-routes':
-        specifier: workspace:*
-        version: link:../../packages/api-routes
       '@workspace/server':
         specifier: workspace:*
         version: link:../../packages/server
