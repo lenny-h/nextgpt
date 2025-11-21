@@ -1,9 +1,9 @@
 import * as z from "zod";
 
 import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema.js";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { userHasPermissions } from "@workspace/api-routes/utils/user-has-permissions.js";
 import { User } from "@workspace/server/drizzle/schema.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { validateUIMessages } from "ai";
 import { type Context } from "hono";
 import { HTTPException } from "hono/http-exception";

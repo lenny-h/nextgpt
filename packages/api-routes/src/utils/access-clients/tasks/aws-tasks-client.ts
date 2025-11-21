@@ -4,7 +4,7 @@ import {
   FlexibleTimeWindowMode,
   SchedulerClient,
 } from "@aws-sdk/client-scheduler";
-import { createLogger } from "../../logger.js";
+import { createLogger } from "@workspace/server/logger.js";
 import {
   CancelTaskParams,
   ITasksClient,

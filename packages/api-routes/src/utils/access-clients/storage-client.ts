@@ -1,4 +1,4 @@
-import { createLogger } from "../logger.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { IStorageClient } from "./interfaces/storage-client.interface.js";
 import { AwsStorageClient } from "./storage/aws-storage-client.js";
 import { CloudflareStorageClient } from "./storage/cloudflare-storage-client.js";
@@ -58,9 +58,7 @@ export function getStorageClient(): IStorageClient {
 
     default:
       // Default to Google Cloud Storage if not specified
-      logger.error(
-        `Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`
-      );
+      logger.error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
       throw new Error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
   }
 

@@ -2,8 +2,8 @@ import { insertDocument } from "@workspace/api-routes/lib/db/queries/documents.j
 import { getPrompt } from "@workspace/api-routes/lib/db/queries/prompts.js";
 import { getModel } from "@workspace/api-routes/lib/providers.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { studentEvaluationModelIdx } from "@workspace/api-routes/utils/models.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { generateText } from "ai";
 import { Hono } from "hono";
 import { validator } from "hono/validator";

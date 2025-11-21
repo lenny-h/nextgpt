@@ -1,5 +1,6 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import { documents, prompts } from "@workspace/server/drizzle/schema.js";
+import { createLogger } from "@workspace/server/logger.js";
 import {
   getRedisClient,
   getUserPermissionsCacheKey,
@@ -11,7 +12,6 @@ import { isBucketUser } from "../lib/db/queries/buckets.js";
 import { validateCoursesInBucket } from "../lib/db/queries/courses.js";
 import { getCourseIdsByFileIds } from "../lib/db/queries/files.js";
 import { Attachment } from "../schemas/attachment-schema.js";
-import { createLogger } from "./logger.js";
 
 const logger = createLogger("user-has-permissions");
 

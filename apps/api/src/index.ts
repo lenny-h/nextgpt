@@ -1,7 +1,7 @@
 import "@workspace/server/types/hono.js";
 
 import { serve } from "@hono/node-server";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
+import { createLogger } from "@workspace/server/logger.js";
 import app from "./app.js";
 
 // Configure logger
@@ -26,4 +26,3 @@ serve(
     logger.info(`Server running on http://localhost:${info.port}`);
   }
 );
-

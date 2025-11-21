@@ -8,7 +8,7 @@ import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";

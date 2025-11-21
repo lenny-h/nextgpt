@@ -180,6 +180,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.1
         version: 1.19.1(hono@4.9.6)
+      '@workspace/api-routes':
+        specifier: workspace:*
+        version: link:../../packages/api-routes
       '@workspace/server':
         specifier: workspace:*
         version: link:../../packages/server
@@ -194,14 +197,14 @@ importers:
         version: 1.56.1
       zod:
         specifier: ^4.1.11
-        version: 4.1.11
+        version: 4.1.12
     devDependencies:
       '@types/node':
         specifier: ^22.13.14
         version: 22.18.1
       dotenv:
         specifier: ^17.2.2
-        version: 17.2.2
+        version: 17.2.3
       tsx:
         specifier: ^4.20.5
         version: 4.20.5

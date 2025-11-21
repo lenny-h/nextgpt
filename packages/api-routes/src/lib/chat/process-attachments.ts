@@ -4,7 +4,7 @@ import {
   type MyUIMessagePart,
 } from "@workspace/api-routes/types/custom-ui-message.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
+import { createLogger } from "@workspace/server/logger.js";
 
 const logger = createLogger("process-attachments");
 

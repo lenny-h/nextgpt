@@ -1,5 +1,5 @@
+import { createLogger } from "@workspace/server/logger.js";
 import http from "node:http";
-import { createLogger } from "../../logger.js";
 import {
   CancelTaskParams,
   ITasksClient,

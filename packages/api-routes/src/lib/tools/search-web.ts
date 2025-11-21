@@ -1,7 +1,7 @@
 import FirecrawlApp from "@mendable/firecrawl-js";
+import { createLogger } from "@workspace/server/logger.js";
 import { tool } from "ai";
 import { z } from "zod";
-import { createLogger } from "../../utils/logger.js";
 
 const logger = createLogger("search-tool");
 

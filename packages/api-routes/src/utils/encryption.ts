@@ -1,5 +1,5 @@
+import { createLogger } from "@workspace/server/logger.js";
 import crypto from "crypto";
-import { createLogger } from "./logger.js";
 
 const logger = createLogger("encryption");
 

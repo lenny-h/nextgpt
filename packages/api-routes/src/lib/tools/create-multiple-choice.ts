@@ -1,6 +1,6 @@
-import * as z from "zod";
+import { createLogger } from "@workspace/server/logger.js";
 import { tool } from "ai";
-import { createLogger } from "../../utils/logger.js";
+import * as z from "zod";
 
 const logger = createLogger("create-multiple-choice-tool");
 
@@ -16,8 +16,11 @@ export const createMultipleChoiceTool = tool({
     correctAnswer: z.enum(["A", "B", "C", "D"]),
   }),
   execute: async ({ question, correctAnswer }) => {
-    logger.debug("Creating multiple choice question:", { question, correctAnswer });
-    
+    logger.debug("Creating multiple choice question:", {
+      question,
+      correctAnswer,
+    });
+
     return {
       message:
         "The multiple choice question has been created and sent to the user.",

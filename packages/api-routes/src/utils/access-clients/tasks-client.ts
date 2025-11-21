@@ -1,4 +1,4 @@
-import { createLogger } from "../logger.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { ITasksClient } from "./interfaces/tasks-client.interface.js";
 import { AwsTasksClient } from "./tasks/aws-tasks-client.js";
 import { GoogleTasksClient } from "./tasks/google-tasks-client.js";
@@ -46,9 +46,7 @@ export function getTasksClient(): ITasksClient {
 
     default:
       // Default to local tasks client if not specified
-      logger.error(
-        `Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`
-      );
+      logger.error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
       throw new Error(`Unsupported CLOUD_PROVIDER ${cloudProvider} specified.`);
   }
 

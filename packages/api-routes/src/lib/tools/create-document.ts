@@ -2,11 +2,11 @@ import { z } from "zod";
 
 import { db } from "@workspace/server/drizzle/db.js";
 import { toolCallDocuments } from "@workspace/server/drizzle/schema.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { type UIMessageStreamWriter, tool } from "ai";
 import { artifactKindSchema } from "../../types/artifact-kind.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { generateUUID } from "../../utils/utils.js";
-import { createLogger } from "../../utils/logger.js";
 import { documentHandlers } from "./document-handlers.js";
 
 const logger = createLogger("create-document-tool");
@@ -35,7 +35,7 @@ export const createDocumentTool = ({
       { experimental_context: context }
     ) => {
       const documentId = generateUUID();
-      
+
       logger.debug("Creating document:", { documentId, documentTitle, kind });
 
       const documentHandler = documentHandlers.find(
@@ -67,7 +67,10 @@ export const createDocumentTool = ({
           kind,
         });
 
-        logger.debug("Document created successfully:", { documentId, documentTitle });
+        logger.debug("Document created successfully:", {
+          documentId,
+          documentTitle,
+        });
 
         return {
           message:
@@ -77,7 +80,11 @@ export const createDocumentTool = ({
           kind,
         };
       } catch (error) {
-        logger.error("Failed to create document:", { documentId, documentTitle, kind }, error);
+        logger.error(
+          "Failed to create document:",
+          { documentId, documentTitle, kind },
+          error
+        );
         throw error;
       }
     },

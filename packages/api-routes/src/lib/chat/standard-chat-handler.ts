@@ -1,8 +1,8 @@
 import { generateTitleFromUserMessage } from "@workspace/api-routes/utils/generate-title.js";
-import { createLogger } from "@workspace/api-routes/utils/logger.js";
 import { chatTitleModelIdx } from "@workspace/api-routes/utils/models.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import { type CustomDocument } from "@workspace/server/drizzle/schema.js";
+import { createLogger } from "@workspace/server/logger.js";
 import {
   stepCountIs,
   streamText,

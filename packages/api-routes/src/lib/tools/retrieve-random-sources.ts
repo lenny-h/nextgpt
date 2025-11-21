@@ -1,8 +1,8 @@
 import * as z from "zod";
 
+import { type PracticeFilter } from "@workspace/api-routes/schemas/practice-filter-schema.js";
+import { createLogger } from "@workspace/server/logger.js";
 import { type Tool, tool } from "ai";
-import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
-import { createLogger } from "../../utils/logger.js";
 import { retrieveRandomChunks } from "../db/queries/chunks.js";
 
 const logger = createLogger("retrieve-random-sources-tool");
