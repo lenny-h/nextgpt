@@ -16,8 +16,7 @@
   },
   "observability": {
     "logs": {
-      "enabled": true,
-      "sample_rate": 1.0
+      "enabled": true
     }
   }
 }

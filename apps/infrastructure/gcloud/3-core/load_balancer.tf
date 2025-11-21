@@ -160,7 +160,7 @@ resource "google_cloud_run_v2_service_iam_binding" "api_lb_invoker" {
   name     = google_cloud_run_v2_service.api.name
   role     = "roles/run.invoker"
   members = [
-    "serviceAccount:service-${var.google_vertex_project}@gcp-gae-service.iam.gserviceaccount.com",
+    "allUsers",
   ]
 }
 
@@ -170,6 +170,6 @@ resource "google_cloud_run_v2_service_iam_binding" "pdf_exporter_lb_invoker" {
   name     = google_cloud_run_v2_service.pdf_exporter.name
   role     = "roles/run.invoker"
   members = [
-    "serviceAccount:service-${var.google_vertex_project}@gcp-gae-service.iam.gserviceaccount.com",
+    "allUsers",
   ]
 }

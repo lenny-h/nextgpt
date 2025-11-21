@@ -18,7 +18,7 @@
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.2",
     "@hookform/resolvers": "^5.2.1",
-    "@opennextjs/cloudflare": "^1.8.2",
+    "@opennextjs/cloudflare": "^1.13.1",
     "@tanstack/react-query": "^5.87.1",
     "@workspace/ui": "workspace:*",
     "ai": "^5.0.93",
@@ -60,6 +60,6 @@
     "prettier-plugin-tailwindcss": "^0.6.14",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8",
-    "wrangler": "^4.36.0"
+    "wrangler": "^4.50.0"
   }
 }

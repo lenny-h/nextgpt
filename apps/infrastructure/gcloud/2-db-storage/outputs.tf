@@ -49,7 +49,6 @@ output "redis_port" {
 output "redis_url" {
   description = "The full Redis connection URL"
   value       = "redis://${google_redis_instance.redis.host}:${google_redis_instance.redis.port}"
-  sensitive   = true
 }
 
 # Secret Manager outputs

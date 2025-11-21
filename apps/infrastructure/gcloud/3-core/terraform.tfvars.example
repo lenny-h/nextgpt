@@ -44,7 +44,7 @@ encryption_key = "your-64-character-encryption-key"
 use_cloudflare_r2            = false
 cloudflare_access_key_id     = "your-cloudflare-access-key-id"
 cloudflare_secret_access_key = "your-cloudflare-secret-access-key"
-r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
+r2_endpoint                  = "https://<your-account-id>.r2.cloudflarestorage.com"
 
 # AI Models
 embeddings_model = "text-embedding-004"
