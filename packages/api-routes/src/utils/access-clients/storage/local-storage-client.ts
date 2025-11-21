@@ -12,45 +12,57 @@ import { IStorageClient } from "../interfaces/storage-client.interface.js";
  */
 export class LocalStorageClient implements IStorageClient {
   private s3Client: S3Client | null = null;
-  private clientCreationTime: number | null = null;
-  private readonly CLIENT_MAX_AGE = 60 * 60 * 1000; // 1 hour
+  private publicS3Client: S3Client | null = null;
 
   private getS3Client(): S3Client {
-    const now = Date.now();
-
-    if (
-      !this.s3Client ||
-      !this.clientCreationTime ||
-      now - this.clientCreationTime > this.CLIENT_MAX_AGE
-    ) {
-      if (this.s3Client) {
-        this.s3Client = null;
-      }
-
-      const endpoint = process.env.MINIO_ENDPOINT;
-      const accessKeyId = process.env.MINIO_ROOT_USER;
-      const secretAccessKey = process.env.MINIO_ROOT_PASSWORD;
-
-      if (!endpoint || !accessKeyId || !secretAccessKey) {
-        throw new Error(
-          "MINIO_ENDPOINT, MINIO_ROOT_USER, or MINIO_ROOT_PASSWORD not configured"
-        );
-      }
-
-      this.s3Client = new S3Client({
-        region: "us-east-1", // MinIO uses this as default
-        endpoint,
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-        },
-        forcePathStyle: true, // Required for MinIO
-      });
-
-      this.clientCreationTime = now;
+    if (!this.s3Client) {
+      this.initializeClients();
     }
 
-    return this.s3Client;
+    return this.s3Client!;
+  }
+
+  private getPublicS3Client(): S3Client {
+    if (!this.publicS3Client) {
+      this.initializeClients();
+    }
+
+    return this.publicS3Client!;
+  }
+
+  private initializeClients() {
+    if (this.s3Client) this.s3Client = null;
+    if (this.publicS3Client) this.publicS3Client = null;
+
+    const endpoint = process.env.MINIO_ENDPOINT;
+    const publicEndpoint = process.env.MINIO_PUBLIC_ENDPOINT || endpoint;
+    const accessKeyId = process.env.MINIO_ROOT_USER;
+    const secretAccessKey = process.env.MINIO_ROOT_PASSWORD;
+
+    if (!endpoint || !accessKeyId || !secretAccessKey) {
+      throw new Error(
+        "MINIO_ENDPOINT, MINIO_ROOT_USER, or MINIO_ROOT_PASSWORD not configured"
+      );
+    }
+
+    const clientConfig = {
+      region: "us-east-1", // MinIO uses this as default
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+      forcePathStyle: true, // Required for MinIO
+    };
+
+    this.s3Client = new S3Client({
+      ...clientConfig,
+      endpoint,
+    });
+
+    this.publicS3Client = new S3Client({
+      ...clientConfig,
+      endpoint: publicEndpoint,
+    });
   }
 
   async getSignedUrlForUpload({
@@ -64,7 +76,7 @@ export class LocalStorageClient implements IStorageClient {
     contentType: string;
     contentLength: number;
   }): Promise<string> {
-    const s3Client = this.getS3Client();
+    const s3Client = this.getPublicS3Client();
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -82,7 +94,7 @@ export class LocalStorageClient implements IStorageClient {
     bucket: string;
     key: string;
   }): Promise<string> {
-    const s3Client = this.getS3Client();
+    const s3Client = this.getPublicS3Client();
     const command = new GetObjectCommand({
       Bucket: bucket,
       Key: key,

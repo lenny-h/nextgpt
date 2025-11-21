@@ -6,23 +6,10 @@ import { IStorageClient } from "../interfaces/storage-client.interface.js";
  */
 export class GoogleStorageClient implements IStorageClient {
   private storage: Storage | null = null;
-  private clientCreationTime: number | null = null;
-  private readonly CLIENT_MAX_AGE = 60 * 60 * 1000; // 1 hour
 
   private getStorageClient(): Storage {
-    const now = Date.now();
-
-    if (
-      !this.storage ||
-      !this.clientCreationTime ||
-      now - this.clientCreationTime > this.CLIENT_MAX_AGE
-    ) {
-      if (this.storage) {
-        this.storage = null;
-      }
-
+    if (!this.storage) {
       this.storage = new Storage();
-      this.clientCreationTime = now;
     }
 
     return this.storage;

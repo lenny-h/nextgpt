@@ -18,35 +18,20 @@ class AwsStorageClient(IStorageClient):
     def __init__(self):
         self._client: Optional[Any] = None
         self._client_lock = threading.Lock()
-        self._client_creation_time: Optional[float] = None
-        self.CLIENT_MAX_AGE = 60 * 60  # 1 hour in seconds
 
     def _get_client(self) -> Any:
         """
         Get or create the S3 client singleton.
         Lazily initializes the client on first access.
         Thread-safe using double-checked locking.
-        Refreshes client if it's too old.
 
         Returns:
             boto3.client: Initialized S3 client
         """
-        import time
-
-        now = time.time()
-
-        if (
-            self._client is None
-            or self._client_creation_time is None
-            or now - self._client_creation_time > self.CLIENT_MAX_AGE
-        ):
+        if self._client is None:
             with self._client_lock:
                 # Double-check after acquiring lock
-                if (
-                    self._client is None
-                    or self._client_creation_time is None
-                    or now - self._client_creation_time > self.CLIENT_MAX_AGE
-                ):
+                if self._client is None:
                     # Use explicit credentials if provided
                     if os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_SECRET_ACCESS_KEY"):
                         self._client = boto3.client(
@@ -59,8 +44,6 @@ class AwsStorageClient(IStorageClient):
                     else:
                         # Let boto3 use its default provider chain
                         self._client = boto3.client("s3")
-
-                    self._client_creation_time = now
 
         return self._client
 

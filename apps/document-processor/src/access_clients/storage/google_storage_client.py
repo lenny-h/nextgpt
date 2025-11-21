@@ -18,37 +18,21 @@ class GoogleStorageClient(IStorageClient):
     def __init__(self):
         self._client: Optional[storage.Client] = None
         self._client_lock = threading.Lock()
-        self._client_creation_time: Optional[float] = None
-        self.CLIENT_MAX_AGE = 60 * 60  # 1 hour in seconds
 
     def _get_client(self) -> storage.Client:
         """
         Get or create the GCS storage client singleton.
         Lazily initializes the client on first access.
         Thread-safe using double-checked locking.
-        Refreshes client if it's too old.
 
         Returns:
             storage.Client: Initialized GCS client
         """
-        import time
-
-        now = time.time()
-
-        if (
-            self._client is None
-            or self._client_creation_time is None
-            or now - self._client_creation_time > self.CLIENT_MAX_AGE
-        ):
+        if self._client is None:
             with self._client_lock:
                 # Double-check after acquiring lock
-                if (
-                    self._client is None
-                    or self._client_creation_time is None
-                    or now - self._client_creation_time > self.CLIENT_MAX_AGE
-                ):
+                if self._client is None:
                     self._client = storage.Client()
-                    self._client_creation_time = now
 
         return self._client
 
