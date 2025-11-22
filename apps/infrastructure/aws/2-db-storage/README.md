@@ -41,13 +41,6 @@ cp terraform.tfvars.example terraform.tfvars
 terraform apply
 ```
 
-4. Run database migrations:
-
-```bash
-# You'll need to run the db-migrator task manually after deployment
-# Use AWS CLI or Console to execute the ECS task
-```
-
 ## Outputs
 
 This module exports networking, database, and IAM resources that will be imported by subsequent infrastructure layers.

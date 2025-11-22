@@ -4,7 +4,7 @@ resource "aws_ecr_repository" "api" {
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = false
   }
 
   tags = {
@@ -17,7 +17,7 @@ resource "aws_ecr_repository" "document_processor" {
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = false
   }
 
   tags = {
@@ -30,7 +30,7 @@ resource "aws_ecr_repository" "pdf_exporter" {
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = false
   }
 
   tags = {
@@ -43,7 +43,7 @@ resource "aws_ecr_repository" "db_migrator" {
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = false
   }
 
   tags = {
@@ -56,7 +56,7 @@ resource "aws_ecr_repository" "firecrawl_api" {
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = false
   }
 
   tags = {
@@ -69,7 +69,7 @@ resource "aws_ecr_repository" "firecrawl_playwright" {
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = false
   }
 
   tags = {

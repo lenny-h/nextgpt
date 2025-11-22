@@ -1,4 +1,4 @@
-name: Database Migrations
+name: GCP Database Migrations
 
 on:
   workflow_dispatch:
@@ -89,8 +89,8 @@ jobs:
           echo "Latest execution: $EXECUTION"
 
           gcloud run jobs executions describe $EXECUTION \
-            --project=${{ env.PROJECT_ID }}
-            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --region=${{ env.REGION }}
 
       - name: Get migration logs
         if: always()

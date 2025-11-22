@@ -37,6 +37,13 @@ resource "google_cloud_run_v2_job_iam_member" "db_migrator_invoker" {
   member   = "serviceAccount:${google_service_account.ci_cd_sa.email}"
 }
 
+# Grant CI/CD service account the ability to view logs
+resource "google_project_iam_member" "ci_cd_logging_viewer" {
+  project = var.google_vertex_project
+  role    = "roles/logging.viewer"
+  member  = "serviceAccount:${google_service_account.ci_cd_sa.email}"
+}
+
 # Create service account key for GitHub Actions
 resource "google_service_account_key" "ci_cd_sa_key" {
   service_account_id = google_service_account.ci_cd_sa.name

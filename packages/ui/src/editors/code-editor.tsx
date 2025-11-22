@@ -2,7 +2,6 @@
 
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
-import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { EditorState } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -32,14 +31,7 @@ export const CodeEditor = memo(({ codeEditorRef: editorRef }: EditorProps) => {
     if (containerRef.current && !editorRef.current) {
       const startState = EditorState.create({
         doc: localStorageInput.content,
-        extensions: [
-          basicSetup,
-          python(),
-          javascript(),
-          java(),
-          cpp(),
-          oneDark,
-        ],
+        extensions: [basicSetup, python(), java(), cpp(), oneDark],
       });
 
       editorRef.current = new EditorView({

@@ -30,6 +30,9 @@ terraform {
   # }
 }
 
+# Data source to get current AWS account ID
+data "aws_caller_identity" "current" {}
+
 # Data source to import state from 1-repository
 data "terraform_remote_state" "repository" {
   backend = "local" # Change to "s3" if using remote backend
