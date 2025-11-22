@@ -1,5 +1,5 @@
 # AWS Configuration
-aws_project_name  = "my-project"
+aws_project_name  = "my-project" # any unique name
 aws_region        = "us-east-1"
 
 # GitHub Integration
