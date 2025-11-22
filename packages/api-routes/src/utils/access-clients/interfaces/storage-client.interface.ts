@@ -10,7 +10,7 @@ export interface IStorageClient {
     key: string;
     contentType: string;
     contentLength: number;
-  }): Promise<string>;
+  }): Promise<{ url: string; headers: Record<string, string> }>;
 
   /**
    * Generate a signed URL for downloading a file

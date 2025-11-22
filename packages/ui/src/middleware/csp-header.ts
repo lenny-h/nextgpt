@@ -13,9 +13,8 @@ export function cspMiddleware(middleware: CustomMiddleware) {
     const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
     const cspHeader = `
         default-src 'self';
-        script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'${
-          env === "development" ? " 'unsafe-eval'" : ""
-        } https: http:;
+        script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'${env === "development" ? " 'unsafe-eval'" : ""
+      } https: http:;
         style-src 'self' 'unsafe-inline';
         img-src 'self';
         font-src 'self';

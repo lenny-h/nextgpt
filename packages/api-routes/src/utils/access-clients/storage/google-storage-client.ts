@@ -25,7 +25,7 @@ export class GoogleStorageClient implements IStorageClient {
     key: string;
     contentType: string;
     contentLength: number;
-  }): Promise<string> {
+  }): Promise<{ url: string; headers: Record<string, string> }> {
     const storage = this.getStorageClient();
     const blob = storage
       .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
@@ -41,7 +41,12 @@ export class GoogleStorageClient implements IStorageClient {
       },
     });
 
-    return signedUrl;
+    return {
+      url: signedUrl,
+      headers: {
+        "x-goog-content-length-range": `0,${contentLength}`,
+      },
+    };
   }
 
   async getSignedUrlForDownload({

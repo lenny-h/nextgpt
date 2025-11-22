@@ -30,6 +30,7 @@ export function useCorrectionDropzone({
     return {
       signedUrl: result.signedUrl,
       extFilename: result.newFilename,
+      headers: result.headers,
     };
   };
 
@@ -37,6 +38,5 @@ export function useCorrectionDropzone({
     onUploadChange,
     getSignedUrl,
     maxFiles,
-    useGoogleStorage: true,
   });
 }

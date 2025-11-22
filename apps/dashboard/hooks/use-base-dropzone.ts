@@ -13,17 +13,16 @@ interface Props {
     signedUrl: string;
     extFilename: string;
     processingDate?: string;
+    headers?: Record<string, string>;
   }>;
   onUploadChange?: (uploads: { [key: string]: Upload }) => void;
   maxFiles?: number;
-  useGoogleStorage?: boolean;
 }
 
 export function useBaseDropzone({
   getSignedUrl,
   onUploadChange,
   maxFiles,
-  useGoogleStorage = false,
 }: Props) {
   const { sharedT } = useSharedTranslations();
   const [uploads, setUploads] = useState<{ [key: string]: Upload }>({});
@@ -62,7 +61,7 @@ export function useBaseDropzone({
     }));
 
     try {
-      const { signedUrl, extFilename } = await getSignedUrl(file, name);
+      const { signedUrl, extFilename, headers } = await getSignedUrl(file, name);
       const renamedFile = new File([file], extFilename, { type: file.type });
 
       await new Promise((resolve, reject) => {
@@ -107,8 +106,10 @@ export function useBaseDropzone({
 
         xhr.open("PUT", signedUrl);
         xhr.setRequestHeader("Content-Type", file.type);
-        if (useGoogleStorage) {
-          xhr.setRequestHeader("x-goog-content-length-range", `0,${file.size}`);
+        if (headers) {
+          Object.entries(headers).forEach(([key, value]) => {
+            xhr.setRequestHeader(key, value);
+          });
         }
 
         xhr.send(renamedFile);

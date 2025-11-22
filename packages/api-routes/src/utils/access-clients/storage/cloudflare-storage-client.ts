@@ -48,7 +48,7 @@ export class CloudflareStorageClient implements IStorageClient {
     key: string;
     contentType: string;
     contentLength: number;
-  }): Promise<string> {
+  }): Promise<{ url: string; headers: Record<string, string> }> {
     const s3Client = this.getS3Client();
     const command = new PutObjectCommand({
       Bucket: bucket,
@@ -57,7 +57,8 @@ export class CloudflareStorageClient implements IStorageClient {
       ContentLength: contentLength,
     });
 
-    return getSignedUrl(s3Client, command, { expiresIn: 65 });
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 65 });
+    return { url: signedUrl, headers: {} };
   }
 
   async getSignedUrlForDownload({

@@ -42,7 +42,7 @@ export class AwsStorageClient implements IStorageClient {
     key: string;
     contentType: string;
     contentLength: number;
-  }): Promise<string> {
+  }): Promise<{ url: string; headers: Record<string, string> }> {
     const s3Client = this.getS3Client();
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_PROJECT_NAME + bucket,
@@ -51,7 +51,8 @@ export class AwsStorageClient implements IStorageClient {
       ContentLength: contentLength,
     });
 
-    return getSignedUrl(s3Client, command, { expiresIn: 65 }); // 65 seconds
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 65 }); // 65 seconds
+    return { url: signedUrl, headers: {} };
   }
 
   async getSignedUrlForDownload({

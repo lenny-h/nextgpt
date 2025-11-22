@@ -29,15 +29,22 @@ export const useFileUpload = () => {
 
   const uploadFile = async (file: File) => {
     try {
-      const { signedUrl, newFilename } = await getSignedUrl(file);
+      const { signedUrl, newFilename, headers } = await getSignedUrl(file);
       const renamedFile = new File([file], newFilename, { type: file.type });
+
+      const uploadHeaders: Record<string, string> = {
+        "Content-Type": file.type,
+      };
+
+      if (headers) {
+        Object.entries(headers).forEach(([key, value]) => {
+          uploadHeaders[key] = value as string;
+        });
+      }
 
       const uploadResponse = await fetch(signedUrl, {
         method: "PUT",
-        headers: {
-          "Content-Type": file.type,
-          "x-goog-content-length-range": `0,${file.size}`,
-        },
+        headers: uploadHeaders,
         body: renamedFile,
       });
 

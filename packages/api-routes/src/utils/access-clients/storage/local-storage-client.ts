@@ -75,7 +75,7 @@ export class LocalStorageClient implements IStorageClient {
     key: string;
     contentType: string;
     contentLength: number;
-  }): Promise<string> {
+  }): Promise<{ url: string; headers: Record<string, string> }> {
     const s3Client = this.getPublicS3Client();
     const command = new PutObjectCommand({
       Bucket: bucket,
@@ -84,7 +84,8 @@ export class LocalStorageClient implements IStorageClient {
       ContentLength: contentLength,
     });
 
-    return getSignedUrl(s3Client, command, { expiresIn: 65 });
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 65 });
+    return { url: signedUrl, headers: {} };
   }
 
   async getSignedUrlForDownload({

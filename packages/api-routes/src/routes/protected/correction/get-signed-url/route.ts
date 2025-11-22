@@ -20,7 +20,7 @@ const app = new Hono().post(
 
     const storageClient = getStorageClient();
 
-    const signedUrl = await storageClient.getSignedUrlForUpload({
+    const { url: signedUrl, headers } = await storageClient.getSignedUrlForUpload({
       bucket: "temporary-files-bucket",
       key: newFilename,
       contentType: "application/pdf",
@@ -29,6 +29,7 @@ const app = new Hono().post(
 
     return c.json({
       signedUrl,
+      headers,
       newFilename,
     });
   }
