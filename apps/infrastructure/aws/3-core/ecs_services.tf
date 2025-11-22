@@ -36,6 +36,11 @@ resource "aws_ecs_task_definition" "api" {
   execution_role_arn       = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.api_task.arn
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([{
     name  = "api"
     image = "${data.terraform_remote_state.repository.outputs.ecr_repository_api}:latest"
@@ -264,6 +269,11 @@ resource "aws_ecs_task_definition" "document_processor" {
   execution_role_arn       = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.document_processor_task.arn
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([{
     name  = "document-processor"
     image = "${data.terraform_remote_state.repository.outputs.ecr_repository_document_processor}:latest"
@@ -347,6 +357,11 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
   memory                   = "1024"
   execution_role_arn       = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.pdf_exporter_task.arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
 
   container_definitions = jsonencode([{
     name  = "pdf-exporter"
@@ -456,27 +471,27 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
     secrets = [
       {
         name      = "BETTER_AUTH_SECRET"
-        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/better-auth-secret"
+        valueFrom = aws_secretsmanager_secret.better_auth_secret.arn
       },
       {
         name      = "GOOGLE_CLIENT_SECRET"
-        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/google-client-secret"
+        valueFrom = aws_secretsmanager_secret.google_client_secret.arn
       },
       {
         name      = "GITHUB_CLIENT_SECRET"
-        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/github-client-secret"
+        valueFrom = aws_secretsmanager_secret.github_client_secret.arn
       },
       {
         name      = "GITLAB_CLIENT_SECRET"
-        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/gitlab-client-secret"
+        valueFrom = aws_secretsmanager_secret.gitlab_client_secret.arn
       },
       {
         name      = "SSO_CLIENT_SECRET"
-        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/sso-client-secret"
+        valueFrom = aws_secretsmanager_secret.sso_client_secret.arn
       },
       {
         name      = "DATABASE_PASSWORD"
-        valueFrom = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${var.aws_project_name}/database-password"
+        valueFrom = data.terraform_remote_state.db_storage.outputs.db_password_secret_arn
       }
     ]
     logConfiguration = {

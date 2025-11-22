@@ -43,18 +43,6 @@ output "sqs_queue_url" {
   value       = aws_sqs_queue.document_processing.url
 }
 
-# S3
-output "s3_temporary_files_bucket" {
-  description = "S3 bucket for temporary files"
-  value       = aws_s3_bucket.temporary_files.bucket
-}
-
-# IAM Roles
-output "github_actions_role_arn" {
-  description = "GitHub Actions IAM role ARN"
-  value       = aws_iam_role.github_actions.arn
-}
-
 output "api_task_role_arn" {
   description = "API task role ARN"
   value       = aws_iam_role.api_task.arn
@@ -63,6 +51,11 @@ output "api_task_role_arn" {
 output "document_processor_task_role_arn" {
   description = "Document Processor task role ARN"
   value       = aws_iam_role.document_processor_task.arn
+}
+
+output "pdf_exporter_task_role_arn" {
+  description = "PDF Exporter task role ARN"
+  value       = aws_iam_role.pdf_exporter_task.arn
 }
 
 # ========================================

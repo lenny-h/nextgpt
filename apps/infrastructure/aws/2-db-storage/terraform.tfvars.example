@@ -1,7 +1,7 @@
 # AWS Configuration
 aws_project_name = "my-project"
 aws_region       = "us-east-1"
-aws_zone         = "us-east-1a"
+aws_zones        = ["us-east-1a", "us-east-1b"]
 
 # Database Configuration
 database_password = "your-secure-database-password"

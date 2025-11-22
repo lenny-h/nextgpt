@@ -57,11 +57,11 @@ for SERVICE in "${SERVICES[@]}"; do
 
   # Define the original local image name and the ECR image name
   if [ "$SERVICE" == "firecrawl-api" ]; then
-    ECR_IMAGE="$REPO-firecrawl-api:latest"
+    ECR_IMAGE="$REPO/firecrawl-api:latest"
   elif [ "$SERVICE" == "playwright-service" ]; then
-    ECR_IMAGE="$REPO-playwright-service:latest"
+    ECR_IMAGE="$REPO/playwright-service:latest"
   else
-    ECR_IMAGE="$REPO-$SERVICE:latest"
+    ECR_IMAGE="$REPO/$SERVICE:latest"
   fi
 
   # Build the image with its original name if it doesn't exist
@@ -71,7 +71,7 @@ for SERVICE in "${SERVICES[@]}"; do
       exit 1
     else
       echo "Building $SERVICE from apps/$SERVICE/Dockerfile..."
-      docker buildx build --platform linux/amd64 -f apps/$SERVICE/Dockerfile -t $ECR_IMAGE .
+      docker buildx build --platform linux/arm64 -f apps/$SERVICE/Dockerfile -t $ECR_IMAGE .
     fi
   else
     echo "Image $ECR_IMAGE already exists locally. Skipping build."

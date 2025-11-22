@@ -10,9 +10,9 @@
     "binding": "ASSETS"
   },
   "route": {
-    "pattern": "dashboard.nextgpt.cloud/*",
-    "custom_domain": false,
-    "zone_name": "nextgpt.cloud"
+    "custom_domain": true,
+    "zone_name": "nextgpt.cloud",
+    "pattern": "dashboard.nextgpt.cloud"
   },
   "observability": {
     "logs": {

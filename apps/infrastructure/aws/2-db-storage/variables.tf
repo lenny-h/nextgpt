@@ -8,9 +8,9 @@ variable "aws_region" {
   description = "AWS region"
 }
 
-variable "aws_zone" {
-  type        = string
-  description = "AWS availability zone"
+variable "aws_zones" {
+  type        = list(string)
+  description = "List of AWS availability zones"
 }
 
 variable "database_password" {

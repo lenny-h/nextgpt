@@ -32,6 +32,11 @@ resource "aws_ecs_task_definition" "db_migrator" {
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   task_role_arn            = aws_iam_role.db_migrator_task.arn
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   container_definitions = jsonencode([{
     name  = "db-migrator"
     image = data.terraform_remote_state.repository.outputs.ecr_repository_db_migrator

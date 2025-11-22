@@ -60,13 +60,13 @@ foreach ($Service in $Services) {
     # Define the original local image name and the ECR image name
     switch ($Service) {
         "firecrawl-api" {
-            $EcrImage = "$Repo-firecrawl-api:latest"
+            $EcrImage = "$Repo/firecrawl-api:latest"
         }
         "playwright-service" {
-            $EcrImage = "$Repo-playwright-service:latest"
+            $EcrImage = "$Repo/playwright-service:latest"
         }
         default {
-            $EcrImage = "$Repo-${Service}:latest"
+            $EcrImage = "$Repo/${Service}:latest"
         }
     }
 
@@ -80,7 +80,7 @@ foreach ($Service in $Services) {
         }
         else {
             Write-Host "Building $Service from apps/$Service/Dockerfile..." -ForegroundColor Cyan
-            docker buildx build --platform linux/amd64 -f "apps/$Service/Dockerfile" -t $EcrImage .
+            docker buildx build --platform linux/arm64 -f "apps/$Service/Dockerfile" -t $EcrImage .
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "Docker build failed for $Service"
                 exit 1
