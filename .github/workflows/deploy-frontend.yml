@@ -42,10 +42,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.web == 'true'
     env:
-      NEXT_PUBLIC_BASE_URL: app.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_DASHBOARD_URL: dashboard.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_PDF_EXPORTER_URL: api.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_BASE_URL: https://app.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_DASHBOARD_URL: https://dashboard.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_API_URL: https://api.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_PDF_EXPORTER_URL: https://api.${{ vars.SITE_URL }}
 
       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${{ vars.ENABLE_EMAIL_SIGNUP }}
       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${{ vars.ENABLE_OAUTH_LOGIN }}
@@ -101,10 +101,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.dashboard == 'true'
     env:
-      NEXT_PUBLIC_BASE_URL: dashboard.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_CHAT_URL: app.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_API_URL: api.${{ vars.SITE_URL }}
-      NEXT_PUBLIC_PDF_EXPORTER_URL: api.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_BASE_URL: https://dashboard.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_CHAT_URL: https://app.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_API_URL: https://api.${{ vars.SITE_URL }}
+      NEXT_PUBLIC_PDF_EXPORTER_URL: https://api.${{ vars.SITE_URL }}
 
       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${{ vars.ENABLE_EMAIL_SIGNUP }}
       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${{ vars.ENABLE_OAUTH_LOGIN }}
