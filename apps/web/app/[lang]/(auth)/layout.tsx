@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isPending && data?.user) {
-      router.push(`/${locale}/buckets`);
+      router.push(`/${locale}`);
     }
   }, [data, isPending, locale]);
 

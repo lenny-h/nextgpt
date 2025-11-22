@@ -521,33 +521,6 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
   }
 }
 
-# API ECS Service
-resource "aws_ecs_service" "api" {
-  name            = "api"
-  cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.api.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = data.terraform_remote_state.db_storage.outputs.private_subnet_ids
-    security_groups  = [data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id]
-    assign_public_ip = false
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.api.arn
-    container_name   = "api"
-    container_port   = 8080
-  }
-
-  depends_on = [aws_lb_listener.https]
-
-  tags = {
-    Name = "${var.aws_project_name}-api-service"
-  }
-}
-
 # Document Processor ECS Service (Internal only - no load balancer)
 resource "aws_ecs_service" "document_processor" {
   name            = "document-processor"
@@ -568,33 +541,6 @@ resource "aws_ecs_service" "document_processor" {
 
   tags = {
     Name = "${var.aws_project_name}-document-processor-service"
-  }
-}
-
-# PDF Exporter ECS Service
-resource "aws_ecs_service" "pdf_exporter" {
-  name            = "pdf-exporter"
-  cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.pdf_exporter.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = data.terraform_remote_state.db_storage.outputs.private_subnet_ids
-    security_groups  = [data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id]
-    assign_public_ip = false
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.pdf_exporter.arn
-    container_name   = "pdf-exporter"
-    container_port   = 8080
-  }
-
-  depends_on = [aws_lb_listener.https]
-
-  tags = {
-    Name = "${var.aws_project_name}-pdf-exporter-service"
   }
 }
 
@@ -790,3 +736,4 @@ resource "aws_ecs_service" "firecrawl_playwright" {
     Name = "${var.aws_project_name}-firecrawl-playwright-service"
   }
 }
+

@@ -82,45 +82,6 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
-# HTTPS Listener
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.main.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = aws_acm_certificate.main.arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api.arn
-  }
-
-  tags = {
-    Name = "${var.aws_project_name}-https-listener"
-  }
-}
-
-# Listener Rule for /pdf-exporter/*
-resource "aws_lb_listener_rule" "pdf_exporter" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 100
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.pdf_exporter.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/pdf-exporter/*"]
-    }
-  }
-
-  tags = {
-    Name = "${var.aws_project_name}-pdf-exporter-rule"
-  }
-}
-
 # HTTP Listener (redirect to HTTPS)
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn

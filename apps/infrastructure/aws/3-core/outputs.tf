@@ -4,6 +4,21 @@ output "load_balancer_dns_name" {
   value       = aws_lb.main.dns_name
 }
 
+output "load_balancer_arn" {
+  description = "Load balancer ARN"
+  value       = aws_lb.main.arn
+}
+
+output "target_group_api_arn" {
+  description = "API target group ARN"
+  value       = aws_lb_target_group.api.arn
+}
+
+output "target_group_pdf_exporter_arn" {
+  description = "PDF Exporter target group ARN"
+  value       = aws_lb_target_group.pdf_exporter.arn
+}
+
 # SSL Certificate
 output "acm_certificate_arn" {
   description = "ACM certificate ARN"
@@ -22,19 +37,19 @@ output "dns_validation_records" {
 }
 
 # ECS Services
-output "ecs_service_api_name" {
-  description = "API ECS service name"
-  value       = aws_ecs_service.api.name
-}
-
 output "ecs_service_document_processor_name" {
   description = "Document Processor ECS service name"
   value       = aws_ecs_service.document_processor.name
 }
 
-output "ecs_service_pdf_exporter_name" {
-  description = "PDF Exporter ECS service name"
-  value       = aws_ecs_service.pdf_exporter.name
+output "ecs_task_definition_api_arn" {
+  description = "API task definition ARN"
+  value       = aws_ecs_task_definition.api.arn
+}
+
+output "ecs_task_definition_pdf_exporter_arn" {
+  description = "PDF Exporter task definition ARN"
+  value       = aws_ecs_task_definition.pdf_exporter.arn
 }
 
 # SQS
