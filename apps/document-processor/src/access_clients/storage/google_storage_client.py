@@ -58,7 +58,7 @@ class GoogleStorageClient(IStorageClient):
                 "Environment variable 'GOOGLE_VERTEX_PROJECT' is not set.")
 
         client = self._get_client()
-        blob = client.bucket(bucket_prefix + bucket).blob(key)
+        blob = client.bucket(f"{bucket_prefix}-{bucket}").blob(key)
         return blob.download_as_bytes()
 
     def delete_file(self, bucket: str, key: str) -> None:
@@ -80,5 +80,5 @@ class GoogleStorageClient(IStorageClient):
                 "Environment variable 'GOOGLE_VERTEX_PROJECT' is not set.")
 
         client = self._get_client()
-        blob = client.bucket(bucket_prefix + bucket).blob(key)
+        blob = client.bucket(f"{bucket_prefix}-{bucket}").blob(key)
         blob.delete()

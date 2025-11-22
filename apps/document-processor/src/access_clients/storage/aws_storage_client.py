@@ -68,7 +68,7 @@ class AwsStorageClient(IStorageClient):
                 "Environment variable 'AWS_PROJECT_NAME' is not set.")
 
         client = self._get_client()
-        response = client.get_object(Bucket=bucket_prefix + bucket, Key=key)
+        response = client.get_object(Bucket=f"{bucket_prefix}-{bucket}", Key=key)
         return response["Body"].read()
 
     def delete_file(self, bucket: str, key: str) -> None:
@@ -89,4 +89,4 @@ class AwsStorageClient(IStorageClient):
                 "Environment variable 'AWS_PROJECT_NAME' is not set.")
 
         client = self._get_client()
-        client.delete_object(Bucket=bucket_prefix + bucket, Key=key)
+        client.delete_object(Bucket=f"{bucket_prefix}-{bucket}", Key=key)
