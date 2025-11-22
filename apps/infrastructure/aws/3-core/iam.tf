@@ -4,7 +4,7 @@ data "aws_caller_identity" "current" {}
 # Update IAM role policy for ECS task execution to access all secrets
 resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
   name = "${var.aws_project_name}-ecs-task-execution-secrets-policy"
-  role = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_arn
+  role = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_name
 
   policy = jsonencode({
     Version = "2012-10-17"

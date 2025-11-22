@@ -13,7 +13,7 @@ enable_email_signup              = true
 allowed_email_domains            = "" # Comma-separated list of allowed email domains, leave empty to allow all domains
 
 # OAuth Providers
-enable_oauth_login   = true
+enable_oauth_login   = false
 google_client_id     = "your-google-client-id"
 google_client_secret = "your-google-client-secret"
 github_client_id     = "your-github-client-id"
@@ -23,15 +23,15 @@ gitlab_client_secret = "your-gitlab-client-secret"
 
 # SSO Configuration
 enable_sso                 = false
-sso_domain                 = ""
-sso_provider_id            = ""
-sso_client_id              = ""
-sso_client_secret          = ""
-sso_issuer                 = ""
-sso_authorization_endpoint = ""
-sso_discovery_endpoint     = ""
-sso_token_endpoint         = ""
-sso_jwks_endpoint          = ""
+sso_domain                 = "your-sso-domain"
+sso_provider_id            = "your-sso-provider-id"
+sso_client_id              = "your-sso-client-id"
+sso_client_secret          = "your-sso-client-secret"
+sso_issuer                 = "your-sso-issuer"
+sso_authorization_endpoint = "your-sso-authorization-endpoint"
+sso_discovery_endpoint     = "your-sso-discovery-endpoint"
+sso_token_endpoint         = "your-sso-token-endpoint"
+sso_jwks_endpoint          = "your-sso-jwks-endpoint"
 
 # Email Configuration
 resend_sender_email = "noreply@example.com"

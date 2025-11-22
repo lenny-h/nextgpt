@@ -15,7 +15,7 @@ resource "google_redis_instance" "redis" {
 
   authorized_network = google_compute_network.private_network.id
 
-  transit_encryption_mode = "SERVER_AUTHENTICATION"
+  transit_encryption_mode = "DISABLED"
 
   maintenance_policy {
     weekly_maintenance_window {

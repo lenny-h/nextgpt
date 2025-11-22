@@ -26,7 +26,6 @@ import {
 import { useSharedTranslations } from "../contexts/shared-translations-context";
 import { signUp } from "../lib/auth-client";
 import { signUpFormSchema, type SignUpFormData } from "../lib/validations";
-import { SocialLogins } from "./social-logins";
 import { SubmitButton } from "./submit-button";
 
 export const SignUp = memo(() => {
@@ -77,18 +76,12 @@ export const SignUp = memo(() => {
           <p className="text-sm">
             Already have an account?{" "}
             <Link
-              className="text-primary font-medium underline"
+              className="underline underline-offset-4"
               href={`/${locale}/sign-in`}
             >
               Sign in
             </Link>
           </p>
-        </div>
-        <SocialLogins />
-        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-          <span className="bg-background text-muted-foreground relative z-10 px-2">
-            Or continue with
-          </span>
         </div>
         <Form {...form}>
           <form
