@@ -50,7 +50,7 @@ export function DeleteDialogWithConfirmation({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="w-full space-y-2">
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground text-sm">
             Type '{resourceName}'' to confirm
           </p>
           <Input

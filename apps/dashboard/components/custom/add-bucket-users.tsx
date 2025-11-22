@@ -37,6 +37,7 @@ export const AddBucketUsers = memo(({ bucketId }: Props) => {
       );
 
       setSubmitLoading(false);
+      setSelectedUsers([]);
     };
 
     toast.promise(inviteUsers(), {

@@ -50,6 +50,7 @@ export const AddMaintainers = memo(({ bucketId, courseId }: Props) => {
       }
 
       setSubmitLoading(false);
+      setSelectedUsers([]);
     };
 
     toast.promise(addMaintainers(), {

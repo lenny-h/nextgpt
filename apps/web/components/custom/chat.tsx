@@ -138,6 +138,7 @@ export function Chat({
           chatId={chatId}
           isEmpty={messages.length === 0}
           isLoading={status === "submitted" || status === "streaming"}
+          isNewChat={initialMessages.length === 0}
         />
 
         {messages.length === 0 ? (

@@ -56,6 +56,7 @@ export function RemoveMaintainers({
       }
 
       setSubmitLoading(false);
+      setSelectedUsers([]);
     };
 
     toast.promise(removeMaintainers(), {

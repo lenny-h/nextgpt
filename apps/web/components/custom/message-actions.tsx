@@ -201,7 +201,7 @@ export const MessageActions = memo(
             }}
           >
             <Pencil className="size-4" />
-            <span className="text-muted-foreground text-xs">{webT.messageActions.editor}</span>
+            <span className="text-muted-foreground text-sm">{webT.messageActions.editor}</span>
           </button>
         </div>
       </TooltipProvider>

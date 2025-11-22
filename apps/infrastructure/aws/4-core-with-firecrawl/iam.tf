@@ -63,22 +63,6 @@ resource "aws_iam_role_policy" "api_task" {
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
-        ]
-        Resource = "${aws_s3_bucket.temporary_files.arn}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket"
-        ]
-        Resource = aws_s3_bucket.temporary_files.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "sqs:SendMessage",
           "sqs:GetQueueUrl"
         ]

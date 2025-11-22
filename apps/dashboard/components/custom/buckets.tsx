@@ -142,7 +142,7 @@ export const Buckets = memo(() => {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-6 p-2">
+    <div className="flex flex-col items-center space-y-6 p-4">
       <h1 className="text-2xl font-semibold">{dashboardT.buckets.title}</h1>
       <div className="grid min-h-80 w-full max-w-4xl grid-cols-1 border-t sm:grid-cols-[0.75fr_1.2fr] md:grid-cols-1 lg:grid-cols-[0.6fr_1.4fr]">
         <ul className="space-y-2 p-2 sm:border-r">

@@ -105,7 +105,7 @@ export const Files = memo(() => {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-6 p-2">
+    <div className="flex flex-col items-center space-y-6 p-4">
       <CoursesSelector
         resourceName={"files"}
         selectedCourseId={selectedCourseId}

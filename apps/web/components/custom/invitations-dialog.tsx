@@ -151,16 +151,12 @@ export function InvitationsDialog({
                   className="flex flex-col space-y-2 rounded-lg border p-3"
                 >
                   <div>
-                    <p className="text-sm font-medium">
-                      {sharedT.invitations.invitedYouToJoin.replace(
-                        "{username}",
-                        invitation.originUsername,
-                      )}
+                    <p className="font-medium">
+                      {sharedT.invitations.invitedYouToJoin
+                        .replace("{username}", invitation.originUsername)
+                        .replace("{resourceName}", invitation.resourceName)}
                     </p>
-                    <p className="text-base font-semibold">
-                      {invitation.resourceName}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-muted-foreground text-sm">
                       {new Date(invitation.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -172,7 +168,7 @@ export function InvitationsDialog({
                       disabled={!!processingId}
                     >
                       {processingId ===
-                      `reject-${invitation.origin}-${invitation.resourceId}` ? (
+                        `reject-${invitation.origin}-${invitation.resourceId}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <X className="mr-1 h-4 w-4" />
@@ -186,7 +182,7 @@ export function InvitationsDialog({
                       disabled={!!processingId}
                     >
                       {processingId ===
-                      `accept-${invitation.origin}-${invitation.resourceId}` ? (
+                        `accept-${invitation.origin}-${invitation.resourceId}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Check className="mr-1 h-4 w-4" />

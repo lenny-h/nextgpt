@@ -43,7 +43,7 @@ jobs:
     name: Deploy API Service
     runs-on: ubuntu-latest
     needs: changes
-    # if: needs.changes.outputs.api == 'true'
+    if: needs.changes.outputs.api == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -79,7 +79,7 @@ jobs:
     name: Deploy PDF Exporter Service
     runs-on: ubuntu-latest
     needs: changes
-    # if: needs.changes.outputs.pdf-exporter == 'true'
+    if: needs.changes.outputs.pdf-exporter == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -115,7 +115,7 @@ jobs:
     name: Deploy PDF Processor Service
     runs-on: ubuntu-latest
     needs: changes
-    # if: needs.changes.outputs.document-processor == 'true'
+    if: needs.changes.outputs.document-processor == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

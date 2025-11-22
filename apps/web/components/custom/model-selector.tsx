@@ -44,7 +44,7 @@ export const ModelSelector = memo(() => {
             >
               <div className="flex flex-col items-start gap-1">
                 <div>{chatModel.label}</div>
-                <div className="text-muted-foreground text-xs">
+                <div className="text-muted-foreground text-sm">
                   {chatModel.description}
                 </div>
               </div>

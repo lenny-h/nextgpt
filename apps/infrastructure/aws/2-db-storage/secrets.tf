@@ -6,6 +6,8 @@ resource "aws_secretsmanager_secret" "db_password" {
   tags = {
     Name = "${var.aws_project_name}-db-password"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "db_password" {

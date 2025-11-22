@@ -107,7 +107,7 @@ export const Correction = memo(() => {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-6 p-2">
+    <div className="flex flex-col items-center space-y-6 p-4">
       <h1 className="text-2xl font-semibold">{dashboardT.correction.title}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

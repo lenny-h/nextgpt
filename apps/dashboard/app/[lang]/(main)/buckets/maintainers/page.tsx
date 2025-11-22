@@ -60,7 +60,7 @@ export default function BucketMaintainersPage() {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-6 p-2">
+    <div className="flex flex-col items-center space-y-6 p-4">
       <h1 className="text-2xl font-semibold">{bucketName}</h1>
       <div className="w-full max-w-4xl space-y-6">
         <div className="space-y-3">

@@ -6,6 +6,8 @@ resource "aws_secretsmanager_secret" "better_auth_secret" {
   tags = {
     Name = "${var.aws_project_name}-better-auth-secret"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "better_auth_secret" {
@@ -21,6 +23,8 @@ resource "aws_secretsmanager_secret" "resend_api_key" {
   tags = {
     Name = "${var.aws_project_name}-resend-api-key"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "resend_api_key" {
@@ -36,6 +40,8 @@ resource "aws_secretsmanager_secret" "cloudflare_r2_access_key_id" {
   tags = {
     Name = "${var.aws_project_name}-r2-access-key-id"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "cloudflare_r2_access_key_id" {
@@ -51,6 +57,8 @@ resource "aws_secretsmanager_secret" "cloudflare_r2_secret_access_key" {
   tags = {
     Name = "${var.aws_project_name}-r2-secret-access-key"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "cloudflare_r2_secret_access_key" {
@@ -66,6 +74,8 @@ resource "aws_secretsmanager_secret" "encryption_key" {
   tags = {
     Name = "${var.aws_project_name}-encryption-key"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "encryption_key" {
@@ -80,6 +90,8 @@ resource "aws_secretsmanager_secret" "google_client_secret" {
   tags = {
     Name = "${var.aws_project_name}-google-client-secret"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "google_client_secret" {
@@ -95,6 +107,8 @@ resource "aws_secretsmanager_secret" "github_client_secret" {
   tags = {
     Name = "${var.aws_project_name}-github-client-secret"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "github_client_secret" {
@@ -110,6 +124,8 @@ resource "aws_secretsmanager_secret" "gitlab_client_secret" {
   tags = {
     Name = "${var.aws_project_name}-gitlab-client-secret"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "gitlab_client_secret" {
@@ -125,6 +141,8 @@ resource "aws_secretsmanager_secret" "sso_client_secret" {
   tags = {
     Name = "${var.aws_project_name}-sso-client-secret"
   }
+
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "sso_client_secret" {

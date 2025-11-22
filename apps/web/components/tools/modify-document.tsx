@@ -47,7 +47,7 @@ export const ModifyDocumentUI = memo(
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="p-3">
-              <div className="text-muted-foreground text-xs mb-1.5">
+              <div className="text-muted-foreground text-sm mb-1.5">
                 Instructions:
               </div>
               <div className="bg-muted/30 rounded-md p-3 text-sm">

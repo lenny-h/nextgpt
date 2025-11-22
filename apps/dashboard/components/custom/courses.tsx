@@ -74,7 +74,7 @@ export const Courses = memo(() => {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-6 p-2">
+    <div className="flex flex-col items-center space-y-6 p-4">
       <h1 className="text-2xl font-semibold">{dashboardT.courses.title}</h1>
       <InfiniteDataTable
         columns={coursesColumns}

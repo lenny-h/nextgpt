@@ -4,6 +4,12 @@ resource "google_project_service" "run" {
   service = "run.googleapis.com"
 }
 
+# Enable Vertex AI API
+resource "google_project_service" "aiplatform" {
+  project = var.google_vertex_project
+  service = "aiplatform.googleapis.com"
+}
+
 # API Service
 resource "google_cloud_run_v2_service" "api" {
   name     = "api"

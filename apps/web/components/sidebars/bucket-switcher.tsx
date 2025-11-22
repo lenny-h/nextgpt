@@ -52,8 +52,8 @@ export const BucketSwitcher = () => {
                       ? "An error occurred"
                       : data.length > 0
                         ? data.find(
-                            (bucket) => bucket.bucketId === filter.bucket.id,
-                          )?.name
+                          (bucket) => bucket.bucketId === filter.bucket.id,
+                        )?.name
                         : "No bucket"}
                 </span>
                 {!isLoading && !isError && data && data.length > 0 && (
@@ -75,7 +75,7 @@ export const BucketSwitcher = () => {
             side={isMobile ? "bottom" : "right"}
             sideOffset={9}
           >
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
+            <DropdownMenuLabel className="text-muted-foreground text-sm">
               Buckets
             </DropdownMenuLabel>
             {data?.map((bucket) => (

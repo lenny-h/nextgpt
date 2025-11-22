@@ -77,7 +77,7 @@ export default function PromptsPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-col items-center space-y-6 p-2">
+      <div className="flex flex-col items-center space-y-6 p-4">
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-semibold">Prompts</h1>
         </div>
