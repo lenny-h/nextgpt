@@ -18,7 +18,9 @@ export async function getRedisClient(): Promise<typeof redisClient> {
 
 // Graceful shutdown
 process.on("SIGTERM", async () => {
-  await redisClient.quit();
+  if (redisClient.isOpen) {
+    await redisClient.quit();
+  }
 });
 
 export function getUserPermissionsCacheKey(userId: string): string {
