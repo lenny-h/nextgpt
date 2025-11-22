@@ -28,7 +28,7 @@ export class GoogleStorageClient implements IStorageClient {
   }): Promise<string> {
     const storage = this.getStorageClient();
     const blob = storage
-      .bucket(process.env.GOOGLE_VERTEX_PROJECT + bucket)
+      .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
       .file(key);
 
     const [signedUrl] = await blob.getSignedUrl({

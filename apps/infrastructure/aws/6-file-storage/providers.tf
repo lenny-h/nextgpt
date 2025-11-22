@@ -22,7 +22,7 @@ terraform {
   # Backend configuration for state storage
   # backend "s3" {
   #   bucket         = "your-terraform-state-bucket"
-  #   key            = "aws/5-file-storage/terraform.tfstate"
+  #   key            = "aws/6-file-storage/terraform.tfstate"
   #   region         = "us-east-1"
   #   dynamodb_table = "terraform-state-lock"
   #   encrypt        = true

@@ -35,6 +35,13 @@ resource "google_service_account_iam_member" "handler_act_as_cloudtasks_sa" {
   member             = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
+# IAM Binding to allow api service account to sign blobs (needed for getSignedUrl)
+resource "google_service_account_iam_member" "api_token_creator" {
+  service_account_id = google_service_account.api_sa.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:${google_service_account.api_sa.email}"
+}
+
 # IAM Binding to allow API service account to access secrets
 resource "google_secret_manager_secret_iam_member" "api_db_password_accessor" {
   secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id

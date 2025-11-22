@@ -10,6 +10,12 @@ resource "google_project_service" "aiplatform" {
   service = "aiplatform.googleapis.com"
 }
 
+# Enable IAM Credentials API (needed for signing URLs)
+resource "google_project_service" "iamcredentials" {
+  project = var.google_vertex_project
+  service = "iamcredentials.googleapis.com"
+}
+
 # API Service
 resource "google_cloud_run_v2_service" "api" {
   name                = "api"

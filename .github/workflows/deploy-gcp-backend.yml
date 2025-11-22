@@ -27,10 +27,13 @@ jobs:
           filters: |
             api:
               - 'apps/api/**'
+              - 'packages/api-routes/**'
+              - 'packages/server/**'
               - 'package.json'
               - '.github/workflows/deploy-backend.yml'
             pdf-exporter:
               - 'apps/pdf-exporter/**'
+              - 'packages/server/**'
               - 'package.json'
               - '.github/workflows/deploy-backend.yml'
             document-processor:
@@ -43,7 +46,7 @@ jobs:
     name: Deploy API Service
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.api == 'true'
+    # if: needs.changes.outputs.api == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

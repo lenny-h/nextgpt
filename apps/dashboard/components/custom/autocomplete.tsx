@@ -126,8 +126,8 @@ export const Autocomplete = memo(
               >
                 {user.username}
                 <Button
-                  size={"sm"}
-                  variant={"ghost"}
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setSelectedUsers((prev) => [...prev, user])}
                   disabled={selectedUsers.includes(user)}
                 >
@@ -137,7 +137,7 @@ export const Autocomplete = memo(
             ))}
           </ul>
         </div>
-        <div className="w-full rounded-md border p-2">
+        <div className="flex w-full flex-col justify-between gap-2 rounded-md border p-2">
           <div className="flex h-fit min-h-20 w-full flex-wrap gap-2">
             {selectedUsers.map((user) => (
               <Badge key={user.id} className="h-6">

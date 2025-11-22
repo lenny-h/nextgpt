@@ -86,7 +86,7 @@ output "setup_instructions" {
      → Required for AWS to issue SSL certificate
      
    2️⃣ Add DNS CNAME Record (for Load Balancer)
-     → Add CNAME record: api.<your-domain> → ${aws_lb.main.dns_name}
+     → Add CNAME record: api.${var.site_url} → ${aws_lb.main.dns_name}
      → This points your API domain to the AWS load balancer
 
    3️⃣ GitHub Repository Variables & Secrets (for Frontend Deployment)
