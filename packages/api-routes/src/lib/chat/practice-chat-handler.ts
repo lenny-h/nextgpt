@@ -8,6 +8,7 @@ import {
 } from "ai";
 import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
+import { type ToolOutput } from "../../types/tool-output.js";
 import { PRACTICE_SYSTEM_PROMPT } from "../prompts.js";
 import { createMultipleChoiceTool } from "../tools/create-multiple-choice.js";
 import { retrieveRandomDocumentSourcesTool } from "../tools/retrieve-random-sources.js";
@@ -20,6 +21,7 @@ const logger = createLogger("practice-chat-handler");
 
 export class PracticeChatHandler extends ChatHandler {
   private systemPrompt: string = PRACTICE_SYSTEM_PROMPT;
+  private fullToolContent = new Map<string, ToolOutput>();
 
   constructor(request: ChatRequest, config: ChatConfig) {
     super(request, config);
@@ -34,14 +36,20 @@ export class PracticeChatHandler extends ChatHandler {
   }
 
   protected retrieveToolSet(): Record<string, Tool> {
+    const storeFullContent = (id: string, content: ToolOutput) => {
+      this.fullToolContent.set(id, content);
+    };
+
     const tools: Record<string, Tool> = {
       retrieveRandomDocumentSources: retrieveRandomDocumentSourcesTool({
         filter: this.request.filter as PracticeFilter,
-        retrieveContent: true,
+        retrieveContent: true, // Always retrieve content to pass as context to the model
+        storeFullContent,
       }),
       searchDocuments: searchDocumentsTool({
         filter: this.request.filter,
-        retrieveContent: true,
+        retrieveContent: true, // Always retrieve content to pass as context to the model
+        storeFullContent,
       }),
       createMultipleChoice: createMultipleChoiceTool,
     };
@@ -59,15 +67,37 @@ export class PracticeChatHandler extends ChatHandler {
     const result = streamText({
       ...streamConfig,
       tools: this.retrieveToolSet(),
-      prepareStep: async ({ stepNumber }) => {
+      prepareStep: async ({ stepNumber, steps }) => {
+        // Re-hydrate the tool results with the full content for the model context
+        for (const step of steps) {
+          for (const toolCall of step.toolCalls) {
+            if (this.fullToolContent.has(toolCall.toolCallId)) {
+              const fullContent = this.fullToolContent.get(toolCall.toolCallId);
+              const toolResult = step.toolResults.find(
+                (tr) => tr.toolCallId === toolCall.toolCallId
+              );
+
+              if (toolResult) {
+                // Replace the output with the full content
+                toolResult.output = fullContent;
+              }
+            }
+          }
+        }
+
+        logger.debug(
+          "Tool results so far (after re-hydration): ",
+          steps.map((s) => s.toolResults)
+        );
+
         if (this.request.lastMessage.metadata?.isStartMessage) {
           return {
             activeTools:
               stepNumber === 0
                 ? ["retrieveRandomDocumentSources"]
                 : stepNumber === 1 &&
-                    (this.request.filter as PracticeFilter).studyMode ===
-                      "multipleChoice"
+                  (this.request.filter as PracticeFilter).studyMode ===
+                  "multipleChoice"
                   ? ["createMultipleChoice"]
                   : ["searchDocuments"],
             toolChoice:

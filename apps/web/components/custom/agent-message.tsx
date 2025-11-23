@@ -57,15 +57,7 @@ const PureAgentMessage = ({
   // Aggregate web sources from searchWeb results
   const webSources = message.parts
     .filter((part) => part.type === "tool-searchWeb")
-    .flatMap((part) => {
-      if (!part.output || !Array.isArray(part.output)) return [];
-      // Convert searchWeb results to WebSource format
-      return part.output.map((result, index) => ({
-        id: `${part.toolCallId}-${index}`,
-        url: result.url,
-        pageContent: result.description || result.markdown,
-      }));
-    });
+    .flatMap((part) => part.output?.webSources ?? []);
 
   // Aggregate text content from all text parts for message actions
   const textContent = message.parts

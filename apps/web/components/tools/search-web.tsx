@@ -53,9 +53,11 @@ export const SearchWebUI = memo(
       );
     }
 
-    if (part.state === "output-available" && part.output) {
+    if (part.state === "output-available" && part.output.webSources) {
       // Sort pages by URL
-      const pages = [...part.output].sort((a, b) => a.url.localeCompare(b.url));
+      const pages = [...part.output.webSources].sort((a, b) =>
+        a.title.localeCompare(b.title),
+      );
 
       return (
         <Collapsible
@@ -74,17 +76,20 @@ export const SearchWebUI = memo(
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="divide-y text-sm">
-              {pages.map((page, index) => (
+              {pages.map((page) => (
                 <div
-                  key={index}
+                  key={page.id}
                   className="hover:bg-muted/50 flex cursor-pointer items-start gap-2 px-3 py-2 transition-colors"
-                  onClick={() => window.open(page.url, "_blank")}
+                  onClick={() => {
+                    // Only open link if it's a valid URL
+                    if (page.url?.startsWith("https")) {
+                      window.open(page.url, "_blank");
+                    }
+                  }}
                 >
                   <Globe size={14} className="text-primary mt-0.5 shrink-0" />
                   <div className="flex-1 overflow-hidden">
-                    <span className="font-medium">
-                      {page.title || page.url}
-                    </span>
+                    <span className="font-medium">{page.title}</span>
                     {page.description && (
                       <p className="text-muted-foreground line-clamp-2 text-xs">
                         {page.description}

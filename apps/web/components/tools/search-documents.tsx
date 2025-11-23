@@ -122,7 +122,7 @@ export const RetrieveDocumentSourcesUI = memo(
       );
     }
 
-    if (part.state === "output-available" && part.output?.docSources) {
+    if (part.state === "output-available" && part.output.docSources) {
       // Sort sources by filename, then by page number
       const sources = [...part.output.docSources].sort((a, b) => {
         const fileCompare = a.fileName.localeCompare(b.fileName);

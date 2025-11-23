@@ -1,5 +1,5 @@
 import { type DocumentSource } from "@workspace/api-routes/types/document-source";
-import { type WebSource } from "@workspace/api-routes/types/web-source";
+import { type NormalizedWebSource } from "@workspace/api-routes/types/web-source";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -36,12 +36,12 @@ const preserveLineBreaks = (text: string, keyPrefix: string) => {
       i === array.length - 1
         ? line
         : [
-            line,
-            <React.Fragment key={`${keyPrefix}-br-${i}`}>
-              <br />
-              <br />
-            </React.Fragment>,
-          ],
+          line,
+          <React.Fragment key={`${keyPrefix}-br-${i}`}>
+            <br />
+            <br />
+          </React.Fragment>,
+        ],
     )
     .flat();
 };
@@ -131,7 +131,7 @@ const getComponents = ({
   webSources,
 }: {
   docSources?: DocumentSource[];
-  webSources?: WebSource[];
+  webSources?: NormalizedWebSource[];
 }): Partial<ComponentsWithSourceRef> => ({
   // Render custom element produced by rehypeSourceRefs
   "source-ref": ({ node }: any) => {
@@ -300,7 +300,7 @@ const getComponents = ({
 interface MarkdownProps {
   children: string;
   docSources?: DocumentSource[];
-  webSources?: WebSource[];
+  webSources?: NormalizedWebSource[];
   parseSourceRefs?: boolean;
 }
 

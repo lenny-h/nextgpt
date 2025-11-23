@@ -51,10 +51,7 @@ export const ScrapeUrlUI = memo(
       );
     }
 
-    if (part.state === "output-available" && part.output) {
-      // Output is markdown string
-      const preview =
-        typeof part.output === "string" ? part.output.substring(0, 300) : "";
+    if (part.state === "output-available" && part.output.markdown) {
 
       return (
         <Collapsible
@@ -75,7 +72,7 @@ export const ScrapeUrlUI = memo(
                 <Globe size={14} className="text-primary mb-2 shrink-0" />
                 <div className="overflow-hidden">
                   <p className="text-muted-foreground whitespace-pre-wrap text-xs">
-                    {preview}...
+                    {part.output.markdown}...
                   </p>
                 </div>
               </div>

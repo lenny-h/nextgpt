@@ -1,5 +1,6 @@
 import { type ArtifactKind } from "./artifact-kind.js";
 import { type DocumentSource } from "./document-source.js";
+import { type NormalizedWebSource } from "./web-source.js";
 
 export type MyUITools = {
   searchDocuments: {
@@ -13,15 +14,12 @@ export type MyUITools = {
   searchWeb: {
     input: { searchTerms: string };
     output: {
-      url: string;
-      title?: string;
-      description?: string;
-      markdown?: string;
-    }[];
+      webSources: NormalizedWebSource[];
+    };
   };
   scrapeUrl: {
     input: { urlToScrape: string };
-    output: string;
+    output: { markdown: string };
   };
   createDocument: {
     input: {

@@ -10,14 +10,15 @@ import {
   type UIMessageStreamWriter,
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
+import { type ToolOutput } from "../../types/tool-output.js";
 import { getPromptsByIds } from "../db/queries/prompts.js";
 import { STANDARD_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
 import { modifyDocumentTool } from "../tools/modify-document.js";
-import { scrapeUrlTool } from "../tools/scrape-url.js";
+import { createScrapeUrlTool } from "../tools/scrape-url.js";
 import { searchDocumentsTool } from "../tools/search-documents.js";
-import { searchWebTool } from "../tools/search-web.js";
+import { createSearchWebTool } from "../tools/search-web.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatHandler } from "./chat-handler.js";
 import { ChatRequest } from "./chat-request.js";
@@ -27,6 +28,7 @@ const logger = createLogger("standard-chat-handler");
 export class StandardChatHandler extends ChatHandler {
   private systemPrompt: string = STANDARD_SYSTEM_PROMPT;
   private document?: CustomDocument;
+  private fullToolContent = new Map<string, ToolOutput>();
 
   constructor(request: ChatRequest, config: ChatConfig) {
     super(request, config);
@@ -119,10 +121,15 @@ export class StandardChatHandler extends ChatHandler {
   protected retrieveToolSet(
     writer: UIMessageStreamWriter<MyUIMessage>
   ): Record<string, Tool> {
+    const storeFullContent = (id: string, content: ToolOutput) => {
+      this.fullToolContent.set(id, content);
+    };
+
     const tools: Record<string, Tool> = {
       searchDocuments: searchDocumentsTool({
         filter: this.request.filter,
         retrieveContent: true, // Always retrieve content to pass as context to the model
+        storeFullContent,
       }),
       createDocument: createDocumentTool({
         writer,
@@ -144,8 +151,8 @@ export class StandardChatHandler extends ChatHandler {
     }
 
     if (process.env.USE_FIRECRAWL === "true" && this.request.webSearchEnabled) {
-      tools.scrapeUrl = scrapeUrlTool;
-      tools.searchWeb = searchWebTool;
+      tools.scrapeUrl = createScrapeUrlTool({ storeFullContent });
+      tools.searchWeb = createSearchWebTool({ storeFullContent });
     }
 
     return tools;
@@ -169,6 +176,30 @@ export class StandardChatHandler extends ChatHandler {
       ...streamConfig,
       tools,
       experimental_context,
+      prepareStep: ({ steps }) => {
+        // Re-hydrate the tool results with the full content for the model context
+        for (const step of steps) {
+          for (const toolCall of step.toolCalls) {
+            if (this.fullToolContent.has(toolCall.toolCallId)) {
+              const fullContent = this.fullToolContent.get(toolCall.toolCallId);
+              const toolResult = step.toolResults.find(
+                (tr) => tr.toolCallId === toolCall.toolCallId
+              );
+
+              if (toolResult) {
+                // Replace the output with the full content
+                toolResult.output = fullContent;
+              }
+            }
+          }
+        }
+
+        logger.debug(
+          "Tool results so far (after re-hydration): ",
+          steps.map((s) => s.toolResults)
+        );
+        return undefined;
+      },
       onStepFinish: (step) => {
         logger.info("Step finished:", {
           text: step.text,
