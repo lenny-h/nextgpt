@@ -14,18 +14,29 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
         Action = [
           "secretsmanager:GetSecretValue"
         ]
-        Resource = [
-          data.terraform_remote_state.db_storage.outputs.db_password_secret_arn,
-          aws_secretsmanager_secret.better_auth_secret.arn,
-          aws_secretsmanager_secret.resend_api_key.arn,
-          aws_secretsmanager_secret.google_client_secret.arn,
-          aws_secretsmanager_secret.github_client_secret.arn,
-          aws_secretsmanager_secret.gitlab_client_secret.arn,
-          aws_secretsmanager_secret.sso_client_secret.arn,
-          aws_secretsmanager_secret.cloudflare_r2_access_key_id.arn,
-          aws_secretsmanager_secret.cloudflare_r2_secret_access_key.arn,
-          aws_secretsmanager_secret.encryption_key.arn
-        ]
+        Resource = concat(
+          [
+            data.terraform_remote_state.db_storage.outputs.db_password_secret_arn,
+            aws_secretsmanager_secret.better_auth_secret.arn,
+            aws_secretsmanager_secret.resend_api_key.arn,
+            aws_secretsmanager_secret.encryption_key.arn
+          ],
+          var.enable_oauth_login ? [
+            aws_secretsmanager_secret.google_client_secret[0].arn,
+            aws_secretsmanager_secret.github_client_secret[0].arn,
+            aws_secretsmanager_secret.gitlab_client_secret[0].arn
+          ] : [],
+          var.enable_sso ? [
+            aws_secretsmanager_secret.sso_client_secret[0].arn
+          ] : [],
+          var.use_cloudflare_r2 ? [
+            aws_secretsmanager_secret.cloudflare_r2_access_key_id[0].arn,
+            aws_secretsmanager_secret.cloudflare_r2_secret_access_key[0].arn
+          ] : [],
+          var.use_firecrawl ? [
+            aws_secretsmanager_secret.firecrawl_api_key[0].arn
+          ] : []
+        )
       }
     ]
   })

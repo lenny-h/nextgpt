@@ -55,13 +55,15 @@ resource "google_secret_manager_secret_iam_member" "api_resend_api_key_accessor"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_r2_access_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+  count     = var.use_cloudflare_r2 ? 1 : 0
+  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_r2_secret_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+  count     = var.use_cloudflare_r2 ? 1 : 0
+  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
@@ -73,31 +75,29 @@ resource "google_secret_manager_secret_iam_member" "api_encryption_key_accessor"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_google_client_secret_accessor" {
-  secret_id = google_secret_manager_secret.google_client_secret.secret_id
+  count     = var.enable_oauth_login ? 1 : 0
+  secret_id = google_secret_manager_secret.google_client_secret[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_github_client_secret_accessor" {
-  secret_id = google_secret_manager_secret.github_client_secret.secret_id
+  count     = var.enable_oauth_login ? 1 : 0
+  secret_id = google_secret_manager_secret.github_client_secret[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_gitlab_client_secret_accessor" {
-  secret_id = google_secret_manager_secret.gitlab_client_secret.secret_id
+  count     = var.enable_oauth_login ? 1 : 0
+  secret_id = google_secret_manager_secret.gitlab_client_secret[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "api_sso_client_secret_accessor" {
-  secret_id = google_secret_manager_secret.sso_client_secret.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.api_sa.email}"
-}
-
-resource "google_secret_manager_secret_iam_member" "api_firecrawl_api_key_accessor" {
-  secret_id = data.terraform_remote_state.db_storage.outputs.firecrawl_api_key_secret_id
+  count     = var.enable_sso ? 1 : 0
+  secret_id = google_secret_manager_secret.sso_client_secret[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
 }
@@ -110,13 +110,6 @@ resource "google_secret_manager_secret_iam_member" "api_firecrawl_api_key_access
 resource "google_service_account" "document_processor_sa" {
   account_id   = "document-processor-sa"
   display_name = "Document Processor Service Account"
-}
-
-# IAM Binding to allow document_processor to use vertex AI API
-resource "google_project_iam_member" "document_processor_vertex_ai_user" {
-  project = var.google_vertex_project
-  role    = "roles/aiplatform.user"
-  member  = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
 # IAM Binding to allow Document Processor service account to access secrets
@@ -133,13 +126,15 @@ resource "google_secret_manager_secret_iam_member" "document_processor_encryptio
 }
 
 resource "google_secret_manager_secret_iam_member" "document_processor_r2_access_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+  count     = var.use_cloudflare_r2 ? 1 : 0
+  secret_id = google_secret_manager_secret.cloudflare_r2_access_key_id[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "document_processor_r2_secret_key_accessor" {
-  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+  count     = var.use_cloudflare_r2 ? 1 : 0
+  secret_id = google_secret_manager_secret.cloudflare_r2_secret_access_key[0].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
 }
@@ -152,6 +147,47 @@ resource "google_secret_manager_secret_iam_member" "document_processor_r2_secret
 resource "google_service_account" "pdf_exporter_sa" {
   account_id   = "pdf-exporter-sa"
   display_name = "PDF Exporter Service Account"
+}
+
+# IAM Binding to allow PDF Exporter service account to access secrets
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_db_password_accessor" {
+  secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_better_auth_secret_accessor" {
+  secret_id = google_secret_manager_secret.better_auth_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_google_client_secret_accessor" {
+  count     = var.enable_oauth_login ? 1 : 0
+  secret_id = google_secret_manager_secret.google_client_secret[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_github_client_secret_accessor" {
+  count     = var.enable_oauth_login ? 1 : 0
+  secret_id = google_secret_manager_secret.github_client_secret[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_gitlab_client_secret_accessor" {
+  count     = var.enable_oauth_login ? 1 : 0
+  secret_id = google_secret_manager_secret.gitlab_client_secret[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "pdf_exporter_sso_client_secret_accessor" {
+  count     = var.enable_sso ? 1 : 0
+  secret_id = google_secret_manager_secret.sso_client_secret[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
 }
 
 # ===================================

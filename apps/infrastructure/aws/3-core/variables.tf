@@ -182,3 +182,14 @@ variable "aws_region" {
   type        = string
   description = "AWS region"
 }
+
+variable "use_firecrawl" {
+  type        = bool
+  description = "Enable Firecrawl usage"
+}
+
+variable "firecrawl_api_key" {
+  type        = string
+  description = "Firecrawl API key"
+  sensitive   = true
+}

@@ -49,7 +49,3 @@ r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
 # AI Models
 embeddings_model = "text-embedding-004"
 llm_models       = "gemini-2.5-flash,gemini-2.5-pro"
-
-# Firecrawl Configuration
-use_firecrawl     = true
-firecrawl_api_key = "your-firecrawl-api-key-if-using-external-service"

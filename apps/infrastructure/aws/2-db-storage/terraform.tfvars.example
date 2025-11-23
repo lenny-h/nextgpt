@@ -7,4 +7,5 @@ aws_zones        = ["us-east-1a", "us-east-1b"]
 database_password = "your-secure-database-password"
 
 # Firecrawl Configuration
-use_firecrawl = true
+# Set to true if you want to use SELF-HOSTED Firecrawl
+use_firecrawl = false

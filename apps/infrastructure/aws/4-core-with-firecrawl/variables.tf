@@ -172,18 +172,6 @@ variable "llm_models" {
   description = "Comma-separated list of allowed LLM models"
 }
 
-# Firecrawl configuration
-variable "use_firecrawl" {
-  type        = bool
-  description = "Enable Firecrawl usage"
-}
-
-variable "firecrawl_api_key" {
-  type        = string
-  description = "Firecrawl API key"
-  sensitive   = true
-}
-
 # AWS specific configuration
 variable "aws_project_name" {
   type        = string

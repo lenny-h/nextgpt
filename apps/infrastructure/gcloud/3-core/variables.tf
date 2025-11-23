@@ -183,3 +183,14 @@ variable "google_vertex_location" {
   type        = string
   description = "GCP region"
 }
+
+variable "use_firecrawl" {
+  type        = bool
+  description = "Enable Firecrawl usage"
+}
+
+variable "firecrawl_api_key" {
+  type        = string
+  description = "Firecrawl API key"
+  sensitive   = true
+}

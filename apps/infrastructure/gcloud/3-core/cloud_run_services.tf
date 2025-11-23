@@ -62,53 +62,36 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "ENABLE_OAUTH_LOGIN"
         value = tostring(var.enable_oauth_login)
       }
-      env {
-        name  = "GOOGLE_CLIENT_ID"
-        value = var.google_client_id
-      }
-      env {
-        name  = "GITHUB_CLIENT_ID"
-        value = var.github_client_id
-      }
-      env {
-        name  = "GITLAB_CLIENT_ID"
-        value = var.gitlab_client_id
+      dynamic "env" {
+        for_each = var.enable_oauth_login ? {
+          "GOOGLE_CLIENT_ID" = var.google_client_id
+          "GITHUB_CLIENT_ID" = var.github_client_id
+          "GITLAB_CLIENT_ID" = var.gitlab_client_id
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
       env {
         name  = "ENABLE_SSO"
         value = tostring(var.enable_sso)
       }
-      env {
-        name  = "SSO_DOMAIN"
-        value = var.sso_domain
-      }
-      env {
-        name  = "SSO_PROVIDER_ID"
-        value = var.sso_provider_id
-      }
-      env {
-        name  = "SSO_CLIENT_ID"
-        value = var.sso_client_id
-      }
-      env {
-        name  = "SSO_ISSUER"
-        value = var.sso_issuer
-      }
-      env {
-        name  = "SSO_AUTHORIZATION_ENDPOINT"
-        value = var.sso_authorization_endpoint
-      }
-      env {
-        name  = "SSO_DISCOVERY_ENDPOINT"
-        value = var.sso_discovery_endpoint
-      }
-      env {
-        name  = "SSO_TOKEN_ENDPOINT"
-        value = var.sso_token_endpoint
-      }
-      env {
-        name  = "SSO_JWKS_ENDPOINT"
-        value = var.sso_jwks_endpoint
+      dynamic "env" {
+        for_each = var.enable_sso ? {
+          "SSO_DOMAIN"                 = var.sso_domain
+          "SSO_PROVIDER_ID"            = var.sso_provider_id
+          "SSO_CLIENT_ID"              = var.sso_client_id
+          "SSO_ISSUER"                 = var.sso_issuer
+          "SSO_AUTHORIZATION_ENDPOINT" = var.sso_authorization_endpoint
+          "SSO_DISCOVERY_ENDPOINT"     = var.sso_discovery_endpoint
+          "SSO_TOKEN_ENDPOINT"         = var.sso_token_endpoint
+          "SSO_JWKS_ENDPOINT"          = var.sso_jwks_endpoint
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
       env {
         name  = "RESEND_SENDER_EMAIL"
@@ -142,9 +125,14 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "USE_CLOUDFLARE_R2"
         value = tostring(var.use_cloudflare_r2)
       }
-      env {
-        name  = "R2_ENDPOINT"
-        value = var.r2_endpoint
+      dynamic "env" {
+        for_each = var.use_cloudflare_r2 ? {
+          "R2_ENDPOINT" = var.r2_endpoint
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
       env {
         name  = "CLOUD_PROVIDER"
@@ -172,7 +160,7 @@ resource "google_cloud_run_v2_service" "api" {
       }
       env {
         name  = "USE_FIRECRAWL"
-        value = "false"
+        value = var.use_firecrawl
       }
 
       # Sensitive secrets from Secret Manager
@@ -194,39 +182,33 @@ resource "google_cloud_run_v2_service" "api" {
           }
         }
       }
-      env {
-        name = "GOOGLE_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.google_client_secret.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.enable_oauth_login ? {
+          "GOOGLE_CLIENT_SECRET" = google_secret_manager_secret.google_client_secret[0].secret_id
+          "GITHUB_CLIENT_SECRET" = google_secret_manager_secret.github_client_secret[0].secret_id
+          "GITLAB_CLIENT_SECRET" = google_secret_manager_secret.gitlab_client_secret[0].secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }
-      env {
-        name = "GITHUB_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.github_client_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "GITLAB_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.gitlab_client_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "SSO_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.sso_client_secret.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.enable_sso ? {
+          "SSO_CLIENT_SECRET" = google_secret_manager_secret.sso_client_secret.secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }
@@ -248,21 +230,32 @@ resource "google_cloud_run_v2_service" "api" {
           }
         }
       }
-      env {
-        name = "CLOUDFLARE_ACCESS_KEY_ID"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.use_cloudflare_r2 ? {
+          "CLOUDFLARE_ACCESS_KEY_ID"     = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
+          "CLOUDFLARE_SECRET_ACCESS_KEY" = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }
-      env {
-        name = "CLOUDFLARE_SECRET_ACCESS_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.use_firecrawl ? {
+          "FIRECRAWL_API_KEY" = google_secret_manager_secret.firecrawl_api_key.secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }
@@ -339,9 +332,14 @@ resource "google_cloud_run_v2_service" "document_processor" {
         name  = "USE_CLOUDFLARE_R2"
         value = tostring(var.use_cloudflare_r2)
       }
-      env {
-        name  = "R2_ENDPOINT"
-        value = var.r2_endpoint
+      dynamic "env" {
+        for_each = var.use_cloudflare_r2 ? {
+          "R2_ENDPOINT" = var.r2_endpoint
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
       env {
         name  = "CLOUD_PROVIDER"
@@ -375,21 +373,18 @@ resource "google_cloud_run_v2_service" "document_processor" {
           }
         }
       }
-      env {
-        name = "CLOUDFLARE_ACCESS_KEY_ID"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "CLOUDFLARE_SECRET_ACCESS_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.use_cloudflare_r2 ? {
+          "CLOUDFLARE_ACCESS_KEY_ID"     = google_secret_manager_secret.cloudflare_r2_access_key_id[0].secret_id
+          "CLOUDFLARE_SECRET_ACCESS_KEY" = google_secret_manager_secret.cloudflare_r2_secret_access_key[0].secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }
@@ -444,6 +439,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         container_port = 8080
       }
 
+      # Non-sensitive environment variables
       env {
         name  = "NODE_ENV"
         value = "production"
@@ -472,53 +468,36 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name  = "ENABLE_OAUTH_LOGIN"
         value = tostring(var.enable_oauth_login)
       }
-      env {
-        name  = "GOOGLE_CLIENT_ID"
-        value = var.google_client_id
-      }
-      env {
-        name  = "GITHUB_CLIENT_ID"
-        value = var.github_client_id
-      }
-      env {
-        name  = "GITLAB_CLIENT_ID"
-        value = var.gitlab_client_id
+      dynamic "env" {
+        for_each = var.enable_oauth_login ? {
+          "GOOGLE_CLIENT_ID" = var.google_client_id
+          "GITHUB_CLIENT_ID" = var.github_client_id
+          "GITLAB_CLIENT_ID" = var.gitlab_client_id
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
       env {
         name  = "ENABLE_SSO"
         value = tostring(var.enable_sso)
       }
-      env {
-        name  = "SSO_DOMAIN"
-        value = var.sso_domain
-      }
-      env {
-        name  = "SSO_PROVIDER_ID"
-        value = var.sso_provider_id
-      }
-      env {
-        name  = "SSO_CLIENT_ID"
-        value = var.sso_client_id
-      }
-      env {
-        name  = "SSO_ISSUER"
-        value = var.sso_issuer
-      }
-      env {
-        name  = "SSO_AUTHORIZATION_ENDPOINT"
-        value = var.sso_authorization_endpoint
-      }
-      env {
-        name  = "SSO_DISCOVERY_ENDPOINT"
-        value = var.sso_discovery_endpoint
-      }
-      env {
-        name  = "SSO_TOKEN_ENDPOINT"
-        value = var.sso_token_endpoint
-      }
-      env {
-        name  = "SSO_JWKS_ENDPOINT"
-        value = var.sso_jwks_endpoint
+      dynamic "env" {
+        for_each = var.enable_sso ? {
+          "SSO_DOMAIN"                 = var.sso_domain
+          "SSO_PROVIDER_ID"            = var.sso_provider_id
+          "SSO_CLIENT_ID"              = var.sso_client_id
+          "SSO_ISSUER"                 = var.sso_issuer
+          "SSO_AUTHORIZATION_ENDPOINT" = var.sso_authorization_endpoint
+          "SSO_DISCOVERY_ENDPOINT"     = var.sso_discovery_endpoint
+          "SSO_TOKEN_ENDPOINT"         = var.sso_token_endpoint
+          "SSO_JWKS_ENDPOINT"          = var.sso_jwks_endpoint
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
       env {
         name  = "SITE_URL"
@@ -540,7 +519,6 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
         name  = "REDIS_URL"
         value = data.terraform_remote_state.db_storage.outputs.redis_url
       }
-
       # Sensitive secrets from Secret Manager
       env {
         name = "BETTER_AUTH_SECRET"
@@ -551,39 +529,33 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
           }
         }
       }
-      env {
-        name = "GOOGLE_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.google_client_secret.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.enable_oauth_login ? {
+          "GOOGLE_CLIENT_SECRET" = google_secret_manager_secret.google_client_secret[0].secret_id
+          "GITHUB_CLIENT_SECRET" = google_secret_manager_secret.github_client_secret[0].secret_id
+          "GITLAB_CLIENT_SECRET" = google_secret_manager_secret.gitlab_client_secret[0].secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }
-      env {
-        name = "GITHUB_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.github_client_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "GITLAB_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.gitlab_client_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "SSO_CLIENT_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.sso_client_secret.secret_id
-            version = "latest"
+      dynamic "env" {
+        for_each = var.enable_sso ? {
+          "SSO_CLIENT_SECRET" = google_secret_manager_secret.sso_client_secret[0].secret_id
+        } : {}
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
       }

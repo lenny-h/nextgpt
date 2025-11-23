@@ -1,4 +1,4 @@
-site_url = "example.com"
-
 google_vertex_project  = "your-gcp-project-id"
 google_vertex_location = "us-central1"
+
+site_url = "example.com"
