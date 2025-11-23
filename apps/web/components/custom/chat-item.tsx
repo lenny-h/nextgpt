@@ -46,13 +46,13 @@ const PureChatItem = ({
       <SidebarMenuButton className="h-9" asChild isActive={isActive}>
         <Link
           href={
-            chat.title === "Practice Session"
+            chat.title.startsWith("Practice Session")
               ? `/${locale}/practice/${chat.id}`
               : `/${locale}/chat/${chat.id}`
           }
           onClick={() => setOpenMobile(false)}
         >
-          <span>{chat.title}</span>
+          <span>{chat.title || "Chat"}</span>
         </Link>
       </SidebarMenuButton>
 

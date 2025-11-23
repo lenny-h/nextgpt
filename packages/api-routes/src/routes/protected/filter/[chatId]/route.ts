@@ -9,6 +9,7 @@ import {
   documents,
   files,
   messages,
+  prompts,
 } from "@workspace/server/drizzle/schema.js";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
@@ -58,67 +59,88 @@ const app = new Hono().get(
         courses: [],
         files: [],
         documents: [],
+        prompts: [],
       });
     }
 
     const filter = messageMetadata.filter;
 
     // Parallelize all database fetches
-    const [coursesData, filesData, documentsData] = await Promise.all([
+    const [coursesData, filesData, documentsData, promptsData] = await Promise.all([
       // Fetch course details if courses exist
       filter.courses.length > 0
         ? db
-            .select({
-              id: courses.id,
-              name: courses.name,
-            })
-            .from(courses)
-            .where(
-              and(
-                eq(courses.bucketId, filter.bucket.id),
-                inArray(
-                  courses.id,
-                  filter.courses.map((c: { id: string }) => c.id)
-                )
+          .select({
+            id: courses.id,
+            name: courses.name,
+          })
+          .from(courses)
+          .where(
+            and(
+              eq(courses.bucketId, filter.bucket.id),
+              inArray(
+                courses.id,
+                filter.courses.map((c: { id: string }) => c.id)
               )
             )
+          )
         : Promise.resolve([]),
 
       // Fetch file details if files exist
       filter.files.length > 0
         ? db
-            .select({
-              id: files.id,
-              name: files.name,
-              pageCount: files.pagesCount,
-            })
-            .from(files)
-            .where(
-              inArray(
-                files.id,
-                filter.files.map((f: { id: string }) => f.id)
-              )
+          .select({
+            id: files.id,
+            name: files.name,
+            pageCount: files.pagesCount,
+          })
+          .from(files)
+          .where(
+            inArray(
+              files.id,
+              filter.files.map((f: { id: string }) => f.id)
             )
+          )
         : Promise.resolve([]),
 
       // Fetch document details if documents exist (only for regular filter, not practice filter)
       "documents" in filter && filter.documents.length > 0
         ? db
-            .select({
-              id: documents.id,
-              title: documents.title,
-              kind: documents.kind,
-            })
-            .from(documents)
-            .where(
-              and(
-                eq(documents.userId, user.id),
-                inArray(
-                  documents.id,
-                  filter.documents.map((d: { id: string }) => d.id)
-                )
+          .select({
+            id: documents.id,
+            title: documents.title,
+            kind: documents.kind,
+          })
+          .from(documents)
+          .where(
+            and(
+              eq(documents.userId, user.id),
+              inArray(
+                documents.id,
+                filter.documents.map((d: { id: string }) => d.id)
               )
             )
+          )
+        : Promise.resolve([]),
+
+      // Fetch prompt details if prompts exist
+      "prompts" in filter && filter.prompts.length > 0
+        ? db
+          .select({
+            id: prompts.id,
+            name: prompts.name,
+            content: prompts.content,
+          })
+          .from(prompts)
+          .where(
+            and(
+              eq(prompts.userId, user.id),
+              inArray(
+                prompts.id,
+                filter.prompts.map((p: { id: string }) => p.id)
+              )
+            )
+          )
         : Promise.resolve([]),
     ]);
 
@@ -153,6 +175,11 @@ const app = new Hono().get(
         id: doc.id,
         title: doc.title,
         kind: doc.kind,
+      })),
+      prompts: promptsData.map((prompt) => ({
+        id: prompt.id,
+        name: prompt.name,
+        content: prompt.content,
       })),
     };
 
