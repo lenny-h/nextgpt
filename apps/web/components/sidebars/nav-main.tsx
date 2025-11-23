@@ -1,6 +1,7 @@
 "use client";
 
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -24,6 +25,7 @@ import { memo } from "react";
 
 export const NavMain = memo(() => {
   const { locale } = useSharedTranslations();
+  const { webT } = useWebTranslations();
   const [tempChat, setTempChat] = useIsTemporary();
 
   const pathname = usePathname();
@@ -50,7 +52,10 @@ export const NavMain = memo(() => {
         >
           <MessageCirclePlus className="text-primary" />
           <span>
-            New {pathname.includes("/practice") ? "practice session" : "chat"}
+            {webT.navMain.new}{" "}
+            {pathname.includes("/practice")
+              ? webT.navMain.practiceSession
+              : webT.navMain.chat}
           </span>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -62,7 +67,7 @@ export const NavMain = memo(() => {
             onClick={() => setTempChat(!tempChat)}
           >
             <MessageCircleDashed />
-            <span>Temporary chat</span>
+            <span>{webT.navMain.temporaryChat}</span>
           </SidebarMenuButton>
           <Switch
             id="temp"
@@ -80,7 +85,7 @@ export const NavMain = memo(() => {
         >
           <Link href={`/${locale}`}>
             <Sparkles />
-            <span>Chat</span>
+            <span>{webT.navMain.chatLabel}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -89,7 +94,7 @@ export const NavMain = memo(() => {
         <SidebarMenuButton asChild isActive={pathname.includes("practice")}>
           <Link href={`/${locale}/practice`}>
             <GraduationCap />
-            <span>Practice</span>
+            <span>{webT.navMain.practiceLabel}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -98,7 +103,7 @@ export const NavMain = memo(() => {
         <SidebarMenuButton asChild isActive={pathname === `/${locale}/search`}>
           <Link href={`/${locale}/search`}>
             <Search />
-            <span>Search</span>
+            <span>{webT.navMain.searchLabel}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -110,7 +115,7 @@ export const NavMain = memo(() => {
         >
           <Link href={`/${locale}/documents`}>
             <FileText />
-            <span>Documents</span>
+            <span>{webT.navMain.documentsLabel}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -119,7 +124,7 @@ export const NavMain = memo(() => {
         <SidebarMenuButton asChild>
           <Link href={process.env.NEXT_PUBLIC_DASHBOARD_URL!}>
             <ExternalLink />
-            <span>Dashboard</span>
+            <span>{webT.navMain.dashboardLabel}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

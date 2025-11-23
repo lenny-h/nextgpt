@@ -125,6 +125,12 @@ export class PracticeChatHandler extends ChatHandler {
         onFinish: async ({ messages }) => {
           await this.saveResponseMessages(messages);
         },
+        messageMetadata: ({ part }) => {
+          // Send total usage when generation is finished
+          if (part.type === "finish") {
+            return { totalUsage: part.totalUsage };
+          }
+        },
       })
     );
   }

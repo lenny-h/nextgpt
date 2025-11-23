@@ -145,14 +145,31 @@ const PureAgentMessage = ({
               })}
 
               {textContent && (
-                <MessageActions
-                  content={parseContent(textContent)}
-                  role={message.role}
-                  isLoading={isLoading}
-                  regenerate={regenerate}
-                  messageId={message.id}
-                  previousMessageId={previousMessageId}
-                />
+                <>
+                  <MessageActions
+                    content={parseContent(textContent)}
+                    role={message.role}
+                    isLoading={isLoading}
+                    regenerate={regenerate}
+                    messageId={message.id}
+                    previousMessageId={previousMessageId}
+                  />
+
+                  {/* Display usage information if available */}
+                  {message.metadata?.totalUsage && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        Tokens: {message.metadata.totalUsage.totalTokens}
+                      </span>
+                      {message.metadata.totalUsage.inputTokens && message.metadata.totalUsage.outputTokens && (
+                        <span className="text-muted-foreground/70">
+                          (In: {message.metadata.totalUsage.inputTokens},
+                          Out: {message.metadata.totalUsage.outputTokens})
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
