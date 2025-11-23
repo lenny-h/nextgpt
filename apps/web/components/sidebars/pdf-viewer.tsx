@@ -39,14 +39,17 @@ export const PDFViewer = () => {
 
   // Show bbox temporarily when it changes
   useEffect(() => {
-    if (currentBbox) {
-      console.log("PDFViewer - New bbox received:", currentBbox);
+    const bboxDurationMs = parseInt(
+      process.env.NEXT_PUBLIC_PDF_BBOX_DURATION_MS || "0",
+      10
+    );
+
+    if (currentBbox && bboxDurationMs > 0) {
       setShowBbox(true);
 
       const timer = setTimeout(() => {
-        console.log("PDFViewer - Hiding bbox after 3 seconds");
         setShowBbox(false);
-      }, 3000);
+      }, bboxDurationMs);
 
       return () => clearTimeout(timer);
     } else {

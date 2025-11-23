@@ -99,6 +99,8 @@ output "setup_instructions" {
      ✓ ENABLE_SSO = ${var.enable_sso}
      ✓ USE_FIRECRAWL = false
      ✓ CSP_ENDPOINTS = ${var.use_cloudflare_r2 ? "https://files-bucket.<your-account-id>.r2.cloudflarestorage.com https://temporary-files-bucket.<your-account-id>.r2.cloudflarestorage.com" : "https://${var.aws_project_name}-files-bucket.s3.${var.aws_region}.amazonaws.com https://${var.aws_project_name}-temporary-files-bucket.s3.${var.aws_region}.amazonaws.com"}
+
+     ✓ PDF_BBOX_DURATION_MS = <your PDF BBox Duration in ms>
      ✓ CLOUDFLARE_ACCOUNT_ID = <your Cloudflare account ID>
      
      Secrets (Repository secrets):
