@@ -15,7 +15,6 @@ from docling.document_converter import DocumentConverter, PdfFormatOption
 
 from app_state import get_converter
 
-from utils.tokenizer import get_tokenizer
 from utils.utils import create_embedded_chunk, handle_processing_error
 
 from models.requests import DocumentUploadEvent
@@ -180,7 +179,7 @@ async def _convert_pdf_to_chunks(
     logger.debug(f"PDF conversion completed ({page_count} pages)")
 
     logger.debug(f"Initializing chunker and processing PDF")
-    chunker = HybridChunker(tokenizer=get_tokenizer())
+    chunker = HybridChunker()
     chunk_iter = chunker.chunk(dl_doc=result.document)
 
     chunks: List[PdfChunkData] = []

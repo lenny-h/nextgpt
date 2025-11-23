@@ -9,7 +9,6 @@ from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 
 from app_state import get_converter
 
-from utils.tokenizer import get_tokenizer
 from utils.utils import create_embedded_chunk, handle_processing_error
 
 from models.requests import DocumentUploadEvent
@@ -134,7 +133,10 @@ async def _convert_document_to_chunks(
     logger.debug(f"Document conversion completed")
 
     logger.debug(f"Initializing chunker and processing document")
-    chunker = HybridChunker(tokenizer=get_tokenizer())
+    # The following code may raise the error
+    # 'Token indices sequence length is longer than the specified maximum sequence length for this model (531 > 512)'
+    # According to https://docling-project.github.io/docling/examples/hybrid_chunking/#basic-usage, this is a false alarm
+    chunker = HybridChunker()
     chunk_iter = chunker.chunk(dl_doc=result.document)
 
     chunks: List[DocumentChunkData] = []
