@@ -1,13 +1,88 @@
-Proprietary License
+NextGpt Limited Usage & Business License
 
 Copyright (c) 2025 Lennart Horn.
 
-All rights reserved.
+1. Grant of Rights
 
-This repository and its contents are provided for viewing purposes only.  
-No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, or sell any part of this software without explicit prior written consent from the copyright holder.
+- Subject to the terms below, the copyright holder grants you a non-exclusive,
+  non-transferable right to use, run, and evaluate the software contained in
+  this repository.
 
-This license applies only to the current state of the software as provided in this repository.  
-The copyright holder reserves the right to change, update, or replace these licensing terms in the future without notice.
+2. Free Usage Allowance
 
-By accessing this repository, you acknowledge that this software is proprietary and protected by applicable copyright law.
+- Teams with up to and including 25 (twenty-five) total users may use this
+  software free of charge for internal purposes.
+
+3. Business License Requirement & Pricing
+
+- Teams with more than 25 users must obtain a paid business license.
+- Pricing (per active user, billed monthly) is as follows:
+  - Users 26–250: $2.90 per user per month
+  - Users 251–1'000: $2.65 per user per month
+  - Users 1'001–10'000: $2.25 per user per month
+  - Users above 10'000: $1.90 per user per month
+- To obtain a business license or for commercial inquiries, contact the copyright
+  holder for a formal agreement.
+
+4. Restrictions
+
+- Except as expressly granted above, no rights to copy, modify, distribute,
+  sublicense, sublicense derivative works, or otherwise exploit the software are
+  granted. All rights not expressly granted are reserved.
+
+5. Third‑Party Components & Component‑Level Licenses
+
+- Portions of the repository may incorporate or derive from third‑party code and
+  may be subject to other licenses (e.g., open-source licenses). The license
+  that accompanies each specific component (file, folder, or module) governs
+  that component. Where multiple licenses apply to different parts of the code,
+  users must comply with each applicable license. To the extent terms conflict,
+  the component-level license terms applicable to that component control for that
+  component.
+
+6. No Warranty
+
+- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED. THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+  PURPOSE, TITLE, AND NON-INFRINGEMENT.
+
+7. Limitation of Liability
+
+- IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, PUNITIVE OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF
+  PROFITS, REVENUE, DATA OR DATA USE, ARISING OUT OF OR IN CONNECTION WITH THE
+  USE OR PERFORMANCE OF THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+  DAMAGES. THE COPYRIGHT HOLDER'S AGGREGATE LIABILITY FOR ANY CLAIM ARISING OUT
+  OF OR IN CONNECTION WITH THIS LICENSE SHALL NOT EXCEED THE AMOUNTS PAID BY THE
+  LICENSEE UNDER AN APPLICABLE BUSINESS LICENSE IN THE SIX (6) MONTHS PRIOR TO
+  THE EVENT GIVING RISE TO THE CLAIM (OR, IF NO BUSINESS LICENSE APPLIES, USD $0).
+
+8. Indemnity
+
+- If you use the software in a way that causes third-party claims, you agree to
+  indemnify and hold the copyright holder harmless from any such claims, costs,
+  and damages, to the extent permitted by law.
+
+9. Termination
+
+- This license terminates automatically if you fail to comply with any term of
+  this license. Upon termination you must cease all use and destroy all copies of
+  the software in your possession or control. Sections 5 (Third‑Party Components & Component‑Level
+  Licenses), 6 (No Warranty), 7 (Limitation of Liability), and this section survive termination.
+
+10. Governing Law
+
+- This license is governed by the laws of the jurisdiction of the copyright
+  holder's domicile, without regard to conflicts of law rules.
+
+11. Changes to License
+
+- The copyright holder reserves the right to update or replace these terms in
+  the future. New terms will apply only to future releases unless otherwise
+  agreed in writing.
+
+12. Contact
+
+- To obtain a business license, request pricing details, or ask questions about
+  third‑party component licenses, contact the copyright holder at lennarth062@gmail.com.

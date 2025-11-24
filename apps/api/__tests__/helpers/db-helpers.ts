@@ -1,15 +1,18 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import {
+  bucketMaintainerInvitations,
   buckets,
   bucketUserRoles,
   chats,
   courses,
+  courseUserRoles,
   documents,
   files,
   models,
   prompts,
   tasks,
   type BucketType,
+  type TaskStatus,
 } from "@workspace/server/drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { TEST_USER_IDS } from "./auth-helpers.js";
@@ -25,7 +28,7 @@ import { TEST_USER_IDS } from "./auth-helpers.js";
  */
 export async function createTestBucket(
   userId: string,
-  name: string,
+  name: string = `test-bucket-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
   type: BucketType = "small"
 ): Promise<string> {
   const maxSizes: Record<BucketType, number> = {
@@ -59,6 +62,129 @@ export async function createTestBucket(
   });
 
   return bucket.id;
+}
+
+/**
+ * Create a test course directly in the database
+ * Returns the course ID
+ */
+export async function createTestCourse(
+  userId: string,
+  bucketId: string,
+  name: string = "test-course",
+  description: string = "Test Course Description",
+  isPrivate: boolean = false
+): Promise<string> {
+  const [course] = await db
+    .insert(courses)
+    .values({
+      bucketId,
+      name,
+      description,
+      private: isPrivate,
+    })
+    .returning({ id: courses.id });
+
+  if (!course) {
+    throw new Error("Failed to create test course");
+  }
+
+  // Add the user as a maintainer of the course
+  await db.insert(courseUserRoles).values({
+    courseId: course.id,
+    userId,
+    role: "maintainer",
+  });
+
+  return course.id;
+}
+
+/**
+ * Create a test file directly in the database
+ * Returns the file ID
+ */
+export async function createTestFile(
+  courseId: string,
+  name: string = "test-file",
+  size: number = 1024,
+  pagesCount: number = 1
+): Promise<string> {
+  const [file] = await db
+    .insert(files)
+    .values({
+      courseId,
+      name,
+      size,
+      pagesCount,
+    })
+    .returning({ id: files.id });
+
+  if (!file) {
+    throw new Error("Failed to create test file");
+  }
+
+  return file.id;
+}
+
+/**
+ * Create a test task directly in the database
+ * Returns the task ID
+ */
+export async function createTestTask(
+  courseId: string,
+  name: string = "test-task",
+  fileSize: number = 1024,
+  status: TaskStatus = "scheduled"
+): Promise<string> {
+  const [task] = await db
+    .insert(tasks)
+    .values({
+      courseId,
+      name,
+      fileSize,
+      status,
+    })
+    .returning({ id: tasks.id });
+
+  if (!task) {
+    throw new Error("Failed to create test task");
+  }
+
+  return task.id;
+}
+
+/**
+ * Add a user as a maintainer to a bucket
+ */
+export async function addBucketMaintainer(
+  bucketId: string,
+  userId: string
+): Promise<void> {
+  await db
+    .insert(bucketUserRoles)
+    .values({
+      bucketId,
+      userId,
+      role: "maintainer",
+    })
+    .onConflictDoNothing();
+}
+
+/**
+ * Add a user as a maintainer to a course
+ */
+export async function addCourseMaintainer(
+  courseId: string,
+  userId: string
+): Promise<void> {
+  await db
+    .insert(courseUserRoles)
+    .values({
+      courseId,
+      userId,
+      role: "maintainer",
+    })
+    .onConflictDoNothing();
 }
 
 /**
@@ -107,6 +233,9 @@ export async function cleanupUserBuckets(userId: string) {
 
     for (const bucket of userBuckets) {
       await cleanupBucketCourses(bucket.id);
+      await cleanupBucketUserRoles(bucket.id);
+      await cleanupBucketModels(bucket.id);
+      await cleanupBucketMaintainerInvitations(bucket.id);
     }
 
     await db.delete(buckets).where(eq(buckets.owner, userId));
@@ -120,9 +249,45 @@ export async function cleanupUserBuckets(userId: string) {
  */
 export async function cleanupBucketCourses(bucketId: string) {
   try {
+    const bucketCourses = await db
+      .select({ id: courses.id })
+      .from(courses)
+      .where(eq(courses.bucketId, bucketId));
+
+    for (const course of bucketCourses) {
+      await cleanupCourseFiles(course.id);
+      await cleanupCourseTasks(course.id);
+    }
+
     await db.delete(courses).where(eq(courses.bucketId, bucketId));
   } catch (error) {
     console.error("Error cleaning up courses:", error);
+  }
+}
+
+/**
+ * Delete all user roles for a specific bucket
+ */
+export async function cleanupBucketUserRoles(bucketId: string) {
+  try {
+    await db
+      .delete(bucketUserRoles)
+      .where(eq(bucketUserRoles.bucketId, bucketId));
+  } catch (error) {
+    console.error("Error cleaning up bucket user roles:", error);
+  }
+}
+
+/**
+ * Delete all maintainer invitations for a specific bucket
+ */
+export async function cleanupBucketMaintainerInvitations(bucketId: string) {
+  try {
+    await db
+      .delete(bucketMaintainerInvitations)
+      .where(eq(bucketMaintainerInvitations.bucketId, bucketId));
+  } catch (error) {
+    console.error("Error cleaning up bucket maintainer invitations:", error);
   }
 }
 

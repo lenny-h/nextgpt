@@ -1,16 +1,15 @@
 import { testClient } from "hono/testing";
 import { beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
-import { TEST_USERS, getAuthHeaders, signInTestUser } from "../helpers/auth-helpers.js";
-
-/**
- * Tests for /api/protected/profiles routes
- * Tests authentication requirements and data isolation
- */
+import {
+  TEST_USERS,
+  getAuthHeaders,
+  signInTestUser,
+} from "../helpers/auth-helpers.js";
 
 describe("Protected API Routes - Profiles", () => {
   const client = testClient<ApiAppType>(app);
-  
+
   let user1Cookie: string;
   let user2Cookie: string;
 
@@ -19,7 +18,7 @@ describe("Protected API Routes - Profiles", () => {
       TEST_USERS.USER1_VERIFIED.email,
       TEST_USERS.USER1_VERIFIED.password
     );
-    
+
     user2Cookie = await signInTestUser(
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
@@ -41,7 +40,7 @@ describe("Protected API Routes - Profiles", () => {
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(data).toHaveProperty("username");
       expect(data).toHaveProperty("name");
@@ -57,7 +56,7 @@ describe("Protected API Routes - Profiles", () => {
         }
       );
       const user1Data = await res1.json();
-      
+
       const res2 = await client.api.protected.profiles.$get(
         {},
         {
@@ -102,7 +101,7 @@ describe("Protected API Routes - Profiles", () => {
       );
 
       expect(res.status).toBe(200);
-      
+
       const data = await res.json();
       expect(data).toHaveProperty("message");
       expect(data.message).toBe("Profile updated");
@@ -160,7 +159,7 @@ describe("Protected API Routes - Profiles", () => {
         }
       );
       const user2Profile = await res2.json();
-      
+
       // User2's name should still be their original name
       expect(user2Profile.name).toBe(TEST_USERS.USER2_VERIFIED.name);
       expect(user2Profile.username).toBe(TEST_USERS.USER2_VERIFIED.username);
