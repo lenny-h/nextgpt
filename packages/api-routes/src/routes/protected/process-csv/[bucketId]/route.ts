@@ -13,6 +13,7 @@ import { default as papa } from "papaparse";
 
 const BATCH_SIZE = 100;
 const MAX_FILE_SIZE = 32 * 1024; // 32KB
+
 const paramSchema = z.object({ bucketId: uuidSchema }).strict();
 const formSchema = z
   .object({
@@ -63,10 +64,11 @@ const app = new Hono().post(
     const result = papa.parse<string[]>(fileText, {
       header: false, // Assuming no header row
       skipEmptyLines: true,
+      delimiter: ",",
     });
 
     if (result.errors.length > 0) {
-      throw new HTTPException(400, { message: "INVALID_CSV_FILE" });
+      throw new HTTPException(400, { message: result.errors[0].message });
     }
 
     const usernames = result.data.map((row) => row[0]).filter(Boolean);

@@ -16,7 +16,6 @@ import {
 import {
   addBucketMaintainer,
   cleanupUserBucket,
-  cleanupUserBuckets,
   createTestBucket,
 } from "../helpers/db-helpers.js";
 

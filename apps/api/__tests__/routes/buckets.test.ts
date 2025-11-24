@@ -1,3 +1,6 @@
+import { db } from "@workspace/server/drizzle/db.js";
+import { buckets } from "@workspace/server/drizzle/schema.js";
+import { eq } from "drizzle-orm";
 import { testClient } from "hono/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
@@ -9,9 +12,6 @@ import {
 } from "../helpers/auth-helpers.js";
 import { cleanupUserBucket, createTestBucket } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
-import { buckets } from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm";
-import { db } from "@workspace/server/drizzle/db.js";
 
 /**
  * Tests for /api/protected/buckets routes
