@@ -5,7 +5,7 @@ import {
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
   getAuthHeaders,
@@ -15,6 +15,8 @@ import {
 } from "../helpers/auth-helpers.js";
 import {
   addBucketMaintainer,
+  cleanupUserBucket,
+  cleanupUserBuckets,
   createTestBucket,
 } from "../helpers/db-helpers.js";
 
@@ -40,6 +42,10 @@ describe("Protected API Routes - Bucket Maintainers", () => {
     bucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
   });
 
+  afterAll(async () => {
+    await cleanupUserBucket(bucketId);
+  });
+
   describe("GET /api/protected/bucket-maintainers/:bucketId", () => {
     it("should return maintainers for a bucket", async () => {
       const res = await client.api.protected["bucket-maintainers"][
@@ -62,7 +68,7 @@ describe("Protected API Routes - Bucket Maintainers", () => {
       expect(maintainers[0].id).toBe(TEST_USER_IDS.USER1_VERIFIED);
     });
 
-    it("should return 403 for unauthorized user", async () => {
+    it("should not allow non-owner to get maintainers", async () => {
       const res = await client.api.protected["bucket-maintainers"][
         ":bucketId"
       ].$get(

@@ -7,7 +7,7 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { cleanupUserChats } from "../helpers/db-helpers.js";
+import { createTestChat, deleteTestChat } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -20,6 +20,8 @@ describe("Protected API Routes - Chat Favorites", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let fixtureChatId: string;
+  const createdChatIds: string[] = [];
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -31,12 +33,19 @@ describe("Protected API Routes - Chat Favorites", () => {
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
     );
+
+    // Create a fixture chat for User 1
+    fixtureChatId = await createTestChat(TEST_USER_IDS.USER1_VERIFIED, {
+      title: "Favorite Test Chat",
+    });
+    createdChatIds.push(fixtureChatId);
   });
 
   afterAll(async () => {
     // Clean up test data
-    await cleanupUserChats(TEST_USER_IDS.USER1_VERIFIED);
-    await cleanupUserChats(TEST_USER_IDS.USER2_VERIFIED);
+    for (const chatId of createdChatIds) {
+      await deleteTestChat(chatId);
+    }
   });
 
   describe("GET /api/protected/chats/favourites", () => {
@@ -119,42 +128,24 @@ describe("Protected API Routes - Chat Favorites", () => {
     });
 
     it("should return favorite status for existing chat", async () => {
-      // Get user1's chats first
-      const chatsRes = await client.api.protected.chats.$get(
+      const res = await client.api.protected.chats["is-favourite"][
+        ":chatId"
+      ].$get(
         {
-          query: {
-            pageNumber: "0",
-            itemsPerPage: "5",
+          param: {
+            chatId: fixtureChatId,
           },
         },
         {
           headers: getAuthHeaders(user1Cookie),
         }
       );
-      const user1Chats = await chatsRes.json();
 
-      if (user1Chats.length > 0) {
-        const chatId = user1Chats[0].id;
+      expect(res.status).toBe(200);
 
-        const res = await client.api.protected.chats["is-favourite"][
-          ":chatId"
-        ].$get(
-          {
-            param: {
-              chatId,
-            },
-          },
-          {
-            headers: getAuthHeaders(user1Cookie),
-          }
-        );
-
-        expect(res.status).toBe(200);
-
-        const data = await res.json();
-        expect(data).toHaveProperty("isFavourite");
-        expect(typeof data.isFavourite).toBe("boolean");
-      }
+      const data = await res.json();
+      expect(data).toHaveProperty("isFavourite");
+      expect(typeof data.isFavourite).toBe("boolean");
     });
   });
 
@@ -173,7 +164,7 @@ describe("Protected API Routes - Chat Favorites", () => {
       const res = await client.api.protected.chats.ilike.$get(
         {
           query: {
-            prefix: "test",
+            prefix: "Favorite",
           },
         },
         {
@@ -185,6 +176,9 @@ describe("Protected API Routes - Chat Favorites", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+      // Should find our fixture chat
+      const found = data.find((c) => c.id === fixtureChatId);
+      expect(found).toBeDefined();
     });
 
     it("should validate input schema", async () => {
@@ -250,6 +244,27 @@ describe("Protected API Routes - Chat Favorites", () => {
       );
 
       expect(res.status).toBe(400);
+    });
+
+    it("should update chat title", async () => {
+      const newTitle = "Updated Favorite Chat Title";
+      const res = await client.api.protected.chats.title[":chatId"].$patch(
+        {
+          param: {
+            chatId: fixtureChatId,
+          },
+          json: {
+            title: newTitle,
+          },
+        },
+        {
+          headers: getAuthHeaders(user1Cookie),
+        }
+      );
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.message).toBe("Chat title updated");
     });
   });
 });

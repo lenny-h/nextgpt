@@ -1,11 +1,17 @@
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
   TEST_USERS,
+  TEST_USER_IDS,
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
+import {
+  cleanupUserBucket,
+  createTestBucket,
+  createTestUserInvitation,
+} from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -18,6 +24,7 @@ describe("Protected API Routes - Invitations", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let bucketId: string;
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -29,6 +36,18 @@ describe("Protected API Routes - Invitations", () => {
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
     );
+
+    // Create dynamic data
+    bucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
+    await createTestUserInvitation(
+      TEST_USER_IDS.USER1_VERIFIED,
+      TEST_USER_IDS.USER2_VERIFIED,
+      bucketId
+    );
+  });
+
+  afterAll(async () => {
+    await cleanupUserBucket(bucketId);
   });
 
   describe("GET /api/protected/invitations/incoming", () => {

@@ -33,28 +33,7 @@ describe("Protected API Routes - Prompts", () => {
     );
 
     // Clean up user2's prompts to ensure we're under the limit for POST tests
-    const promptsRes = await client.api.protected.prompts.$get(
-      {},
-      {
-        headers: getAuthHeaders(user2Cookie),
-      }
-    );
-    const user2Prompts = await promptsRes.json();
-
-    // Delete all but 4 prompts to leave room for testing
-    const promptsToDelete = user2Prompts.slice(4);
-    for (const prompt of promptsToDelete) {
-      await client.api.protected.prompts[":promptId"].$delete(
-        {
-          param: {
-            promptId: prompt.id,
-          },
-        },
-        {
-          headers: getAuthHeaders(user2Cookie),
-        }
-      );
-    }
+    await cleanupUserPrompts(TEST_USER_IDS.USER2_VERIFIED);
   });
 
   afterAll(async () => {

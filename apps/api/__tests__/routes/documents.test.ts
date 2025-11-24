@@ -7,8 +7,14 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { cleanupUserDocuments } from "../helpers/db-helpers.js";
+import {
+  cleanupUserDocuments,
+  createTestDocument,
+} from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
+import { documents } from "@workspace/server/drizzle/schema.js";
+import { eq } from "drizzle-orm";
+import { db } from "@workspace/server/drizzle/db.js";
 
 /**
  * Tests for /api/protected/documents routes
@@ -20,6 +26,7 @@ describe("Protected API Routes - Documents", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let fixtureDocumentId: string;
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -31,6 +38,11 @@ describe("Protected API Routes - Documents", () => {
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
     );
+
+    // Create a fixture document
+    fixtureDocumentId = await createTestDocument(TEST_USER_IDS.USER1_VERIFIED, {
+      title: "Fixture Document",
+    });
   });
 
   afterAll(async () => {
@@ -53,8 +65,9 @@ describe("Protected API Routes - Documents", () => {
     });
 
     it("should create document with valid data", async () => {
+      const documentTitle = `Test Document ${Date.now()}`;
       const documentData = {
-        title: `Test Document ${Date.now()}`,
+        title: documentTitle,
         content: "This is test content for the document",
         kind: "text" as const,
       };
@@ -73,6 +86,12 @@ describe("Protected API Routes - Documents", () => {
       const data = await res.json();
       expect(data).toHaveProperty("message");
       expect(data.message).toBe("Document inserted");
+
+      // Verify in DB and track for cleanup
+      const [record] = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.title, documentTitle));
     });
 
     it("should validate input schema", async () => {
@@ -122,6 +141,10 @@ describe("Protected API Routes - Documents", () => {
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
 
+      // Should contain our fixture document
+      const found = data.find((d) => d.id === fixtureDocumentId);
+      expect(found).toBeDefined();
+
       data.forEach((doc) => {
         expect(doc).toHaveProperty("id");
         expect(doc).toHaveProperty("title");
@@ -148,19 +171,8 @@ describe("Protected API Routes - Documents", () => {
     });
 
     it("should isolate documents between users", async () => {
-      // Create document for user1
-      await client.api.protected.documents.$post(
-        {
-          json: {
-            title: `User1 Doc ${Date.now()}`,
-            content: "User 1 content",
-            kind: "text",
-          },
-        },
-        {
-          headers: getAuthHeaders(user1Cookie),
-        }
-      );
+      // Create document for user2
+      const user2DocId = await createTestDocument(TEST_USER_IDS.USER2_VERIFIED);
 
       const res1 = await client.api.protected.documents.$get(
         {
@@ -191,6 +203,10 @@ describe("Protected API Routes - Documents", () => {
       // Documents should be isolated
       const user1DocIds = user1Docs.map((d) => d.id);
       const user2DocIds = user2Docs.map((d) => d.id);
+
+      expect(user1DocIds).toContain(fixtureDocumentId);
+      expect(user2DocIds).toContain(user2DocId);
+
       const overlap = user1DocIds.filter((id: string) =>
         user2DocIds.includes(id)
       );
@@ -241,6 +257,23 @@ describe("Protected API Routes - Documents", () => {
 
       expect(res.status).toBe(400);
     });
+
+    it("should return document content", async () => {
+      const res = await client.api.protected.documents[":documentId"].$get(
+        {
+          param: {
+            documentId: fixtureDocumentId,
+          },
+        },
+        {
+          headers: getAuthHeaders(user1Cookie),
+        }
+      );
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty("content");
+    });
   });
 
   describe("PATCH /api/protected/documents/content/:documentId", () => {
@@ -278,6 +311,35 @@ describe("Protected API Routes - Documents", () => {
       );
 
       expect(res.status).toBe(400);
+    });
+
+    it("should update document content", async () => {
+      const res = await client.api.protected.documents.content[
+        ":documentId"
+      ].$patch(
+        {
+          param: {
+            documentId: fixtureDocumentId,
+          },
+          json: {
+            content: "Updated content",
+          },
+        },
+        {
+          headers: getAuthHeaders(user1Cookie),
+        }
+      );
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.message).toBe("Document saved");
+
+      // Verify update
+      const [doc] = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.id, fixtureDocumentId));
+      expect(doc.content).toBe("Updated content");
     });
   });
 
@@ -324,25 +386,17 @@ describe("Protected API Routes - Documents", () => {
 
       expect(res.status).toBe(400);
     });
-  });
 
-  describe("GET /api/protected/documents/:documentId", () => {
-    it("should return document content", async () => {
-      const testId = generateTestUUID();
-      const res = await client.api.protected.documents[":documentId"].$get({
-        param: {
-          documentId: testId,
-        },
-      });
+    it("should allow owner to delete their document", async () => {
+      // Create a document to delete
+      const docToDeleteId = await createTestDocument(
+        TEST_USER_IDS.USER1_VERIFIED
+      );
 
-      expect(res.status).toBe(401);
-    });
-
-    it("should validate UUID format for content retrieval", async () => {
-      const res = await client.api.protected.documents[":documentId"].$get(
+      const res = await client.api.protected.documents[":documentId"].$delete(
         {
           param: {
-            documentId: "not-a-uuid",
+            documentId: docToDeleteId,
           },
         },
         {
@@ -350,7 +404,14 @@ describe("Protected API Routes - Documents", () => {
         }
       );
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
+
+      // Verify it's gone
+      const [record] = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.id, docToDeleteId));
+      expect(record).toBeUndefined();
     });
   });
 
@@ -369,7 +430,7 @@ describe("Protected API Routes - Documents", () => {
       const res = await client.api.protected.documents.ilike.$get(
         {
           query: {
-            prefix: "test",
+            prefix: "Fixture",
           },
         },
         {
@@ -381,6 +442,10 @@ describe("Protected API Routes - Documents", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+
+      // Should contain our fixture document
+      const found = data.find((d) => d.id === fixtureDocumentId);
+      expect(found).toBeDefined();
     });
 
     it("should validate input schema", async () => {

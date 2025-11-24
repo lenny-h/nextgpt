@@ -8,11 +8,15 @@ import {
   signInTestUser,
 } from "../helpers/auth-helpers.js";
 import {
-  cleanupBucketCourses,
-  cleanupUserBuckets,
+  cleanupTestCourse,
+  cleanupUserBucket,
   createTestBucket,
+  createTestCourse,
 } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
+import { courses } from "@workspace/server/drizzle/schema.js";
+import { eq } from "drizzle-orm";
+import { db } from "@workspace/server/drizzle/db.js";
 
 /**
  * Tests for /api/protected/courses routes
@@ -24,7 +28,10 @@ describe("Protected API Routes - Courses", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
-  let testBucketId: string;
+  let fixtureBucketId: string;
+  let fixtureCourseId: string;
+  const createdBucketIds: string[] = [];
+  const createdCourseIds: string[] = [];
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -38,20 +45,30 @@ describe("Protected API Routes - Courses", () => {
     );
 
     // Create a test bucket directly in the database for deterministic tests
-    testBucketId = await createTestBucket(
+    fixtureBucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
+    createdBucketIds.push(fixtureBucketId);
+
+    // Create a test course
+    fixtureCourseId = await createTestCourse(
       TEST_USER_IDS.USER1_VERIFIED,
-      `Test Bucket for Courses ${Date.now()}`,
-      "small"
+      fixtureBucketId,
+      {
+        name: "Fixture Course",
+      }
     );
+    createdCourseIds.push(fixtureCourseId);
   });
 
   afterAll(async () => {
-    // Clean up test data
-    if (testBucketId) {
-      await cleanupBucketCourses(testBucketId);
+    // Clean up courses first
+    for (const courseId of createdCourseIds) {
+      await cleanupTestCourse(courseId);
     }
-    await cleanupUserBuckets(TEST_USER_IDS.USER1_VERIFIED);
-    await cleanupUserBuckets(TEST_USER_IDS.USER2_VERIFIED);
+
+    // Clean up buckets
+    for (const bucketId of createdBucketIds) {
+      await cleanupUserBucket(bucketId);
+    }
   });
 
   describe("POST /api/protected/courses", () => {
@@ -59,7 +76,7 @@ describe("Protected API Routes - Courses", () => {
       const res = await client.api.protected.courses.$post({
         json: {
           values: {
-            bucketId: testBucketId,
+            bucketId: fixtureBucketId,
             courseName: "Test Course",
             courseDescription: "Test course description",
           },
@@ -70,15 +87,11 @@ describe("Protected API Routes - Courses", () => {
     });
 
     it("should create course with valid data", async () => {
-      if (!testBucketId) {
-        console.warn("Skipping test: no test bucket available");
-        return;
-      }
-
+      const courseName = `Test Course ${Date.now()}`;
       const courseData = {
         values: {
-          bucketId: testBucketId,
-          courseName: `Test Course ${Date.now()}`,
+          bucketId: fixtureBucketId,
+          courseName: courseName,
           courseDescription: "Test course description",
         },
       };
@@ -96,6 +109,16 @@ describe("Protected API Routes - Courses", () => {
 
       const data = await res.json();
       expect(data).toHaveProperty("message");
+
+      // Verify in DB and track for cleanup
+      const [record] = await db
+        .select()
+        .from(courses)
+        .where(eq(courses.name, courseName));
+
+      if (record) {
+        createdCourseIds.push(record.id);
+      }
     });
 
     it("should validate input schema", async () => {
@@ -104,7 +127,7 @@ describe("Protected API Routes - Courses", () => {
           json: {
             // @ts-expect-error - Testing missing required fields
             values: {
-              bucketId: testBucketId,
+              bucketId: fixtureBucketId,
               courseName: "Test",
             },
           },
@@ -154,15 +177,10 @@ describe("Protected API Routes - Courses", () => {
     });
 
     it("should return courses for a bucket", async () => {
-      if (!testBucketId) {
-        console.warn("Skipping test: no test bucket available");
-        return;
-      }
-
       const res = await client.api.protected.courses[":bucketId"].$get(
         {
           param: {
-            bucketId: testBucketId,
+            bucketId: fixtureBucketId,
           },
           query: {
             pageNumber: "0",
@@ -178,6 +196,10 @@ describe("Protected API Routes - Courses", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+
+      // Should contain our fixture course
+      const found = data.find((c) => c.id === fixtureCourseId);
+      expect(found).toBeDefined();
     });
   });
 
@@ -224,6 +246,35 @@ describe("Protected API Routes - Courses", () => {
 
       expect(res.status).toBe(404);
     });
+
+    it("should allow owner to delete their course", async () => {
+      // Create a course to delete
+      const courseToDeleteId = await createTestCourse(
+        TEST_USER_IDS.USER1_VERIFIED,
+        fixtureBucketId
+      );
+      createdCourseIds.push(courseToDeleteId);
+
+      const res = await client.api.protected.courses[":courseId"].$delete(
+        {
+          param: {
+            courseId: courseToDeleteId,
+          },
+        },
+        {
+          headers: getAuthHeaders(user1Cookie),
+        }
+      );
+
+      expect(res.status).toBe(200);
+
+      // Verify it's gone
+      const [record] = await db
+        .select()
+        .from(courses)
+        .where(eq(courses.id, courseToDeleteId));
+      expect(record).toBeUndefined();
+    });
   });
 
   describe("GET /api/protected/courses/maintained", () => {
@@ -254,6 +305,10 @@ describe("Protected API Routes - Courses", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+
+      // Should contain our fixture course
+      const found = data.find((c) => c.id === fixtureCourseId);
+      expect(found).toBeDefined();
     });
   });
 
@@ -273,18 +328,13 @@ describe("Protected API Routes - Courses", () => {
     });
 
     it("should search courses with valid query", async () => {
-      if (!testBucketId) {
-        console.warn("Skipping test: no test bucket available");
-        return;
-      }
-
       const res = await client.api.protected.courses.ilike[":bucketId"].$get(
         {
           param: {
-            bucketId: testBucketId,
+            bucketId: fixtureBucketId,
           },
           query: {
-            prefix: "test",
+            prefix: "Fixture",
           },
         },
         {
@@ -296,19 +346,18 @@ describe("Protected API Routes - Courses", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+
+      // Should contain our fixture course
+      const found = data.find((c) => c.id === fixtureCourseId);
+      expect(found).toBeDefined();
     });
 
     it("should return 403 when user doesn't have access to bucket", async () => {
-      if (!testBucketId) {
-        console.warn("Skipping test: no test bucket available");
-        return;
-      }
-
       // user2 tries to access user1's bucket
       const res = await client.api.protected.courses.ilike[":bucketId"].$get(
         {
           param: {
-            bucketId: testBucketId,
+            bucketId: fixtureBucketId,
           },
           query: {
             prefix: "test",

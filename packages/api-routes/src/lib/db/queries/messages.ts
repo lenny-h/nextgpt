@@ -67,25 +67,6 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     );
 }
 
-export async function isChatOwner({
-  userId,
-  chatId,
-}: {
-  userId: string;
-  chatId: string;
-}) {
-  const result = await db
-    .select({ userId: chats.userId })
-    .from(chats)
-    .where(eq(chats.id, chatId))
-    .limit(1);
-
-  if (result.length === 0) {
-    throw new HTTPException(404, { message: "NOT_FOUND" });
-  }
-  return result[0].userId === userId;
-}
-
 export async function deleteLastMessagePair({ chatId }: { chatId: string }) {
   // Delete the last two messages in the chat
   const lastTwoMessages = await db

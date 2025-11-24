@@ -7,7 +7,7 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { cleanupUserChats } from "../helpers/db-helpers.js";
+import { createTestChat, deleteTestChat } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -20,6 +20,9 @@ describe("Protected API Routes - Chats", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let user1FixtureChatId: string;
+  let user2FixtureChatId: string;
+  const createdChatIds: string[] = [];
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -31,12 +34,24 @@ describe("Protected API Routes - Chats", () => {
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
     );
+
+    // Create fixture chats
+    user1FixtureChatId = await createTestChat(TEST_USER_IDS.USER1_VERIFIED, {
+      title: "User 1 Fixture Chat",
+    });
+    createdChatIds.push(user1FixtureChatId);
+
+    user2FixtureChatId = await createTestChat(TEST_USER_IDS.USER2_VERIFIED, {
+      title: "User 2 Fixture Chat",
+    });
+    createdChatIds.push(user2FixtureChatId);
   });
 
   afterAll(async () => {
     // Clean up test data
-    await cleanupUserChats(TEST_USER_IDS.USER1_VERIFIED);
-    await cleanupUserChats(TEST_USER_IDS.USER2_VERIFIED);
+    for (const chatId of createdChatIds) {
+      await deleteTestChat(chatId);
+    }
   });
 
   describe("GET /api/protected/chats", () => {
@@ -68,6 +83,10 @@ describe("Protected API Routes - Chats", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+
+      // Should contain our fixture chat
+      const fixture = data.find((c) => c.id === user1FixtureChatId);
+      expect(fixture).toBeDefined();
 
       // Each chat should have expected properties
       data.forEach((chat) => {
@@ -151,6 +170,10 @@ describe("Protected API Routes - Chats", () => {
       // No chat IDs should overlap
       const user1ChatIds = user1Chats.map((c) => c.id);
       const user2ChatIds = user2Chats.map((c) => c.id);
+
+      expect(user1ChatIds).toContain(user1FixtureChatId);
+      expect(user2ChatIds).toContain(user2FixtureChatId);
+
       const overlap = user1ChatIds.filter((id: string) =>
         user2ChatIds.includes(id)
       );
@@ -220,77 +243,41 @@ describe("Protected API Routes - Chats", () => {
     });
 
     it("should not allow access to another user's chat", async () => {
-      // Get user1's chats
-      const chatsRes = await client.api.protected.chats.$get(
+      // Try to access user1's chat with user2's credentials
+      const res = await client.api.protected.chats[":chatId"].$get(
         {
-          query: {
-            pageNumber: "0",
-            itemsPerPage: "5",
+          param: {
+            chatId: user1FixtureChatId,
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders(user2Cookie),
         }
       );
-      const user1Chats = await chatsRes.json();
 
-      if (user1Chats.length > 0) {
-        const user1ChatId = user1Chats[0].id;
-
-        // Try to access user1's chat with user2's credentials
-        const res = await client.api.protected.chats[":chatId"].$get(
-          {
-            param: {
-              chatId: user1ChatId,
-            },
-          },
-          {
-            headers: getAuthHeaders(user2Cookie),
-          }
-        );
-
-        // Should return 404 (not revealing the chat exists)
-        expect(res.status).toBe(404);
-      }
+      // Should return 404 (not revealing the chat exists)
+      expect(res.status).toBe(404);
     });
 
     it("should return chat data for owner", async () => {
-      // Get user1's chats
-      const chatsRes = await client.api.protected.chats.$get(
+      // Access user1's chat with user1's credentials
+      const res = await client.api.protected.chats[":chatId"].$get(
         {
-          query: {
-            pageNumber: "0",
-            itemsPerPage: "5",
+          param: {
+            chatId: user1FixtureChatId,
           },
         },
         {
           headers: getAuthHeaders(user1Cookie),
         }
       );
-      const user1Chats = await chatsRes.json();
 
-      if (user1Chats.length > 0) {
-        const user1ChatId = user1Chats[0].id;
+      expect(res.status).toBe(200);
 
-        // Access user1's chat with user1's credentials
-        const res = await client.api.protected.chats[":chatId"].$get(
-          {
-            param: {
-              chatId: user1ChatId,
-            },
-          },
-          {
-            headers: getAuthHeaders(user1Cookie),
-          }
-        );
-
-        expect(res.status).toBe(200);
-
-        const data = await res.json();
-        expect(data).toHaveProperty("chat");
-        expect(data.chat.id).toBe(user1ChatId);
-        expect(data.chat.userId).toBe(TEST_USERS.USER1_VERIFIED.id);
-      }
+      const data = await res.json();
+      expect(data).toHaveProperty("chat");
+      expect(data.chat.id).toBe(user1FixtureChatId);
+      expect(data.chat.userId).toBe(TEST_USERS.USER1_VERIFIED.id);
     });
   });
 
@@ -339,51 +326,67 @@ describe("Protected API Routes - Chats", () => {
     });
 
     it("should not allow deleting another user's chat", async () => {
-      // Get user1's chats
-      const chatsRes = await client.api.protected.chats.$get(
+      // Try to delete user1's chat with user2's credentials
+      const res = await client.api.protected.chats[":chatId"].$delete(
         {
-          query: {
-            pageNumber: "0",
-            itemsPerPage: "5",
+          param: {
+            chatId: user1FixtureChatId,
+          },
+        },
+        {
+          headers: getAuthHeaders(user2Cookie),
+        }
+      );
+
+      // Should return 404 (not revealing the chat exists)
+      expect(res.status).toBe(404);
+
+      // Verify the chat still exists for user1
+      const verifyRes = await client.api.protected.chats[":chatId"].$get(
+        {
+          param: {
+            chatId: user1FixtureChatId,
           },
         },
         {
           headers: getAuthHeaders(user1Cookie),
         }
       );
-      const user1Chats = await chatsRes.json();
+      expect(verifyRes.status).toBe(200);
+    });
 
-      if (user1Chats.length > 0) {
-        const user1ChatId = user1Chats[0].id;
+    it("should allow owner to delete their chat", async () => {
+      // Create a specific chat to delete so we don't delete the fixture
+      const chatToDeleteId = await createTestChat(TEST_USER_IDS.USER1_VERIFIED);
+      createdChatIds.push(chatToDeleteId);
 
-        // Try to delete user1's chat with user2's credentials
-        const res = await client.api.protected.chats[":chatId"].$delete(
-          {
-            param: {
-              chatId: user1ChatId,
-            },
+      const res = await client.api.protected.chats[":chatId"].$delete(
+        {
+          param: {
+            chatId: chatToDeleteId,
           },
-          {
-            headers: getAuthHeaders(user2Cookie),
-          }
-        );
+        },
+        {
+          headers: getAuthHeaders(user1Cookie),
+        }
+      );
 
-        // Should return 404 (not revealing the chat exists)
-        expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.message).toBe("Chat deleted");
 
-        // Verify the chat still exists for user1
-        const verifyRes = await client.api.protected.chats[":chatId"].$get(
-          {
-            param: {
-              chatId: user1ChatId,
-            },
+      // Verify it's gone
+      const verifyRes = await client.api.protected.chats[":chatId"].$get(
+        {
+          param: {
+            chatId: chatToDeleteId,
           },
-          {
-            headers: getAuthHeaders(user1Cookie),
-          }
-        );
-        expect(verifyRes.status).toBe(200);
-      }
+        },
+        {
+          headers: getAuthHeaders(user1Cookie),
+        }
+      );
+      expect(verifyRes.status).toBe(404);
     });
   });
 });

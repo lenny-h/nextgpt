@@ -7,7 +7,11 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { cleanupUserChats } from "../helpers/db-helpers.js";
+import {
+  cleanupUserChats,
+  createTestChat,
+  createTestMessage,
+} from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -20,6 +24,8 @@ describe("Protected API Routes - Messages", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let chatId: string;
+  let messageId: string;
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -31,6 +37,10 @@ describe("Protected API Routes - Messages", () => {
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
     );
+
+    // Create dynamic data
+    chatId = await createTestChat(TEST_USER_IDS.USER1_VERIFIED);
+    messageId = await createTestMessage(chatId);
   });
 
   afterAll(async () => {
@@ -84,38 +94,20 @@ describe("Protected API Routes - Messages", () => {
     });
 
     it("should not allow access to another user's chat messages", async () => {
-      // Get user1's chats
-      const chatsRes = await client.api.protected.chats.$get(
+      // Try to access user1's messages with user2's credentials
+      const res = await client.api.protected.messages[":chatId"].$get(
         {
-          query: {
-            pageNumber: "0",
-            itemsPerPage: "5",
+          param: {
+            chatId: chatId,
           },
         },
         {
-          headers: getAuthHeaders(user1Cookie),
+          headers: getAuthHeaders(user2Cookie),
         }
       );
-      const user1Chats = await chatsRes.json();
 
-      if (user1Chats.length > 0) {
-        const user1ChatId = user1Chats[0].id;
-
-        // Try to access user1's messages with user2's credentials
-        const res = await client.api.protected.messages[":chatId"].$get(
-          {
-            param: {
-              chatId: user1ChatId,
-            },
-          },
-          {
-            headers: getAuthHeaders(user2Cookie),
-          }
-        );
-
-        // Should return 404 (not revealing the chat exists)
-        expect(res.status).toBe(404);
-      }
+      // Should return 404 (not revealing the chat exists)
+      expect(res.status).toBe(404);
     });
   });
 

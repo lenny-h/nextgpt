@@ -1,5 +1,5 @@
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
   getAuthHeaders,
@@ -7,7 +7,7 @@ import {
   TEST_USER_IDS,
   TEST_USERS,
 } from "../helpers/auth-helpers.js";
-import { createTestBucket } from "../helpers/db-helpers.js";
+import { cleanupUserBucket, createTestBucket } from "../helpers/db-helpers.js";
 
 describe("Protected API Routes - Process CSV", () => {
   const client = testClient<ApiAppType>(app);
@@ -29,6 +29,10 @@ describe("Protected API Routes - Process CSV", () => {
 
     // Create dynamic data
     bucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
+  });
+
+  afterAll(async () => {
+    await cleanupUserBucket(bucketId);
   });
 
   describe("POST /api/protected/process-csv/:bucketId", () => {

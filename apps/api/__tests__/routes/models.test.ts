@@ -7,11 +7,7 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import {
-  cleanupBucketModels,
-  cleanupUserBuckets,
-  createTestBucket,
-} from "../helpers/db-helpers.js";
+import { cleanupUserBucket, createTestBucket } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 /**
@@ -37,21 +33,12 @@ describe("Protected API Routes - Models", () => {
       TEST_USERS.USER2_VERIFIED.password
     );
 
-    // Create a test bucket directly in the database for deterministic tests
-    testBucketId = await createTestBucket(
-      TEST_USER_IDS.USER1_VERIFIED,
-      `Test Bucket for Models ${Date.now()}`,
-      "small"
-    );
+    // Create a test bucket
+    testBucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
   });
 
   afterAll(async () => {
-    // Clean up test data
-    if (testBucketId) {
-      await cleanupBucketModels(testBucketId);
-    }
-    await cleanupUserBuckets(TEST_USER_IDS.USER1_VERIFIED);
-    await cleanupUserBuckets(TEST_USER_IDS.USER2_VERIFIED);
+    await cleanupUserBucket(testBucketId);
   });
 
   describe("POST /api/protected/models", () => {

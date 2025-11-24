@@ -1,195 +1,488 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import {
+  account,
   bucketMaintainerInvitations,
   buckets,
   bucketUserRoles,
   chats,
+  chunks,
+  courseKeys,
+  courseMaintainerInvitations,
   courses,
   courseUserRoles,
   documents,
+  feedback,
   files,
+  messages,
   models,
   prompts,
+  ssoProvider,
   tasks,
+  toolCallDocuments,
+  user,
+  userInvitations,
+  verification,
   type BucketType,
   type TaskStatus,
+  type Role,
+  type UserRole,
+  type DocumentKind,
 } from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { TEST_USER_IDS } from "./auth-helpers.js";
 
-/**
- * Cleanup helpers for test data
- * These functions should be called in afterAll or afterEach hooks
- */
+// ==========================================
+// Section 1: Create Functions
+// ==========================================
 
-/**
- * Create a test bucket directly in the database
- * Returns the bucket ID
- */
 export async function createTestBucket(
   userId: string,
-  name: string = `test-bucket-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  type: BucketType = "small"
-): Promise<string> {
+  overrides: Partial<typeof buckets.$inferInsert> = {}
+) {
+  const type = overrides.type || "small";
   const maxSizes: Record<BucketType, number> = {
-    small: 1024 * 1024 * 100, // 100MB
-    medium: 1024 * 1024 * 500, // 500MB
-    large: 1024 * 1024 * 1024, // 1GB
-    org: 1024 * 1024 * 1024 * 10, // 10GB
+    small: 1024 * 1024 * 100,
+    medium: 1024 * 1024 * 500,
+    large: 1024 * 1024 * 1024,
+    org: 1024 * 1024 * 1024 * 10,
   };
 
-  const [bucket] = await db
+  const [record] = await db
     .insert(buckets)
     .values({
       owner: userId,
-      name,
+      name: `test-bucket-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       type,
       maxSize: maxSizes[type],
       size: 0,
       public: false,
+      ...overrides,
     })
     .returning({ id: buckets.id });
 
-  if (!bucket) {
-    throw new Error("Failed to create test bucket");
-  }
+  // Add the user as a maintainer of the bucket (default behavior preserved)
+  await createTestBucketUserRole(record.id, userId, { role: "maintainer" });
 
-  // Add the user as a maintainer of the bucket
-  await db.insert(bucketUserRoles).values({
-    bucketId: bucket.id,
-    userId,
-    role: "maintainer",
-  });
-
-  return bucket.id;
+  return record.id;
 }
 
-/**
- * Create a test course directly in the database
- * Returns the course ID
- */
-export async function createTestCourse(
+export async function createTestBucketUserRole(
+  bucketId: string,
   userId: string,
-  bucketId: string,
-  name: string = "test-course",
-  description: string = "Test Course Description",
-  isPrivate: boolean = false
-): Promise<string> {
-  const [course] = await db
-    .insert(courses)
-    .values({
-      bucketId,
-      name,
-      description,
-      private: isPrivate,
-    })
-    .returning({ id: courses.id });
-
-  if (!course) {
-    throw new Error("Failed to create test course");
-  }
-
-  // Add the user as a maintainer of the course
-  await db.insert(courseUserRoles).values({
-    courseId: course.id,
-    userId,
-    role: "maintainer",
-  });
-
-  return course.id;
-}
-
-/**
- * Create a test file directly in the database
- * Returns the file ID
- */
-export async function createTestFile(
-  courseId: string,
-  name: string = "test-file",
-  size: number = 1024,
-  pagesCount: number = 1
-): Promise<string> {
-  const [file] = await db
-    .insert(files)
-    .values({
-      courseId,
-      name,
-      size,
-      pagesCount,
-    })
-    .returning({ id: files.id });
-
-  if (!file) {
-    throw new Error("Failed to create test file");
-  }
-
-  return file.id;
-}
-
-/**
- * Create a test task directly in the database
- * Returns the task ID
- */
-export async function createTestTask(
-  courseId: string,
-  name: string = "test-task",
-  fileSize: number = 1024,
-  status: TaskStatus = "scheduled"
-): Promise<string> {
-  const [task] = await db
-    .insert(tasks)
-    .values({
-      courseId,
-      name,
-      fileSize,
-      status,
-    })
-    .returning({ id: tasks.id });
-
-  if (!task) {
-    throw new Error("Failed to create test task");
-  }
-
-  return task.id;
-}
-
-/**
- * Add a user as a maintainer to a bucket
- */
-export async function addBucketMaintainer(
-  bucketId: string,
-  userId: string
-): Promise<void> {
+  overrides: Partial<typeof bucketUserRoles.$inferInsert> = {}
+) {
   await db
     .insert(bucketUserRoles)
     .values({
       bucketId,
       userId,
-      role: "maintainer",
+      role: "user",
+      ...overrides,
     })
     .onConflictDoNothing();
 }
 
-/**
- * Add a user as a maintainer to a course
- */
-export async function addCourseMaintainer(
+export async function createTestChat(
+  userId: string,
+  overrides: Partial<typeof chats.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(chats)
+    .values({
+      userId,
+      title: "Test Chat",
+      ...overrides,
+    })
+    .returning({ id: chats.id });
+  return record.id;
+}
+
+export async function createTestMessage(
+  chatId: string,
+  overrides: Partial<typeof messages.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(messages)
+    .values({
+      chatId,
+      role: "user",
+      parts: [],
+      ...overrides,
+    })
+    .returning({ id: messages.id });
+  return record.id;
+}
+
+export async function createTestCourse(
+  userId: string,
+  bucketId: string,
+  overrides: Partial<typeof courses.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(courses)
+    .values({
+      bucketId,
+      name: "test-course",
+      description: "Test Course Description",
+      private: false,
+      ...overrides,
+    })
+    .returning({ id: courses.id });
+
+  // Add the user as a maintainer of the course (default behavior preserved)
+  await createTestCourseUserRole(record.id, userId, { role: "maintainer" });
+
+  return record.id;
+}
+
+export async function createTestCourseUserRole(
   courseId: string,
-  userId: string
-): Promise<void> {
+  userId: string,
+  overrides: Partial<typeof courseUserRoles.$inferInsert> = {}
+) {
   await db
     .insert(courseUserRoles)
     .values({
       courseId,
       userId,
-      role: "maintainer",
+      role: "user",
+      ...overrides,
     })
     .onConflictDoNothing();
 }
 
-/**
- * Delete all prompts for a specific user
- */
+export async function createTestCourseKey(
+  courseId: string,
+  overrides: Partial<typeof courseKeys.$inferInsert> = {}
+) {
+  await db.insert(courseKeys).values({
+    courseId,
+    key: "test-key",
+    ...overrides,
+  });
+}
+
+export async function createTestToolCallDocument(
+  chatId: string,
+  userId: string,
+  overrides: Partial<typeof toolCallDocuments.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(toolCallDocuments)
+    .values({
+      chatId,
+      userId,
+      title: "Test Tool Doc",
+      content: "Test Content",
+      kind: "text",
+      ...overrides,
+    })
+    .returning({ id: toolCallDocuments.id });
+  return record.id;
+}
+
+export async function createTestDocument(
+  userId: string,
+  overrides: Partial<typeof documents.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(documents)
+    .values({
+      userId,
+      title: `Test Document ${Date.now()}`,
+      content: "Test Content",
+      kind: "text",
+      ...overrides,
+    })
+    .returning({ id: documents.id });
+  return record.id;
+}
+
+export async function createTestFeedback(
+  userId: string,
+  overrides: Partial<typeof feedback.$inferInsert> = {}
+) {
+  await db.insert(feedback).values({
+    userId,
+    subject: "Test Subject",
+    content: "Test Feedback Content",
+    ...overrides,
+  });
+}
+
+export async function createTestFile(
+  courseId: string,
+  overrides: Partial<typeof files.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(files)
+    .values({
+      courseId,
+      name: "test-file",
+      size: 1024,
+      pagesCount: 1,
+      ...overrides,
+    })
+    .returning({ id: files.id });
+  return record.id;
+}
+
+export async function createTestChunk(
+  fileId: string,
+  courseId: string,
+  overrides: Partial<typeof chunks.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(chunks)
+    .values({
+      id: crypto.randomUUID(),
+      fileId,
+      courseId,
+      fileName: "test-file",
+      courseName: "test-course",
+      embedding: new Array(768).fill(0.5),
+      pageIndex: 0,
+      content: "Test Chunk Content",
+      ...overrides,
+    })
+    .returning({ id: chunks.id });
+  return record.id;
+}
+
+export async function createTestUserInvitation(
+  origin: string,
+  target: string,
+  bucketId: string,
+  overrides: Partial<typeof userInvitations.$inferInsert> = {}
+) {
+  await db.insert(userInvitations).values({
+    origin,
+    target,
+    bucketId,
+    bucketName: "Test Bucket",
+    ...overrides,
+  });
+}
+
+export async function createTestBucketMaintainerInvitation(
+  origin: string,
+  target: string,
+  bucketId: string,
+  overrides: Partial<typeof bucketMaintainerInvitations.$inferInsert> = {}
+) {
+  await db.insert(bucketMaintainerInvitations).values({
+    origin,
+    target,
+    bucketId,
+    bucketName: "Test Bucket",
+    ...overrides,
+  });
+}
+
+export async function createTestCourseMaintainerInvitation(
+  origin: string,
+  target: string,
+  courseId: string,
+  overrides: Partial<typeof courseMaintainerInvitations.$inferInsert> = {}
+) {
+  await db.insert(courseMaintainerInvitations).values({
+    origin,
+    target,
+    courseId,
+    courseName: "Test Course",
+    ...overrides,
+  });
+}
+
+export async function createTestTask(
+  courseId: string,
+  overrides: Partial<typeof tasks.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(tasks)
+    .values({
+      courseId,
+      name: "test-task",
+      fileSize: 1024,
+      status: "scheduled",
+      ...overrides,
+    })
+    .returning({ id: tasks.id });
+  return record.id;
+}
+
+export async function createTestPrompt(
+  userId: string,
+  overrides: Partial<typeof prompts.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(prompts)
+    .values({
+      userId,
+      name: "Test Prompt",
+      content: "Test Content",
+      ...overrides,
+    })
+    .returning({ id: prompts.id });
+  return record.id;
+}
+
+export async function createTestModel(
+  bucketId: string,
+  overrides: Partial<typeof models.$inferInsert> = {}
+) {
+  const [record] = await db
+    .insert(models)
+    .values({
+      bucketId,
+      name: "Test Model",
+      encApiKey: "test-key",
+      ...overrides,
+    })
+    .returning({ id: models.id });
+  return record.id;
+}
+
+// ==========================================
+// Section 2: Delete Functions
+// ==========================================
+
+export async function deleteTestBucket(id: string) {
+  await db.delete(buckets).where(eq(buckets.id, id));
+}
+
+export async function deleteTestBucketUserRole(
+  bucketId: string,
+  userId: string
+) {
+  await db
+    .delete(bucketUserRoles)
+    .where(
+      and(
+        eq(bucketUserRoles.bucketId, bucketId),
+        eq(bucketUserRoles.userId, userId)
+      )
+    );
+}
+
+export async function deleteTestChat(id: string) {
+  await db.delete(chats).where(eq(chats.id, id));
+}
+
+export async function deleteTestMessage(id: string) {
+  await db.delete(messages).where(eq(messages.id, id));
+}
+
+export async function deleteTestCourse(id: string) {
+  await db.delete(courses).where(eq(courses.id, id));
+}
+
+export async function deleteTestCourseUserRole(
+  courseId: string,
+  userId: string
+) {
+  await db
+    .delete(courseUserRoles)
+    .where(
+      and(
+        eq(courseUserRoles.courseId, courseId),
+        eq(courseUserRoles.userId, userId)
+      )
+    );
+}
+
+export async function deleteTestCourseKey(courseId: string) {
+  await db.delete(courseKeys).where(eq(courseKeys.courseId, courseId));
+}
+
+export async function deleteTestToolCallDocument(id: string) {
+  await db.delete(toolCallDocuments).where(eq(toolCallDocuments.id, id));
+}
+
+export async function deleteTestDocument(id: string) {
+  await db.delete(documents).where(eq(documents.id, id));
+}
+
+export async function deleteTestFeedback(userId: string, createdAt: Date) {
+  await db
+    .delete(feedback)
+    .where(and(eq(feedback.userId, userId), eq(feedback.createdAt, createdAt)));
+}
+
+export async function deleteTestFile(id: string) {
+  await db.delete(files).where(eq(files.id, id));
+}
+
+export async function deleteTestChunk(id: string, courseId: string) {
+  await db
+    .delete(chunks)
+    .where(and(eq(chunks.id, id), eq(chunks.courseId, courseId)));
+}
+
+export async function deleteTestUserInvitation(
+  origin: string,
+  target: string,
+  bucketId: string
+) {
+  await db
+    .delete(userInvitations)
+    .where(
+      and(
+        eq(userInvitations.origin, origin),
+        eq(userInvitations.target, target),
+        eq(userInvitations.bucketId, bucketId)
+      )
+    );
+}
+
+export async function deleteTestBucketMaintainerInvitation(
+  origin: string,
+  target: string,
+  bucketId: string
+) {
+  await db
+    .delete(bucketMaintainerInvitations)
+    .where(
+      and(
+        eq(bucketMaintainerInvitations.origin, origin),
+        eq(bucketMaintainerInvitations.target, target),
+        eq(bucketMaintainerInvitations.bucketId, bucketId)
+      )
+    );
+}
+
+export async function deleteTestCourseMaintainerInvitation(
+  origin: string,
+  target: string,
+  courseId: string
+) {
+  await db
+    .delete(courseMaintainerInvitations)
+    .where(
+      and(
+        eq(courseMaintainerInvitations.origin, origin),
+        eq(courseMaintainerInvitations.target, target),
+        eq(courseMaintainerInvitations.courseId, courseId)
+      )
+    );
+}
+
+export async function deleteTestTask(id: string) {
+  await db.delete(tasks).where(eq(tasks.id, id));
+}
+
+export async function deleteTestPrompt(id: string) {
+  await db.delete(prompts).where(eq(prompts.id, id));
+}
+
+export async function deleteTestModel(id: string) {
+  await db.delete(models).where(eq(models.id, id));
+}
+
+// ==========================================
+// Section 3: High-level Cleanup Helpers
+// ==========================================
+
 export async function cleanupUserPrompts(userId: string) {
   try {
     await db.delete(prompts).where(eq(prompts.userId, userId));
@@ -198,9 +491,6 @@ export async function cleanupUserPrompts(userId: string) {
   }
 }
 
-/**
- * Delete all chats for a specific user
- */
 export async function cleanupUserChats(userId: string) {
   try {
     await db.delete(chats).where(eq(chats.userId, userId));
@@ -209,9 +499,6 @@ export async function cleanupUserChats(userId: string) {
   }
 }
 
-/**
- * Delete all documents for a specific user
- */
 export async function cleanupUserDocuments(userId: string) {
   try {
     await db.delete(documents).where(eq(documents.userId, userId));
@@ -220,33 +507,35 @@ export async function cleanupUserDocuments(userId: string) {
   }
 }
 
-/**
- * Delete all buckets owned by a specific user
- * Cleanup courses first due to foreign key constraints
- */
-export async function cleanupUserBuckets(userId: string) {
+export async function cleanupUserFeedback(userId: string) {
   try {
-    const userBuckets = await db
-      .select({ id: buckets.id })
-      .from(buckets)
-      .where(eq(buckets.owner, userId));
-
-    for (const bucket of userBuckets) {
-      await cleanupBucketCourses(bucket.id);
-      await cleanupBucketUserRoles(bucket.id);
-      await cleanupBucketModels(bucket.id);
-      await cleanupBucketMaintainerInvitations(bucket.id);
-    }
-
-    await db.delete(buckets).where(eq(buckets.owner, userId));
+    await db.delete(feedback).where(eq(feedback.userId, userId));
   } catch (error) {
-    console.error("Error cleaning up buckets:", error);
+    console.error("Error cleaning up feedback:", error);
   }
 }
 
-/**
- * Delete all courses for a specific bucket
- */
+export async function cleanupTestCourse(courseId: string) {
+  try {
+    // Cleanup dependent resources for the course
+    await db.delete(files).where(eq(files.courseId, courseId));
+    await db.delete(tasks).where(eq(tasks.courseId, courseId));
+    await db.delete(chunks).where(eq(chunks.courseId, courseId));
+    await db.delete(courseKeys).where(eq(courseKeys.courseId, courseId));
+    await db
+      .delete(courseMaintainerInvitations)
+      .where(eq(courseMaintainerInvitations.courseId, courseId));
+    await db
+      .delete(courseUserRoles)
+      .where(eq(courseUserRoles.courseId, courseId));
+
+    // Finally delete the course
+    await deleteTestCourse(courseId);
+  } catch (error) {
+    console.error(`Error cleaning up course ${courseId}:`, error);
+  }
+}
+
 export async function cleanupBucketCourses(bucketId: string) {
   try {
     const bucketCourses = await db
@@ -255,84 +544,59 @@ export async function cleanupBucketCourses(bucketId: string) {
       .where(eq(courses.bucketId, bucketId));
 
     for (const course of bucketCourses) {
-      await cleanupCourseFiles(course.id);
-      await cleanupCourseTasks(course.id);
+      await cleanupTestCourse(course.id);
     }
-
-    await db.delete(courses).where(eq(courses.bucketId, bucketId));
   } catch (error) {
     console.error("Error cleaning up courses:", error);
   }
 }
 
-/**
- * Delete all user roles for a specific bucket
- */
-export async function cleanupBucketUserRoles(bucketId: string) {
+export async function cleanupUserBucket(bucketId: string) {
   try {
+    await cleanupBucketCourses(bucketId);
+
+    // Cleanup bucket user roles
     await db
       .delete(bucketUserRoles)
       .where(eq(bucketUserRoles.bucketId, bucketId));
-  } catch (error) {
-    console.error("Error cleaning up bucket user roles:", error);
-  }
-}
 
-/**
- * Delete all maintainer invitations for a specific bucket
- */
-export async function cleanupBucketMaintainerInvitations(bucketId: string) {
-  try {
+    // Cleanup bucket models
+    await db.delete(models).where(eq(models.bucketId, bucketId));
+
+    // Cleanup bucket invitations
     await db
       .delete(bucketMaintainerInvitations)
       .where(eq(bucketMaintainerInvitations.bucketId, bucketId));
+    await db
+      .delete(userInvitations)
+      .where(eq(userInvitations.bucketId, bucketId));
+
+    // Finally delete the bucket
+    await deleteTestBucket(bucketId);
   } catch (error) {
-    console.error("Error cleaning up bucket maintainer invitations:", error);
+    console.error("Error cleaning up bucket:", error);
   }
 }
 
-/**
- * Delete all files for a specific course
- */
-export async function cleanupCourseFiles(courseId: string) {
+export async function cleanupUserBuckets(userId: string) {
   try {
-    await db.delete(files).where(eq(files.courseId, courseId));
+    const userBuckets = await db
+      .select({ id: buckets.id })
+      .from(buckets)
+      .where(eq(buckets.owner, userId));
+
+    for (const bucket of userBuckets) {
+      await cleanupUserBucket(bucket.id);
+    }
   } catch (error) {
-    console.error("Error cleaning up files:", error);
+    console.error("Error cleaning up buckets:", error);
   }
 }
 
-/**
- * Delete all models for a specific bucket
- */
-export async function cleanupBucketModels(bucketId: string) {
-  try {
-    await db.delete(models).where(eq(models.bucketId, bucketId));
-  } catch (error) {
-    console.error("Error cleaning up models:", error);
-  }
-}
-
-/**
- * Delete all tasks for a specific course
- */
-export async function cleanupCourseTasks(courseId: string) {
-  try {
-    await db.delete(tasks).where(eq(tasks.courseId, courseId));
-  } catch (error) {
-    console.error("Error cleaning up tasks:", error);
-  }
-}
-
-/**
- * Comprehensive cleanup for all test users
- * This should be called in a global afterAll hook or test suite teardown
- */
 export async function cleanupAllTestData() {
   try {
     const testUserIds = Object.values(TEST_USER_IDS);
 
-    // Clean up all user-related data
     for (const userId of testUserIds) {
       await cleanupUserPrompts(userId);
       await cleanupUserChats(userId);
@@ -346,9 +610,6 @@ export async function cleanupAllTestData() {
   }
 }
 
-/**
- * Cleanup data for a specific test user
- */
 export async function cleanupTestUser(userId: string) {
   try {
     await cleanupUserPrompts(userId);
@@ -359,3 +620,9 @@ export async function cleanupTestUser(userId: string) {
     console.error(`Error cleaning up test user ${userId}:`, error);
   }
 }
+
+export const addBucketMaintainer = async (bucketId: string, userId: string) =>
+  createTestBucketUserRole(bucketId, userId, { role: "maintainer" });
+
+export const addCourseMaintainer = async (courseId: string, userId: string) =>
+  createTestCourseUserRole(courseId, userId, { role: "maintainer" });

@@ -27,7 +27,7 @@ const app = new Hono().get(
     const hasPermissions = await isChatOwner({ chatId, userId: user.id });
 
     if (!hasPermissions) {
-      throw new HTTPException(403, { message: "FORBIDDEN" });
+      throw new HTTPException(404, { message: "NOT_FOUND" });
     }
 
     const result = await db

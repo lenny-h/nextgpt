@@ -1,5 +1,5 @@
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
   getAuthHeaders,
@@ -8,6 +8,7 @@ import {
   TEST_USERS,
 } from "../helpers/auth-helpers.js";
 import {
+  cleanupUserBucket,
   createTestBucket,
   createTestCourse,
   createTestTask,
@@ -18,6 +19,7 @@ describe("Protected API Routes - Tasks", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let bucketId: string;
   let courseId: string;
   let taskId: string;
 
@@ -33,12 +35,13 @@ describe("Protected API Routes - Tasks", () => {
     );
 
     // Create dynamic data
-    const bucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
-    courseId = await createTestCourse(
-      TEST_USER_IDS.USER1_VERIFIED,
-      bucketId
-    );
+    bucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
+    courseId = await createTestCourse(TEST_USER_IDS.USER1_VERIFIED, bucketId);
     taskId = await createTestTask(courseId);
+  });
+
+  afterAll(async () => {
+    await cleanupUserBucket(bucketId);
   });
 
   describe("GET /api/protected/tasks/:courseId", () => {

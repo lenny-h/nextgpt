@@ -7,8 +7,11 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { cleanupUserBuckets } from "../helpers/db-helpers.js";
+import { cleanupUserBucket, createTestBucket } from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
+import { buckets } from "@workspace/server/drizzle/schema.js";
+import { eq } from "drizzle-orm";
+import { db } from "@workspace/server/drizzle/db.js";
 
 /**
  * Tests for /api/protected/buckets routes
@@ -20,6 +23,8 @@ describe("Protected API Routes - Buckets", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
+  let fixtureBucketId: string;
+  const createdBucketIds: string[] = [];
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -31,12 +36,18 @@ describe("Protected API Routes - Buckets", () => {
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
     );
+
+    // Create a fixture bucket for User 1 to use in GET tests
+    fixtureBucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED, {
+      name: `fixture-bucket-${Date.now()}`,
+    });
+    createdBucketIds.push(fixtureBucketId);
   });
 
   afterAll(async () => {
-    // Clean up test data
-    await cleanupUserBuckets(TEST_USER_IDS.USER1_VERIFIED);
-    await cleanupUserBuckets(TEST_USER_IDS.USER2_VERIFIED);
+    for (const id of createdBucketIds) {
+      await cleanupUserBucket(id);
+    }
   });
 
   describe("POST /api/protected/buckets", () => {
@@ -78,6 +89,18 @@ describe("Protected API Routes - Buckets", () => {
       const data = await res.json();
       expect(data).toHaveProperty("message");
       expect(data.message).toBe("Bucket created");
+
+      // Verify bucket exists in DB
+      const [record] = await db
+        .select()
+        .from(buckets)
+        .where(eq(buckets.name, uniqueName));
+      expect(record).toBeDefined();
+
+      // Track for cleanup
+      if (record) {
+        createdBucketIds.push(record.id);
+      }
     });
 
     it("should validate bucket name length", async () => {
@@ -158,6 +181,11 @@ describe("Protected API Routes - Buckets", () => {
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
 
+      // Should contain at least the fixture bucket
+      const fixture = data.find((b) => b.id === fixtureBucketId);
+      expect(fixture).toBeDefined();
+      expect(fixture?.owner).toBe(TEST_USER_IDS.USER1_VERIFIED);
+
       // Each bucket should have the expected properties
       data.forEach((bucket) => {
         expect(bucket).toHaveProperty("id");
@@ -189,11 +217,14 @@ describe("Protected API Routes - Buckets", () => {
       const user1BucketIds = user1Buckets.map((b) => b.id);
       const user2BucketIds = user2Buckets.map((b) => b.id);
 
-      // There should be no overlap unless they share buckets
+      // The fixture bucket should be in user1's list but not user2's
+      expect(user1BucketIds).toContain(fixtureBucketId);
+      expect(user2BucketIds).not.toContain(fixtureBucketId);
+
+      // There should be no overlap unless they share buckets (which they shouldn't in this test setup)
       const overlap = user1BucketIds.filter((id: string) =>
         user2BucketIds.includes(id)
       );
-      // In a clean test environment, there should be no shared buckets
       expect(overlap.length).toBe(0);
     });
   });
@@ -216,6 +247,10 @@ describe("Protected API Routes - Buckets", () => {
 
       const data = await res.json();
       expect(Array.isArray(data)).toBe(true);
+
+      // Should contain at least the fixture bucket
+      const fixture = data.find((b) => b.bucketId === fixtureBucketId);
+      expect(fixture).toBeDefined();
 
       // Each bucket should have the expected properties
       data.forEach((bucket) => {
@@ -245,6 +280,12 @@ describe("Protected API Routes - Buckets", () => {
       // Each user should see their own buckets
       expect(Array.isArray(user1Buckets)).toBe(true);
       expect(Array.isArray(user2Buckets)).toBe(true);
+
+      const user1Ids = user1Buckets.map((b) => b.bucketId);
+      const user2Ids = user2Buckets.map((b) => b.bucketId);
+
+      expect(user1Ids).toContain(fixtureBucketId);
+      expect(user2Ids).not.toContain(fixtureBucketId);
     });
   });
 
@@ -295,15 +336,38 @@ describe("Protected API Routes - Buckets", () => {
 
     it("should not allow user to delete another user's bucket", async () => {
       // Create bucket with user1
-      const uniqueName = `User 1 Exclusive Bucket ${Date.now()}`;
-      const createRes = await client.api.protected.buckets.$post(
+      const bucketToDeleteId = await createTestBucket(
+        TEST_USER_IDS.USER1_VERIFIED
+      );
+      createdBucketIds.push(bucketToDeleteId);
+
+      // Try to delete with user2 (should fail with 403)
+      const deleteRes = await client.api.protected.buckets[":bucketId"].$delete(
         {
-          json: {
-            values: {
-              bucketName: uniqueName,
-              public: false,
-            },
-            type: "small",
+          param: {
+            bucketId: bucketToDeleteId,
+          },
+        },
+        {
+          headers: getAuthHeaders(user2Cookie),
+        }
+      );
+
+      expect(deleteRes.status).toBe(403);
+    });
+
+    it("should allow owner to delete their bucket", async () => {
+      // Create bucket with user1
+      const bucketToDeleteId = await createTestBucket(
+        TEST_USER_IDS.USER1_VERIFIED
+      );
+      createdBucketIds.push(bucketToDeleteId);
+
+      // Delete with user1
+      const deleteRes = await client.api.protected.buckets[":bucketId"].$delete(
+        {
+          param: {
+            bucketId: bucketToDeleteId,
           },
         },
         {
@@ -311,35 +375,14 @@ describe("Protected API Routes - Buckets", () => {
         }
       );
 
-      expect(createRes.status).toBe(200);
+      expect(deleteRes.status).toBe(200);
 
-      // Get user1's maintained buckets to find the created bucket
-      const bucketsRes = await client.api.protected.buckets.maintained.$get(
-        {},
-        {
-          headers: getAuthHeaders(user1Cookie),
-        }
-      );
-      const buckets = await bucketsRes.json();
-      const targetBucket = buckets.find((b) => b.name === uniqueName);
-
-      if (targetBucket) {
-        // Try to delete with user2 (should fail with 403)
-        const deleteRes = await client.api.protected.buckets[
-          ":bucketId"
-        ].$delete(
-          {
-            param: {
-              bucketId: targetBucket.id,
-            },
-          },
-          {
-            headers: getAuthHeaders(user2Cookie),
-          }
-        );
-
-        expect(deleteRes.status).toBe(403);
-      }
+      // Verify it's gone
+      const [record] = await db
+        .select()
+        .from(buckets)
+        .where(eq(buckets.id, bucketToDeleteId));
+      expect(record).toBeUndefined();
     });
   });
 });

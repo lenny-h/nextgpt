@@ -1,5 +1,5 @@
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
   TEST_USERS,
@@ -22,6 +22,22 @@ describe("Protected API Routes - Profiles", () => {
     user2Cookie = await signInTestUser(
       TEST_USERS.USER2_VERIFIED.email,
       TEST_USERS.USER2_VERIFIED.password
+    );
+  });
+
+  afterAll(async () => {
+    // Reset user1 profile
+    await client.api.protected.profiles.$patch(
+      {
+        json: {
+          name: TEST_USERS.USER1_VERIFIED.name,
+          username: TEST_USERS.USER1_VERIFIED.username,
+          isPublic: false, // Assuming default is false or we want to reset to a known state
+        },
+      },
+      {
+        headers: getAuthHeaders(user1Cookie),
+      }
     );
   });
 

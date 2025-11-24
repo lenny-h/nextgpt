@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { isChatOwner } from "@workspace/api-routes/lib/db/queries/messages.js";
+import { isChatOwner } from "@workspace/api-routes/lib/db/queries/chats.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { MyUIMetadata } from "@workspace/api-routes/types/custom-ui-metadata.js";
 import { db } from "@workspace/server/drizzle/db.js";
@@ -34,7 +34,7 @@ const app = new Hono().get(
     // Verify the user owns the chat
     const isOwner = await isChatOwner({ userId: user.id, chatId });
     if (!isOwner) {
-      throw new HTTPException(403, { message: "FORBIDDEN" });
+      throw new HTTPException(404, { message: "NOT_FOUND" });
     }
 
     // Fetch the last user message for the given chatId
@@ -66,83 +66,84 @@ const app = new Hono().get(
     const filter = messageMetadata.filter;
 
     // Parallelize all database fetches
-    const [coursesData, filesData, documentsData, promptsData] = await Promise.all([
-      // Fetch course details if courses exist
-      filter.courses.length > 0
-        ? db
-          .select({
-            id: courses.id,
-            name: courses.name,
-          })
-          .from(courses)
-          .where(
-            and(
-              eq(courses.bucketId, filter.bucket.id),
-              inArray(
-                courses.id,
-                filter.courses.map((c: { id: string }) => c.id)
+    const [coursesData, filesData, documentsData, promptsData] =
+      await Promise.all([
+        // Fetch course details if courses exist
+        filter.courses.length > 0
+          ? db
+              .select({
+                id: courses.id,
+                name: courses.name,
+              })
+              .from(courses)
+              .where(
+                and(
+                  eq(courses.bucketId, filter.bucket.id),
+                  inArray(
+                    courses.id,
+                    filter.courses.map((c: { id: string }) => c.id)
+                  )
+                )
               )
-            )
-          )
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      // Fetch file details if files exist
-      filter.files.length > 0
-        ? db
-          .select({
-            id: files.id,
-            name: files.name,
-            pageCount: files.pagesCount,
-          })
-          .from(files)
-          .where(
-            inArray(
-              files.id,
-              filter.files.map((f: { id: string }) => f.id)
-            )
-          )
-        : Promise.resolve([]),
-
-      // Fetch document details if documents exist (only for regular filter, not practice filter)
-      "documents" in filter && filter.documents.length > 0
-        ? db
-          .select({
-            id: documents.id,
-            title: documents.title,
-            kind: documents.kind,
-          })
-          .from(documents)
-          .where(
-            and(
-              eq(documents.userId, user.id),
-              inArray(
-                documents.id,
-                filter.documents.map((d: { id: string }) => d.id)
+        // Fetch file details if files exist
+        filter.files.length > 0
+          ? db
+              .select({
+                id: files.id,
+                name: files.name,
+                pageCount: files.pagesCount,
+              })
+              .from(files)
+              .where(
+                inArray(
+                  files.id,
+                  filter.files.map((f: { id: string }) => f.id)
+                )
               )
-            )
-          )
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      // Fetch prompt details if prompts exist
-      "prompts" in filter && filter.prompts.length > 0
-        ? db
-          .select({
-            id: prompts.id,
-            name: prompts.name,
-            content: prompts.content,
-          })
-          .from(prompts)
-          .where(
-            and(
-              eq(prompts.userId, user.id),
-              inArray(
-                prompts.id,
-                filter.prompts.map((p: { id: string }) => p.id)
+        // Fetch document details if documents exist (only for regular filter, not practice filter)
+        "documents" in filter && filter.documents.length > 0
+          ? db
+              .select({
+                id: documents.id,
+                title: documents.title,
+                kind: documents.kind,
+              })
+              .from(documents)
+              .where(
+                and(
+                  eq(documents.userId, user.id),
+                  inArray(
+                    documents.id,
+                    filter.documents.map((d: { id: string }) => d.id)
+                  )
+                )
               )
-            )
-          )
-        : Promise.resolve([]),
-    ]);
+          : Promise.resolve([]),
+
+        // Fetch prompt details if prompts exist
+        "prompts" in filter && filter.prompts.length > 0
+          ? db
+              .select({
+                id: prompts.id,
+                name: prompts.name,
+                content: prompts.content,
+              })
+              .from(prompts)
+              .where(
+                and(
+                  eq(prompts.userId, user.id),
+                  inArray(
+                    prompts.id,
+                    filter.prompts.map((p: { id: string }) => p.id)
+                  )
+                )
+              )
+          : Promise.resolve([]),
+      ]);
 
     // Create a map of file IDs to page ranges for practice filters
     const filePageRangeMap = new Map<string, string>();

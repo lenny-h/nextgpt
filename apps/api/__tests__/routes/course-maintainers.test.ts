@@ -5,7 +5,7 @@ import {
 } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 import { testClient } from "hono/testing";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
   getAuthHeaders,
@@ -15,6 +15,8 @@ import {
 } from "../helpers/auth-helpers.js";
 import {
   addCourseMaintainer,
+  cleanupTestCourse,
+  cleanupUserBucket,
   createTestBucket,
   createTestCourse,
 } from "../helpers/db-helpers.js";
@@ -24,7 +26,10 @@ describe("Protected API Routes - Course Maintainers", () => {
 
   let user1Cookie: string;
   let user2Cookie: string;
-  let courseId: string;
+  let fixtureCourseId: string;
+  let fixtureBucketId: string;
+  const createdBucketIds: string[] = [];
+  const createdCourseIds: string[] = [];
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -38,8 +43,26 @@ describe("Protected API Routes - Course Maintainers", () => {
     );
 
     // Create dynamic data
-    const bucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
-    courseId = await createTestCourse(TEST_USER_IDS.USER1_VERIFIED, bucketId);
+    fixtureBucketId = await createTestBucket(TEST_USER_IDS.USER1_VERIFIED);
+    createdBucketIds.push(fixtureBucketId);
+
+    fixtureCourseId = await createTestCourse(
+      TEST_USER_IDS.USER1_VERIFIED,
+      fixtureBucketId
+    );
+    createdCourseIds.push(fixtureCourseId);
+  });
+
+  afterAll(async () => {
+    // Clean up courses first (dependencies)
+    for (const courseId of createdCourseIds) {
+      await cleanupTestCourse(courseId);
+    }
+
+    // Then clean up buckets
+    for (const bucketId of createdBucketIds) {
+      await cleanupUserBucket(bucketId);
+    }
   });
 
   describe("GET /api/protected/course-maintainers/:courseId", () => {
@@ -49,7 +72,7 @@ describe("Protected API Routes - Course Maintainers", () => {
       ].$get(
         {
           param: {
-            courseId: courseId,
+            courseId: fixtureCourseId,
           },
         },
         {
@@ -74,7 +97,7 @@ describe("Protected API Routes - Course Maintainers", () => {
       ].$post(
         {
           param: {
-            courseId: courseId,
+            courseId: fixtureCourseId,
           },
           json: {
             userIds: [TEST_USER_IDS.USER2_VERIFIED],
@@ -95,12 +118,12 @@ describe("Protected API Routes - Course Maintainers", () => {
         .from(courseMaintainerInvitations)
         .where(
           and(
-            eq(courseMaintainerInvitations.courseId, courseId),
+            eq(courseMaintainerInvitations.courseId, fixtureCourseId),
             eq(courseMaintainerInvitations.target, TEST_USER_IDS.USER2_VERIFIED)
           )
         );
       expect(invitation).toBeDefined();
-      expect(invitation.courseId).toBe(courseId);
+      expect(invitation.courseId).toBe(fixtureCourseId);
     });
 
     it("should not allow non-maintainer to invite", async () => {
@@ -109,7 +132,7 @@ describe("Protected API Routes - Course Maintainers", () => {
       ].$post(
         {
           param: {
-            courseId: courseId,
+            courseId: fixtureCourseId,
           },
           json: {
             userIds: [TEST_USER_IDS.USER3_UNVERIFIED],
@@ -127,14 +150,14 @@ describe("Protected API Routes - Course Maintainers", () => {
   describe("DELETE /api/protected/course-maintainers/:courseId", () => {
     it("should remove a maintainer from course", async () => {
       // Ensure user2 is a maintainer first
-      await addCourseMaintainer(courseId, TEST_USER_IDS.USER2_VERIFIED);
+      await addCourseMaintainer(fixtureCourseId, TEST_USER_IDS.USER2_VERIFIED);
 
       const res = await client.api.protected["course-maintainers"][
         ":courseId"
       ].$delete(
         {
           param: {
-            courseId: courseId,
+            courseId: fixtureCourseId,
           },
           json: {
             userIds: [TEST_USER_IDS.USER2_VERIFIED],
@@ -155,7 +178,7 @@ describe("Protected API Routes - Course Maintainers", () => {
         .from(courseUserRoles)
         .where(
           and(
-            eq(courseUserRoles.courseId, courseId),
+            eq(courseUserRoles.courseId, fixtureCourseId),
             eq(courseUserRoles.userId, TEST_USER_IDS.USER2_VERIFIED)
           )
         );
