@@ -18,6 +18,11 @@ resource "aws_ecs_service" "api" {
     container_port   = 8080
   }
 
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
   depends_on = [aws_lb_listener.https]
 
   tags = {
@@ -43,6 +48,11 @@ resource "aws_ecs_service" "pdf_exporter" {
     target_group_arn = data.terraform_remote_state.core.outputs.target_group_pdf_exporter_arn
     container_name   = "pdf-exporter"
     container_port   = 8080
+  }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
   }
 
   depends_on = [aws_lb_listener.https]

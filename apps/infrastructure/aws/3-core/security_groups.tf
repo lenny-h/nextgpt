@@ -43,3 +43,14 @@ resource "aws_security_group_rule" "ecs_tasks_from_alb" {
   security_group_id        = data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id
   description              = "Allow traffic from ALB"
 }
+
+# Update Redis security group to allow ECS tasks access
+resource "aws_security_group_rule" "redis_from_ecs_tasks" {
+  type                     = "ingress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  source_security_group_id = data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id
+  security_group_id        = data.terraform_remote_state.db_storage.outputs.security_group_redis_id
+  description              = "Redis from ECS tasks"
+}

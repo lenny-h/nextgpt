@@ -44,6 +44,17 @@ resource "aws_security_group_rule" "ecs_tasks_from_alb" {
   description              = "Allow traffic from ALB"
 }
 
+# Update Redis security group to allow ECS tasks access
+resource "aws_security_group_rule" "redis_from_ecs_tasks" {
+  type                     = "ingress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  source_security_group_id = data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id
+  security_group_id        = data.terraform_remote_state.db_storage.outputs.security_group_redis_id
+  description              = "Redis from ECS tasks"
+}
+
 # Security Group for Firecrawl Services (internal only)
 resource "aws_security_group" "firecrawl_services" {
   name        = "${var.aws_project_name}-firecrawl-sg"
@@ -90,15 +101,4 @@ resource "aws_security_group_rule" "rds_from_firecrawl" {
   source_security_group_id = aws_security_group.firecrawl_services.id
   security_group_id        = data.terraform_remote_state.db_storage.outputs.security_group_rds_id
   description              = "PostgreSQL from Firecrawl services"
-}
-
-# Update Redis security group to allow Firecrawl access
-resource "aws_security_group_rule" "redis_from_firecrawl" {
-  type                     = "ingress"
-  from_port                = 6379
-  to_port                  = 6379
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.firecrawl_services.id
-  security_group_id        = data.terraform_remote_state.db_storage.outputs.security_group_redis_id
-  description              = "Redis from Firecrawl services"
 }
