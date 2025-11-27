@@ -64,8 +64,8 @@ describe("Protected API Routes - Files", () => {
       const files = await res.json();
       expect(Array.isArray(files)).toBe(true);
       // Should contain at least the seeded file
-      expect(files.some((f: any) => f.courseId === courseId)).toBe(true);
-      expect(files.some((f: any) => f.id === fileId)).toBe(true);
+      expect(files.some((f) => f.courseId === courseId)).toBe(true);
+      expect(files.some((f) => f.id === fileId)).toBe(true);
     });
   });
 });

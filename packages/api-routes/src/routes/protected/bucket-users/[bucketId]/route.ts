@@ -6,7 +6,6 @@ import { getBucketOwner } from "@workspace/api-routes/lib/db/queries/buckets.js"
 import { addUserInvitationsBatch } from "@workspace/api-routes/lib/db/queries/invitations.js";
 import { itemsPerPageSchema } from "@workspace/api-routes/schemas/items-per-page-schema.js";
 import { pageNumberSchema } from "@workspace/api-routes/schemas/page-number-schema.js";
-import { createUuidArrayParamSchema } from "@workspace/api-routes/schemas/uuid-array-param-schema.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import {
@@ -24,11 +23,6 @@ const querySchema = z
   .object({
     pageNumber: pageNumberSchema,
     itemsPerPage: itemsPerPageSchema,
-  })
-  .strict();
-const deleteQuerySchema = z
-  .object({
-    userIds: createUuidArrayParamSchema(100),
   })
   .strict();
 
@@ -131,7 +125,7 @@ const app = new Hono()
       return parsed.data;
     }),
     validator("json", (value, c) => {
-      const parsed = deleteQuerySchema.safeParse(value);
+      const parsed = bucketUsersSchema.safeParse(value);
       if (!parsed.success) {
         return c.text("BAD_REQUEST", 400);
       }

@@ -35,6 +35,8 @@ resource "google_storage_bucket" "files_bucket" {
   }
 
   depends_on = [google_project_service.storage]
+
+  force_destroy = true
 }
 
 # GCS bucket for temporary file storage
@@ -78,4 +80,6 @@ resource "google_storage_bucket" "temporary_files_bucket" {
   }
 
   depends_on = [google_project_service.storage]
+
+  force_destroy = true
 }
