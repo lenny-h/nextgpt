@@ -90,7 +90,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
     }
 
     max_instance_request_concurrency = 80
-    timeout                          = "300s"
+    timeout                          = "60s"
   }
 
   traffic {
@@ -138,7 +138,7 @@ resource "google_cloud_run_v2_service" "firecrawl_playwright" {
     }
 
     max_instance_request_concurrency = 80
-    timeout                          = "300s"
+    timeout                          = "60s"
   }
 
   traffic {

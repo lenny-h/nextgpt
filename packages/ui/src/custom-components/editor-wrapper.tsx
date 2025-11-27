@@ -18,7 +18,7 @@ export const EditorWrapper = () => {
   }
 
   return (
-    <div className="bg-code w-full flex-1 overflow-y-auto">
+    <div className="bg-code w-full min-w-0 flex-1 overflow-auto">
       <CodeEditor codeEditorRef={codeEditorRef} />
     </div>
   );

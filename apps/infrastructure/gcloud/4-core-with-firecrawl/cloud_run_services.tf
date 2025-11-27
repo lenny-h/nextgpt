@@ -264,7 +264,7 @@ resource "google_cloud_run_v2_service" "api" {
     }
 
     max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    timeout                          = "60s"
   }
 
   traffic {
@@ -397,7 +397,7 @@ resource "google_cloud_run_v2_service" "document_processor" {
     }
 
     max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    timeout                          = "60s"
   }
 
   lifecycle {
@@ -565,7 +565,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     }
 
     max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    timeout                          = "60s"
 
     scaling {
       min_instance_count = 0

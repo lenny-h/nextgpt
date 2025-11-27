@@ -14,12 +14,6 @@ export const createPDFTemplate = ({
       <style>
         @page {
           margin: 2cm;
-          @top-center {
-            content: "${title}";
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-            font-size: 10pt;
-            color: #666;
-          }
           @bottom-center {
             content: "Page " counter(page) " of " counter(pages);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";

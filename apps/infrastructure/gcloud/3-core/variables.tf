@@ -185,8 +185,8 @@ variable "google_vertex_location" {
 }
 
 variable "use_firecrawl" {
-  type        = bool
-  description = "Enable Firecrawl usage"
+  type        = string
+  description = "Whether to use Firecrawl services (true/false)"
 }
 
 variable "firecrawl_api_key" {
