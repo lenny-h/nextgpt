@@ -1,6 +1,6 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import { bucketUserRoles } from "@workspace/server/drizzle/schema.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { testClient } from "hono/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
@@ -335,7 +335,12 @@ describe("Protected API Routes - Bucket Users", () => {
       const [afterDelete] = await db
         .select()
         .from(bucketUserRoles)
-        .where(eq(bucketUserRoles.userId, TEST_USER_IDS.USER2_VERIFIED));
+        .where(
+          and(
+            eq(bucketUserRoles.bucketId, user1BucketId),
+            eq(bucketUserRoles.userId, TEST_USER_IDS.USER2_VERIFIED)
+          )
+        );
       expect(afterDelete).toBeUndefined();
     });
   });

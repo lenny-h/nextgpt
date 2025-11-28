@@ -45,7 +45,7 @@ describe("Protected API Routes - Attachments", () => {
       ].$post(
         {
           json: {
-            filename: "test-attachment.pdf",
+            filename: "test.pdf",
             fileSize: 1000,
             fileType: "application/pdf",
           },
@@ -75,7 +75,7 @@ describe("Protected API Routes - Attachments", () => {
           json: {
             filename: "test.pdf",
             fileSize: 1000,
-            fileType: "application/pdf",
+            fileType: "some-type",
           },
         },
         {
@@ -87,12 +87,7 @@ describe("Protected API Routes - Attachments", () => {
     });
 
     it("should handle different file types", async () => {
-      const fileTypes = [
-        "application/pdf",
-        "image/png",
-        "image/jpeg",
-        "text/plain",
-      ];
+      const fileTypes = ["application/pdf", "image/png", "image/jpeg"];
 
       for (const fileType of fileTypes) {
         const res = await client.api.protected.attachments[

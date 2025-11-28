@@ -30,6 +30,13 @@ const app = new Hono().post(
   validator("json", async (value, c) => {
     const parsed = getSignedUrlSchema.safeParse(value);
     if (!parsed.success) {
+      // Check if the error is related to the filename field
+      const filenameError = parsed.error.issues.find((issue) =>
+        issue.path.includes("filename")
+      );
+      if (filenameError) {
+        throw new HTTPException(400, { message: "INVALID_FILENAME" });
+      }
       throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
@@ -118,12 +125,13 @@ const app = new Hono().post(
 
     const storageClient = getStorageClient();
 
-    const { url: signedUrl, headers } = await storageClient.getSignedUrlForUpload({
-      bucket: "files-bucket",
-      key: extFilename,
-      contentType: "application/pdf",
-      contentLength: fileSize,
-    });
+    const { url: signedUrl, headers } =
+      await storageClient.getSignedUrlForUpload({
+        bucket: "files-bucket",
+        key: extFilename,
+        contentType: "application/pdf",
+        contentLength: fileSize,
+      });
 
     logger.debug("SignedUrl generated:", { signedUrl, extFilename });
 

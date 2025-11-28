@@ -26,6 +26,7 @@
     "INVALID_COURSE_KEY": "Ungültiger Kurs-Schlüssel",
     "INVALID_CSV_FILE": "Ungültige CSV-Datei",
     "INVALID_EMAIL_DOMAIN": "Ihre E-Mail-Domain ist nicht für die Anmeldung erlaubt",
+    "INVALID_FILENAME": "Ungültiger Dateiname. Dateinamen dürfen keine Sonderzeichen enthalten und müssen eine gültige Endung haben",
     "LOAD_MORE_ERROR": "Fehler beim Laden weiterer Elemente",
     "NO_RESULTS": "Keine Ergebnisse gefunden",
     "ONLY_SCHEDULED_TASKS": "Es können nur Aufgaben, die noch nicht gestartet wurden, gelöscht werden",
