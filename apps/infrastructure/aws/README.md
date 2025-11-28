@@ -1,93 +1,419 @@
-# Infrastructure Restructuring
+# AWS Infrastructure
 
-This infrastructure has been restructured into 6 sequential layers, where each layer builds upon the previous one by importing its state.
+This directory contains the Terraform configuration for deploying the application infrastructure on Amazon Web Services (AWS).
 
-## Folder Structure
+## Architecture Overview
 
-### 1-repository
+The infrastructure is organized into **7 sequential layers**, each building upon the previous one using Terraform remote state management:
 
-Sets up container registries (ECR) for all Docker images with lifecycle policies to keep only the last 5 images.
+```
+1-repository            → ECR (Elastic Container Registry)
+↓
+2-db-storage            → VPC + RDS PostgreSQL + ElastiCache Redis + ECS Cluster
+↓
+3-core                  → ECS Services (without Firecrawl)
+  OR
+4-core-with-firecrawl   → ECS Services (with Firecrawl)
+↓
+5-core-with-certificate → SSL Certificate Update
+↓
+6-file-storage          → S3 Storage
+  OR
+7-cloudflare-storage    → Cloudflare R2
+```
 
-**After deploying this**, run the `scripts/build_and_push_images.sh` script to build and push your images.
+## Layer Details
 
-### 2-db-storage
+### 1. Container Registry (`1-repository/`)
 
-Sets up:
+**Purpose**: Provides a private Docker registry for storing application container images.
 
-- VPC with public/private subnets
-- NAT Gateways
-- PostgreSQL database
-- Redis cache
-- DB Migrator task definition
-- Core IAM roles and security groups
+**Key Resources**:
 
-**Imports state from**: 1-repository
+- **ECR Repositories**: Docker format registries with automatic cleanup
+  - Lifecycle policy: Keeps last 5 images per repository
+  - Repositories: api, document-processor, pdf-exporter, db-migrator, firecrawl-api, firecrawl-playwright
+  - Format: Docker
+- **GitHub OIDC Provider**: Enables GitHub Actions to authenticate with AWS without long-lived credentials
+  - Allows secure CI/CD deployments
+  - Uses OpenID Connect for temporary credentials
 
-### 3-core
+**Dependencies**: None (first layer to deploy)
 
-Sets up core application services without Firecrawl:
+**Provides to Next Layers**:
 
-- ECS services (API, Document Processor, PDF Exporter)
-- Application Load Balancer with SSL/TLS
-- IAM roles for services
-- Secrets Manager secrets
-- SQS queue for document processing
-- EventBridge Scheduler
-- Service Discovery namespace
-- S3 bucket for temporary files
+- ECR repository URLs for pushing/pulling images
+- Image paths for all application services
+- OIDC provider ARN for GitHub Actions
 
-**Imports state from**: 1-repository, 2-db-storage
+**Configuration Options**:
 
-### 4-core-with-firecrawl
+- `aws_project_name`: Project name prefix for resources
+- `aws_region`: AWS region for deployment
 
-Alternative to 3-core that includes Firecrawl services:
+---
 
-- Everything from 3-core, plus:
-- Firecrawl API service
-- Firecrawl Playwright service
-- Additional environment variables for Firecrawl integration
+### 2. Database & Storage (`2-db-storage/`)
 
-**Imports state from**: 1-repository, 2-db-storage
+**Purpose**: Establishes the foundational networking and data infrastructure for all application services.
 
-**Note**: Deploy either 3-core OR 4-core-with-firecrawl, not both.
+**Key Resources**:
 
-### 5-file-storage
+- **VPC Network**: Private network with public and private subnets
+  - CIDR: 10.0.0.0/16
+  - Public subnets: 10.0.1.0/24, 10.0.2.0/24 (across 2 AZs)
+  - Private subnets: 10.0.101.0/24, 10.0.102.0/24 (across 2 AZs)
+  - Internet Gateway: Provides internet access for public subnets
+  - NAT Gateways: Provides outbound internet access for private subnets (one per AZ)
+- **RDS PostgreSQL 18**: Managed relational database
+  - Private subnets only (no public exposure)
+  - Instance class: db.t3.micro (configurable)
+  - Storage: 20GB with auto-scaling up to 100GB
+  - Encrypted at rest with AWS KMS
+  - Automated backups (7-day retention)
+  - Multi-AZ option available for high availability
+- **ElastiCache Redis 7**: Managed in-memory cache
+  - Private subnets only
+  - Node type: cache.t3.micro (configurable)
+  - Used for session storage and caching
+- **ECS Cluster**: Container orchestration platform
+  - Fargate launch type (serverless containers)
+  - Auto-scaling capabilities
+- **Security Groups**: Network access control
+  - RDS: Allows PostgreSQL (5432) from ECS tasks
+  - Redis: Allows Redis (6379) from ECS tasks
+  - ECS: Allows HTTP/HTTPS traffic and internal communication
+- **DB Migrator Task**: ECS task definition for database schema migrations
+  - Runs Drizzle migrations
+  - Triggered manually or via CI/CD
+- **Secrets Manager**: Secure storage for database password
+- **IAM Roles**: Task execution and task roles for ECS
 
-Sets up AWS S3 for permanent file storage:
+**Dependencies**:
 
-- S3 bucket for files
-- CORS configuration
-- Encryption at rest
+- Layer 1 (for DB migrator container image)
 
-**Imports state from**: 1-repository, 2-db-storage, 3-core (or 4-core-with-firecrawl)
+**Provides to Next Layers**:
 
-### 6-cloudflare-storage
+- VPC ID and subnet IDs for service deployment
+- Database connection details (endpoint, port, credentials)
+- Redis connection details
+- ECS cluster ARN
+- Security group IDs
+- IAM role ARNs for ECS tasks
 
-Alternative to 5-file-storage using Cloudflare R2:
+**Configuration Options**:
 
-- Cloudflare R2 bucket for files
-- R2 access configuration
+- `database_password`: PostgreSQL password (stored in Secrets Manager)
+- `aws_project_name`: Project name prefix
+- `aws_region`: AWS region
 
-**Imports state from**: 1-repository, 2-db-storage, 3-core (or 4-core-with-firecrawl)
+---
 
-**Note**: Deploy either 5-file-storage OR 6-cloudflare-storage, not both.
+### 3. Core Services (`3-core/`)
+
+**Purpose**: Deploys the main application services WITHOUT self-hosted Firecrawl (use hosted Firecrawl or no web scraping).
+
+**Key Resources**:
+
+- **ECS Services**:
+  - **API Service**: Main application backend
+    - Handles authentication, business logic, AI interactions
+    - Desired count: 1 (configurable)
+    - Memory: 2048 MB, CPU: 1024 (1 vCPU)
+    - Public-facing via ALB
+  - **Document Processor**: Asynchronous document processing
+    - Handles file uploads, parsing, vectorization
+    - Desired count: 1 (configurable)
+    - Memory: 4096 MB, CPU: 2048 (2 vCPU)
+    - Internal only (Service Discovery)
+  - **PDF Exporter**: PDF generation service
+    - Uses Playwright for rendering
+    - Desired count: 1 (configurable)
+    - Memory: 2048 MB, CPU: 1024 (1 vCPU)
+    - Public-facing via ALB
+- **Application Load Balancer (ALB)**:
+  - SSL/TLS certificate via AWS Certificate Manager
+  - Target groups for each public service
+  - URL routing: `/api/*` → API, `/pdf-exporter/*` → PDF Exporter
+  - Health checks for all services
+  - HTTPS listener (port 443) with HTTP redirect
+- **SQS Queue**: Asynchronous job processing
+  - Used for background tasks (document processing, cleanup)
+  - Dead letter queue for failed messages
+  - Configurable visibility timeout and retention
+- **EventBridge Scheduler**: Scheduled jobs
+  - Cleanup jobs (old files, expired sessions)
+  - Configurable schedules (cron expressions)
+- **Service Discovery**: AWS Cloud Map namespace
+  - Internal DNS for service-to-service communication
+  - Namespace: `local`
+- **S3 Bucket (Temporary)**: Short-term file storage
+  - Lifecycle policy: Delete objects after 1 day
+  - Used for temporary uploads and processing
+- **Secrets Manager Secrets**:
+  - OAuth credentials (Google, GitHub, GitLab)
+  - SSO configuration (optional)
+  - Application secrets (auth secret, encryption key)
+  - Email service credentials (Resend)
+  - Cloudflare R2 credentials (if using R2)
+- **IAM Roles and Policies**:
+  - Task execution roles (pull images, access secrets)
+  - Task roles (access to S3, SQS, other AWS services)
+  - GitHub Actions role for CI/CD deployments
+
+**Dependencies**:
+
+- Layer 1 (container images)
+- Layer 2 (VPC, database, Redis, ECS cluster)
+
+**Provides to Next Layers**:
+
+- Load balancer DNS name for DNS configuration
+- Service ARNs for monitoring
+- IAM role ARNs for storage IAM bindings
+
+**Environment Configuration**:
+
+- `USE_FIRECRAWL=false`
+- `use_firecrawl=false` (in terraform.tfvars) - Set to `true` only if using HOSTED Firecrawl API
+
+**When to Use**:
+
+- You don't need web scraping capabilities
+- You want to use a hosted Firecrawl service (set `use_firecrawl=true` and provide API key)
+- Lower cost (no additional Firecrawl services)
+
+---
+
+### 4. Core with Firecrawl (`4-core-with-firecrawl/`)
+
+**Purpose**: Alternative to layer 3 that includes self-hosted Firecrawl services for web scraping and crawling.
+
+**Key Resources**:
+All resources from layer 3, PLUS:
+
+- **Firecrawl API Service**: Web scraping orchestration
+  - Manages crawl jobs and scraping requests
+  - Desired count: 1 (configurable)
+  - Memory: 2048 MB, CPU: 1024 (1 vCPU)
+  - Internal only (Service Discovery)
+- **Firecrawl Playwright Service**: Headless browser for rendering
+  - Executes JavaScript and renders dynamic content
+  - Desired count: 1 (configurable)
+  - Memory: 4096 MB, CPU: 2048 (2 vCPU, higher resources for browser)
+  - Internal only (Service Discovery)
+
+**Dependencies**:
+
+- Layer 1 (container images including Firecrawl images)
+- Layer 2 (VPC, database, Redis, ECS cluster)
+
+**Provides to Next Layers**:
+
+- Same as layer 3
+- Internal Firecrawl API endpoint for web scraping
+
+**Environment Configuration**:
+
+- `USE_FIRECRAWL=true` (automatically set)
+- Firecrawl services communicate internally via Service Discovery
+
+**When to Use**:
+
+- You need web scraping/crawling capabilities
+- You want full control over Firecrawl (self-hosted)
+- You want to avoid external API dependencies
+
+**Important Notes**:
+
+- Deploy EITHER layer 3 OR layer 4, never both
+- Higher cost (~$50-100/month additional for Firecrawl services)
+
+---
+
+### 5. Core with Certificate (`5-core-with-certificate/`)
+
+**Purpose**: Optional layer to update or add SSL certificates to existing core services.
+
+**Key Resources**:
+
+- **ACM Certificate**: AWS Certificate Manager certificate for custom domain
+- **ALB Listener Update**: Updates existing ALB to use new certificate
+
+**Dependencies**:
+
+- Layer 3 or 4 (existing core services)
+
+**When to Use**:
+
+- You need to add or update SSL certificates after initial deployment
+- You want to add additional domains to your certificate
+
+**Important Notes**:
+
+- This is an optional layer
+- Only needed if you're updating certificates post-deployment
+
+---
+
+### 6. File Storage - S3 (`6-file-storage/`)
+
+**Purpose**: Provides AWS S3 for permanent file storage (user uploads, generated files).
+
+**Key Resources**:
+
+- **S3 Bucket**:
+  - Versioning disabled (single version per object)
+  - Server-side encryption (AES-256)
+  - CORS configuration for web access
+  - Lifecycle rules: Configurable
+  - Block public access enabled (private bucket)
+- **IAM Policies**:
+  - Grants ECS task roles permissions:
+    - `s3:GetObject`: Read access
+    - `s3:PutObject`: Write access
+    - `s3:DeleteObject`: Delete access
+    - `s3:ListBucket`: List objects
+
+**Dependencies**:
+
+- Layer 3 or 4 (for IAM role references)
+
+**Provides to Applications**:
+
+- Bucket name and ARN for file operations
+- Integrated IAM permissions (no additional auth needed)
+
+**When to Use**:
+
+- You want AWS-native storage
+- You prefer integrated AWS billing and management
+- Your egress/download volume is moderate
+
+**Cost Considerations**:
+
+- Storage: ~$0.023/GB/month (S3 Standard)
+- Egress: $0.09/GB (to internet, first 10TB)
+- Operations: $0.005 per 1,000 PUT requests, $0.0004 per 1,000 GET requests
+
+---
+
+### 7. File Storage - Cloudflare R2 (`7-cloudflare-storage/`)
+
+**Purpose**: Alternative to layer 6 using Cloudflare R2 for cost-effective file storage with zero egress fees.
+
+**Key Resources**:
+
+- **Cloudflare R2 Bucket**:
+  - S3-compatible API
+  - Zero egress fees (unlimited downloads)
+  - Location: Auto or specific region
+  - Lifecycle rules: Configurable
+
+**Dependencies**:
+
+- Layer 3 or 4 (for environment variable updates)
+- Cloudflare account with R2 enabled
+
+**Provides to Applications**:
+
+- R2 bucket name and endpoint
+- S3-compatible credentials via environment variables
+
+**When to Use**:
+
+- You have high egress/download volume
+- You want to minimize storage costs
+- You're comfortable with S3-compatible APIs
+
+**Cost Considerations**:
+
+- Storage: ~$0.015/GB/month (cheaper than S3)
+- Egress: $0 (major advantage)
+- Operations: Class A (write): $4.50/million, Class B (read): $0.36/million
+
+**Important Notes**:
+
+- Deploy EITHER layer 6 OR layer 7, never both
+- Requires Cloudflare account and R2 API token
+- Must update layer 3/4 `providers.tf` to reference correct core layer
+
+## Getting Started
+
+For complete deployment instructions, see **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**.
+
+### Prerequisites
+
+- AWS Account with appropriate permissions
+- `aws` CLI, Terraform >= 1.0, and Docker installed
+- Domain name for SSL certificate (optional but recommended)
+
+### Deployment Overview
+
+1. **Deploy Container Registry** (`1-repository/`)
+2. **Build and Push Docker Images** (using `scripts/build_and_push_images.sh`)
+3. **Deploy Database & Networking** (`2-db-storage/`)
+4. **Run Database Migrations** (via ECS task or GitHub Actions)
+5. **Deploy Core Services** (`3-core/` OR `4-core-with-firecrawl/`)
+6. **Configure DNS** (point domain to ALB DNS name)
+7. **Deploy File Storage** (`6-file-storage/` OR `7-cloudflare-storage/`)
+
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instructions.
 
 ## Deployment Order
 
-1. Deploy `1-repository`
-2. Run `scripts/build_and_push_images.sh`
-3. Deploy `2-db-storage`
-4. Deploy `3-core` OR `4-core-with-firecrawl`
-5. Deploy `5-file-storage` OR `6-cloudflare-storage`
+**Critical**: Layers must be deployed sequentially:
+
+1. `1-repository` → Build & push images
+2. `2-db-storage` → Run migrations
+3. `3-core` OR `4-core-with-firecrawl` → Configure DNS
+4. `5-core-with-certificate` (optional)
+5. `6-file-storage` OR `7-cloudflare-storage`
 
 ## State Management
 
-Each folder is configured to import state from previous layers using Terraform remote state. By default, they use local backend, but you should configure S3 backend for production use.
+- **Development**: Uses local Terraform state (`terraform.tfstate` files)
+- **Production**: Use S3 backend (see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for setup)
 
-To enable S3 backend, uncomment and configure the `backend "s3"` block in each `providers.tf` file.
+## Cost Estimates
 
-## Variable Management
+Approximate monthly costs for a small production deployment:
 
-Each folder has its own `variables.tf` and `terraform.tfvars.example`. Copy the example file to `terraform.tfvars` and configure with your values.
+| Layer                   | Resources                          | Monthly Cost       |
+| ----------------------- | ---------------------------------- | ------------------ |
+| 1-repository            | ECR (10GB)                         | $1                 |
+| 2-db-storage            | VPC, RDS, ElastiCache, NAT Gateway | $80-120            |
+| 3-core                  | ECS Fargate, ALB, SQS              | $60-100            |
+| 4-core (with Firecrawl) | +Firecrawl services                | +$50-100           |
+| 6-file-storage          | S3 (100GB)                         | $2-3               |
+| 7-cloudflare-storage    | R2 (100GB)                         | $1.50              |
+| **Total (3-core + S3)** |                                    | **$143-224/month** |
+| **Total (4-core + S3)** |                                    | **$193-324/month** |
 
-Many variables are shared across layers - consider using environment variables or a centralized variable management approach.
+**Cost Optimization Tips:**
+
+- Use smaller RDS instance types for dev/staging (db.t3.micro)
+- Use smaller ElastiCache node types (cache.t3.micro)
+- Set desired count to 0 for non-critical services during off-hours
+- Choose Cloudflare R2 if you have high download volume
+- Use AWS Savings Plans or Reserved Instances for production workloads
+- Consider single NAT Gateway instead of one per AZ for dev environments
+
+## Monitoring & Operations
+
+All services provide structured logging via AWS CloudWatch Logs. Access logs through:
+
+- **AWS Console**: CloudWatch Logs
+- **CLI**: `aws logs tail` (see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md))
+
+## Cleanup
+
+To destroy infrastructure, run `terraform destroy` in **reverse order** (storage → core → database → registry). See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed cleanup instructions.
+
+**Warning**: This permanently deletes all data. Ensure you have backups.
+
+## Additional Documentation
+
+- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Step-by-step deployment instructions
+- Layer-specific READMEs in each folder

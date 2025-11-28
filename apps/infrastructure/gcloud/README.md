@@ -7,210 +7,320 @@ This directory contains the Terraform configuration for deploying the applicatio
 The infrastructure is organized into **6 sequential layers**, each building upon the previous one using Terraform remote state management:
 
 ```
-1-repository         → Artifact Registry
+1-repository          → Artifact Registry
 ↓
-2-db-storage         → VPC + Cloud SQL + Redis + Cloud Run Setup
+2-db-storage          → VPC + Cloud SQL + Redis + Cloud Run Setup
 ↓
-3-core               → Cloud Run Services (without Firecrawl)
+3-core                → Cloud Run Services (without Firecrawl)
   OR
 4-core-with-firecrawl → Cloud Run Services (with Firecrawl)
 ↓
-5-file-storage       → Cloud Storage
+5-file-storage        → Cloud Storage
   OR
-6-cloudflare-storage → Cloudflare R2
+6-cloudflare-storage  → Cloudflare R2
 ```
 
 ## Layer Details
 
 ### 1. Container Registry (`1-repository/`)
 
-- **Purpose**: Artifact Registry for Docker images
-- **Resources**: Single Docker repository with cleanup policy (keeps last 5 images)
-- **Outputs**: Registry URLs for all container images
+**Purpose**: Provides a private Docker registry for storing application container images.
+
+**Key Resources**:
+
+- **Artifact Registry Repository**: Docker format registry with automatic cleanup
+  - Retention policy: Keeps last 5 tagged images per image name
+  - Location: Configurable (default: `us-central1`)
+  - Format: Docker
+
+**Dependencies**: None (first layer to deploy)
+
+**Provides to Next Layers**:
+
+- Registry URL for pushing/pulling images
+- Image paths for all application services
+
+**Configuration Options**:
+
+- `google_vertex_project`: GCP project ID
+- `google_vertex_location`: Registry region
+
+---
 
 ### 2. Database & Storage (`2-db-storage/`)
 
-- **Purpose**: Core infrastructure layer
-- **Resources**:
-  - VPC with private subnet and VPC Access Connector
-  - Cloud SQL PostgreSQL 16 (managed database)
-  - Cloud Memorystore Redis 7 (managed cache)
-  - Cloud NAT for outbound internet access
-  - Service Account for Cloud Run with appropriate IAM roles
-  - DB Migrator Cloud Run Job
-- **Outputs**: VPC, database, Redis endpoints and credentials
+**Purpose**: Establishes the foundational networking and data infrastructure for all application services.
+
+**Key Resources**:
+
+- **VPC Network**: Private network with custom subnet (10.0.0.0/24)
+  - VPC Access Connector: Enables Cloud Run to access private resources
+  - Cloud NAT: Provides outbound internet access for private services
+  - Firewall rules: Controlled ingress/egress
+- **Cloud SQL PostgreSQL 18**: Managed relational database
+  - Private IP only (no public exposure)
+  - Configurable tier
+  - Automatic backups and point-in-time recovery
+  - High availability option available
+- **Cloud Memorystore Redis 7**: Managed in-memory cache
+  - Private IP only
+  - Configurable tier
+  - Used for session storage and caching
+- **Service Account**: Cloud Run service identity with minimal required permissions
+  - `cloudsql.client`: Database access
+  - `redis.editor`: Redis access
+  - `secretmanager.secretAccessor`: Secret access
+- **DB Migrator Job**: Cloud Run Job for database schema migrations
+  - Runs Drizzle migrations
+  - Triggered manually or via CI/CD
+- **Secret Manager**: Secure storage for database password
+
+**Dependencies**:
+
+- Layer 1 (for DB migrator container image)
+
+**Provides to Next Layers**:
+
+- VPC network and connector for private service communication
+- Database connection details (host, port, credentials)
+- Redis connection details
+- Service account for Cloud Run services
+
+**Configuration Options**:
+
+- `database_password`: PostgreSQL password (stored in Secret Manager)
+- `use_firecrawl`: Determines VPC connector size (affects layer 3/4 choice)
+- Database tier, Redis tier, and HA settings
+
+---
 
 ### 3. Core Services (`3-core/`)
 
-- **Purpose**: Application services WITHOUT Firecrawl
-- **Resources**:
-  - Cloud Run services: API, Document Processor, PDF Exporter
-  - Global HTTPS Load Balancer with SSL certificate
-  - Cloud Tasks queue for async processing
-  - Cloud Scheduler for cleanup jobs
-  - Temporary Cloud Storage (1-day lifecycle)
-  - Secret Manager for OAuth and encryption keys
-- **Environment**: `USE_FIRECRAWL=false`
+**Purpose**: Deploys the main application services WITHOUT self-hosted Firecrawl (use hosted Firecrawl or no web scraping).
+
+**Key Resources**:
+
+- **Cloud Run Services**:
+  - **API Service**: Main application backend
+    - Handles authentication, business logic, AI interactions
+    - Min instances: 1 (configurable), Max: 100
+    - Memory: 2GB, CPU: 2
+  - **Document Processor**: Asynchronous document processing
+    - Handles file uploads, parsing, vectorization
+    - Min instances: 0 (scales to zero), Max: 10
+    - Memory: 4GB, CPU: 2
+  - **PDF Exporter**: PDF generation service
+    - Uses Playwright for rendering
+    - Min instances: 0, Max: 5
+    - Memory: 2GB, CPU: 1
+- **Global HTTPS Load Balancer**:
+  - SSL certificate (auto-provisioned via Google-managed certificates)
+  - Backend services for each Cloud Run service
+  - URL routing: `/api/*` → API, `/pdf-exporter/*` → PDF Exporter
+  - Static IP address
+- **Cloud Tasks Queue**: Asynchronous job processing
+  - Used for background tasks (document processing, cleanup)
+  - Configurable rate limits and retry policies
+- **Cloud Scheduler**: Scheduled jobs
+  - Cleanup jobs (old files, expired sessions)
+  - Configurable schedules
+- **Secret Manager Secrets**:
+  - OAuth credentials (Google, GitHub, GitLab)
+  - SSO configuration (optional)
+  - Application secrets (auth secret, encryption key)
+  - Email service credentials (Resend)
+  - Cloudflare R2 credentials (if using R2)
+
+**Dependencies**:
+
+- Layer 1 (container images)
+- Layer 2 (VPC, database, Redis, service account)
+
+**Provides to Next Layers**:
+
+- Load balancer IP for DNS configuration
+- Service URLs for health checks
+- Cloud Run service accounts for storage IAM bindings
+
+**Environment Configuration**:
+
+- `USE_FIRECRAWL=false`
+- `use_firecrawl=false` (in terraform.tfvars) - Set to `true` only if using HOSTED Firecrawl API
+
+**When to Use**:
+
+- You don't need web scraping capabilities
+- You want to use a hosted Firecrawl service (set `use_firecrawl=true` and provide API key)
+- Lower cost (no additional Firecrawl services)
+
+---
 
 ### 4. Core with Firecrawl (`4-core-with-firecrawl/`)
 
-- **Purpose**: Alternative to layer 3 WITH Firecrawl
-- **Resources**: All layer 3 resources PLUS:
-  - Firecrawl API Cloud Run service
-  - Firecrawl Playwright Cloud Run service
-  - Additional secrets for Firecrawl API key
-- **Environment**: `USE_FIRECRAWL=true`
-- **Note**: Deploy EITHER layer 3 OR layer 4, not both
+**Purpose**: Alternative to layer 3 that includes self-hosted Firecrawl services for web scraping and crawling.
+
+**Key Resources**:
+All resources from layer 3, PLUS:
+
+- **Firecrawl API Service**: Web scraping orchestration
+  - Manages crawl jobs and scraping requests
+  - Min instances: 0, Max: 5
+  - Memory: 2GB, CPU: 1
+- **Firecrawl Playwright Service**: Headless browser for rendering
+  - Executes JavaScript and renders dynamic content
+  - Min instances: 0, Max: 5
+  - Memory: 4GB, CPU: 2 (higher resources for browser)
+
+**Dependencies**:
+
+- Layer 1 (container images including Firecrawl images)
+- Layer 2 (VPC with larger connector for additional services)
+
+**Provides to Next Layers**:
+
+- Same as layer 3
+- Internal Firecrawl API endpoint for web scraping
+
+**Environment Configuration**:
+
+- `USE_FIRECRAWL=true` (automatically set)
+- Firecrawl services communicate internally via VPC
+
+**When to Use**:
+
+- You need web scraping/crawling capabilities
+- You want full control over Firecrawl (self-hosted)
+- You want to avoid external API dependencies
+
+**Important Notes**:
+
+- Deploy EITHER layer 3 OR layer 4, never both
+- Requires `use_firecrawl=true` in layer 2 for proper VPC sizing
+- Higher cost (~$30-50/month additional)
+
+---
 
 ### 5. File Storage - Cloud Storage (`5-file-storage/`)
 
-- **Purpose**: Google Cloud Storage for permanent files
-- **Resources**:
-  - Cloud Storage bucket with versioning
-  - IAM bindings for Cloud Run services
-  - Lifecycle policy (keeps last 3 versions)
-- **Use when**: You want GCP-native storage
+**Purpose**: Provides Google Cloud Storage for permanent file storage (user uploads, generated files).
+
+**Key Resources**:
+
+- **Cloud Storage Bucket**:
+  - Versioning enabled (keeps last 3 versions)
+  - Lifecycle management for old versions
+  - Location: Same as other resources
+  - Storage class: STANDARD
+  - Uniform bucket-level access
+- **IAM Bindings**:
+  - Grants Cloud Run service account permissions:
+    - `roles/storage.objectViewer`: Read access
+    - `roles/storage.objectCreator`: Write access
+    - `roles/storage.objectAdmin`: Delete access
+
+**Dependencies**:
+
+- Layer 3 or 4 (for service account reference)
+
+**Provides to Applications**:
+
+- Bucket name and URL for file operations
+- Integrated IAM permissions (no additional auth needed)
+
+**When to Use**:
+
+- You want GCP-native storage
+- You prefer integrated GCP billing and management
+- Your egress/download volume is moderate
+
+**Cost Considerations**:
+
+- Storage: ~$0.02/GB/month
+- Egress: $0.12/GB (to internet)
+- Operations: Minimal cost
+
+---
 
 ### 6. File Storage - Cloudflare R2 (`6-cloudflare-storage/`)
 
-- **Purpose**: Cloudflare R2 for permanent files (S3-compatible, no egress fees)
-- **Resources**:
-  - Cloudflare R2 bucket
-  - Secret Manager for R2 credentials
-- **Use when**: You have high egress/download volume
-- **Note**: Deploy EITHER layer 5 OR layer 6, not both
+**Purpose**: Alternative to layer 5 using Cloudflare R2 for cost-effective file storage with zero egress fees.
 
-## Prerequisites
+**Key Resources**:
+
+- **Cloudflare R2 Bucket**:
+  - S3-compatible API
+  - Zero egress fees (unlimited downloads)
+  - Location: Auto or specific region
+  - Lifecycle rules: Configurable
+- **Secret Manager Secrets**:
+  - R2 access key ID
+  - R2 secret access key
+  - R2 endpoint URL
+- **Environment Variables**: Updated in Cloud Run services to use R2
+
+**Dependencies**:
+
+- Layer 3 or 4 (for Cloud Run service updates)
+- Cloudflare account with R2 enabled
+
+**Provides to Applications**:
+
+- R2 bucket name and endpoint
+- S3-compatible credentials via Secret Manager
+
+**When to Use**:
+
+- You have high egress/download volume
+- You want to minimize storage costs
+- You're comfortable with S3-compatible APIs
+
+**Cost Considerations**:
+
+- Storage: ~$0.015/GB/month (cheaper than GCS)
+- Egress: $0 (major advantage)
+- Operations: Class A (write): $4.50/million, Class B (read): $0.36/million
+
+**Important Notes**:
+
+- Deploy EITHER layer 5 OR layer 6, never both
+- Requires Cloudflare account and R2 API token
+- Must update layer 3/4 `providers.tf` to reference correct core layer
+
+## Getting Started
+
+For complete deployment instructions, see **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**.
+
+### Prerequisites
 
 - Google Cloud Project with billing enabled
-- `gcloud` CLI installed and configured
-- Terraform >= 1.0 installed
-- Docker installed (for building images)
-- Domain name for SSL certificate (optional for layer 3/4)
+- `gcloud` CLI, Terraform >= 1.0, and Docker installed
+- Domain name for SSL certificate (optional)
 
-## Quick Start
+### Deployment Overview
 
-### 1. Deploy Container Registry
+1. **Deploy Container Registry** (`1-repository/`)
+2. **Build and Push Docker Images** (using `scripts/build_and_push_images.sh`)
+3. **Deploy Database & Networking** (`2-db-storage/`)
+4. **Run Database Migrations** (via Cloud Run Job or GitHub Actions)
+5. **Deploy Core Services** (`3-core/` OR `4-core-with-firecrawl/`)
+6. **Configure DNS** (point domain to load balancer IP)
+7. **Deploy File Storage** (`5-file-storage/` OR `6-cloudflare-storage/`)
 
-```bash
-cd 1-repository
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
-terraform init
-terraform apply
-```
-
-### 2. Build and Push Images
-
-```bash
-cd ../scripts
-bash build_and_push_images.sh your-project-id us-central1 myapp
-
-# If not using Firecrawl:
-bash build_and_push_images.sh your-project-id us-central1 myapp --skip-firecrawl
-```
-
-### 3. Deploy Database Layer
-
-```bash
-cd ../2-db-storage
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars
-terraform init
-terraform apply
-
-# Run database migrations
-gcloud run jobs execute myapp-db-migrator --region us-central1
-```
-
-### 4. Deploy Core Services
-
-Choose ONE:
-
-**Option A: Without Firecrawl**
-
-```bash
-cd ../3-core
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars
-terraform init
-terraform apply
-```
-
-**Option B: With Firecrawl**
-
-```bash
-cd ../4-core-with-firecrawl
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars (include Firecrawl API key)
-terraform init
-terraform apply
-```
-
-### 5. Configure DNS
-
-```bash
-# Get load balancer IP
-terraform output load_balancer_ip
-
-# Add A record to your DNS:
-# Type: A
-# Name: api (or your subdomain)
-# Value: <LOAD_BALANCER_IP>
-```
-
-### 6. Deploy File Storage
-
-Choose ONE:
-
-**Option A: Cloud Storage**
-
-```bash
-cd ../5-file-storage
-cp terraform.tfvars.example terraform.tfvars
-terraform init
-terraform apply
-```
-
-**Option B: Cloudflare R2**
-
-```bash
-cd ../6-cloudflare-storage
-cp terraform.tfvars.example terraform.tfvars
-# Add Cloudflare credentials
-terraform init
-terraform apply
-```
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instructions.
 
 ## Deployment Order
 
-**Critical**: Layers must be deployed in order!
+**Critical**: Layers must be deployed sequentially:
 
-1. `1-repository` → Build images → Push to registry
+1. `1-repository` → Build & push images
 2. `2-db-storage` → Run migrations
 3. `3-core` OR `4-core-with-firecrawl` → Configure DNS
 4. `5-file-storage` OR `6-cloudflare-storage`
 
 ## State Management
 
-### Local State (Development)
-
-By default, each layer uses local Terraform state stored in `terraform.tfstate` files. This is suitable for development and testing.
-
-### Remote State (Production)
-
-For production, use Cloud Storage backend:
-
-1. Create a Cloud Storage bucket for state:
-
-```bash
-gsutil mb -l us-central1 gs://your-project-terraform-state
-gsutil versioning set on gs://your-project-terraform-state
-```
-
-2. Uncomment the `backend "gcs"` block in each layer's `providers.tf`
-
-3. Run `terraform init -migrate-state` in each layer
+- **Development**: Uses local Terraform state (`terraform.tfstate` files)
+- **Production**: Use Cloud Storage backend (see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for setup)
 
 ## Cost Estimates
 
@@ -234,85 +344,21 @@ Approximate monthly costs for a small production deployment:
 - Choose Cloudflare R2 if you have high download volume
 - Use committed use discounts for production workloads
 
-## Monitoring & Logs
+## Monitoring & Operations
 
-View logs for all services:
+All services provide structured logging via Google Cloud Logging. Access logs through:
 
-```bash
-# Cloud Run logs
-gcloud logging read "resource.type=cloud_run_revision" --limit 100
-
-# Specific service
-gcloud logging read "resource.labels.service_name=myapp-api" --limit 50
-
-# Cloud SQL logs
-gcloud logging read "resource.type=cloudsql_database" --limit 50
-```
+- **Cloud Console**: Logs Explorer
+- **CLI**: `gcloud logging read` (see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md))
 
 ## Cleanup
 
-To destroy all infrastructure (in reverse order):
+To destroy infrastructure, run `terraform destroy` in **reverse order** (storage → core → database → registry). See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed cleanup instructions.
 
-```bash
-cd 6-cloudflare-storage  # or 5-file-storage
-terraform destroy
-
-cd ../4-core-with-firecrawl  # or 3-core
-terraform destroy
-
-cd ../2-db-storage
-terraform destroy
-
-cd ../1-repository
-terraform destroy
-```
-
-## Troubleshooting
-
-### Cloud Run Service Won't Start
-
-- Check logs: `gcloud run services logs read SERVICE_NAME`
-- Verify VPC connector is healthy
-- Check Secret Manager permissions
-
-### Database Connection Issues
-
-- Verify VPC Access Connector is attached to Cloud Run
-- Check Cloud SQL private IP connectivity
-- Verify service account has `cloudsql.client` role
-
-### SSL Certificate Stuck
-
-- Verify DNS A record is correct
-- DNS propagation can take 10-30 minutes
-- Check certificate status: `gcloud compute ssl-certificates list`
-
-### Image Push Fails
-
-- Authenticate: `gcloud auth configure-docker us-central1-docker.pkg.dev`
-- Verify Artifact Registry API is enabled
-- Check IAM permissions on service account
-
-## Security Best Practices
-
-- ✅ All services run in private VPC with VPC Access Connector
-- ✅ Secrets stored in Secret Manager (never in code)
-- ✅ IAM roles follow principle of least privilege
-- ✅ HTTPS-only via Load Balancer with managed SSL
-- ✅ Cloud SQL and Redis only accessible via private IP
-- ✅ Automatic security updates for managed services
+**Warning**: This permanently deletes all data. Ensure you have backups.
 
 ## Additional Documentation
 
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Step-by-step deployment instructions
 - [INFRASTRUCTURE_OVERVIEW.md](./INFRASTRUCTURE_OVERVIEW.md) - Detailed architecture documentation
 - Layer-specific READMEs in each folder
-
-## Support
-
-For issues or questions:
-
-1. Check the README in the specific layer folder
-2. Review [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
-3. Check Google Cloud documentation
-4. Review Terraform state for outputs and resource details

@@ -11,7 +11,7 @@ Complete step-by-step guide for deploying your application on Google Cloud Platf
 - **Docker**: [Install Guide](https://docs.docker.com/get-docker/)
 - **Git**: For cloning the repository
 
-### Google Cloud Setup
+### Google Cloud Setup (this can also be done in the GCP Console)
 
 1. **Create a GCP Project**:
 
@@ -20,31 +20,14 @@ gcloud projects create your-project-id --name="Your Project Name"
 gcloud config set project your-project-id
 ```
 
-2. **Enable Required APIs**:
-
-```bash
-gcloud services enable \
-  compute.googleapis.com \
-  run.googleapis.com \
-  sql-component.googleapis.com \
-  sqladmin.googleapis.com \
-  redis.googleapis.com \
-  artifactregistry.googleapis.com \
-  cloudtasks.googleapis.com \
-  cloudscheduler.googleapis.com \
-  secretmanager.googleapis.com \
-  servicenetworking.googleapis.com \
-  vpcaccess.googleapis.com
-```
-
-3. **Link Billing Account**:
+2. **Link Billing Account**:
 
 ```bash
 gcloud billing accounts list
 gcloud billing projects link your-project-id --billing-account=BILLING_ACCOUNT_ID
 ```
 
-4. **Set Default Region**:
+3. **Set Default Region**:
 
 ```bash
 gcloud config set compute/region us-central1
@@ -60,17 +43,15 @@ cd apps/infrastructure/gcloud/1-repository
 # Configure Terraform variables
 cp terraform.tfvars.example terraform.tfvars
 
-# Edit terraform.tfvars:
-nano terraform.tfvars
+# Edit terraform.tfvars
+# e.g. using nano: nano terraform.tfvars
 ```
 
 Required variables:
 
 ```hcl
-project_id   = "your-project-id"
-region       = "us-central1"
-project_name = "myapp"
-environment  = "production"
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
 ```
 
 Deploy:
@@ -87,22 +68,21 @@ terraform apply
 cd ../scripts
 
 # Get your configuration
-PROJECT_ID=$(gcloud config get-value project)
-REGION="us-central1"
-PROJECT_NAME="myapp"
+PROJECT_ID="your-gcp-project-id"
+REGION="your-gcp-region"
 
 # Build and push all images
-bash build_and_push_images.sh $PROJECT_ID $REGION $PROJECT_NAME
+bash build_and_push_images.sh $PROJECT_ID $REGION
 
 # If NOT using Firecrawl:
-bash build_and_push_images.sh $PROJECT_ID $REGION $PROJECT_NAME --skip-firecrawl
+bash build_and_push_images.sh $PROJECT_ID $REGION --skip-firecrawl
 ```
 
 Verify images were pushed:
 
 ```bash
 gcloud artifacts docker images list \
-  $REGION-docker.pkg.dev/$PROJECT_ID/$PROJECT_NAME-docker
+  $REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository
 ```
 
 ### Step 3: Deploy Database & Networking
@@ -117,17 +97,14 @@ nano terraform.tfvars
 Key configuration options:
 
 ```hcl
-project_id   = "your-project-id"
-region       = "us-central1"
-project_name = "myapp"
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
 
-# Database tier (f1-micro for dev, n1-standard-1+ for prod)
-db_tier      = "db-f1-micro"
-db_disk_size = 10
+# Database password (generate a secure random string)
+database_password = "your-secure-database-password"
 
-# Redis tier (BASIC for dev, STANDARD_HA for prod)
-redis_tier           = "BASIC"
-redis_memory_size_gb = 1
+# Set to true if you plan to deploy 4-core-with-firecrawl, false for 3-core
+use_firecrawl = true
 ```
 
 Deploy:
@@ -138,14 +115,16 @@ terraform plan
 terraform apply
 ```
 
-**Wait for deployment** (5-10 minutes for Cloud SQL and Redis provisioning).
+**Wait for deployment** (approximately 25 minutes for Cloud SQL and Redis provisioning).
 
 ### Step 4: Run Database Migrations
+
+Push the code to github, and run the migrations github action (if it doesn't run automatically). Alternatively, you can run the migrations manually (not recommended):
 
 ```bash
 # Get the job name
 JOB_NAME=$(terraform output -raw db_migrator_job_name)
-REGION=$(terraform output -raw region)
+REGION="your-gcp-region"
 
 # Execute migrations
 gcloud run jobs execute $JOB_NAME \
@@ -172,19 +151,61 @@ nano terraform.tfvars
 Critical variables:
 
 ```hcl
-project_id   = "your-project-id"
-domain       = "api.yourdomain.com"
+# GCP Configuration
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
 
-# OAuth credentials (from Google/GitHub OAuth apps)
+# Site Configuration
+site_url = "example.com"
+
+# Authentication
+better_auth_secret               = "your-secure-secret-key"  # Generate a secure random string (32+ chars)
+only_allow_admin_to_create_buckets = false
+admin_user_ids                   = ""  # Comma-separated list of admin user IDs
+enable_email_signup              = true
+allowed_email_domains            = ""  # Comma-separated list, leave empty to allow all domains
+
+# OAuth Providers
+enable_oauth_login   = true
 google_client_id     = "your-google-client-id"
 google_client_secret = "your-google-client-secret"
 github_client_id     = "your-github-client-id"
 github_client_secret = "your-github-client-secret"
+gitlab_client_id     = "your-gitlab-client-id"
+gitlab_client_secret = "your-gitlab-client-secret"
 
-# Generate secure random strings (32+ chars)
-nextauth_secret = "your-nextauth-secret"
-nextauth_url    = "https://api.yourdomain.com"
-encryption_key  = "your-encryption-key"
+# SSO Configuration (optional)
+enable_sso                 = false
+sso_domain                 = "your-sso-domain"
+sso_provider_id            = "your-sso-provider-id"
+sso_client_id              = "your-sso-client-id"
+sso_client_secret          = "your-sso-client-secret"
+sso_issuer                 = "your-sso-issuer"
+sso_authorization_endpoint = "your-sso-authorization-endpoint"
+sso_discovery_endpoint     = "your-sso-discovery-endpoint"
+sso_token_endpoint         = "your-sso-token-endpoint"
+sso_jwks_endpoint          = "your-sso-jwks-endpoint"
+
+# Email Configuration
+resend_sender_email = "noreply@example.com"
+resend_api_key      = "your-resend-api-key"
+
+# Application Security
+encryption_key = "your-64-character-encryption-key"  # Must be exactly 64 characters
+
+# Storage Configuration (Cloudflare R2)
+use_cloudflare_r2            = false
+cloudflare_access_key_id     = "your-cloudflare-access-key-id"
+cloudflare_secret_access_key = "your-cloudflare-secret-access-key"
+r2_endpoint                  = "https://<your-account-id>.r2.cloudflarestorage.com"
+
+# AI Models
+embeddings_model = "text-embedding-004"
+llm_models       = "gemini-2.5-flash,gemini-2.5-pro"
+
+# Use Firecrawl (only set to true if using HOSTED Firecrawl)
+use_firecrawl     = false
+firecrawl_api_key = "your-firecrawl-api-key"
 ```
 
 #### Option B: With Firecrawl
@@ -196,13 +217,63 @@ cp terraform.tfvars.example terraform.tfvars
 nano terraform.tfvars
 ```
 
-Additional Firecrawl variables:
+Configuration (same as Option A, but Firecrawl services will be deployed):
 
 ```hcl
-# All variables from Option A, plus:
-use_firecrawl     = true
-firecrawl_api_key = "your-firecrawl-api-key"
+# GCP Configuration
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
+
+# Site Configuration
+site_url = "example.com"
+
+# Authentication
+better_auth_secret                 = "your-secure-secret-key"  # Generate a secure random string (32+ chars)
+only_allow_admin_to_create_buckets = false
+admin_user_ids                     = "user-id-1,user-id-2"  # Comma-separated list of admin user IDs
+enable_email_signup                = true
+allowed_email_domains              = "example.com,company.com"  # Comma-separated list
+enable_oauth_login                 = true
+
+# OAuth Providers
+google_client_id     = "your-google-client-id"
+google_client_secret = "your-google-client-secret"
+github_client_id     = "your-github-client-id"
+github_client_secret = "your-github-client-secret"
+gitlab_client_id     = "your-gitlab-client-id"
+gitlab_client_secret = "your-gitlab-client-secret"
+
+# SSO Configuration (optional)
+enable_sso                 = false
+sso_domain                 = "your-sso-domain"
+sso_provider_id            = "your-sso-provider-id"
+sso_client_id              = "your-sso-client-id"
+sso_client_secret          = "your-sso-client-secret"
+sso_issuer                 = "your-sso-issuer"
+sso_authorization_endpoint = "your-sso-authorization-endpoint"
+sso_discovery_endpoint     = "your-sso-discovery-endpoint"
+sso_token_endpoint         = "your-sso-token-endpoint"
+sso_jwks_endpoint          = "your-sso-jwks-endpoint"
+
+# Email Configuration
+resend_sender_email = "noreply@example.com"
+resend_api_key      = "your-resend-api-key"
+
+# Application Security
+encryption_key = "your-64-character-encryption-key"  # Must be exactly 64 characters
+
+# Storage Configuration (Cloudflare R2)
+use_cloudflare_r2            = true
+cloudflare_access_key_id     = "your-r2-access-key-id"
+cloudflare_secret_access_key = "your-r2-secret-access-key"
+r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
+
+# AI Models
+embeddings_model = "text-embedding-004"
+llm_models       = "gemini-2.5-flash,gemini-2.5-pro"
 ```
+
+**Note**: This option deploys self-hosted Firecrawl services. No external Firecrawl API key is needed.
 
 Deploy selected option:
 
@@ -216,18 +287,7 @@ terraform apply
 
 ### Step 6: Configure DNS
 
-```bash
-# Get the Load Balancer IP
-LB_IP=$(terraform output -raw load_balancer_ip)
-echo "Load Balancer IP: $LB_IP"
-```
-
-**Add DNS Record** to your domain provider:
-
-- **Type**: A
-- **Name**: api (or your subdomain)
-- **Value**: `<LB_IP>`
-- **TTL**: 300 (or auto)
+Add DNS A record and Github variables and secrets as explained in the terraform output (terraform output setup_instructions).
 
 **Wait for DNS propagation** (5-30 minutes):
 
@@ -244,23 +304,17 @@ The SSL certificate status will change from `PROVISIONING` → `ACTIVE` once DNS
 ### Step 7: Verify Core Services
 
 ```bash
+REGION="your-gcp-region"
 # Check Cloud Run services
-gcloud run services list --region us-central1
+gcloud run services list --region $REGION
 
 # Test API health endpoint
-curl https://api.yourdomain.com/api/health
+curl https://api.yourdomain.com/api/public/health
+
+# Test PDF Exporter health endpoint
+curl https://api.yourdomain.com/pdf-exporter/public/health
 
 # Should return: {"status":"ok"}
-```
-
-View service logs:
-
-```bash
-# API logs
-gcloud run services logs read myapp-api --region us-central1 --limit 50
-
-# Document Processor logs
-gcloud run services logs read myapp-document-processor --region us-central1 --limit 20
 ```
 
 ### Step 8: Deploy File Storage
@@ -274,6 +328,15 @@ cd ../5-file-storage
 
 cp terraform.tfvars.example terraform.tfvars
 nano terraform.tfvars
+```
+
+Required variables:
+
+```hcl
+google_vertex_project  = "your-gcp-project-id"
+google_vertex_location = "us-central1"
+
+site_url               = "example.com"
 ```
 
 **IMPORTANT**: Update `providers.tf` if you deployed 4-core-with-firecrawl:
@@ -301,9 +364,10 @@ First, get R2 credentials from Cloudflare:
 
 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
 2. Navigate to R2 → Overview
-3. Click "Manage R2 API Tokens"
-4. Create token with R2 permissions
-5. Note Account ID, Access Key, and Secret Key
+3. Note your **Account ID** (shown in the sidebar)
+4. Click "Manage R2 API Tokens"
+5. Create a token with R2 read/write permissions
+6. Copy the API token
 
 ```bash
 cd ../6-cloudflare-storage
@@ -315,10 +379,9 @@ nano terraform.tfvars
 Add Cloudflare credentials:
 
 ```hcl
+cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
-cloudflare_account_id = "your-account-id"
-r2_access_key_id      = "your-r2-access-key"
-r2_secret_access_key  = "your-r2-secret-key"
+r2_location           = "auto"  # or specific location like "wnam", "enam", "weur", "eeur", "apac"
 ```
 
 **IMPORTANT**: Update `providers.tf` if you deployed 4-core-with-firecrawl (same as Option A).
@@ -329,75 +392,6 @@ Deploy:
 terraform init
 terraform plan
 terraform apply
-```
-
-### Step 9: Update Services with Storage Configuration
-
-For Cloud Storage:
-
-```bash
-BUCKET_NAME=$(terraform output -raw permanent_storage_bucket_name)
-
-gcloud run services update myapp-api \
-  --update-env-vars PERMANENT_STORAGE_BUCKET=$BUCKET_NAME \
-  --region us-central1
-```
-
-For Cloudflare R2:
-
-```bash
-BUCKET_NAME=$(terraform output -raw r2_bucket_name)
-R2_ENDPOINT=$(terraform output -raw r2_endpoint)
-
-gcloud run services update myapp-api \
-  --update-env-vars PERMANENT_STORAGE_BUCKET=$BUCKET_NAME,STORAGE_ENDPOINT=$R2_ENDPOINT,STORAGE_TYPE=r2 \
-  --region us-central1
-```
-
-## Post-Deployment
-
-### Verify Everything Works
-
-```bash
-# 1. Check all Cloud Run services are running
-gcloud run services list --region us-central1
-
-# 2. Test API
-curl https://api.yourdomain.com/api/health
-
-# 3. Check database connectivity
-gcloud sql instances describe myapp-postgres
-
-# 4. Verify Redis
-gcloud redis instances describe myapp-redis --region us-central1
-
-# 5. Test file upload (if applicable)
-# Use your application's file upload endpoint
-```
-
-### Set Up Monitoring
-
-```bash
-# Create uptime check for API
-gcloud monitoring uptime create \
-  --display-name="API Health Check" \
-  --http-check=https://api.yourdomain.com/api/health \
-  --monitored-resource=uptime-url
-
-# View metrics
-gcloud monitoring dashboards list
-```
-
-### Configure Alerts
-
-```bash
-# Create alert policy for high error rate
-gcloud alpha monitoring policies create \
-  --notification-channels=YOUR_CHANNEL_ID \
-  --display-name="High Error Rate" \
-  --condition-display-name="Cloud Run Error Rate > 5%" \
-  --condition-threshold-value=5 \
-  --condition-threshold-duration=60s
 ```
 
 ## Production Optimization
@@ -440,139 +434,6 @@ cd each-layer
 terraform init -migrate-state
 ```
 
-### 2. Scale for Production
-
-Update `terraform.tfvars` in core layer:
-
-```hcl
-# Higher availability
-api_min_instances = 2
-api_max_instances = 20
-
-# Larger database
-db_tier = "db-n1-standard-1"  # 3.75GB RAM, ~$70/month
-
-# High availability Redis
-redis_tier = "STANDARD_HA"  # ~$75/month for 1GB
-```
-
-### 3. Enable Cloud CDN (Optional)
-
-For static assets:
-
-```bash
-gcloud compute backend-services update myapp-api-backend \
-  --enable-cdn \
-  --global
-```
-
-### 4. Set Up Backup Strategy
-
-```bash
-# Cloud SQL automatic backups are enabled by default
-# Verify backup configuration
-gcloud sql instances describe myapp-postgres | grep backupConfiguration -A 10
-
-# Create on-demand backup
-gcloud sql backups create \
-  --instance=myapp-postgres \
-  --description="Pre-deployment backup"
-```
-
-## Updating the Infrastructure
-
-### Update Docker Images
-
-```bash
-cd apps/infrastructure/gcloud/scripts
-bash build_and_push_images.sh $PROJECT_ID $REGION $PROJECT_NAME
-
-# Force new deployment
-gcloud run services update myapp-api \
-  --region us-central1
-```
-
-### Update Terraform Configuration
-
-```bash
-cd desired-layer
-# Edit terraform.tfvars or .tf files
-terraform plan
-terraform apply
-```
-
-### Update Environment Variables
-
-```bash
-gcloud run services update myapp-api \
-  --update-env-vars NEW_VAR=value \
-  --region us-central1
-```
-
-## Troubleshooting
-
-### Issue: Cloud Run Service Won't Start
-
-**Check logs**:
-
-```bash
-gcloud run services logs read myapp-api --region us-central1 --limit 100
-```
-
-**Common causes**:
-
-- Database connection issues (check VPC connector)
-- Missing secrets (verify Secret Manager permissions)
-- Image pull errors (check Artifact Registry access)
-
-### Issue: Database Connection Timeout
-
-**Verify VPC Access Connector**:
-
-```bash
-gcloud compute networks vpc-access connectors describe \
-  myapp-vpc-connector --region us-central1
-```
-
-**Check Cloud SQL connectivity**:
-
-```bash
-# From Cloud Shell
-gcloud sql connect myapp-postgres --user=myapp-user
-```
-
-### Issue: SSL Certificate Not Provisioning
-
-**Check certificate status**:
-
-```bash
-gcloud compute ssl-certificates describe myapp-lb-cert
-```
-
-**Verify DNS**:
-
-```bash
-dig api.yourdomain.com
-```
-
-If DNS is correct, wait 10-30 minutes for certificate provisioning.
-
-### Issue: High Costs
-
-**Analyze costs**:
-
-```bash
-# View current month's costs
-gcloud billing accounts describe YOUR_BILLING_ACCOUNT
-```
-
-**Cost-saving tips**:
-
-- Set `min_instances=0` for non-critical services
-- Use `db-f1-micro` for dev/staging
-- Implement lifecycle policies on storage
-- Review and delete unused resources
-
 ## Cleanup
 
 To destroy all infrastructure:
@@ -596,17 +457,3 @@ terraform destroy
 ```
 
 **Warning**: This will delete all data! Ensure you have backups.
-
-## Next Steps
-
-- Set up CI/CD with GitHub Actions or Cloud Build
-- Configure custom domains and DNS
-- Implement monitoring and alerting
-- Set up disaster recovery procedures
-- Review security best practices
-
-## Support
-
-- [Google Cloud Documentation](https://cloud.google.com/docs)
-- [Terraform GCP Provider](https://registry.terraform.io/providers/hashicorp/google/latest/docs)
-- [Cloud Run Documentation](https://cloud.google.com/run/docs)
