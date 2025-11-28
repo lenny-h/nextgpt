@@ -96,8 +96,8 @@ export class PracticeChatHandler extends ChatHandler {
               stepNumber === 0
                 ? ["retrieveRandomDocumentSources"]
                 : stepNumber === 1 &&
-                  (this.request.filter as PracticeFilter).studyMode ===
-                  "multipleChoice"
+                    (this.request.filter as PracticeFilter).studyMode ===
+                      "multipleChoice"
                   ? ["createMultipleChoice"]
                   : ["searchDocuments"],
             toolChoice:
@@ -121,9 +121,8 @@ export class PracticeChatHandler extends ChatHandler {
     writer.merge(
       result.toUIMessageStream({
         generateMessageId: generateUUID,
-        originalMessages: this.request.messages,
-        onFinish: async ({ messages }) => {
-          await this.saveResponseMessages(messages);
+        onFinish: async ({ responseMessage }) => {
+          await this.saveResponseMessages([responseMessage]);
         },
         messageMetadata: ({ part }) => {
           // Send total usage when generation is finished

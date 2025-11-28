@@ -67,20 +67,25 @@ export const MessageActions = memo(
 
       // Clean the content (remove math delimiters, citations)
       const cleanContent = content
+        .replace(/\$(.*?)\$/g, "$1")
         .replace(/\$\$(.*?)\$\$/gs, "$1")
-        .replace(/£(\d+(?:,\s?\d+)*)£/g, "");
+        .replace(/\[\[(doc|web):[^\]]+\]\]/g, "");
 
       const utterance = new SpeechSynthesisUtterance(cleanContent);
 
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => {
+      utterance.onerror = (e) => {
         setIsSpeaking(false);
+        
+        console.error("SpeechSynthesis error:", e);
+        if (e.error === "interrupted" || e.error === "canceled") return;
+
         toast.error(webT.messageActions.failedRead);
       };
 
       window.speechSynthesis.speak(utterance);
-    }, [content, isSpeaking]);
+    }, [content, isSpeaking, webT]);
 
     if (isLoading) return null;
     if (role === "user") return null;

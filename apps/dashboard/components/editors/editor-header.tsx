@@ -160,7 +160,7 @@ export const EditorHeader = memo(() => {
             },
             credentials: "include",
             body: JSON.stringify({
-              title,
+              ...(editorContent.title && { title: editorContent.title }),
               content: contentElement.innerHTML,
             }),
           },

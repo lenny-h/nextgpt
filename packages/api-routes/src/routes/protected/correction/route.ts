@@ -58,7 +58,11 @@ const app = new Hono().post(
 
         await insertDocument({
           userId: user.id,
-          title: handInFilename.split("/").pop()?.split(".")[0] + "_eval",
+          title:
+            handInFilename
+              .split("/")
+              .pop()
+              ?.replace(/\.[^.]+$/, "") + "_eval",
           content: evaluation,
           kind: "text",
         });

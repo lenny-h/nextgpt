@@ -1,25 +1,20 @@
-import { ExportPdfEvent } from "../routes/protected/export-pdf.js";
-
 export const createPDFTemplate = ({
   title,
   content,
-}: ExportPdfEvent): string => {
+}: {
+  title?: string;
+  content: string;
+}): string => {
   return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title}</title>
+      ${title ? `<title>${title}</title>` : ""}
       <style>
         @page {
           margin: 2cm;
-          @top-center {
-            content: "${title}";
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-            font-size: 10pt;
-            color: #666;
-          }
           @bottom-center {
             content: "Page " counter(page) " of " counter(pages);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
@@ -104,7 +99,7 @@ export const createPDFTemplate = ({
       </style>
     </head>
     <body>
-      <h1>${title}</h1>
+      ${title ? `<h1>${title}</h1>` : ""}
       ${content}
     </body>
     </html>

@@ -146,29 +146,32 @@ const PureAgentMessage = ({
 
               {textContent && (
                 <>
-                  <MessageActions
-                    content={parseContent(textContent)}
-                    role={message.role}
-                    isLoading={isLoading}
-                    regenerate={regenerate}
-                    messageId={message.id}
-                    previousMessageId={previousMessageId}
-                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <MessageActions
+                      content={parseContent(textContent)}
+                      role={message.role}
+                      isLoading={isLoading}
+                      regenerate={regenerate}
+                      messageId={message.id}
+                      previousMessageId={previousMessageId}
+                    />
 
-                  {/* Display usage information if available */}
-                  {message.metadata?.totalUsage && (
-                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        Tokens: {message.metadata.totalUsage.totalTokens}
-                      </span>
-                      {message.metadata.totalUsage.inputTokens && message.metadata.totalUsage.outputTokens && (
-                        <span className="text-muted-foreground/70">
-                          (In: {message.metadata.totalUsage.inputTokens},
-                          Out: {message.metadata.totalUsage.outputTokens})
+                    {/* Display usage information if available */}
+                    {message.metadata?.totalUsage && (
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <span>
+                          Tokens: {message.metadata.totalUsage.totalTokens}
                         </span>
-                      )}
-                    </div>
-                  )}
+                        {message.metadata.totalUsage.inputTokens &&
+                          message.metadata.totalUsage.outputTokens && (
+                            <span className="text-muted-foreground">
+                              (In: {message.metadata.totalUsage.inputTokens},
+                              Out: {message.metadata.totalUsage.outputTokens})
+                            </span>
+                          )}
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </>

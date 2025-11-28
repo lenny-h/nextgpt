@@ -1,7 +1,7 @@
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { chats, messages } from "@workspace/server/drizzle/schema.js";
-import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 export async function getMessageById({ messageId }: { messageId: string }) {
@@ -48,7 +48,12 @@ export async function saveMessages({
     .values(messagesToInsert)
     .onConflictDoUpdate({
       target: messages.id,
-      set: messagesToInsert[0], // This will need adjustment based on your schema
+      set: {
+        chatId: sql`excluded.chat_id`,
+        role: sql`excluded.role`,
+        parts: sql`excluded.parts`,
+        metadata: sql`excluded.metadata`,
+      },
     })
     .returning();
 }

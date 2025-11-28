@@ -47,7 +47,7 @@ export function SourceBadge({ source, className }: SourceBadgeProps) {
     >
       <File size={10} className="text-primary" />
       <span className="text-foreground">
-        {source.fileName.split(".")[0]}, p.{source.pageIndex + 1}
+        {source.fileName}, p.{source.pageIndex + 1}
       </span>
     </Badge>
   );

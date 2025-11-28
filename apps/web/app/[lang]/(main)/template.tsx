@@ -54,7 +54,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel
-        className="flex h-svh flex-col"
+        className="flex h-svh min-w-0 flex-col"
         ref={panelRef}
         defaultSize={0}
         onResize={(size) => {

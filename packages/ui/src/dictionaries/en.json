@@ -26,6 +26,7 @@
     "INVALID_COURSE_KEY": "Invalid course key",
     "INVALID_CSV_FILE": "Invalid CSV file",
     "INVALID_EMAIL_DOMAIN": "Your email domain is not allowed to sign up",
+    "INVALID_FILENAME": "Filenames must not contain special characters and must have a valid extension",
     "LOAD_MORE_ERROR": "Failed to load more items",
     "NO_RESULTS": "No results found",
     "ONLY_SCHEDULED_TASKS": "Only tasks that have not yet started can be deleted",

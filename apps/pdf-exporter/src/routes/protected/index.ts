@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { POST as exportPdfPost } from "./export-pdf.js";
+import exportPdfRoute from "./export-pdf/route.js";
 
 const protectedApiRouter = new Hono();
 
-protectedApiRouter.post("/export-pdf", exportPdfPost);
+protectedApiRouter.route("/export-pdf", exportPdfRoute);
 
 export { protectedApiRouter };

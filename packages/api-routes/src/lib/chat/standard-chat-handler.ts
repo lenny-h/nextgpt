@@ -227,9 +227,8 @@ export class StandardChatHandler extends ChatHandler {
     writer.merge(
       result.toUIMessageStream({
         generateMessageId: generateUUID,
-        originalMessages: this.request.messages,
-        onFinish: async ({ messages }) => {
-          await this.saveResponseMessages(messages);
+        onFinish: async ({ responseMessage }) => {
+          await this.saveResponseMessages([responseMessage]);
         },
         messageMetadata: ({ part }) => {
           // Send total usage when generation is finished

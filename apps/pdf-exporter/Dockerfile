@@ -1,17 +1,13 @@
 FROM node:22-bookworm-slim AS base
 WORKDIR /app
+RUN corepack enable pnpm
 
 FROM base AS builder
-# Enable pnpm via corepack
-RUN corepack enable pnpm
 RUN npm install -g turbo
 COPY . .
 RUN turbo prune pdf-exporter --docker
 
-# Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-RUN corepack enable pnpm
-
 # First install dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
 RUN pnpm install --frozen-lockfile
@@ -22,10 +18,9 @@ COPY --from=builder /app/out/full/ .
 RUN pnpm turbo build
 
 FROM base AS runner
-RUN corepack enable pnpm
 
 # Install Playwright dependencies for Chromium only (minimal footprint)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -46,15 +41,24 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Don't run production as root
-RUN addgroup --system --gid 1001 playwright
-RUN adduser --system --uid 1001 playwright
+RUN addgroup --system --gid 1001 playwright \
+    && adduser --system --uid 1001 playwright
+
+# Set Playwright browsers path
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Make the directory for browsers
+RUN mkdir -p $PLAYWRIGHT_BROWSERS_PATH
 
 # Copy package files and install production dependencies only
 COPY --from=builder /app/out/json/ .
 RUN pnpm install --prod --frozen-lockfile
 
-# Install only Chromium browser for Playwright (smallest option)
-RUN npx playwright install chromium --with-deps
+# Install only Chromium browser for Playwright
+# We install as root to allow --with-deps to work (if needed), though we installed deps manually above.
+# We then chown the directory to the playwright user.
+RUN npx playwright install chromium --with-deps \
+    && chown -R playwright:playwright $PLAYWRIGHT_BROWSERS_PATH
 
 # Copy built application
 COPY --from=installer --chown=playwright:playwright /app/apps/pdf-exporter/dist ./apps/pdf-exporter/dist

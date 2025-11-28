@@ -33,7 +33,7 @@ const app = new Hono().get(
       decodeURIComponent(name)
     );
     if (!parsed.success) {
-      throw new HTTPException(400, { message: "BAD_REQUEST" });
+      throw new HTTPException(400, { message: "INVALID_FILENAME" });
     }
     const filename = parsed.data;
 

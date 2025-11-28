@@ -112,7 +112,7 @@ export abstract class ChatHandler {
 
     logger.debug("Saving response messages", {
       chatId: this.request.id,
-      messageCount: messages.length,
+      messages,
     });
     await saveMessages({
       chatId: this.request.id,

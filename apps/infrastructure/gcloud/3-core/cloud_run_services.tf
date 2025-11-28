@@ -200,7 +200,7 @@ resource "google_cloud_run_v2_service" "api" {
       }
       dynamic "env" {
         for_each = var.enable_sso ? {
-          "SSO_CLIENT_SECRET" = google_secret_manager_secret.sso_client_secret.secret_id
+          "SSO_CLIENT_SECRET" = google_secret_manager_secret.sso_client_secret[0].secret_id
         } : {}
         content {
           name = env.key
@@ -232,8 +232,8 @@ resource "google_cloud_run_v2_service" "api" {
       }
       dynamic "env" {
         for_each = var.use_cloudflare_r2 ? {
-          "CLOUDFLARE_ACCESS_KEY_ID"     = google_secret_manager_secret.cloudflare_r2_access_key_id.secret_id
-          "CLOUDFLARE_SECRET_ACCESS_KEY" = google_secret_manager_secret.cloudflare_r2_secret_access_key.secret_id
+          "CLOUDFLARE_ACCESS_KEY_ID"     = google_secret_manager_secret.cloudflare_r2_access_key_id[0].secret_id
+          "CLOUDFLARE_SECRET_ACCESS_KEY" = google_secret_manager_secret.cloudflare_r2_secret_access_key[0].secret_id
         } : {}
         content {
           name = env.key
@@ -247,7 +247,7 @@ resource "google_cloud_run_v2_service" "api" {
       }
       dynamic "env" {
         for_each = var.use_firecrawl ? {
-          "FIRECRAWL_API_KEY" = google_secret_manager_secret.firecrawl_api_key.secret_id
+          "FIRECRAWL_API_KEY" = google_secret_manager_secret.firecrawl_api_key[0].secret_id
         } : {}
         content {
           name = env.key
@@ -281,7 +281,7 @@ resource "google_cloud_run_v2_service" "api" {
     }
 
     max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    timeout                          = "60s"
   }
 
   traffic {
@@ -410,7 +410,7 @@ resource "google_cloud_run_v2_service" "document_processor" {
     }
 
     max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    timeout                          = "60s"
   }
 
   lifecycle {
@@ -578,7 +578,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     }
 
     max_instance_request_concurrency = 30
-    timeout                          = "30s"
+    timeout                          = "60s"
 
     scaling {
       min_instance_count = 0
