@@ -8,9 +8,11 @@ This folder sets up the networking infrastructure, databases, and the DB migrato
 - Private service connection for GCP services
 - Cloud SQL PostgreSQL database (18) with private IP
 - Redis instance in the VPC
-- Secret Manager secrets for sensitive configuration
+- Secret Manager secrets for sensitive configuration (database password)
 - DB Migrator Cloud Run job
-- IAM roles and service accounts
+- IAM roles and service accounts:
+  - DB Migrator service account
+  - CI/CD service account for GitHub Actions deployments
 
 ## Dependencies
 
@@ -63,6 +65,10 @@ This module exports:
 - Redis connection information
 - Secret Manager secret IDs
 - Service account details
+- GitHub Actions configuration:
+  - CI/CD service account key (for GCP_SA_KEY secret)
+  - Repository variables (PROJECT_ID, REGION, REGISTRY, REPOSITORY)
+  - Setup instructions
 
 These outputs are used by subsequent infrastructure layers (3-core, 4-core-with-firecrawl).
 

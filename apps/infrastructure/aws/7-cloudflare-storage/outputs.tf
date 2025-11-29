@@ -4,7 +4,7 @@ output "setup_instructions" {
     
     📋 CLOUDFLARE R2 STORAGE SETUP COMPLETE
     
-    ✅ Created two R2 buckets: ${cloudflare_r2_bucket.files_bucket.name} and ${cloudflare_r2_bucket.temporary_files_bucket.name}
+    ✅ Created two R2 buckets: ${cloudflare_r2_bucket.files.name} and ${cloudflare_r2_bucket.temporary_files.name}
     
     📝 Next Steps:
     

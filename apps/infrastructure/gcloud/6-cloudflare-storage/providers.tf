@@ -11,4 +11,10 @@ terraform {
     }
   }
   required_version = ">= 1.0"
+
+  # Uncomment the following block to use GCS remote state management
+  # backend "gcs" {
+  #   bucket = "your-project-terraform-state"
+  #   prefix = "terraform/state/6-cloudflare-storage"
+  # }
 }

@@ -43,7 +43,16 @@ terraform apply
 
 ## Outputs
 
-This module exports networking, database, and IAM resources that will be imported by subsequent infrastructure layers.
+This module exports:
+
+- Networking resources (VPC, Subnets, Security Groups)
+- Database resources (RDS endpoint, Redis endpoint)
+- ECS Cluster details
+- IAM Roles (Task Execution Role, Task Role)
+- Secrets Manager ARNs
+- GitHub Variables and Setup Instructions
+
+These will be imported by subsequent infrastructure layers or used to configure GitHub Actions.
 
 ## Next Step
 

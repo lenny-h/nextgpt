@@ -39,7 +39,7 @@ if [ ${#FILTER_SERVICES[@]} -gt 0 ]; then
 else
   SERVICES=("api" "pdf-exporter" "document-processor" "db-migrator")
   if [ "$SKIP_FIRECRAWL" = false ]; then
-    SERVICES+=("firecrawl-api" "playwright-service")
+    SERVICES+=("firecrawl-api" "firecrawl-playwright")
     echo "Including Firecrawl services in build..."
   else
     echo "Skipping Firecrawl services..."
@@ -52,7 +52,7 @@ for SERVICE in "${SERVICES[@]}"; do
   # Define the original local image name and the cloud repository image name
   if [ "$SERVICE" == "firecrawl-api" ]; then
     CLOUD_IMAGE="$REPO/firecrawl-api:latest"
-  elif [ "$SERVICE" == "playwright-service" ]; then
+  elif [ "$SERVICE" == "firecrawl-playwright" ]; then
     CLOUD_IMAGE="$REPO/firecrawl-playwright:latest"
   else
     CLOUD_IMAGE="$REPO/$SERVICE:latest"
@@ -60,7 +60,7 @@ for SERVICE in "${SERVICES[@]}"; do
 
   # Build the image with its original name if it doesn't exist
   if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^$CLOUD_IMAGE$"; then
-    if [ "$SERVICE" == "firecrawl-api" ] || [ "$SERVICE" == "playwright-service" ]; then
+    if [ "$SERVICE" == "firecrawl-api" ] || [ "$SERVICE" == "firecrawl-playwright" ]; then
       echo "Error: $CLOUD_IMAGE must exist locally. Please build it first."
       exit 1
     else

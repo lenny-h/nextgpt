@@ -23,7 +23,7 @@ else {
     $Services = @("api", "pdf-exporter", "document-processor", "db-migrator")
 
     if (-not $SkipFirecrawl) {
-        $Services += @("firecrawl-api", "playwright-service")
+        $Services += @("firecrawl-api", "firecrawl-playwright")
         Write-Host "Including Firecrawl services in build..." -ForegroundColor Yellow
     }
     else {
@@ -46,7 +46,7 @@ foreach ($Service in $Services) {
         "firecrawl-api" {
             $CloudImage = "$Repo/firecrawl-api:latest"
         }
-        "playwright-service" {
+        "firecrawl-playwright" {
             $CloudImage = "$Repo/firecrawl-playwright:latest"
         }
         default {
@@ -58,7 +58,7 @@ foreach ($Service in $Services) {
     $imageExists = docker images --format "{{.Repository}}:{{.Tag}}" | Select-String -Pattern "^$([regex]::Escape($CloudImage))$" -Quiet
     
     if (-not $imageExists) {
-        if ($Service -eq "firecrawl-api" -or $Service -eq "playwright-service") {
+        if ($Service -eq "firecrawl-api" -or $Service -eq "firecrawl-playwright") {
             Write-Error "Error: $CloudImage must exist locally. Please build it first."
             exit 1
         }

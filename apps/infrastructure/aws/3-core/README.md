@@ -14,7 +14,6 @@ This folder sets up the core application services without Firecrawl integration.
 - **SQS queue** for document processing
 - **EventBridge Scheduler** for scheduled tasks
 - **Service Discovery** namespace for internal communication
-- **S3 bucket** for temporary files (1-day retention)
 - **GitHub Actions OIDC** role for CI/CD
 
 ## Dependencies
@@ -61,6 +60,19 @@ terraform output load_balancer_dns_name
 # Add this to your GitHub repository variables
 terraform output github_actions_role_arn
 ```
+
+## Outputs
+
+This module exports:
+
+- Load Balancer DNS name and ARN
+- SSL Certificate ARN and validation records
+- ECS Service and Task Definition details
+- SQS Queue URL
+- IAM Role ARNs
+- Setup Instructions (DNS, GitHub Variables)
+
+Run `terraform output setup_instructions` to see detailed next steps.
 
 ## Important Notes
 

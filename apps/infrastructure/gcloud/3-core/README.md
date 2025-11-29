@@ -12,13 +12,13 @@ This folder sets up the core application services without Firecrawl integration.
 - **IAM roles and policies** for all services
 - **Cloud Tasks queue** for document processing
 - **Service accounts** with least-privilege permissions
-- **GitHub Actions CI/CD** service account for deployments
+- **Secret Manager secrets** for application configuration (auth, OAuth, R2, encryption, etc.)
 
 ## Dependencies
 
 This module imports state from:
 
-- `2-db-storage` - VPC, subnets, database endpoints, Redis, secrets, and temporary files bucket
+- `2-db-storage` - VPC, subnets, database endpoints, Redis, and secrets
 
 ## Usage
 
@@ -51,17 +51,7 @@ terraform output dns_a_record
 terraform output load_balancer_ip
 ```
 
-5. Configure GitHub Actions:
-
-```bash
-# Add this as GCP_SA_KEY to GitHub repository secrets
-terraform output -raw github_secret > sa-key.json
-
-# Add these as GitHub repository variables
-terraform output github_variables
-```
-
-6. Run database migrations:
+5. Run database migrations:
 
 After deployment and DNS configuration, run the DB migrator job from `2-db-storage`:
 

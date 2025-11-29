@@ -5,6 +5,7 @@ This folder sets up Cloudflare R2 for permanent file storage.
 ## What it provisions
 
 - **Cloudflare R2 bucket** for permanent file storage
+- **Cloudflare R2 bucket** for temporary file storage
 - R2 is S3-compatible and often more cost-effective than AWS S3
 
 ## Dependencies
@@ -39,6 +40,12 @@ cp terraform.tfvars.example terraform.tfvars
 ```bash
 terraform apply
 ```
+
+## Outputs
+
+This module exports:
+
+- Setup Instructions for R2 API tokens and app configuration
 
 ## Important Notes
 

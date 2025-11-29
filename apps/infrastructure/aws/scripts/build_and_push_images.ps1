@@ -39,7 +39,7 @@ else {
     $Services = @("api", "pdf-exporter", "document-processor", "db-migrator")
 
     if (-not $SkipFirecrawl) {
-        $Services += @("firecrawl-api", "playwright-service")
+        $Services += @("firecrawl-api", "firecrawl-playwright")
         Write-Host "Including Firecrawl services in build..." -ForegroundColor Yellow
     }
     else {
@@ -57,24 +57,14 @@ if ($LASTEXITCODE -ne 0) {
 foreach ($Service in $Services) {
     Write-Host "Building and pushing $Service..." -ForegroundColor Green
 
-    # Define the original local image name and the ECR image name
-    switch ($Service) {
-        "firecrawl-api" {
-            $EcrImage = "$Repo/firecrawl-api:latest"
-        }
-        "playwright-service" {
-            $EcrImage = "$Repo/playwright-service:latest"
-        }
-        default {
-            $EcrImage = "$Repo/${Service}:latest"
-        }
-    }
+    # Define the ECR image name
+    $EcrImage = "$Repo/${Service}:latest"
 
     # Build the image with its original name if it doesn't exist
     $imageExists = docker images --format "{{.Repository}}:{{.Tag}}" | Select-String -Pattern "^$([regex]::Escape($EcrImage))$" -Quiet
     
     if (-not $imageExists) {
-        if ($Service -eq "firecrawl-api" -or $Service -eq "playwright-service") {
+        if ($Service -eq "firecrawl-api" -or $Service -eq "firecrawl-playwright") {
             Write-Error "Error: $EcrImage must exist locally. Please build it first."
             exit 1
         }

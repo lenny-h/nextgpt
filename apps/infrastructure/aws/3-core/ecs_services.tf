@@ -286,8 +286,8 @@ resource "aws_ecs_task_definition" "document_processor" {
   family                   = "${var.aws_project_name}-document-processor"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512"
-  memory                   = "1024"
+  cpu                      = "2048"
+  memory                   = "2048"
   execution_role_arn       = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.document_processor_task.arn
 
