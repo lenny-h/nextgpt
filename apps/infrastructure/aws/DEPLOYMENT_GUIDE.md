@@ -140,6 +140,9 @@ aws_region       = "us-east-1"
 
 # Database password (generate a secure random string)
 database_password = "your-secure-database-password"
+
+# Set to true if you plan to deploy 4-core-with-firecrawl, false for 3-core
+use_firecrawl = true
 ```
 
 Deploy:

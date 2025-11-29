@@ -58,7 +58,27 @@ resource "aws_ecs_task_definition" "firecrawl_api" {
       },
       {
         name  = "ENV"
-        value = "local"
+        value = "production"
+      },
+      {
+        name  = "LOGGING_LEVEL"
+        value = "error"
+      },
+      {
+        name  = "FIRECRAWL_LOGGING_LEVEL"
+        value = "error"
+      },
+      {
+        name  = "MAX_CPU"
+        value = "0.95"
+      },
+      {
+        name  = "MAX_RAM"
+        value = "0.95"
+      },
+      {
+        name  = "SYS_INFO_MAX_CACHE_DURATION"
+        value = "1500"
       },
       {
         name  = "REDIS_URL"

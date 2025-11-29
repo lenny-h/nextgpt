@@ -41,6 +41,12 @@ cp terraform.tfvars.example terraform.tfvars
 terraform apply
 ```
 
+4. Follow the output instructions for setting up GitHub Actions:
+
+```bash
+terraform output setup_instructions
+```
+
 ## Outputs
 
 This module exports:

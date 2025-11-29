@@ -157,7 +157,7 @@ resource "google_cloud_run_v2_service" "api" {
       }
       env {
         name  = "FIRECRAWL_API_URL"
-        value = "something" # google_cloud_run_v2_service.firecrawl_api.uri
+        value = google_cloud_run_v2_service.firecrawl_api.uri
       }
 
       # Sensitive secrets from Secret Manager
@@ -282,7 +282,7 @@ resource "google_cloud_run_v2_service" "api" {
     google_project_service.run,
     google_service_account.api_sa,
     google_cloud_tasks_queue.document_processing_queue,
-    # google_cloud_run_v2_service.firecrawl_api,
+    google_cloud_run_v2_service.firecrawl_api,
     google_secret_manager_secret_version.better_auth_secret,
     google_secret_manager_secret_version.resend_api_key,
     google_secret_manager_secret_version.encryption_key
