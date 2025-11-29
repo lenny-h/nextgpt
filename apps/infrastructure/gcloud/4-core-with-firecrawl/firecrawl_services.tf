@@ -69,10 +69,16 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
         }
       }
 
+      # Reduce parallel workers to lower memory usage
+      env {
+        name  = "NUQ_WORKER_COUNT"
+        value = "2"
+      }
+
       resources {
         limits = {
           cpu    = "2"
-          memory = "2Gi"
+          memory = "6Gi"
         }
       }
     }
@@ -89,7 +95,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
       max_instance_count = 5
     }
 
-    max_instance_request_concurrency = 80
+    max_instance_request_concurrency = 40
     timeout                          = "60s"
   }
 

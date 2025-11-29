@@ -1,11 +1,5 @@
-# AWS Configuration
-aws_project_name = "my-project"
-aws_region       = "us-east-1"
-
-# Site Configuration
-site_url = "example.com"
-
-# Cloudflare Configuration
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
-r2_location           = "enam" # specific location like "wnam", "enam", "weur", "eeur", "apac"
+r2_location           = "weur" # specific location like "wnam", "enam", "weur", "eeur", "apac"
+
+site_url = "example.com"
