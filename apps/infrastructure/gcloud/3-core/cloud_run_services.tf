@@ -295,7 +295,14 @@ resource "google_cloud_run_v2_service" "api" {
     ]
   }
 
-  depends_on = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.api_sa,
+    google_cloud_tasks_queue.document_processing_queue,
+    google_secret_manager_secret_version.better_auth_secret,
+    google_secret_manager_secret_version.resend_api_key,
+    google_secret_manager_secret_version.encryption_key
+  ]
 }
 
 # Document Processor Service
@@ -419,7 +426,11 @@ resource "google_cloud_run_v2_service" "document_processor" {
     ]
   }
 
-  depends_on = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.document_processor_sa,
+    google_secret_manager_secret_version.encryption_key
+  ]
 }
 
 # PDF Exporter Service
@@ -604,7 +615,11 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     ]
   }
 
-  depends_on = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.pdf_exporter_sa,
+    google_secret_manager_secret_version.better_auth_secret
+  ]
 }
 
 # Allow the document processor service account to be invoked by Cloud Tasks

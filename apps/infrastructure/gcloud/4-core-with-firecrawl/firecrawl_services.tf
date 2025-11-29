@@ -104,7 +104,12 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.firecrawl_api_sa,
+    google_cloud_run_v2_service.firecrawl_playwright
+  ]
+
   deletion_protection = false
 }
 
@@ -152,7 +157,11 @@ resource "google_cloud_run_v2_service" "firecrawl_playwright" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.firecrawl_playwright_sa
+  ]
+
   deletion_protection = false
 }
 

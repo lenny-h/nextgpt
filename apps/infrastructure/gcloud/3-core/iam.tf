@@ -47,18 +47,30 @@ resource "google_secret_manager_secret_iam_member" "api_db_password_accessor" {
   secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
+
+  depends_on = [google_service_account.api_sa]
 }
 
 resource "google_secret_manager_secret_iam_member" "api_better_auth_secret_accessor" {
   secret_id = google_secret_manager_secret.better_auth_secret.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
+
+  depends_on = [
+    google_service_account.api_sa,
+    google_secret_manager_secret_version.better_auth_secret
+  ]
 }
 
 resource "google_secret_manager_secret_iam_member" "api_resend_api_key_accessor" {
   secret_id = google_secret_manager_secret.resend_api_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
+
+  depends_on = [
+    google_service_account.api_sa,
+    google_secret_manager_secret_version.resend_api_key
+  ]
 }
 
 resource "google_secret_manager_secret_iam_member" "api_r2_access_key_accessor" {
@@ -79,6 +91,11 @@ resource "google_secret_manager_secret_iam_member" "api_encryption_key_accessor"
   secret_id = google_secret_manager_secret.encryption_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_sa.email}"
+
+  depends_on = [
+    google_service_account.api_sa,
+    google_secret_manager_secret_version.encryption_key
+  ]
 }
 
 resource "google_secret_manager_secret_iam_member" "api_google_client_secret_accessor" {
@@ -124,12 +141,19 @@ resource "google_secret_manager_secret_iam_member" "document_processor_db_passwo
   secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
+
+  depends_on = [google_service_account.document_processor_sa]
 }
 
 resource "google_secret_manager_secret_iam_member" "document_processor_encryption_key_accessor" {
   secret_id = google_secret_manager_secret.encryption_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.document_processor_sa.email}"
+
+  depends_on = [
+    google_service_account.document_processor_sa,
+    google_secret_manager_secret_version.encryption_key
+  ]
 }
 
 resource "google_secret_manager_secret_iam_member" "document_processor_r2_access_key_accessor" {
@@ -161,12 +185,19 @@ resource "google_secret_manager_secret_iam_member" "pdf_exporter_db_password_acc
   secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+
+  depends_on = [google_service_account.pdf_exporter_sa]
 }
 
 resource "google_secret_manager_secret_iam_member" "pdf_exporter_better_auth_secret_accessor" {
   secret_id = google_secret_manager_secret.better_auth_secret.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.pdf_exporter_sa.email}"
+
+  depends_on = [
+    google_service_account.pdf_exporter_sa,
+    google_secret_manager_secret_version.better_auth_secret
+  ]
 }
 
 resource "google_secret_manager_secret_iam_member" "pdf_exporter_google_client_secret_accessor" {

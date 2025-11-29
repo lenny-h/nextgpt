@@ -22,4 +22,6 @@ resource "google_cloud_tasks_queue" "document_processing_queue" {
     max_backoff        = "600s"
     max_doublings      = 5
   }
+
+  depends_on = [google_project_service.cloud_tasks]
 }
