@@ -56,6 +56,11 @@ resource "google_sql_database_instance" "postgres" {
 
     # Database flags for PostgreSQL optimization
     database_flags {
+      name  = "cloudsql.enable_pg_cron"
+      value = "on"
+    }
+
+    database_flags {
       name  = "max_connections"
       value = "100"
     }

@@ -56,28 +56,11 @@ After the bucket is created:
 - Create a new API token with Object Read & Write permissions for your bucket
 - Save the Access Key ID and Secret Access Key
 
-5. Update your core infrastructure secrets:
-
-Add the R2 credentials to `2-db-storage/terraform.tfvars`:
-
-```
-cloudflare_access_key_id     = "your-access-key-id"
-cloudflare_secret_access_key = "your-secret-access-key"
-```
-
-Then apply the changes to `2-db-storage`:
+5. Follow the output instructions for updating the api and document-processor services:
 
 ```bash
-cd ../2-db-storage
-terraform apply
+terraform output setup_instructions
 ```
-
-6. Update your application configuration:
-
-Ensure your core infrastructure (3-core or 4-core-with-firecrawl) has:
-
-- `use_cloudflare_r2 = true`
-- `r2_endpoint = "https://YOUR-ACCOUNT-ID.r2.cloudflarestorage.com"`
 
 ## Important Notes
 

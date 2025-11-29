@@ -12,5 +12,4 @@ variable "cloudflare_api_token" {
 variable "r2_location" {
   type        = string
   description = "Cloudflare R2 location"
-  default     = "auto"
 }

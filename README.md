@@ -35,7 +35,7 @@ API, PDF Exporter, Web, and Dashboard services can also be started using `pnpm r
 - Docker and Docker Compose installed
 - Custom Docker images built:
   - `firecrawl-postgres:latest` - PostgreSQL with pgvector and pg_cron extensions
-  - `firecrawl:latest` - Firecrawl API service (if using Firecrawl)
+  - `firecrawl-api:latest` - Firecrawl API service (if using Firecrawl)
   - `firecrawl-playwright:latest` - Playwright service (if using Firecrawl)
 - Access to the drizzle migrations in `packages/server/src/drizzle`
 

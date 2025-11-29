@@ -42,7 +42,7 @@ terraform apply
 4. Follow the output instructions for setting up GitHub Actions:
 
 ```bash
-terraform output github_setup_instructions
+terraform output setup_instructions
 ```
 
 ## Important Notes
@@ -58,7 +58,7 @@ This module exports:
 
 - VPC network and subnet information
 - Database connection details (private IP)
-- Redis connection information
+- Redis connection details
 - Secret Manager secret IDs
 - Service account details
 - GitHub Actions configuration:

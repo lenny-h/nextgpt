@@ -14,15 +14,13 @@ output "setup_instructions" {
        - Create API Token with Object Read & Write permissions
        - Save the Access Key ID and Secret Access Key
     
-    2️⃣ Update your secrets in 2-db-storage
+    2️⃣ Update your secrets in 3-core or 4-core-with-firecrawl:
        Add the R2 credentials to terraform.tfvars:
        - cloudflare_access_key_id
        - cloudflare_secret_access_key
     
-    3️⃣ Update your application configuration
-       Set these environment variables:
-       - USE_CLOUDFLARE_R2=true
-       - R2_ENDPOINT=https://${var.cloudflare_account_id}.r2.cloudflarestorage.com
+    3️⃣ Terraform Apply
+       Re-run 'terraform apply' in your 3-core or 4-core-with-firecrawl directory to update the infrastructure with the new R2 credentials.
     
   EOT
 }

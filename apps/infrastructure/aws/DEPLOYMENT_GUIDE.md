@@ -77,21 +77,6 @@ terraform apply
 
 ### Step 2: Build and Push Docker Images
 
-```bash
-cd ../scripts
-
-# Get your configuration
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REGION="us-east-1"  # Your AWS region
-PROJECT_NAME="your-project-name"
-
-# Build and push all images
-bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME
-
-# If NOT using Firecrawl:
-bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME --skip-firecrawl
-```
-
 #### Building Firecrawl Images
 
 If you're using Firecrawl (not skipping with `--skip-firecrawl`), you must first build the Firecrawl images locally before running the script. The images must be built for `linux/arm64` platform:
@@ -112,6 +97,23 @@ cd apps/playwright-service
 docker buildx build --platform linux/arm64 \
   -t $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$PROJECT_NAME/firecrawl-playwright:latest .
 cd ../..
+```
+
+#### Build and Push All Images
+
+```bash
+cd ../scripts
+
+# Get your configuration
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REGION="us-east-1"  # Your AWS region
+PROJECT_NAME="your-project-name"
+
+# Build and push all images
+bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME
+
+# If NOT using Firecrawl:
+bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME --skip-firecrawl
 ```
 
 Verify images were pushed:
@@ -504,7 +506,7 @@ site_url              = "example.com"
 
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
-r2_location           = "auto"  # or specific location like "wnam", "enam", "weur", "eeur", "apac"
+r2_location           = "enam" # specific location like "wnam", "enam", "weur", "eeur", "apac"
 ```
 
 **IMPORTANT**: Update `providers.tf` if you deployed 4-core-with-firecrawl (same as Option A).

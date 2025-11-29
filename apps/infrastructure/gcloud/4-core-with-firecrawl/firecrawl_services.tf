@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
     service_account = google_service_account.firecrawl_api_sa.email
 
     containers {
-      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl:latest"
+      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl-api:latest"
       ports {
         container_port = 8080
       }
@@ -60,7 +60,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
 
       # Database password secret
       env {
-        name = "DATABASE_PASSWORD"
+        name = "PGPASSWORD"
         value_source {
           secret_key_ref {
             secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
