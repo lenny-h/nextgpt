@@ -39,14 +39,10 @@ cp terraform.tfvars.example terraform.tfvars
 terraform apply
 ```
 
-4. Run database migrations:
-
-After deployment, run the DB migrator job:
+4. Follow the output instructions for setting up GitHub Actions:
 
 ```bash
-gcloud run jobs execute db-migrator \
-  --region=YOUR_REGION \
-  --project=YOUR_PROJECT_ID
+terraform output github_setup_instructions
 ```
 
 ## Important Notes

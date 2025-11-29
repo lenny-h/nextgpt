@@ -46,21 +46,10 @@ cp terraform.tfvars.example terraform.tfvars
 terraform apply
 ```
 
-4. Configure DNS:
+4. Follow the output instructions for DNS and frontend setup.
 
 ```bash
-# Get DNS validation records for SSL certificate
-terraform output dns_validation_records
-
-# Add CNAME record pointing api.your-domain.com to the ALB DNS name
-terraform output load_balancer_dns_name
-```
-
-5. Configure GitHub Actions:
-
-```bash
-# Add this to your GitHub repository variables
-terraform output github_actions_role_arn
+terraform output setup_instructions
 ```
 
 ## Outputs
@@ -73,8 +62,6 @@ This module exports:
 - SQS Queue URL
 - IAM Role ARNs
 - Setup Instructions (DNS, GitHub Variables)
-
-Run `terraform output setup_instructions` to see detailed next steps.
 
 ## Important Notes
 
