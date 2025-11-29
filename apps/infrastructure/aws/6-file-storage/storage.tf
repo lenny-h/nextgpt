@@ -103,11 +103,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "temporary_files" {
   bucket = aws_s3_bucket.temporary_files.id
 
   rule {
-    id     = "delete-after-30-days"
+    id     = "delete-after-1-day"
     status = "Enabled"
 
     expiration {
-      days = 30
+      days = 1
     }
   }
 }

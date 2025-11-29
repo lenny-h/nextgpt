@@ -1,4 +1,16 @@
-# Local Docker Setup
+# NextGPT
+
+NextGPT is a platform designed to deploy a secure AI interface with integrated document and web search capabilities on one of the major cloud providers (Google Cloud, Azure (not supported yet), and AWS). Its primary mission is to give enterprises more control and sovereignty over their data by allowing them to host their own AI infrastructure. This monorepo integrates a modern Next.js web application, a robust API, and a suite of specialized microservices for document processing, PDF generation, and web scraping (via Firecrawl). The architecture leverages PostgreSQL with `pgvector` for efficient vector embeddings, enabling powerful semantic search and Retrieval-Augmented Generation (RAG) capabilities.
+
+## Hosted on Google Cloud
+
+Follow the instructions in the `apps/infrastructure/gcloud/DEPLOYMENT_GUIDE.md` file to deploy the application to Google Cloud.
+
+## Hosted on AWS
+
+Follow the instructions in the `apps/infrastructure/aws/DEPLOYMENT_GUIDE.md` file to deploy the application to AWS.
+
+## Local Docker Setup
 
 The Docker Compose in this directory allows you to run all services locally for testing purposes.
 
@@ -106,12 +118,32 @@ The `.env` file in the root directory contains all the necessary environment var
 
 ## Quick Start
 
-1. **Build the custom PostgreSQL image** (if not already built):
+1. **Build Docker images required for Firecrawl** (if you want to use firecrawl):
+
+   a. **Build firecrawl-postgres** (PostgreSQL with pgvector and pg_cron extensions):
 
    ```bash
    cd apps/postgres
    docker build -t firecrawl-postgres .
    cd ../..
+   ```
+
+   b. **Clone the official Firecrawl repository and build firecrawl-api and firecrawl-playwright**:
+
+   ```bash
+   # Clone the official Firecrawl repository
+   git clone https://github.com/firecrawl/firecrawl.git
+   cd firecrawl
+
+   # Build the Docker images
+   cd api
+   docker build -t firecrawl-api .
+
+   cd ../playwright-service
+   docker build -t firecrawl-playwright .
+
+   # Return to the project root
+   cd ..
    ```
 
 2. **Copy the environment file**:
@@ -546,141 +578,3 @@ docker-compose up -d
 - The `USE_LOCAL_FILE_STORAGE` flag determines whether to use MinIO (true) or cloud storage (false)
 - If using cloud storage, the `USE_CLOUDFLRARE_R2` flag determines whether Cloudflare R2 or the configured cloud storage is used
 - The `USE_OPENAI_API` flag determines whether to use OpenAI's API. If false, the api from the configured cloud provider is used.
-
-# Hosted on Google Cloud
-
-The setup can be hosted on Google Cloud by following the following steps (in the given order):
-
-1. **Create a new project on Google Cloud** and note the project ID. Enable the Artifact Registry API and create an artifact repository named `app-artifact-repository` in your desired region (e.g., `europe-west1`).
-
-2. **Build and push Docker images** Run the provided shell script from the root directory to build and push all necessary Docker images:
-
-   ```bash
-   bash apps/infrastructure/gcloud/scripts/build_and_push_images.sh <project_id> <region>
-   ```
-
-   Replace `<project_id>` with your Google Cloud project ID and `<region>` with your desired Google Cloud region (e.g., `europe-west1`).
-
-3. **Create a cloudflare account** and add your domain in the overview page.
-4. **Install gcloud, terraform and psql** If you are on MacOS, you can use the following commands:
-
-   ```bash
-   brew install gcloud
-   brew install terraform
-   ```
-
-   If you are on Windows, you can use the following commands (requires winget):
-
-   ```bash
-   winget install Google.Cloud.SDK
-   winget install HashiCorp.Terraform
-   ```
-
-   If you are on Linux, you know what to do 😉.
-
-5. **Set env variables** Copy the apps/infrastructure/terraform.tfvars.example file and rename the copy to apps/infrastructure/terraform.tfvars. Edit the file and set the variables to your desired values.
-6. **Deploy infrastructure** Make sure terraform is installed, then run `terraform init` and `terraform apply` in apps/infrastructure/gcloud. This will deploy the infrastructure and may take a while to complete. Be aware that the deployed infrastructure will incur costs. Check billing in the console of the cloud provider and set budgets/limits. You can always destroy the infrastructure using `terraform destroy`. However, this will delete all data in the database. If you want to keep the data, you can do so on the cloud provider console.
-7. **Add DNS record** Add the DNS records mentioned in the output of the terraform apply command to your Cloudflare DNS settings.
-8. **Create a new GitHub repository** and configure secrets and variables:
-
-   **GitHub Secrets** (Settings > Secrets and variables > Actions > Secrets):
-   - `CLOUDFLARE_API_TOKEN` - A Cloudflare API token with permissions to edit Cloudflare Workers and Cloudflare R2 storage
-   - `GCP_SA_KEY` - The private key of the CI/CD service account (get this by running `terraform output -raw github_secret`)
-
-   **GitHub Variables** (Settings > Secrets and variables > Actions > Variables):
-   - `SITE_URL` - Your domain name (e.g., `yourdomain.com`)
-   - `PROJECT_ID` - The Google Cloud project ID you obtained in step 1
-   - `REGION` - The Google Cloud region (e.g., `europe-west1`)
-   - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID (found in the Cloudflare dashboard overview)
-   - `R2_ENDPOINT` - The Cloudflare R2 endpoint (e.g., `https://<account_id>.r2.cloudflarestorage.com`)
-   - `ENABLE_EMAIL_SIGNUP` - Set to `"true"` or `"false"`
-   - `ENABLE_OAUTH_LOGIN` - Set to `"true"` or `"false"`
-   - `ENABLE_SSO` - Set to `"true"` or `"false"`
-   - `CSP_ENDPOINTS` - Content Security Policy endpoints (optional)
-
-9. **Adapt wrangler.toml files** Change the domain in `apps/web/wrangler.toml` and `apps/dashboard/wrangler.toml` to your domain.
-
-10. **Push to GitHub** Push your code to GitHub, which will trigger the GitHub Actions workflows. The workflows will:
-    - Run database migrations
-    - Deploy web and dashboard apps to Cloudflare Workers
-    - Deploy api, document-processor, and pdf-exporter to Google Cloud Run
-
-# Hosted on AWS
-
-The setup can also be hosted on AWS by following these steps (in the given order):
-
-1. **Create an AWS account** and note your account ID. Ensure you have the necessary permissions to create resources.
-
-2. **Create a Cloudflare account** and add your domain in the overview page.
-
-3. **Install AWS CLI and Terraform**:
-
-   If you are on MacOS:
-
-   ```bash
-   brew install awscli
-   brew install terraform
-   ```
-
-   If you are on Windows (requires winget):
-
-   ```bash
-   winget install Amazon.AWSCLI
-   winget install HashiCorp.Terraform
-   ```
-
-   If you are on Linux, you know what to do 😉.
-
-4. **Configure AWS CLI**:
-
-   ```bash
-   aws configure
-   ```
-
-   Enter your AWS Access Key ID, Secret Access Key, default region, and output format.
-
-5. **Set environment variables** Copy the `apps/infrastructure/aws/terraform.tfvars.example` file and rename the copy to `apps/infrastructure/aws/terraform.tfvars`. Edit the file and set the variables to your desired values.
-
-6. **Deploy infrastructure** Make sure Terraform is installed, then run the following commands:
-
-   ```bash
-   cd apps/infrastructure/aws
-   terraform init
-   terraform apply
-   ```
-
-   This will deploy the infrastructure and may take a while to complete. The deployed infrastructure will incur costs. Check billing in the AWS Console and set budgets/limits. You can always destroy the infrastructure using `terraform destroy`. However, this will delete all data in the database. If you want to keep the data, create a snapshot before destroying.
-
-7. **Add DNS records**:
-
-   a. **SSL Validation Records**: Run `terraform output dns_ssl_validation` and add the displayed DNS records to your Cloudflare DNS settings. Wait 5-10 minutes for validation.
-
-   b. **CNAME Record**: Run `terraform output dns_cname_record` and add the displayed CNAME record to your Cloudflare DNS settings. This points `api.yourdomain.com` to your AWS load balancer.
-
-8. **Create a new GitHub repository** and configure secrets and variables:
-
-   **GitHub Secrets** (Settings > Secrets and variables > Actions > Secrets):
-   - `CLOUDFLARE_API_TOKEN` - A Cloudflare API token with permissions to edit Cloudflare Workers and Cloudflare R2 storage
-
-   **GitHub Variables** (Settings > Secrets and variables > Actions > Variables):
-   - `SITE_URL` - Your domain name (e.g., `yourdomain.com`)
-   - `AWS_PROJECT_NAME` - The AWS project name you set in terraform.tfvars
-   - `AWS_REGION` - The AWS region (e.g., `us-east-1`)
-   - `AWS_ROLE_TO_ASSUME` - The GitHub Actions IAM role ARN (get this by running `terraform output github_variables`)
-   - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-   - `R2_ENDPOINT` - The Cloudflare R2 endpoint (e.g., `https://<account_id>.r2.cloudflarestorage.com`)
-   - `ENABLE_EMAIL_SIGNUP` - Set to `"true"` or `"false"`
-   - `ENABLE_OAUTH_LOGIN` - Set to `"true"` or `"false"`
-   - `ENABLE_SSO` - Set to `"true"` or `"false"`
-   - `CSP_ENDPOINTS` - Content Security Policy endpoints (optional)
-
-9. **Configure GitHub OIDC for AWS**:
-
-   GitHub Actions uses OpenID Connect (OIDC) to authenticate with AWS. This is already configured by Terraform. You just need to ensure your repository has the correct variables set in step 8.
-
-10. **Adapt wrangler.toml files** Change the domain in `apps/web/wrangler.toml` and `apps/dashboard/wrangler.toml` to your domain.
-
-11. **Push to GitHub** Push your code to GitHub, which will trigger the GitHub Actions workflows. The workflows will:
-    - Run database migrations
-    - Deploy web and dashboard apps to Cloudflare Workers
-    - Deploy api, document-processor, and pdf-exporter to AWS ECS (Elastic Container Service)

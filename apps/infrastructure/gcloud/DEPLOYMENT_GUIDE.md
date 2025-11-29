@@ -10,6 +10,8 @@ Complete step-by-step guide for deploying your application on Google Cloud Platf
 - **Terraform**: >= 1.0 [Download](https://www.terraform.io/downloads)
 - **Docker**: [Install Guide](https://docs.docker.com/get-docker/)
 - **Git**: For cloning the repository
+- **GitHub**: For running github actions
+- **Cloudflare Account**: If using Cloudflare R2 for storage
 
 ### Google Cloud Setup (this can also be done in the GCP Console)
 
@@ -123,7 +125,7 @@ Push the code to github, and run the migrations github action (if it doesn't run
 
 ```bash
 # Get the job name
-JOB_NAME=$(terraform output -raw db_migrator_job_name)
+JOB_NAME=$(terraform output db_migrator_job_name)
 REGION="your-gcp-region"
 
 # Execute migrations
@@ -159,11 +161,11 @@ google_vertex_location = "us-central1"
 site_url = "example.com"
 
 # Authentication
-better_auth_secret               = "your-secure-secret-key"  # Generate a secure random string (32+ chars)
+better_auth_secret                 = "your-secure-secret-key"  # Generate a secure random string (32+ chars)
 only_allow_admin_to_create_buckets = false
-admin_user_ids                   = ""  # Comma-separated list of admin user IDs
-enable_email_signup              = true
-allowed_email_domains            = ""  # Comma-separated list, leave empty to allow all domains
+admin_user_ids                     = ""  # Comma-separated list of admin user IDs
+enable_email_signup                = true
+allowed_email_domains              = ""  # Comma-separated list, leave empty to allow all domains
 
 # OAuth Providers
 enable_oauth_login   = true
@@ -233,9 +235,9 @@ only_allow_admin_to_create_buckets = false
 admin_user_ids                     = "user-id-1,user-id-2"  # Comma-separated list of admin user IDs
 enable_email_signup                = true
 allowed_email_domains              = "example.com,company.com"  # Comma-separated list
-enable_oauth_login                 = true
 
 # OAuth Providers
+enable_oauth_login   = true
 google_client_id     = "your-google-client-id"
 google_client_secret = "your-google-client-secret"
 github_client_id     = "your-github-client-id"
@@ -285,9 +287,13 @@ terraform apply
 
 **Wait for deployment** (5-10 minutes for Cloud Run services and Load Balancer).
 
-### Step 6: Configure DNS
+### Step 6: Configure frontend and DNS
 
-Add DNS A record and Github variables and secrets as explained in the terraform output (terraform output setup_instructions).
+Add DNS A record and Github variables and secrets as explained in the terraform output:
+
+```bash
+terraform output setup_instructions
+```
 
 **Wait for DNS propagation** (5-30 minutes):
 
@@ -394,31 +400,13 @@ terraform plan
 terraform apply
 ```
 
-## Production Optimization
+## Terraform Remote State Management (Optional)
 
-### 1. Enable Cloud Storage Backend for Terraform State
+By default, Terraform state is stored locally. For team collaboration and better state management, you can use Google Cloud Storage (GCS) as a remote backend.
 
-```bash
-# Create state bucket
-gsutil mb -l us-central1 gs://your-project-terraform-state
-gsutil versioning set on gs://your-project-terraform-state
+### Step 1: Create State Bucket
 
-# Enable object versioning
-gsutil lifecycle set - gs://your-project-terraform-state <<EOF
-{
-  "lifecycle": {
-    "rule": [
-      {
-        "action": {"type": "Delete"},
-        "condition": {"numNewerVersions": 5}
-      }
-    ]
-  }
-}
-EOF
-```
-
-In each layer's `providers.tf`, uncomment and configure:
+In each layer's `providers.tf`, uncomment:
 
 ```hcl
 backend "gcs" {
@@ -427,12 +415,27 @@ backend "gcs" {
 }
 ```
 
+### Step 2: Enable Remote State in Each Layer
+
+Each `providers.tf` file contains commented-out blocks for GCS remote state. To enable:
+
+1. **Uncomment the `backend "gcs"` block** in the `terraform {}` block
+2. **Uncomment the remote `terraform_remote_state` data source** (if applicable)
+3. **Comment out the local `terraform_remote_state` data source** (if applicable)
+4. **Replace `your-project-terraform-state`** with your actual bucket name
+
+### Step 3: Migrate Existing State
+
+If you already have local state and want to migrate to remote:
+
 Then migrate state:
 
 ```bash
 cd each-layer
 terraform init -migrate-state
 ```
+
+**Note**: Make sure to enable remote state in deployment order (1-repository → 2-db-storage → 3-core or 4-core-with-firecrawl → 5-file-storage or 6-cloudflare-storage) to ensure state dependencies are available.
 
 ## Cleanup
 

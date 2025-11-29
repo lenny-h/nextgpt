@@ -46,11 +46,6 @@ The infrastructure is organized into **7 sequential layers**, each building upon
 - Image paths for all application services
 - OIDC provider ARN for GitHub Actions
 
-**Configuration Options**:
-
-- `aws_project_name`: Project name prefix for resources
-- `aws_region`: AWS region for deployment
-
 ---
 
 ### 2. Database & Storage (`2-db-storage/`)
@@ -101,12 +96,6 @@ The infrastructure is organized into **7 sequential layers**, each building upon
 - ECS cluster ARN
 - Security group IDs
 - IAM role ARNs for ECS tasks
-
-**Configuration Options**:
-
-- `database_password`: PostgreSQL password (stored in Secrets Manager)
-- `aws_project_name`: Project name prefix
-- `aws_region`: AWS region
 
 ---
 
@@ -173,17 +162,6 @@ The infrastructure is organized into **7 sequential layers**, each building upon
 - Service ARNs for monitoring
 - IAM role ARNs for storage IAM bindings
 
-**Environment Configuration**:
-
-- `USE_FIRECRAWL=false`
-- `use_firecrawl=false` (in terraform.tfvars) - Set to `true` only if using HOSTED Firecrawl API
-
-**When to Use**:
-
-- You don't need web scraping capabilities
-- You want to use a hosted Firecrawl service (set `use_firecrawl=true` and provide API key)
-- Lower cost (no additional Firecrawl services)
-
 ---
 
 ### 4. Core with Firecrawl (`4-core-with-firecrawl/`)
@@ -214,27 +192,15 @@ All resources from layer 3, PLUS:
 - Same as layer 3
 - Internal Firecrawl API endpoint for web scraping
 
-**Environment Configuration**:
-
-- `USE_FIRECRAWL=true` (automatically set)
-- Firecrawl services communicate internally via Service Discovery
-
-**When to Use**:
-
-- You need web scraping/crawling capabilities
-- You want full control over Firecrawl (self-hosted)
-- You want to avoid external API dependencies
-
 **Important Notes**:
 
 - Deploy EITHER layer 3 OR layer 4, never both
-- Higher cost (~$50-100/month additional for Firecrawl services)
 
 ---
 
 ### 5. Core with Certificate (`5-core-with-certificate/`)
 
-**Purpose**: Optional layer to update or add SSL certificates to existing core services.
+**Purpose**: Layer to update or add SSL certificates to existing core services.
 
 **Key Resources**:
 
@@ -244,16 +210,6 @@ All resources from layer 3, PLUS:
 **Dependencies**:
 
 - Layer 3 or 4 (existing core services)
-
-**When to Use**:
-
-- You need to add or update SSL certificates after initial deployment
-- You want to add additional domains to your certificate
-
-**Important Notes**:
-
-- This is an optional layer
-- Only needed if you're updating certificates post-deployment
 
 ---
 
@@ -285,18 +241,6 @@ All resources from layer 3, PLUS:
 - Bucket name and ARN for file operations
 - Integrated IAM permissions (no additional auth needed)
 
-**When to Use**:
-
-- You want AWS-native storage
-- You prefer integrated AWS billing and management
-- Your egress/download volume is moderate
-
-**Cost Considerations**:
-
-- Storage: ~$0.023/GB/month (S3 Standard)
-- Egress: $0.09/GB (to internet, first 10TB)
-- Operations: $0.005 per 1,000 PUT requests, $0.0004 per 1,000 GET requests
-
 ---
 
 ### 7. File Storage - Cloudflare R2 (`7-cloudflare-storage/`)
@@ -321,18 +265,6 @@ All resources from layer 3, PLUS:
 - R2 bucket name and endpoint
 - S3-compatible credentials via environment variables
 
-**When to Use**:
-
-- You have high egress/download volume
-- You want to minimize storage costs
-- You're comfortable with S3-compatible APIs
-
-**Cost Considerations**:
-
-- Storage: ~$0.015/GB/month (cheaper than S3)
-- Egress: $0 (major advantage)
-- Operations: Class A (write): $4.50/million, Class B (read): $0.36/million
-
 **Important Notes**:
 
 - Deploy EITHER layer 6 OR layer 7, never both
@@ -356,8 +288,9 @@ For complete deployment instructions, see **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_G
 3. **Deploy Database & Networking** (`2-db-storage/`)
 4. **Run Database Migrations** (via ECS task or GitHub Actions)
 5. **Deploy Core Services** (`3-core/` OR `4-core-with-firecrawl/`)
-6. **Configure DNS** (point domain to ALB DNS name)
-7. **Deploy File Storage** (`6-file-storage/` OR `7-cloudflare-storage/`)
+6. **Configure & Deploy Frontend** (via GitHub Actions)
+7. **Configure DNS** (point domain to ALB DNS name)
+8. **Deploy File Storage** (`6-file-storage/` OR `7-cloudflare-storage/`)
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instructions.
 
@@ -367,7 +300,7 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instr
 
 1. `1-repository` → Build & push images
 2. `2-db-storage` → Run migrations
-3. `3-core` OR `4-core-with-firecrawl` → Configure DNS
+3. `3-core` OR `4-core-with-firecrawl` → Configure Frontend & DNS
 4. `5-core-with-certificate` (optional)
 5. `6-file-storage` OR `7-cloudflare-storage`
 
@@ -380,16 +313,16 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instr
 
 Approximate monthly costs for a small production deployment:
 
-| Layer                   | Resources                          | Monthly Cost       |
-| ----------------------- | ---------------------------------- | ------------------ |
-| 1-repository            | ECR (10GB)                         | $1                 |
-| 2-db-storage            | VPC, RDS, ElastiCache, NAT Gateway | $80-120            |
-| 3-core                  | ECS Fargate, ALB, SQS              | $60-100            |
-| 4-core (with Firecrawl) | +Firecrawl services                | +$50-100           |
-| 6-file-storage          | S3 (100GB)                         | $2-3               |
-| 7-cloudflare-storage    | R2 (100GB)                         | $1.50              |
-| **Total (3-core + S3)** |                                    | **$143-224/month** |
-| **Total (4-core + S3)** |                                    | **$193-324/month** |
+| Layer                   | Resources                          | Approximate Monthly Cost |
+| ----------------------- | ---------------------------------- | ------------------------ |
+| 1-repository            | ECR (10GB)                         | $1                       |
+| 2-db-storage            | VPC, RDS, ElastiCache, NAT Gateway | $80-120                  |
+| 3-core                  | ECS Fargate, ALB, SQS              | $60-100                  |
+| 4-core (with Firecrawl) | +Firecrawl services                | +$50-100                 |
+| 6-file-storage          | S3                                 | $2-3                     |
+| 7-cloudflare-storage    | R2                                 | $1.50                    |
+| **Total (3-core + S3)** |                                    | **$143-224/month**       |
+| **Total (4-core + S3)** |                                    | **$193-324/month**       |
 
 **Cost Optimization Tips:**
 
@@ -398,7 +331,6 @@ Approximate monthly costs for a small production deployment:
 - Set desired count to 0 for non-critical services during off-hours
 - Choose Cloudflare R2 if you have high download volume
 - Use AWS Savings Plans or Reserved Instances for production workloads
-- Consider single NAT Gateway instead of one per AZ for dev environments
 
 ## Monitoring & Operations
 

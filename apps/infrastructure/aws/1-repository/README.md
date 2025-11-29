@@ -12,6 +12,8 @@ This folder sets up the ECR (Elastic Container Registry) repositories for all co
   - firecrawl-api
   - firecrawl-playwright
 - Lifecycle policies to keep only the last 5 images per repository
+- GitHub OIDC Provider for GitHub Actions
+- IAM Role for GitHub Actions with permissions to push to ECR
 
 ## Usage
 
@@ -43,7 +45,13 @@ bash build_and_push_images.sh <account_id> <region> <project_name>
 
 ## Outputs
 
-This module exports ECR repository URLs and ARNs that will be imported by subsequent infrastructure layers.
+This module exports:
+
+- ECR repository URLs and ARNs
+- GitHub Actions OIDC provider ARN
+- GitHub Actions IAM role ARN and name
+
+These will be imported by subsequent infrastructure layers or used in GitHub Actions workflows.
 
 ## Next Step
 

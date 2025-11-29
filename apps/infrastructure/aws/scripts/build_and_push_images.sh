@@ -45,7 +45,7 @@ if [ ${#FILTER_SERVICES[@]} -gt 0 ]; then
 else
   SERVICES=("api" "pdf-exporter" "document-processor" "db-migrator")
   if [ "$SKIP_FIRECRAWL" = false ]; then
-    SERVICES+=("firecrawl-postgres" "firecrawl-api" "playwright-service")
+    SERVICES+=("firecrawl-api" "firecrawl-playwright")
     echo "Including Firecrawl services in build..."
   else
     echo "Skipping Firecrawl services..."
@@ -55,18 +55,12 @@ fi
 for SERVICE in "${SERVICES[@]}"; do
   echo "Building and pushing $SERVICE..."
 
-  # Define the original local image name and the ECR image name
-  if [ "$SERVICE" == "firecrawl-api" ]; then
-    ECR_IMAGE="$REPO/firecrawl-api:latest"
-  elif [ "$SERVICE" == "playwright-service" ]; then
-    ECR_IMAGE="$REPO/playwright-service:latest"
-  else
-    ECR_IMAGE="$REPO/$SERVICE:latest"
-  fi
+  # Define the ECR image name
+  ECR_IMAGE="$REPO/$SERVICE:latest"
 
   # Build the image with its original name if it doesn't exist
   if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^$ECR_IMAGE$"; then
-    if [ "$SERVICE" == "firecrawl-api" ] || [ "$SERVICE" == "playwright-service" ]; then
+    if [ "$SERVICE" == "firecrawl-api" ] || [ "$SERVICE" == "firecrawl-playwright" ]; then
       echo "Error: $ECR_IMAGE must exist locally. Please build it first."
       exit 1
     else

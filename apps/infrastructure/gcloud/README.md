@@ -30,20 +30,15 @@ The infrastructure is organized into **6 sequential layers**, each building upon
 
 - **Artifact Registry Repository**: Docker format registry with automatic cleanup
   - Retention policy: Keeps last 5 tagged images per image name
-  - Location: Configurable (default: `us-central1`)
+  - Location: Configurable
   - Format: Docker
 
-**Dependencies**: None (first layer to deploy)
+**Dependencies**: None
 
 **Provides to Next Layers**:
 
 - Registry URL for pushing/pulling images
 - Image paths for all application services
-
-**Configuration Options**:
-
-- `google_vertex_project`: GCP project ID
-- `google_vertex_location`: Registry region
 
 ---
 
@@ -77,20 +72,14 @@ The infrastructure is organized into **6 sequential layers**, each building upon
 
 **Dependencies**:
 
-- Layer 1 (for DB migrator container image)
+- Layer 1
 
 **Provides to Next Layers**:
 
 - VPC network and connector for private service communication
-- Database connection details (host, port, credentials)
+- Database connection details
 - Redis connection details
-- Service account for Cloud Run services
-
-**Configuration Options**:
-
-- `database_password`: PostgreSQL password (stored in Secret Manager)
-- `use_firecrawl`: Determines VPC connector size (affects layer 3/4 choice)
-- Database tier, Redis tier, and HA settings
+- CI/CD service account
 
 ---
 
@@ -103,16 +92,16 @@ The infrastructure is organized into **6 sequential layers**, each building upon
 - **Cloud Run Services**:
   - **API Service**: Main application backend
     - Handles authentication, business logic, AI interactions
-    - Min instances: 1 (configurable), Max: 100
-    - Memory: 2GB, CPU: 2
+    - Min instances: 0, Max: 5
+    - Memory: 512MB, CPU: 1
   - **Document Processor**: Asynchronous document processing
     - Handles file uploads, parsing, vectorization
-    - Min instances: 0 (scales to zero), Max: 10
-    - Memory: 4GB, CPU: 2
+    - Min instances: 0, Max: 5
+    - Memory: 2GB, CPU: 4
   - **PDF Exporter**: PDF generation service
     - Uses Playwright for rendering
     - Min instances: 0, Max: 5
-    - Memory: 2GB, CPU: 1
+    - Memory: 512MB, CPU: 1
 - **Global HTTPS Load Balancer**:
   - SSL certificate (auto-provisioned via Google-managed certificates)
   - Backend services for each Cloud Run service
@@ -140,18 +129,7 @@ The infrastructure is organized into **6 sequential layers**, each building upon
 
 - Load balancer IP for DNS configuration
 - Service URLs for health checks
-- Cloud Run service accounts for storage IAM bindings
-
-**Environment Configuration**:
-
-- `USE_FIRECRAWL=false`
-- `use_firecrawl=false` (in terraform.tfvars) - Set to `true` only if using HOSTED Firecrawl API
-
-**When to Use**:
-
-- You don't need web scraping capabilities
-- You want to use a hosted Firecrawl service (set `use_firecrawl=true` and provide API key)
-- Lower cost (no additional Firecrawl services)
+- Cloud Run service accounts
 
 ---
 
@@ -169,7 +147,7 @@ All resources from layer 3, PLUS:
 - **Firecrawl Playwright Service**: Headless browser for rendering
   - Executes JavaScript and renders dynamic content
   - Min instances: 0, Max: 5
-  - Memory: 4GB, CPU: 2 (higher resources for browser)
+  - Memory: 2GB, CPU: 2
 
 **Dependencies**:
 
@@ -181,63 +159,31 @@ All resources from layer 3, PLUS:
 - Same as layer 3
 - Internal Firecrawl API endpoint for web scraping
 
-**Environment Configuration**:
-
-- `USE_FIRECRAWL=true` (automatically set)
-- Firecrawl services communicate internally via VPC
-
-**When to Use**:
-
-- You need web scraping/crawling capabilities
-- You want full control over Firecrawl (self-hosted)
-- You want to avoid external API dependencies
-
 **Important Notes**:
 
 - Deploy EITHER layer 3 OR layer 4, never both
-- Requires `use_firecrawl=true` in layer 2 for proper VPC sizing
-- Higher cost (~$30-50/month additional)
+- Requires `use_firecrawl=true` in layer 2 for db migration
 
 ---
 
 ### 5. File Storage - Cloud Storage (`5-file-storage/`)
 
-**Purpose**: Provides Google Cloud Storage for permanent file storage (user uploads, generated files).
+**Purpose**: Provides Google Cloud Storage for file storage (user uploads).
 
 **Key Resources**:
 
 - **Cloud Storage Bucket**:
-  - Versioning enabled (keeps last 3 versions)
-  - Lifecycle management for old versions
+  - Versioning disabled
   - Location: Same as other resources
   - Storage class: STANDARD
   - Uniform bucket-level access
 - **IAM Bindings**:
   - Grants Cloud Run service account permissions:
-    - `roles/storage.objectViewer`: Read access
-    - `roles/storage.objectCreator`: Write access
-    - `roles/storage.objectAdmin`: Delete access
+    - `roles/storage.objectAdmin`
 
 **Dependencies**:
 
 - Layer 3 or 4 (for service account reference)
-
-**Provides to Applications**:
-
-- Bucket name and URL for file operations
-- Integrated IAM permissions (no additional auth needed)
-
-**When to Use**:
-
-- You want GCP-native storage
-- You prefer integrated GCP billing and management
-- Your egress/download volume is moderate
-
-**Cost Considerations**:
-
-- Storage: ~$0.02/GB/month
-- Egress: $0.12/GB (to internet)
-- Operations: Minimal cost
 
 ---
 
@@ -256,35 +202,16 @@ All resources from layer 3, PLUS:
   - R2 access key ID
   - R2 secret access key
   - R2 endpoint URL
-- **Environment Variables**: Updated in Cloud Run services to use R2
 
 **Dependencies**:
 
 - Layer 3 or 4 (for Cloud Run service updates)
 - Cloudflare account with R2 enabled
 
-**Provides to Applications**:
-
-- R2 bucket name and endpoint
-- S3-compatible credentials via Secret Manager
-
-**When to Use**:
-
-- You have high egress/download volume
-- You want to minimize storage costs
-- You're comfortable with S3-compatible APIs
-
-**Cost Considerations**:
-
-- Storage: ~$0.015/GB/month (cheaper than GCS)
-- Egress: $0 (major advantage)
-- Operations: Class A (write): $4.50/million, Class B (read): $0.36/million
-
 **Important Notes**:
 
 - Deploy EITHER layer 5 OR layer 6, never both
 - Requires Cloudflare account and R2 API token
-- Must update layer 3/4 `providers.tf` to reference correct core layer
 
 ## Getting Started
 
@@ -294,17 +221,18 @@ For complete deployment instructions, see **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_G
 
 - Google Cloud Project with billing enabled
 - `gcloud` CLI, Terraform >= 1.0, and Docker installed
-- Domain name for SSL certificate (optional)
+- Domain name for SSL certificate
 
 ### Deployment Overview
 
 1. **Deploy Container Registry** (`1-repository/`)
 2. **Build and Push Docker Images** (using `scripts/build_and_push_images.sh`)
-3. **Deploy Database & Networking** (`2-db-storage/`)
-4. **Run Database Migrations** (via Cloud Run Job or GitHub Actions)
+3. **Deploy Database and Networking** (`2-db-storage/`)
+4. **Run Database Migrations** (via GitHub Actions)
 5. **Deploy Core Services** (`3-core/` OR `4-core-with-firecrawl/`)
-6. **Configure DNS** (point domain to load balancer IP)
-7. **Deploy File Storage** (`5-file-storage/` OR `6-cloudflare-storage/`)
+6. **Configure and Deploy Frontend** (via GitHub Actions)
+7. **Configure DNS** (point domain to load balancer IP)
+8. **Deploy File Storage** (`5-file-storage/` OR `6-cloudflare-storage/`)
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instructions.
 
@@ -314,7 +242,7 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instr
 
 1. `1-repository` → Build & push images
 2. `2-db-storage` → Run migrations
-3. `3-core` OR `4-core-with-firecrawl` → Configure DNS
+3. `3-core` OR `4-core-with-firecrawl` → Configure Frontend & DNS
 4. `5-file-storage` OR `6-cloudflare-storage`
 
 ## State Management
@@ -326,16 +254,16 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instr
 
 Approximate monthly costs for a small production deployment:
 
-| Layer                        | Resources                       | Monthly Cost       |
-| ---------------------------- | ------------------------------- | ------------------ |
-| 1-repository                 | Artifact Registry (10GB)        | $1-2               |
-| 2-db-storage                 | VPC, Cloud SQL, Redis, NAT      | $102-135           |
-| 3-core                       | Cloud Run, Load Balancer, Tasks | $40-76             |
-| 4-core (with Firecrawl)      | +Firecrawl services             | +$30-50            |
-| 5-file-storage               | Cloud Storage (100GB)           | $2-3               |
-| 6-cloudflare-storage         | R2 (100GB)                      | $1.50              |
-| **Total (3-core + Storage)** |                                 | **$145-216/month** |
-| **Total (4-core + Storage)** |                                 | **$175-286/month** |
+| Layer                        | Resources                       | Approximate Monthly Cost |
+| ---------------------------- | ------------------------------- | ------------------------ |
+| 1-repository                 | Artifact Registry (10GB)        | $1-2                     |
+| 2-db-storage                 | VPC, Cloud SQL, Redis, NAT      | $100                     |
+| 3-core                       | Cloud Run, Load Balancer, Tasks | $40                      |
+| 4-core (with Firecrawl)      | +Firecrawl services             | +$20                     |
+| 5-file-storage               | Cloud Storage (100GB)           | $2-3                     |
+| 6-cloudflare-storage         | R2 (100GB)                      | $1.50                    |
+| **Total (3-core + Storage)** |                                 | **$145/month**           |
+| **Total (4-core + Storage)** |                                 | **$165/month**           |
 
 **Cost Optimization Tips:**
 
@@ -356,9 +284,3 @@ All services provide structured logging via Google Cloud Logging. Access logs th
 To destroy infrastructure, run `terraform destroy` in **reverse order** (storage → core → database → registry). See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed cleanup instructions.
 
 **Warning**: This permanently deletes all data. Ensure you have backups.
-
-## Additional Documentation
-
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Step-by-step deployment instructions
-- [INFRASTRUCTURE_OVERVIEW.md](./INFRASTRUCTURE_OVERVIEW.md) - Detailed architecture documentation
-- Layer-specific READMEs in each folder

@@ -5,6 +5,7 @@ This folder sets up AWS S3 for permanent file storage.
 ## What it provisions
 
 - **S3 bucket** for permanent file storage
+- **S3 bucket** for temporary file storage (1-day retention)
 - **Bucket policies** for CORS, encryption, and access control
 - **IAM policies** to grant API and Document Processor access to the bucket
 
@@ -40,6 +41,13 @@ cp terraform.tfvars.example terraform.tfvars
 ```bash
 terraform apply
 ```
+
+## Outputs
+
+This module exports:
+
+- S3 Bucket Name and ARN for permanent files
+- S3 Bucket Name and ARN for temporary files
 
 ## Important Notes
 

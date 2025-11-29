@@ -10,6 +10,8 @@ Complete step-by-step guide for deploying your application on Amazon Web Service
 - **Terraform**: >= 1.0 [Download](https://www.terraform.io/downloads)
 - **Docker**: [Install Guide](https://docs.docker.com/get-docker/)
 - **Git**: For cloning the repository
+- **GitHub**: For running github actions
+- **Cloudflare Account**: If using Cloudflare R2 for storage
 
 ### AWS Setup
 
@@ -18,6 +20,12 @@ Complete step-by-step guide for deploying your application on Amazon Web Service
    - Follow the account creation process
 
 2. **Configure AWS CLI**:
+
+```bash
+aws login
+```
+
+OR
 
 ```bash
 aws configure
@@ -335,23 +343,49 @@ The certificate status will change from `PENDING_VALIDATION` → `ISSUED` once D
 
 ### Step 7: Configure GitHub Actions
 
-Get the GitHub Actions role ARN:
+Configure GitHub Actions using the outputs from the terraform deployments.
+
+#### Part A: Infrastructure Variables (from Step 3 - db-storage)
+
+Get the GitHub variables:
 
 ```bash
-terraform output github_actions_role_arn
+cd ../2-db-storage
+terraform output github_variables
 ```
 
-Add this to your GitHub repository:
+Add these to your GitHub repository:
 
-1. Go to your GitHub repository → Settings → Secrets and variables → Actions
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions → Variables
 2. Add the following **variables**:
+   - `AWS_PROJECT_NAME`: Your project name (e.g., `your-project-name`)
    - `AWS_REGION`: Your AWS region (e.g., `us-east-1`)
-   - `AWS_ROLE_ARN`: The role ARN from the output above
-   - `ECR_REGISTRY`: `<account-id>.dkr.ecr.<region>.amazonaws.com`
-   - `ECS_CLUSTER`: The ECS cluster name
-   - `ECS_SERVICE_API`: The API service name
-   - `ECS_SERVICE_DOCUMENT_PROCESSOR`: The document processor service name
-   - `ECS_SERVICE_PDF_EXPORTER`: The PDF exporter service name
+   - `AWS_ROLE_TO_ASSUME`: The IAM role ARN for GitHub Actions (from terraform output)
+
+#### Part B: Frontend Variables (from Step 5 - core)
+
+Get the setup instructions:
+
+```bash
+cd ../3-core  # or ../4-core-with-firecrawl
+terraform output setup_instructions
+```
+
+Add these to your GitHub repository:
+
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions → Variables
+2. Add the following **variables**:
+   - `SITE_URL`: Your site URL (e.g., `example.com`)
+   - `ENABLE_EMAIL_SIGNUP`: `true` or `false`
+   - `ENABLE_OAUTH_LOGIN`: `true` or `false`
+   - `ENABLE_SSO`: `true` or `false`
+   - `USE_FIRECRAWL`: `true` or `false` (depends on which core layer you deployed)
+   - `CSP_ENDPOINTS`: Content Security Policy endpoints (see terraform output for exact values)
+   - `PDF_BBOX_DURATION_MS`: PDF BBox duration in milliseconds
+   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID (for frontend deployment)
+
+3. Go to Secrets tab and add the following **secret**:
+   - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token (for frontend deployment)
 
 ### Step 8: Verify Core Services
 
@@ -361,9 +395,6 @@ aws ecs list-services --cluster $CLUSTER --region $REGION
 
 # Test API health endpoint
 curl https://api.yourdomain.com/api/public/health
-
-# Test Document Processor health endpoint (internal, via API)
-curl https://api.yourdomain.com/api/public/document-processor/health
 
 # Test PDF Exporter health endpoint
 curl https://api.yourdomain.com/pdf-exporter/public/health
@@ -464,194 +495,6 @@ terraform plan
 terraform apply
 ```
 
-## Production Optimization
-
-### 1. Enable S3 Backend for Terraform State
-
-```bash
-# Create state bucket
-aws s3 mb s3://your-project-terraform-state --region us-east-1
-aws s3api put-bucket-versioning \
-  --bucket your-project-terraform-state \
-  --versioning-configuration Status=Enabled
-
-# Enable encryption
-aws s3api put-bucket-encryption \
-  --bucket your-project-terraform-state \
-  --server-side-encryption-configuration '{
-    "Rules": [{
-      "ApplyServerSideEncryptionByDefault": {
-        "SSEAlgorithm": "AES256"
-      }
-    }]
-  }'
-```
-
-In each layer's `providers.tf`, uncomment and configure:
-
-```hcl
-backend "s3" {
-  bucket = "your-project-terraform-state"
-  key    = "terraform/state/<layer-name>/terraform.tfstate"
-  region = "us-east-1"
-}
-```
-
-Then migrate state:
-
-```bash
-cd each-layer
-terraform init -migrate-state
-```
-
-### 2. Enable Auto-Scaling
-
-For production workloads, configure ECS auto-scaling:
-
-```bash
-# Example: Auto-scale API service based on CPU
-aws application-autoscaling register-scalable-target \
-  --service-namespace ecs \
-  --scalable-dimension ecs:service:DesiredCount \
-  --resource-id service/$CLUSTER/api \
-  --min-capacity 2 \
-  --max-capacity 10 \
-  --region $REGION
-
-aws application-autoscaling put-scaling-policy \
-  --service-namespace ecs \
-  --scalable-dimension ecs:service:DesiredCount \
-  --resource-id service/$CLUSTER/api \
-  --policy-name cpu-scaling \
-  --policy-type TargetTrackingScaling \
-  --target-tracking-scaling-policy-configuration '{
-    "TargetValue": 70.0,
-    "PredefinedMetricSpecification": {
-      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
-    }
-  }' \
-  --region $REGION
-```
-
-### 3. Enable Multi-AZ for RDS
-
-For high availability, update `2-db-storage/db.tf`:
-
-```hcl
-resource "aws_db_instance" "postgres" {
-  # ... other settings ...
-  multi_az = true
-}
-```
-
-Then apply:
-
-```bash
-cd 2-db-storage
-terraform apply
-```
-
-**Note**: This will cause a brief downtime during the update.
-
-## Monitoring and Logging
-
-### CloudWatch Logs
-
-View logs for all services:
-
-```bash
-# List all log groups
-aws logs describe-log-groups --region $REGION
-
-# Tail specific service logs
-aws logs tail /ecs/api --follow --region $REGION
-aws logs tail /ecs/document-processor --follow --region $REGION
-aws logs tail /ecs/pdf-exporter --follow --region $REGION
-```
-
-### CloudWatch Metrics
-
-View ECS service metrics:
-
-```bash
-# CPU utilization
-aws cloudwatch get-metric-statistics \
-  --namespace AWS/ECS \
-  --metric-name CPUUtilization \
-  --dimensions Name=ServiceName,Value=api Name=ClusterName,Value=$CLUSTER \
-  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-  --period 300 \
-  --statistics Average \
-  --region $REGION
-
-# Memory utilization
-aws cloudwatch get-metric-statistics \
-  --namespace AWS/ECS \
-  --metric-name MemoryUtilization \
-  --dimensions Name=ServiceName,Value=api Name=ClusterName,Value=$CLUSTER \
-  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-  --period 300 \
-  --statistics Average \
-  --region $REGION
-```
-
-### ALB Metrics
-
-```bash
-# Request count
-aws cloudwatch get-metric-statistics \
-  --namespace AWS/ApplicationELB \
-  --metric-name RequestCount \
-  --dimensions Name=LoadBalancer,Value=app/your-alb-name/xyz123 \
-  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-  --period 300 \
-  --statistics Sum \
-  --region $REGION
-```
-
-## Troubleshooting
-
-### ECS Task Failures
-
-```bash
-# List tasks
-aws ecs list-tasks --cluster $CLUSTER --region $REGION
-
-# Describe task
-aws ecs describe-tasks --cluster $CLUSTER --tasks <task-id> --region $REGION
-
-# Check stopped tasks
-aws ecs list-tasks --cluster $CLUSTER --desired-status STOPPED --region $REGION
-```
-
-### Database Connection Issues
-
-```bash
-# Test database connectivity from a task
-aws ecs run-task \
-  --cluster $CLUSTER \
-  --task-definition db-migrator \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUP],assignPublicIp=DISABLED}" \
-  --region $REGION
-
-# Check security group rules
-aws ec2 describe-security-groups --group-ids $SECURITY_GROUP --region $REGION
-```
-
-### SSL Certificate Issues
-
-```bash
-# Check certificate status
-aws acm describe-certificate --certificate-arn <cert-arn> --region $REGION
-
-# List all certificates
-aws acm list-certificates --region $REGION
-```
-
 ## Cleanup
 
 To destroy all infrastructure:
@@ -678,55 +521,7 @@ terraform destroy
 
 ### Manual Cleanup (if needed)
 
-If Terraform destroy fails, you may need to manually delete resources:
-
-```bash
-# Delete ECS services
-aws ecs update-service --cluster $CLUSTER --service api --desired-count 0 --region $REGION
-aws ecs delete-service --cluster $CLUSTER --service api --force --region $REGION
-
-# Delete load balancers
-aws elbv2 describe-load-balancers --region $REGION
-aws elbv2 delete-load-balancer --load-balancer-arn <arn> --region $REGION
-
-# Delete RDS instances
-aws rds delete-db-instance --db-instance-identifier your-db --skip-final-snapshot --region $REGION
-
-# Delete VPC (after all resources are deleted)
-aws ec2 describe-vpcs --region $REGION
-aws ec2 delete-vpc --vpc-id <vpc-id> --region $REGION
-```
-
-## Cost Management
-
-### View Current Costs
-
-```bash
-# Get cost and usage for the current month
-aws ce get-cost-and-usage \
-  --time-period Start=$(date -u +%Y-%m-01),End=$(date -u +%Y-%m-%d) \
-  --granularity MONTHLY \
-  --metrics BlendedCost \
-  --group-by Type=SERVICE
-```
-
-### Set Up Billing Alerts
-
-1. Go to AWS Console → Billing → Billing preferences
-2. Enable "Receive Billing Alerts"
-3. Go to CloudWatch → Alarms → Create Alarm
-4. Select "Billing" metric
-5. Set threshold (e.g., $100)
-6. Configure SNS notification
-
-### Cost Optimization Tips
-
-- Use Spot instances for non-critical ECS tasks
-- Enable S3 Intelligent-Tiering for storage
-- Use AWS Compute Savings Plans
-- Delete unused resources (old ECR images, snapshots, etc.)
-- Use single NAT Gateway for dev environments
-- Scale down services during off-hours
+If Terraform destroy fails, you may need to manually delete resources either via AWS Console or CLI.
 
 ## Additional Resources
 
