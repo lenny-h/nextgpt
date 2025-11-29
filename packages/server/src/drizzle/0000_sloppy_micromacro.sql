@@ -753,21 +753,21 @@ CREATE TABLE IF NOT EXISTS nuq.queue_scrape_backlog (
 -- For getGroupNumericStats backlog query: query by group_id and data->>'mode' on backlog table
 CREATE INDEX IF NOT EXISTS nuq_queue_scrape_backlog_group_mode_idx ON nuq.queue_scrape_backlog (group_id) WHERE ((data->>'mode') = 'single_urls');
 
-SELECT cron.schedule('nuq_queue_scrape_clean_completed', '*/5 * * * *', $$
+SELECT cron.schedule('nuq_queue_scrape_clean_completed', '0 * * * *', $$
   DELETE FROM nuq.queue_scrape WHERE nuq.queue_scrape.status = 'completed'::nuq.job_status AND nuq.queue_scrape.created_at < now() - interval '1 hour' AND group_id IS NULL;
 $$);
 
-SELECT cron.schedule('nuq_queue_scrape_clean_failed', '*/5 * * * *', $$
+SELECT cron.schedule('nuq_queue_scrape_clean_failed', '0 * * * *', $$
   DELETE FROM nuq.queue_scrape WHERE nuq.queue_scrape.status = 'failed'::nuq.job_status AND nuq.queue_scrape.created_at < now() - interval '6 hours' AND group_id IS NULL;
 $$);
 
-SELECT cron.schedule('nuq_queue_scrape_lock_reaper', '15 seconds', $$
+SELECT cron.schedule('nuq_queue_scrape_lock_reaper', '* * * * *', $$
   UPDATE nuq.queue_scrape SET status = 'queued'::nuq.job_status, lock = null, locked_at = null, stalls = COALESCE(stalls, 0) + 1 WHERE nuq.queue_scrape.locked_at <= now() - interval '1 minute' AND nuq.queue_scrape.status = 'active'::nuq.job_status AND COALESCE(nuq.queue_scrape.stalls, 0) < 9;
   WITH stallfail AS (UPDATE nuq.queue_scrape SET status = 'failed'::nuq.job_status, lock = null, locked_at = null, stalls = COALESCE(stalls, 0) + 1 WHERE nuq.queue_scrape.locked_at <= now() - interval '1 minute' AND nuq.queue_scrape.status = 'active'::nuq.job_status AND COALESCE(nuq.queue_scrape.stalls, 0) >= 9 RETURNING id)
   SELECT pg_notify('nuq.queue_scrape', (id::text || '|' || 'failed'::text)) FROM stallfail;
 $$);
 
-SELECT cron.schedule('nuq_queue_scrape_backlog_reaper', '* * * * *', $$
+SELECT cron.schedule('nuq_queue_scrape_backlog_reaper', '0 * * * *', $$
   DELETE FROM nuq.queue_scrape_backlog
   WHERE nuq.queue_scrape_backlog.times_out_at < now();
 $$);
@@ -805,15 +805,15 @@ CREATE INDEX IF NOT EXISTS nuq_queue_crawl_finished_queued_optimal_2_idx ON nuq.
 CREATE INDEX IF NOT EXISTS nuq_queue_crawl_finished_failed_created_at_idx ON nuq.queue_crawl_finished USING btree (created_at) WHERE (status = 'failed'::nuq.job_status);
 CREATE INDEX IF NOT EXISTS nuq_queue_crawl_finished_completed_created_at_idx ON nuq.queue_crawl_finished USING btree (created_at) WHERE (status = 'completed'::nuq.job_status);
 
-SELECT cron.schedule('nuq_queue_crawl_finished_clean_completed', '*/5 * * * *', $$
+SELECT cron.schedule('nuq_queue_crawl_finished_clean_completed', '0 * * * *', $$
   DELETE FROM nuq.queue_crawl_finished WHERE nuq.queue_crawl_finished.status = 'completed'::nuq.job_status AND nuq.queue_crawl_finished.created_at < now() - interval '1 hour' AND group_id IS NULL;
 $$);
 
-SELECT cron.schedule('nuq_queue_crawl_finished_clean_failed', '*/5 * * * *', $$
+SELECT cron.schedule('nuq_queue_crawl_finished_clean_failed', '0 * * * *', $$
   DELETE FROM nuq.queue_crawl_finished WHERE nuq.queue_crawl_finished.status = 'failed'::nuq.job_status AND nuq.queue_crawl_finished.created_at < now() - interval '6 hours' AND group_id IS NULL;
 $$);
 
-SELECT cron.schedule('nuq_queue_crawl_finished_lock_reaper', '15 seconds', $$
+SELECT cron.schedule('nuq_queue_crawl_finished_lock_reaper', '* * * * *', $$
   UPDATE nuq.queue_crawl_finished SET status = 'queued'::nuq.job_status, lock = null, locked_at = null, stalls = COALESCE(stalls, 0) + 1 WHERE nuq.queue_crawl_finished.locked_at <= now() - interval '1 minute' AND nuq.queue_crawl_finished.status = 'active'::nuq.job_status AND COALESCE(nuq.queue_crawl_finished.stalls, 0) < 9;
   WITH stallfail AS (UPDATE nuq.queue_crawl_finished SET status = 'failed'::nuq.job_status, lock = null, locked_at = null, stalls = COALESCE(stalls, 0) + 1 WHERE nuq.queue_crawl_finished.locked_at <= now() - interval '1 minute' AND nuq.queue_crawl_finished.status = 'active'::nuq.job_status AND COALESCE(nuq.queue_crawl_finished.stalls, 0) >= 9 RETURNING id)
   SELECT pg_notify('nuq.queue_crawl_finished', (id::text || '|' || 'failed'::text)) FROM stallfail;
@@ -833,7 +833,7 @@ CREATE TABLE IF NOT EXISTS nuq.group_crawl (
   CONSTRAINT group_crawl_pkey PRIMARY KEY (id)
 );
 
-SELECT cron.schedule('nuq_group_crawl_finished', '15 seconds', $$
+SELECT cron.schedule('nuq_group_crawl_finished', '* * * * *', $$
   WITH finished_groups AS (
     UPDATE nuq.group_crawl
     SET status = 'completed'::nuq.group_status, expires_at = now() + MAKE_INTERVAL(secs => nuq.group_crawl.ttl / 1000)
@@ -854,7 +854,7 @@ SELECT cron.schedule('nuq_group_crawl_finished', '15 seconds', $$
   FROM finished_groups;
 $$);
 
-SELECT cron.schedule('nuq_group_crawl_clean', '*/5 * * * *', $$
+SELECT cron.schedule('nuq_group_crawl_clean', '0 * * * *', $$
   WITH cleaned_groups AS (
     DELETE FROM nuq.group_crawl
     WHERE nuq.group_crawl.status = 'completed'::nuq.group_status

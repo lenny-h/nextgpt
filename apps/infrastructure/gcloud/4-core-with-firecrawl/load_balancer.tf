@@ -10,14 +10,28 @@ resource "google_compute_security_policy" "armor_policy" {
       }
     }
     rate_limit_options {
-      conform_action = "allow"
-      exceed_action  = "deny(429)"
+      conform_action   = "allow"
+      exceed_action    = "deny(429)"
+      ban_duration_sec = 600
       rate_limit_threshold {
         count        = 150
         interval_sec = 600
       }
     }
     description = "Rate limit requests to 150 per 10 minutes"
+  }
+
+  # Default rule to allow all traffic
+  rule {
+    action   = "allow"
+    priority = 2147483647
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+    description = "Default rule to allow all traffic"
   }
 }
 

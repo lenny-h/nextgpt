@@ -31,4 +31,4 @@ node_modules/
 
 *.pdf
 
-**/sa_key.json
+**/sa_key.txt

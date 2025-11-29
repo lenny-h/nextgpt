@@ -15,6 +15,8 @@ resource "aws_db_instance" "postgres" {
   engine_version = "18"
   instance_class = "db.t3.micro"
 
+  parameter_group_name = aws_db_parameter_group.postgres.name
+
   allocated_storage     = 20
   max_allocated_storage = 100
   storage_type          = "gp3"

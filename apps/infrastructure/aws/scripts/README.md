@@ -30,7 +30,7 @@ bash build_and_push_images.sh <aws_account_id> <region> <project_name> [--skip-f
 
 ### Important Note on Firecrawl
 
-For `firecrawl-api` and `firecrawl-playwright`, the script expects the images to **already exist locally** with the correct ECR tag. You must build them manually from the official Firecrawl repository or pull them before running this script.
+For `firecrawl-api` and `firecrawl-playwright`, the script expects the images to **already exist locally** with the correct ECR tag. You must build them manually from the official Firecrawl repository before running this script.
 
 Example for Firecrawl:
 
@@ -39,9 +39,13 @@ Example for Firecrawl:
 git clone https://github.com/mendableai/firecrawl.git
 cd firecrawl
 
-# Build API
-docker build -t <account_id>.dkr.ecr.<region>.amazonaws.com/<project_name>/firecrawl-api:latest -f apps/api/Dockerfile .
+# Build API (linux/arm64 platform for AWS ECS/Fargate)
+cd apps/api
+docker buildx build --platform linux/arm64 -t <account_id>.dkr.ecr.<region>.amazonaws.com/<project_name>/firecrawl-api:latest .
+cd ../..
 
-# Build Playwright
-docker build -t <account_id>.dkr.ecr.<region>.amazonaws.com/<project_name>/firecrawl-playwright:latest -f apps/playwright-service/Dockerfile .
+# Build Playwright (linux/arm64 platform for AWS ECS/Fargate)
+cd apps/playwright-service
+docker buildx build --platform linux/arm64 -t <account_id>.dkr.ecr.<region>.amazonaws.com/<project_name>/firecrawl-playwright:latest .
+cd ../..
 ```

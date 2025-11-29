@@ -91,39 +91,29 @@ output "github_secret" {
   value       = google_service_account_key.ci_cd_sa_key.private_key
   sensitive   = true
 }
-
-# ========================================
-# Centralized GitHub Variables + Setup
-# ========================================
-output "github_variables" {
-  description = "Add these as GitHub repository variables (Settings > Secrets and variables > Actions > Variables)."
-  value = {
-    PROJECT_ID = var.google_vertex_project
-    REGION     = var.google_vertex_location
-    REGISTRY   = "${var.google_vertex_location}-docker.pkg.dev"
-    REPOSITORY = "app-artifact-repository"
-  }
-}
-
-output "github_setup_instructions" {
-  description = "Follow these steps to configure GitHub actions and secrets using Terraform outputs from this module."
+output "setup_instructions" {
+  description = "Follow these steps to configure GitHub actions and secrets using values from this Terraform module."
   value       = <<-EOT
 
-    1️⃣ GitHub Repository Variables
+    1️⃣ GitHub Repository Variables (set these so GitHub Actions can push images and deploy resources)
        - Go to: Settings > Secrets and variables > Actions > Variables
-       - Add the following variables using values retrieved from Terraform:
-         * PROJECT_ID
-         * REGION
-         * REGISTRY
-         * REPOSITORY
+       - Add the following variables using the values below from this Terraform configuration:
+         * PROJECT_ID = ${var.google_vertex_project}
+         * REGION     = ${var.google_vertex_location}
+         * REGISTRY   = "${var.google_vertex_location}-docker.pkg.dev"
+         * REPOSITORY = "app-artifact-repository"
+
+       Why: These variables allow workflows to target the correct GCP project/region and Artifact Registry repository when building, tagging, and pushing Docker images.
 
     2️⃣ GitHub Repository Secrets
        - Go to: Settings > Secrets and variables > Actions > Secrets
        - Add the following secret:
          * GCP_SA_KEY -> Private key JSON for the CI/CD service account
-           -> Retrieve the key with: terraform output -raw github_secret > sa-key.json
-           -> Copy the contents of sa-key.json into the secret value in GitHub
-           -> Remove the file from disk: rm sa-key.json
+           -> Retrieve the key with: terraform output -raw github_secret > sa-key.txt
+           -> Copy the contents of `sa-key.txt` into the secret value in GitHub
+           -> Remove the file from disk: `rm sa-key.txt`
+
+       Why: The `GCP_SA_KEY` secret contains credentials the GitHub Actions runners use to authenticate with GCP and perform deployments and pushes.
 
     ✅ After creating the variables and secrets, push to GitHub to trigger the workflows.
   EOT

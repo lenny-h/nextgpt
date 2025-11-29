@@ -66,6 +66,30 @@ terraform apply
 
 ### Step 2: Build and Push Docker Images
 
+#### Building Firecrawl Images
+
+If you're using Firecrawl (not skipping with `--skip-firecrawl`), you must first build the Firecrawl images locally before running the script. The images must be built for `linux/amd64` platform:
+
+```bash
+# Clone Firecrawl repository
+git clone https://github.com/mendableai/firecrawl.git
+cd firecrawl
+
+# Build Firecrawl API (linux/amd64 platform for GCP Cloud Run)
+cd apps/api
+docker buildx build --platform linux/amd64 \
+  -t $REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository/firecrawl-api:latest .
+cd ../..
+
+# Build Firecrawl Playwright (linux/amd64 platform for GCP Cloud Run)
+cd apps/playwright-service
+docker buildx build --platform linux/amd64 \
+  -t $REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository/firecrawl-playwright:latest .
+cd ../..
+```
+
+#### Build and Push All Images
+
 ```bash
 cd ../scripts
 
@@ -118,6 +142,12 @@ terraform apply
 ```
 
 **Wait for deployment** (approximately 25 minutes for Cloud SQL and Redis provisioning).
+
+After the database and networking layer is created you should configure GitHub repository Variables and Secrets so GitHub Actions can build, push, and deploy images and resources into your GCP project. Follow the instructions from the terraform output:
+
+```bash
+terraform output setup_instructions
+```
 
 ### Step 4: Run Database Migrations
 
@@ -287,9 +317,7 @@ terraform apply
 
 **Wait for deployment** (5-10 minutes for Cloud Run services and Load Balancer).
 
-### Step 6: Configure frontend and DNS
-
-Add DNS A record and Github variables and secrets as explained in the terraform output:
+After this layer is created, you should update GitHub repository Variables and Secrets if needed (e.g., if you changed any variables). Follow the instructions from the terraform output:
 
 ```bash
 terraform output setup_instructions
@@ -307,7 +335,7 @@ gcloud compute ssl-certificates list
 
 The SSL certificate status will change from `PROVISIONING` → `ACTIVE` once DNS is verified.
 
-### Step 7: Verify Core Services
+### Step 6: Verify Core Services
 
 ```bash
 REGION="your-gcp-region"
@@ -323,7 +351,7 @@ curl https://api.yourdomain.com/pdf-exporter/public/health
 # Should return: {"status":"ok"}
 ```
 
-### Step 8: Deploy File Storage
+### Step 7: Deploy File Storage
 
 **Choose ONE option:**
 
@@ -369,11 +397,11 @@ terraform apply
 First, get R2 credentials from Cloudflare:
 
 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. Navigate to R2 → Overview
+2. Navigate to R2 Object Storage
 3. Note your **Account ID** (shown in the sidebar)
-4. Click "Manage R2 API Tokens"
-5. Create a token with R2 read/write permissions
-6. Copy the API token
+4. Click "Manage" under Account Details
+5. Create a token with Object Read/Write permissions
+6. Copy the credentials
 
 ```bash
 cd ../6-cloudflare-storage
@@ -382,21 +410,17 @@ cp terraform.tfvars.example terraform.tfvars
 nano terraform.tfvars
 ```
 
-Add Cloudflare credentials:
+In 3-core or 4-core-with-firecrawl, add the Cloudflare credentials:
 
 ```hcl
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
-r2_location           = "auto"  # or specific location like "wnam", "enam", "weur", "eeur", "apac"
+r2_location           = "enam" # specific location like "wnam", "enam", "weur", "eeur", "apac"
 ```
-
-**IMPORTANT**: Update `providers.tf` if you deployed 4-core-with-firecrawl (same as Option A).
 
 Deploy:
 
 ```bash
-terraform init
-terraform plan
 terraform apply
 ```
 

@@ -43,24 +43,10 @@ cp terraform.tfvars.example terraform.tfvars
 terraform apply
 ```
 
-4. Configure DNS:
+4. Follow the output instructions for DNS and frontend setup.
 
 ```bash
-# Get DNS A record to add to your DNS provider
-terraform output dns_a_record
-
-# The load balancer IP
-terraform output load_balancer_ip
-```
-
-5. Run database migrations:
-
-After deployment and DNS configuration, run the DB migrator job from `2-db-storage`:
-
-```bash
-gcloud run jobs execute db-migrator \
-  --region=YOUR_REGION \
-  --project=YOUR_PROJECT_ID
+terraform output setup_instructions
 ```
 
 ## Important Notes

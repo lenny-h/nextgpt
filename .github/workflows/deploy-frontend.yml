@@ -40,7 +40,7 @@ jobs:
     name: Deploy Web App
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.web == 'true'
+    # if: needs.changes.outputs.web == 'true'
     env:
       NEXT_PUBLIC_BASE_URL: https://app.${{ vars.SITE_URL }}
       NEXT_PUBLIC_DASHBOARD_URL: https://dashboard.${{ vars.SITE_URL }}
@@ -99,7 +99,7 @@ jobs:
     name: Deploy Dashboard App
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.dashboard == 'true'
+    # if: needs.changes.outputs.dashboard == 'true'
     env:
       NEXT_PUBLIC_BASE_URL: https://dashboard.${{ vars.SITE_URL }}
       NEXT_PUBLIC_CHAT_URL: https://app.${{ vars.SITE_URL }}

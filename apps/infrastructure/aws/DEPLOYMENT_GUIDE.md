@@ -77,6 +77,30 @@ terraform apply
 
 ### Step 2: Build and Push Docker Images
 
+#### Building Firecrawl Images
+
+If you're using Firecrawl (not skipping with `--skip-firecrawl`), you must first build the Firecrawl images locally before running the script. The images must be built for `linux/arm64` platform:
+
+```bash
+# Clone Firecrawl repository
+git clone https://github.com/mendableai/firecrawl.git
+cd firecrawl
+
+# Build Firecrawl API (linux/arm64 platform for AWS ECS/Fargate)
+cd apps/api
+docker buildx build --platform linux/arm64 \
+  -t $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$PROJECT_NAME/firecrawl-api:latest .
+cd ../..
+
+# Build Firecrawl Playwright (linux/arm64 platform for AWS ECS/Fargate)
+cd apps/playwright-service
+docker buildx build --platform linux/arm64 \
+  -t $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$PROJECT_NAME/firecrawl-playwright:latest .
+cd ../..
+```
+
+#### Build and Push All Images
+
 ```bash
 cd ../scripts
 
@@ -482,7 +506,7 @@ site_url              = "example.com"
 
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
-r2_location           = "auto"  # or specific location like "wnam", "enam", "weur", "eeur", "apac"
+r2_location           = "enam" # specific location like "wnam", "enam", "weur", "eeur", "apac"
 ```
 
 **IMPORTANT**: Update `providers.tf` if you deployed 4-core-with-firecrawl (same as Option A).

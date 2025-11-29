@@ -82,7 +82,7 @@ output "setup_instructions" {
      ✓ ENABLE_OAUTH_LOGIN = ${var.enable_oauth_login}
      ✓ ENABLE_SSO = ${var.enable_sso}
      ✓ USE_FIRECRAWL = true
-     ✓ CSP_ENDPOINTS = ${var.use_cloudflare_r2 ? "https://files-bucket.<your-account-id>.r2.cloudflarestorage.com https://temporary-files-bucket.<your-account-id>.r2.cloudflarestorage.com" : "https://storage.googleapis.com/${var.google_vertex_project}-files-bucket https://storage.googleapis.com/${var.google_vertex_project}-temporary-files-bucket"}
+     ✓ CSP_ENDPOINTS = ${var.use_cloudflare_r2 ? "https://files-bucket.<your-account-id>.r2.cloudflarestorage.com https://temporary-files-bucket.<your-account-id>.r2.cloudflarestorage.com" : "https://storage.googleapis.com"}
      ✓ CLOUDFLARE_ACCOUNT_ID = <your Cloudflare account ID>
      
      Secrets (Repository secrets):

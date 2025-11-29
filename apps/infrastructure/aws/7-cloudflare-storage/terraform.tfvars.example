@@ -8,4 +8,4 @@ site_url = "example.com"
 # Cloudflare Configuration
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
-r2_location           = "auto"
+r2_location           = "enam" # specific location like "wnam", "enam", "weur", "eeur", "apac"
