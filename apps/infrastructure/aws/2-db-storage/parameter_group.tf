@@ -1,4 +1,3 @@
-
 # DB Parameter Group
 resource "aws_db_parameter_group" "postgres" {
   name   = "${var.aws_project_name}-postgres-params"
