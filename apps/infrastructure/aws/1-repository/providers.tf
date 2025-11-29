@@ -1,3 +1,4 @@
+# Provider configuration
 provider "aws" {
   region = var.aws_region
 
@@ -10,7 +11,6 @@ provider "aws" {
   }
 }
 
-# Provider configuration
 terraform {
   required_providers {
     aws = {
@@ -20,11 +20,10 @@ terraform {
   }
   required_version = ">= 1.0"
 
-  # Backend configuration for state storage
-  # Uncomment and configure after creating your S3 bucket and DynamoDB table
+  # Uncomment the following block to use S3 remote state management
   # backend "s3" {
-  #   bucket         = "your-terraform-state-bucket"
-  #   key            = "aws/1-repository/terraform.tfstate"
+  #   bucket         = "your-project-terraform-state"
+  #   key            = "terraform/state/1-repository/terraform.tfstate"
   #   region         = "us-east-1"
   #   dynamodb_table = "terraform-state-lock"
   #   encrypt        = true

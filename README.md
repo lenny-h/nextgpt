@@ -373,7 +373,7 @@ docker-compose up -d postgres
 docker-compose down
 ```
 
-### Stop and remove volumes (⚠️ deletes all data):
+### Stop and remove volumes (deletes all data):
 
 ```bash
 docker-compose down -v
@@ -551,24 +551,6 @@ You can adjust PostgreSQL settings in the `docker-compose.yml` file under the `p
 8. **Document Processor connection issues**:
    - Use `host.docker.internal` to connect to host machine from containers
    - Ensure API is running and accessible at the configured URL
-
-### Reset Everything
-
-To completely reset and start fresh:
-
-```bash
-# Stop all services
-docker-compose down
-
-# Remove all volumes (⚠️ deletes all data)
-docker-compose down -v
-
-# Remove all containers and networks
-docker-compose down --remove-orphans
-
-# Start fresh
-docker-compose up -d
-```
 
 ## Notes
 

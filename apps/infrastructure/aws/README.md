@@ -309,28 +309,99 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed step-by-step instr
 - **Development**: Uses local Terraform state (`terraform.tfstate` files)
 - **Production**: Use S3 backend (see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for setup)
 
+### Remote State Management
+
+For production environments, it's recommended to use S3 remote state management with DynamoDB for state locking. Each layer's `providers.tf` file contains commented-out blocks for both the S3 backend configuration and remote state data sources. To enable remote state:
+
+1. Create an S3 bucket for storing Terraform state (e.g., `your-project-terraform-state`)
+2. Create a DynamoDB table for state locking (e.g., `terraform-state-lock`)
+3. In each layer's `providers.tf`, uncomment the `backend "s3"` block and update the bucket name
+4. Comment out the local `terraform_remote_state` data source blocks
+5. Uncomment the S3 `terraform_remote_state` data source blocks and update the bucket name
+6. Run `terraform init -migrate-state` in each layer to migrate existing state to S3
+
 ## Cost Estimates
 
-Approximate monthly costs for a small production deployment:
+Approximate monthly costs for a small production deployment (based on 2024 AWS pricing in US East region):
+
+### Layer-by-Layer Breakdown
 
 | Layer                   | Resources                          | Approximate Monthly Cost |
 | ----------------------- | ---------------------------------- | ------------------------ |
-| 1-repository            | ECR (10GB)                         | $1                       |
-| 2-db-storage            | VPC, RDS, ElastiCache, NAT Gateway | $80-120                  |
-| 3-core                  | ECS Fargate, ALB, SQS              | $60-100                  |
-| 4-core (with Firecrawl) | +Firecrawl services                | +$50-100                 |
-| 6-file-storage          | S3                                 | $2-3                     |
-| 7-cloudflare-storage    | R2                                 | $1.50                    |
-| **Total (3-core + S3)** |                                    | **$143-224/month**       |
-| **Total (4-core + S3)** |                                    | **$193-324/month**       |
+| 1-repository            | ECR (10GB storage)                 | $1                       |
+| 2-db-storage            | VPC, RDS, ElastiCache, NAT Gateway | $85-95                   |
+| 3-core                  | ECS Fargate, ALB, SQS              | $55-75                   |
+| 4-core (with Firecrawl) | +Firecrawl services                | +$35-45                  |
+| 6-file-storage          | S3 (variable usage)                | $2-5                     |
+| 7-cloudflare-storage    | R2 (variable usage)                | $1.50                    |
+| **Total (3-core + S3)** |                                    | **$143-176/month**       |
+| **Total (4-core + S3)** |                                    | **$178-221/month**       |
 
-**Cost Optimization Tips:**
+### Detailed Cost Breakdown
 
-- Use smaller RDS instance types for dev/staging (db.t3.micro)
-- Use smaller ElastiCache node types (cache.t3.micro)
-- Set desired count to 0 for non-critical services during off-hours
-- Choose Cloudflare R2 if you have high download volume
-- Use AWS Savings Plans or Reserved Instances for production workloads
+#### Layer 2: Database & Storage ($85-95/month)
+
+- **NAT Gateways (2)**: ~$66/month ($0.045/hour × 730 hours × 2 AZs)
+- **RDS PostgreSQL (db.t3.micro)**: ~$12/month ($0.017/hour × 730 hours)
+  - 20GB gp3 storage: ~$2.30/month
+- **ElastiCache Redis (cache.t3.micro)**: ~$10/month ($0.0136/hour × 730 hours)
+- **VPC, Subnets, IGW**: Free
+
+#### Layer 3: Core Services ($55-75/month)
+
+- **Application Load Balancer**: ~$17-20/month
+  - Base: $16.50 ($0.0225/hour × 730 hours)
+  - LCU charges: ~$0.50-3.50 (varies with traffic)
+- **ECS Fargate Tasks (ARM64)**:
+  - **API** (512 CPU / 1024 MB)
+  - **Document Processor** (2048 CPU / 2048 MB)
+  - **PDF Exporter** (512 CPU / 1024 MB)
+- **SQS, EventBridge, CloudWatch Logs**: ~$1-5/month (usage-based)
+- **Secrets Manager**: ~$2-3/month (~5-6 secrets × $0.40/secret/month)
+
+#### Layer 4: Firecrawl Services (Additional $35-45/month)
+
+- **Firecrawl API** (1024 CPU / 2048 MB)
+- **Firecrawl Playwright** (1024 CPU / 2048 MB)
+- **Total for both**: ~$58/month
+
+#### Layer 6: S3 File Storage ($2-5/month)
+
+- **S3 Standard Storage**: $0.023/GB/month
+- **S3 Requests**: Minimal for typical usage
+- **Data Transfer**: First 100GB/month free, then $0.09/GB
+
+#### Layer 7: Cloudflare R2 ($1.50/month)
+
+- **Storage**: $0.015/GB/month (10GB included free)
+- **Class A Operations**: $4.50 per million
+- **Class B Operations**: $0.36 per million
+- **Egress**: Free (major cost advantage over S3)
+
+### Important Notes
+
+1. **NAT Gateway is the highest cost** (~$66/month for 2 gateways). Consider alternatives:
+   - Use a single NAT Gateway (reduces HA but saves ~$33/month)
+   - Use NAT instances (more complex but cheaper for low traffic)
+   - Deploy services in public subnets where appropriate
+
+2. **Data transfer costs** are not included and can vary significantly based on:
+   - Traffic volume
+   - Cross-AZ data transfer ($0.01/GB)
+   - Internet egress beyond free tier
+
+3. **Actual costs may vary** based on:
+   - AWS region (prices shown are for US East)
+   - Actual resource utilization
+   - Traffic patterns and data transfer
+   - Number of secrets stored
+   - CloudWatch Logs volume
+
+4. **Free Tier eligible** (first 12 months for new AWS accounts):
+   - 750 hours/month of db.t3.micro RDS
+   - 750 hours/month of cache.t3.micro ElastiCache
+   - 750 hours/month of ALB
+   - This can reduce costs by ~$40-50/month in the first year
 
 ## Monitoring & Operations
 
