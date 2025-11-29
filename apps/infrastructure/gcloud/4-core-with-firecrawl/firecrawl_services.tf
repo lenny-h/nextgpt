@@ -1,188 +1,202 @@
-# ==============================================================================
-# Firecrawl Services
-# ==============================================================================
+# # ==============================================================================
+# # Firecrawl Services
+# # ==============================================================================
 
-# Firecrawl API Service
-resource "google_cloud_run_v2_service" "firecrawl_api" {
-  name     = "firecrawl-api"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+# # Firecrawl API Service
+# resource "google_cloud_run_v2_service" "firecrawl_api" {
+#   name     = "firecrawl-api"
+#   location = var.google_vertex_location
+#   project  = var.google_vertex_project
+#   ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
-  template {
-    service_account = google_service_account.firecrawl_api_sa.email
+#   template {
+#     service_account = google_service_account.firecrawl_api_sa.email
 
-    containers {
-      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl-api:latest"
-      ports {
-        container_port = 8080
-      }
+#     containers {
+#       image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl-api:latest"
+#       ports {
+#         container_port = 8080
+#       }
 
-      # Server configuration
-      env {
-        name  = "HOST"
-        value = "0.0.0.0"
-      }
-      env {
-        name  = "EXTRACT_WORKER_PORT"
-        value = "3004"
-      }
-      env {
-        name  = "WORKER_PORT"
-        value = "3005"
-      }
-      env {
-        name  = "ENV"
-        value = "local"
-      }
+#       # Server configuration
+#       env {
+#         name  = "HOST"
+#         value = "0.0.0.0"
+#       }
+#       env {
+#         name  = "EXTRACT_WORKER_PORT"
+#         value = "3004"
+#       }
+#       env {
+#         name  = "WORKER_PORT"
+#         value = "3005"
+#       }
+#       env {
+#         name  = "ENV"
+#         value = "production"
+#       }
 
-      # Redis configuration
-      env {
-        name  = "REDIS_URL"
-        value = data.terraform_remote_state.db_storage.outputs.redis_url
-      }
-      env {
-        name  = "REDIS_RATE_LIMIT_URL"
-        value = data.terraform_remote_state.db_storage.outputs.redis_url
-      }
+#       # Logging configuration
+#       env {
+#         name  = "LOGGING_LEVEL"
+#         value = "error"
+#       }
 
-      # Playwright microservice
-      env {
-        name  = "PLAYWRIGHT_MICROSERVICE_URL"
-        value = "${google_cloud_run_v2_service.firecrawl_playwright.uri}/scrape"
-      }
+#       # Resource monitoring configuration
+#       env {
+#         name  = "MAX_CPU"
+#         value = "0.95"
+#       }
+#       env {
+#         name  = "MAX_RAM"
+#         value = "0.95"
+#       }
+#       env {
+#         name  = "CONNECTION_MONITOR_INTERVAL"
+#         value = "5000"
+#       }
 
-      # Database configuration
-      env {
-        name  = "NUQ_DATABASE_URL"
-        value = "postgresql://postgres@${data.terraform_remote_state.db_storage.outputs.postgres_private_ip}:5432/postgres"
-      }
+#       # Redis configuration
+#       env {
+#         name  = "REDIS_URL"
+#         value = data.terraform_remote_state.db_storage.outputs.redis_url
+#       }
+#       env {
+#         name  = "REDIS_RATE_LIMIT_URL"
+#         value = data.terraform_remote_state.db_storage.outputs.redis_url
+#       }
 
-      # Database password secret
-      env {
-        name = "PGPASSWORD"
-        value_source {
-          secret_key_ref {
-            secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
-            version = "latest"
-          }
-        }
-      }
+#       # Playwright microservice
+#       env {
+#         name  = "PLAYWRIGHT_MICROSERVICE_URL"
+#         value = "${google_cloud_run_v2_service.firecrawl_playwright.uri}/scrape"
+#       }
 
-      # Reduce parallel workers to lower memory usage
-      env {
-        name  = "NUQ_WORKER_COUNT"
-        value = "2"
-      }
+#       # Database configuration
+#       env {
+#         name  = "NUQ_DATABASE_URL"
+#         value = "postgresql://postgres@${data.terraform_remote_state.db_storage.outputs.postgres_private_ip}:5432/postgres"
+#       }
 
-      resources {
-        limits = {
-          cpu    = "2"
-          memory = "6Gi"
-        }
-      }
-    }
+#       # Database password secret
+#       env {
+#         name = "PGPASSWORD"
+#         value_source {
+#           secret_key_ref {
+#             secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
+#             version = "latest"
+#           }
+#         }
+#       }
 
-    vpc_access {
-      network_interfaces {
-        network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
-        subnetwork = data.terraform_remote_state.db_storage.outputs.subnet_id
-      }
-    }
+#       resources {
+#         limits = {
+#           cpu    = "2"
+#           memory = "4Gi"
+#         }
+#       }
+#     }
 
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 5
-    }
+#     vpc_access {
+#       network_interfaces {
+#         network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
+#         subnetwork = data.terraform_remote_state.db_storage.outputs.subnet_id
+#       }
+#     }
 
-    max_instance_request_concurrency = 40
-    timeout                          = "60s"
-  }
+#     scaling {
+#       min_instance_count = 0
+#       max_instance_count = 5
+#     }
 
-  traffic {
-    percent = 100
-    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
-  }
+#     max_instance_request_concurrency = 40
+#     timeout                          = "60s"
+#   }
 
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image,
-    ]
-  }
+#   traffic {
+#     percent = 100
+#     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+#   }
 
-  depends_on = [
-    google_project_service.run,
-    google_service_account.firecrawl_api_sa,
-    google_cloud_run_v2_service.firecrawl_playwright
-  ]
+#   lifecycle {
+#     ignore_changes = [
+#       template[0].containers[0].image,
+#     ]
+#   }
 
-  deletion_protection = false
-}
+#   depends_on = [
+#     google_project_service.run,
+#     google_service_account.firecrawl_api_sa,
+#     google_cloud_run_v2_service.firecrawl_playwright
+#   ]
 
-# Firecrawl Playwright Service
-resource "google_cloud_run_v2_service" "firecrawl_playwright" {
-  name     = "firecrawl-playwright"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+#   deletion_protection = false
+# }
 
-  template {
-    service_account = google_service_account.firecrawl_playwright_sa.email
+# # Firecrawl Playwright Service
+# resource "google_cloud_run_v2_service" "firecrawl_playwright" {
+#   name     = "firecrawl-playwright"
+#   location = var.google_vertex_location
+#   project  = var.google_vertex_project
+#   ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
-    containers {
-      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl-playwright:latest"
-      ports {
-        container_port = 8080
-      }
+#   template {
+#     service_account = google_service_account.firecrawl_playwright_sa.email
 
-      resources {
-        limits = {
-          cpu    = "2"
-          memory = "2Gi"
-        }
-      }
-    }
+#     containers {
+#       image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl-playwright:latest"
+#       ports {
+#         container_port = 8080
+#       }
 
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 5
-    }
+#       resources {
+#         limits = {
+#           cpu    = "2"
+#           memory = "2Gi"
+#         }
+#       }
+#     }
 
-    max_instance_request_concurrency = 80
-    timeout                          = "60s"
-  }
+#     scaling {
+#       min_instance_count = 0
+#       max_instance_count = 5
+#     }
 
-  traffic {
-    percent = 100
-    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
-  }
+#     max_instance_request_concurrency = 80
+#     timeout                          = "60s"
+#   }
 
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image,
-    ]
-  }
+#   traffic {
+#     percent = 100
+#     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+#   }
 
-  depends_on = [
-    google_project_service.run,
-    google_service_account.firecrawl_playwright_sa
-  ]
+#   lifecycle {
+#     ignore_changes = [
+#       template[0].containers[0].image,
+#     ]
+#   }
 
-  deletion_protection = false
-}
+#   depends_on = [
+#     google_project_service.run,
+#     google_service_account.firecrawl_playwright_sa
+#   ]
 
-# Allow API service to invoke Firecrawl API service
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_api_invoker" {
-  name     = google_cloud_run_v2_service.firecrawl_api.name
-  location = google_cloud_run_v2_service.firecrawl_api.location
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.api_sa.email}"
-}
+#   deletion_protection = false
+# }
 
-# Allow Firecrawl API to invoke Playwright service
-resource "google_cloud_run_v2_service_iam_member" "firecrawl_playwright_invoker" {
-  name     = google_cloud_run_v2_service.firecrawl_playwright.name
-  location = google_cloud_run_v2_service.firecrawl_playwright.location
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.firecrawl_api_sa.email}"
-}
+# # Allow API service to invoke Firecrawl API service
+# resource "google_cloud_run_v2_service_iam_member" "firecrawl_api_invoker" {
+#   name     = google_cloud_run_v2_service.firecrawl_api.name
+#   location = google_cloud_run_v2_service.firecrawl_api.location
+#   role     = "roles/run.invoker"
+#   member   = "serviceAccount:${google_service_account.api_sa.email}"
+# }
+
+# # Allow Firecrawl API to invoke Playwright service
+# resource "google_cloud_run_v2_service_iam_member" "firecrawl_playwright_invoker" {
+#   name     = google_cloud_run_v2_service.firecrawl_playwright.name
+#   location = google_cloud_run_v2_service.firecrawl_playwright.location
+#   role     = "roles/run.invoker"
+#   member   = "serviceAccount:${google_service_account.firecrawl_api_sa.email}"
+# }
