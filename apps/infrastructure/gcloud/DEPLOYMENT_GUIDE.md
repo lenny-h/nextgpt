@@ -80,6 +80,28 @@ bash build_and_push_images.sh $PROJECT_ID $REGION
 bash build_and_push_images.sh $PROJECT_ID $REGION --skip-firecrawl
 ```
 
+#### Building Firecrawl Images
+
+If you're using Firecrawl (not skipping with `--skip-firecrawl`), you must first build the Firecrawl images locally before running the script. The images must be built for `linux/amd64` platform:
+
+```bash
+# Clone Firecrawl repository
+git clone https://github.com/mendableai/firecrawl.git
+cd firecrawl
+
+# Build Firecrawl API (linux/amd64 platform for GCP Cloud Run)
+cd apps/api
+docker buildx build --platform linux/amd64 \
+  -t $REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository/firecrawl-api:latest .
+cd ../..
+
+# Build Firecrawl Playwright (linux/amd64 platform for GCP Cloud Run)
+cd apps/playwright-service
+docker buildx build --platform linux/amd64 \
+  -t $REGION-docker.pkg.dev/$PROJECT_ID/app-artifact-repository/firecrawl-playwright:latest .
+cd ../..
+```
+
 Verify images were pushed:
 
 ```bash

@@ -92,6 +92,28 @@ bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME
 bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME --skip-firecrawl
 ```
 
+#### Building Firecrawl Images
+
+If you're using Firecrawl (not skipping with `--skip-firecrawl`), you must first build the Firecrawl images locally before running the script. The images must be built for `linux/arm64` platform:
+
+```bash
+# Clone Firecrawl repository
+git clone https://github.com/mendableai/firecrawl.git
+cd firecrawl
+
+# Build Firecrawl API (linux/arm64 platform for AWS ECS/Fargate)
+cd apps/api
+docker buildx build --platform linux/arm64 \
+  -t $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$PROJECT_NAME/firecrawl-api:latest .
+cd ../..
+
+# Build Firecrawl Playwright (linux/arm64 platform for AWS ECS/Fargate)
+cd apps/playwright-service
+docker buildx build --platform linux/arm64 \
+  -t $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$PROJECT_NAME/firecrawl-playwright:latest .
+cd ../..
+```
+
 Verify images were pushed:
 
 ```bash
