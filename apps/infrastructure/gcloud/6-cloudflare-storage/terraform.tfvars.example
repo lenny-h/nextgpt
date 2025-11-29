@@ -1,3 +1,5 @@
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_api_token  = "your-cloudflare-api-token"
 r2_location           = "weur" # specific location like "wnam", "enam", "weur", "eeur", "apac"
+
+site_url = "example.com"

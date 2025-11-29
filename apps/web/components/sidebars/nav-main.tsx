@@ -52,10 +52,9 @@ export const NavMain = memo(() => {
         >
           <MessageCirclePlus className="text-primary" />
           <span>
-            {webT.navMain.new}{" "}
             {pathname.includes("/practice")
-              ? webT.navMain.practiceSession
-              : webT.navMain.chat}
+              ? webT.navMain.newPracticeSession
+              : webT.navMain.newChat}
           </span>
         </SidebarMenuButton>
       </SidebarMenuItem>

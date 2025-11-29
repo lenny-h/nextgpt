@@ -99,25 +99,16 @@ output "db_password_secret_arn" {
 # ========================================
 # Centralized GitHub Variables + Setup
 # ========================================
-output "github_variables" {
-  description = "Add these as GitHub repository variables (Settings > Secrets and variables > Actions > Variables)."
-  value = {
-    AWS_PROJECT_NAME   = var.aws_project_name
-    AWS_REGION         = var.aws_region
-    AWS_ROLE_TO_ASSUME = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.aws_project_name}-github-actions-role"
-  }
-}
-
-output "github_setup_instructions" {
-  description = "Follow these steps to configure GitHub actions and secrets using Terraform outputs from this module."
+output "setup_instructions" {
+  description = "Follow these steps to configure GitHub actions and secrets using values from this Terraform module."
   value       = <<-EOT
 
     1️⃣ GitHub Repository Variables
        - Go to: Settings > Secrets and variables > Actions > Variables
        - Add the following variables using values retrieved from Terraform:
-         * AWS_PROJECT_NAME
-         * AWS_REGION
-         * AWS_ROLE_TO_ASSUME
+         * AWS_PROJECT_NAME = ${var.aws_project_name}
+         * AWS_REGION = ${var.aws_region}
+         * AWS_ROLE_TO_ASSUME = arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.aws_project_name}-github-actions-role
 
     ✅ After creating the variables, push to GitHub to trigger the workflows.
   EOT

@@ -53,9 +53,8 @@
     "errorOccurred": "An error occurred, please try again!"
   },
   "navMain": {
-    "new": "New",
-    "practiceSession": "practice session",
-    "chat": "chat",
+    "newPracticeSession": "New practice session",
+    "newChat": "New chat",
     "temporaryChat": "Temporary chat",
     "chatLabel": "Chat",
     "practiceLabel": "Practice",

@@ -33,7 +33,31 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
       }
       env {
         name  = "ENV"
-        value = "local"
+        value = "production"
+      }
+
+      # Logging configuration
+      env {
+        name  = "LOGGING_LEVEL"
+        value = "error"
+      }
+      env {
+        name  = "FIRECRAWL_LOGGING_LEVEL"
+        value = "error"
+      }
+
+      # Resource monitoring configuration
+      env {
+        name  = "MAX_CPU"
+        value = "0.95"
+      }
+      env {
+        name  = "MAX_RAM"
+        value = "0.95"
+      }
+      env {
+        name  = "SYS_INFO_MAX_CACHE_DURATION"
+        value = "1500"
       }
 
       # Redis configuration
@@ -72,7 +96,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
       resources {
         limits = {
           cpu    = "2"
-          memory = "2Gi"
+          memory = "4Gi"
         }
       }
     }
@@ -89,7 +113,7 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
       max_instance_count = 5
     }
 
-    max_instance_request_concurrency = 80
+    max_instance_request_concurrency = 40
     timeout                          = "60s"
   }
 
@@ -104,7 +128,12 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.firecrawl_api_sa,
+    google_cloud_run_v2_service.firecrawl_playwright
+  ]
+
   deletion_protection = false
 }
 
@@ -152,7 +181,11 @@ resource "google_cloud_run_v2_service" "firecrawl_playwright" {
     ]
   }
 
-  depends_on          = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_service_account.firecrawl_playwright_sa
+  ]
+
   deletion_protection = false
 }
 

@@ -13,3 +13,8 @@ variable "r2_location" {
   type        = string
   description = "Cloudflare R2 location"
 }
+
+variable "site_url" {
+  type        = string
+  description = "Site URL (e.g. example.com)"
+}

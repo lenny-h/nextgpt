@@ -13,6 +13,8 @@ resource "google_secret_manager_secret_iam_member" "firecrawl_api_db_password_ac
   secret_id = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.firecrawl_api_sa.email}"
+
+  depends_on = [google_service_account.firecrawl_api_sa]
 }
 
 # ===================================

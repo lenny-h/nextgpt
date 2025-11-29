@@ -18,6 +18,7 @@ jobs:
       api: ${{ steps.changes.outputs.api }}
       pdf-exporter: ${{ steps.changes.outputs.pdf-exporter }}
       document-processor: ${{ steps.changes.outputs.document-processor }}
+      db-migrator: ${{ steps.changes.outputs.db-migrator }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,6 +41,10 @@ jobs:
               - '.github/workflows/deploy-aws-backend.yml'
             document-processor:
               - 'apps/document-processor/**'
+              - 'package.json'
+              - '.github/workflows/deploy-aws-backend.yml'
+            db-migrator:
+              - 'apps/db-migrator/**'
               - 'package.json'
               - '.github/workflows/deploy-aws-backend.yml'
 
@@ -186,3 +191,38 @@ jobs:
           aws ecs wait services-stable \
             --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
             --services document-processor
+
+  # Deploy DB Migrator service
+  deploy-db-migrator:
+    name: Deploy DB Migrator Service
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.db-migrator == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.AWS_PROJECT_NAME }}/db-migrator
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f apps/db-migrator/Dockerfile \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest

@@ -1,16 +1,3 @@
-# Provider configuration
-provider "aws" {
-  region = var.aws_region
-
-  default_tags {
-    tags = {
-      Project     = var.aws_project_name
-      Environment = "production"
-      ManagedBy   = "Terraform"
-    }
-  }
-}
-
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
