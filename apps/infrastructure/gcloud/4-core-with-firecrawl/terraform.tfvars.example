@@ -48,4 +48,4 @@ r2_endpoint                  = "https://<your-account-id>.r2.cloudflarestorage.c
 
 # AI Models
 embeddings_model = "text-embedding-004"
-llm_models       = "gemini-2.5-flash,gemini-2.5-pro"
+llm_models       = "[{\"name\":\"gemini-2.5-flash\",\"label\":\"Gemini 2.5 Flash\",\"description\":\"Fast and efficient model\",\"images\":true,\"pdfs\":true,\"reasoning\":false},{\"name\":\"gemini-2.5-pro\",\"label\":\"Gemini 2.5 Pro\",\"description\":\"Powerful model for complex tasks\",\"images\":true,\"pdfs\":true,\"reasoning\":false}]"
