@@ -36,7 +36,7 @@ data "terraform_remote_state" "core" {
   backend = "local"
 
   config = {
-    path = "../4-core-with-firecrawl/terraform.tfstate" # Update to ../4-core-with-firecrawl/terraform.tfstate if using Firecrawl
+    path = "../4-core-with-firecrawl/terraform.tfstate" # Update to ../3-core/terraform.tfstate if not using Firecrawl
   }
 }
 
