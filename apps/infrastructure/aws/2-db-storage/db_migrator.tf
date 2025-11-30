@@ -56,10 +56,6 @@ resource "aws_ecs_task_definition" "db_migrator" {
       {
         name  = "EMBEDDING_DIMENSIONS"
         value = tostring(var.embedding_dimensions)
-      },
-      {
-        name  = "DB_SSL"
-        value = "true"
       }
     ]
     secrets = [
