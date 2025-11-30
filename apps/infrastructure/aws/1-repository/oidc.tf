@@ -94,9 +94,10 @@ resource "aws_iam_role_policy" "github_actions_ecs" {
         Action = [
           "ecs:DescribeTaskDefinition",
           "ecs:DescribeServices",
+          "ecs:UpdateService",
           "ecs:DescribeTasks",
           "ecs:RunTask",
-          "ecs:UpdateService"
+          "ecs:WaitTasksStopped"
         ]
         Resource = "*"
       },
@@ -109,6 +110,27 @@ resource "aws_iam_role_policy" "github_actions_ecs" {
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.aws_project_name}-ecs-task-execution-role",
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.aws_project_name}-db-migrator-task-role"
         ]
+      }
+    ]
+  })
+}
+
+# Policy for GitHub Actions to describe EC2 resources (for ECS task networking)
+resource "aws_iam_role_policy" "github_actions_ec2" {
+  name = "${var.aws_project_name}-github-actions-ec2-policy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups"
+        ]
+        Resource = "*"
       }
     ]
   })

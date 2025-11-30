@@ -6,11 +6,11 @@ aws_region       = "us-east-1"
 site_url = "example.com"
 
 # Authentication
-better_auth_secret               = "your-secure-secret-key"
+better_auth_secret                 = "your-secure-secret-key"
 only_allow_admin_to_create_buckets = false
-admin_user_ids                   = "" # Comma-separated list of admin user IDs
-enable_email_signup              = true
-allowed_email_domains            = "" # Comma-separated list of allowed email domains, leave empty to allow all domains
+admin_user_ids                     = "" # Comma-separated list of admin user IDs
+enable_email_signup                = true
+allowed_email_domains              = "" # Comma-separated list of allowed email domains, leave empty to allow all domains
 
 # OAuth Providers
 enable_oauth_login   = false
@@ -41,7 +41,7 @@ resend_api_key      = "your-resend-api-key"
 encryption_key = "your-64-character-encryption-key"
 
 # Storage Configuration (Cloudflare R2)
-use_cloudflare_r2            = true
+use_cloudflare_r2            = false
 cloudflare_access_key_id     = "your-r2-access-key-id"
 cloudflare_secret_access_key = "your-r2-secret-access-key"
 r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"

@@ -23,3 +23,8 @@ variable "use_firecrawl" {
   type        = bool
   description = "Whether to use Firecrawl"
 }
+
+variable "embedding_dimensions" {
+  type        = number
+  description = "Dimensions for vector embeddings"
+}

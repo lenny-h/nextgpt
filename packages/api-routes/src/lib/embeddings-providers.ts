@@ -5,6 +5,18 @@ export const getEmbeddingModel = async (): Promise<{
   model: EmbeddingModel;
   providerOptions: { [model: string]: Record<string, JSONValue> };
 }> => {
+  // Get embedding dimensions from environment variable
+  const embeddingDimensions = parseInt(
+    process.env.EMBEDDING_DIMENSIONS || "0",
+    10
+  );
+
+  if (!embeddingDimensions || embeddingDimensions <= 0) {
+    throw new Error(
+      "EMBEDDING_DIMENSIONS environment variable is required and must be a positive number"
+    );
+  }
+
   if (process.env.USE_OPENAI_API === "true") {
     const { openai } = await import("@ai-sdk/openai");
 
@@ -12,7 +24,7 @@ export const getEmbeddingModel = async (): Promise<{
       model: openai.textEmbeddingModel(process.env.EMBEDDINGS_MODEL!),
       providerOptions: {
         openai: {
-          dimensions: 768,
+          dimensions: embeddingDimensions,
         },
       },
     };
@@ -25,7 +37,7 @@ export const getEmbeddingModel = async (): Promise<{
       model: vertex.textEmbeddingModel(process.env.EMBEDDINGS_MODEL!),
       providerOptions: {
         google: {
-          outputDimensionality: 768,
+          outputDimensionality: embeddingDimensions,
           taskType: "SEMANTIC_SIMILARITY", // optional, specifies the task type for generating embeddings
           autoTruncate: false,
         },
@@ -45,7 +57,7 @@ export const getEmbeddingModel = async (): Promise<{
       model: bedrock.textEmbeddingModel(process.env.EMBEDDINGS_MODEL!),
       providerOptions: {
         bedrock: {
-          dimensions: 768,
+          dimensions: embeddingDimensions,
         },
       },
     };

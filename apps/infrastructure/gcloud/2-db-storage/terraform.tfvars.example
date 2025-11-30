@@ -4,3 +4,6 @@ google_vertex_location = "us-central1"
 database_password = "your-secure-database-password"
 
 use_firecrawl = false
+
+# Vector embedding dimensions
+embedding_dimensions = 768

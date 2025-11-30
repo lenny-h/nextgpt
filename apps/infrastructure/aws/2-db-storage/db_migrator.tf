@@ -52,6 +52,10 @@ resource "aws_ecs_task_definition" "db_migrator" {
       {
         name  = "USE_FIRECRAWL"
         value = tostring(var.use_firecrawl)
+      },
+      {
+        name  = "EMBEDDING_DIMENSIONS"
+        value = tostring(var.embedding_dimensions)
       }
     ]
     secrets = [

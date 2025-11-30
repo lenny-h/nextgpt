@@ -148,6 +148,10 @@ resource "google_cloud_run_v2_service" "api" {
         value = var.embeddings_model
       }
       env {
+        name  = "EMBEDDING_DIMENSIONS"
+        value = tostring(data.terraform_remote_state.db_storage.outputs.embedding_dimensions)
+      }
+      env {
         name  = "LLM_MODELS"
         value = var.llm_models
       }
