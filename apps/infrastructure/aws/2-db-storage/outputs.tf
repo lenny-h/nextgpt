@@ -103,7 +103,7 @@ output "setup_instructions" {
   description = "Follow these steps to configure GitHub actions and secrets using values from this Terraform module."
   value       = <<-EOT
 
-    1️⃣ GitHub Repository Variables
+    1️⃣ GitHub Repository Variables (set these so GitHub Actions can push images and deploy resources)
        - Go to: Settings > Secrets and variables > Actions > Variables
        - Add the following variables using values retrieved from Terraform:
          * AWS_PROJECT_NAME = ${var.aws_project_name}

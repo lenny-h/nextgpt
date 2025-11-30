@@ -80,3 +80,62 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
     ]
   })
 }
+
+# Policy for GitHub Actions to manage ECS services and tasks
+resource "aws_iam_role_policy" "github_actions_ecs" {
+  name = "${var.aws_project_name}-github-actions-ecs-policy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:DescribeTaskDefinition",
+          "ecs:DescribeServices",
+          "ecs:DescribeTasks",
+          "ecs:RunTask",
+          "ecs:UpdateService"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole"
+        ]
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.aws_project_name}-ecs-task-execution-role",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.aws_project_name}-db-migrator-task-role"
+        ]
+      }
+    ]
+  })
+}
+
+# Policy for GitHub Actions to access CloudWatch Logs
+resource "aws_iam_role_policy" "github_actions_logs" {
+  name = "${var.aws_project_name}-github-actions-logs-policy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:GetLogEvents",
+          "logs:FilterLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:DescribeLogGroups",
+          "logs:StartLiveTail",
+          "logs:StopLiveTail"
+        ]
+        Resource = [
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.aws_project_name}/*"
+        ]
+      }
+    ]
+  })
+}

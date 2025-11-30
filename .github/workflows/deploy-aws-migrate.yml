@@ -9,6 +9,7 @@ on:
   # push:
   #   branches: main
   #   paths:
+  #     - "apps/db-migrator/**"
   #     - "packages/server/src/drizzle/**"
 
 env:
@@ -79,15 +80,43 @@ jobs:
 
           echo "Using task definition: $TASK_DEF_ARN"
 
-          # Get network configuration from the ECS cluster
-          # We'll use the same network config as other services
-          NETWORK_CONFIG=$(aws ecs describe-services \
-            --cluster $ECS_CLUSTER \
-            --services api \
-            --query 'services[0].networkConfiguration' \
+          # Get VPC ID for the project
+          VPC_ID=$(aws ec2 describe-vpcs \
+            --filters "Name=tag:Name,Values=${{ env.AWS_PROJECT_NAME }}-vpc" \
+            --query 'Vpcs[0].VpcId' \
+            --output text)
+
+          echo "VPC ID: $VPC_ID"
+
+          # Get private subnet IDs
+          SUBNET_IDS=$(aws ec2 describe-subnets \
+            --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:Name,Values=*private*" \
+            --query 'Subnets[*].SubnetId' \
             --output json)
 
-          echo "Network configuration retrieved"
+          echo "Subnet IDs: $SUBNET_IDS"
+
+          # Get ECS tasks security group
+          SECURITY_GROUP=$(aws ec2 describe-security-groups \
+            --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:Name,Values=${{ env.AWS_PROJECT_NAME }}-ecs-tasks-sg" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text)
+
+          echo "Security Group: $SECURITY_GROUP"
+
+          # Construct network configuration
+          NETWORK_CONFIG=$(cat <<EOF
+          {
+            "awsvpcConfiguration": {
+              "subnets": $SUBNET_IDS,
+              "securityGroups": ["$SECURITY_GROUP"],
+              "assignPublicIp": "DISABLED"
+            }
+          }
+          EOF
+          )
+
+          echo "Network configuration: $NETWORK_CONFIG"
 
           # Run the migration task
           TASK_ARN=$(aws ecs run-task \
@@ -121,12 +150,3 @@ jobs:
           fi
 
           echo "Migration completed successfully"
-
-      - name: Get migration logs
-        if: always()
-        run: |
-          # Get logs from CloudWatch
-          aws logs tail "/ecs/${{ env.AWS_PROJECT_NAME }}/db-migrator" \
-            --follow \
-            --format short \
-            --since 10m || true

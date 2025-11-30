@@ -14,7 +14,6 @@ jobs:
       api: ${{ steps.changes.outputs.api }}
       pdf-exporter: ${{ steps.changes.outputs.pdf-exporter }}
       document-processor: ${{ steps.changes.outputs.document-processor }}
-      db-migrator: ${{ steps.changes.outputs.db-migrator }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -152,40 +151,4 @@ jobs:
         run: |
           gcloud run services update document-processor \
             --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/document-processor:${{ github.sha }} \
-            --region=${{ vars.REGION }}
-
-  # Deploy DB Migrator service
-  deploy-db-migrator:
-    name: Deploy DB Migrator Service
-    runs-on: ubuntu-latest
-    needs: changes
-    # if: needs.changes.outputs.db-migrator == 'true'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker to use Artifact Registry
-        run: gcloud auth configure-docker ${{ vars.REGION }}-docker.pkg.dev
-
-      - name: Build and push Docker image
-        run: |
-          IMAGE_NAME=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/db-migrator:${{ github.sha }}
-          IMAGE_LATEST=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/db-migrator:latest
-
-          docker build -f apps/db-migrator/Dockerfile -t $IMAGE_NAME -t $IMAGE_LATEST .
-          docker push $IMAGE_NAME
-          docker push $IMAGE_LATEST
-
-      - name: Update Cloud Run job
-        run: |
-          gcloud run jobs update db-migrator \
-            --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/db-migrator:${{ github.sha }} \
             --region=${{ vars.REGION }}
