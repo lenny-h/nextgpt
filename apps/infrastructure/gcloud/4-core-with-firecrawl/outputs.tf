@@ -81,8 +81,10 @@ output "setup_instructions" {
      ✓ ENABLE_EMAIL_SIGNUP = ${var.enable_email_signup}
      ✓ ENABLE_OAUTH_LOGIN = ${var.enable_oauth_login}
      ✓ ENABLE_SSO = ${var.enable_sso}
-     ✓ USE_FIRECRAWL = true
+     ✓ USE_FIRECRAWL = false
      ✓ CSP_ENDPOINTS = ${var.use_cloudflare_r2 ? "https://files-bucket.<your-account-id>.r2.cloudflarestorage.com https://temporary-files-bucket.<your-account-id>.r2.cloudflarestorage.com" : "https://storage.googleapis.com"}
+     ✓ LLM_MODELS = ${var.llm_models}
+     ✓ PDF_BBOX_DURATION_MS = <your PDF BBox Duration in ms>
      ✓ CLOUDFLARE_ACCOUNT_ID = <your Cloudflare account ID>
      
      Secrets (Repository secrets):
