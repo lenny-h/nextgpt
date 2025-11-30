@@ -11,6 +11,11 @@ on:
   #   paths:
   #     - "apps/db-migrator/**"
   #     - "packages/server/src/drizzle/**"
+  # pull_request:
+  #   branches: main
+  #   paths:
+  #     - "apps/db-migrator/**"
+  #     - "packages/server/src/drizzle/**"
 
 env:
   AWS_PROJECT_NAME: ${{ vars.AWS_PROJECT_NAME }}

@@ -2,11 +2,16 @@ name: GCP Database Migrations
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: main
-  #   paths:
-  #     - "packages/server/src/drizzle/**"
-
+    # push:
+    #   branches: main
+    #   paths:
+    #     - "apps/db-migrator/**"
+    #     - "packages/server/src/drizzle/**"
+    # pull_request:
+    #   branches: main
+    #   paths:
+    #     - "apps/db-migrator/**"
+    #     - "packages/server/src/drizzle/**"
 env:
   PROJECT_ID: ${{ vars.PROJECT_ID }}
   REGION: ${{ vars.REGION }}
