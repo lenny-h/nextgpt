@@ -1,4 +1,5 @@
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { cn } from "@workspace/ui/lib/utils";
 import React from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -19,6 +20,7 @@ export const Textarea: React.FC<TextareaProps> = ({
   isLoading,
   submitForm,
 }) => {
+  const { webT } = useWebTranslations();
   const [isTemporary] = useIsTemporary();
 
   return (
@@ -30,7 +32,7 @@ export const Textarea: React.FC<TextareaProps> = ({
       rows={2}
       maxRows={4}
       tabIndex={0}
-      placeholder="Ask a question..."
+      placeholder={webT.multimodal.placeholder}
       className={cn(
         "min-h-12 w-full resize-none px-4 pt-3 text-base outline-none",
         isTemporary
@@ -42,7 +44,7 @@ export const Textarea: React.FC<TextareaProps> = ({
           event.preventDefault();
 
           if (isLoading) {
-            toast.error("Please wait for the model to finish its response!");
+            toast.error(webT.chat.waitForResponse);
           } else {
             submitForm();
           }

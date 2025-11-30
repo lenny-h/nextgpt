@@ -45,7 +45,7 @@ export class AwsStorageClient implements IStorageClient {
   }): Promise<{ url: string; headers: Record<string, string> }> {
     const s3Client = this.getS3Client();
     const command = new PutObjectCommand({
-      Bucket: process.env.AWS_PROJECT_NAME + bucket,
+      Bucket: `${process.env.AWS_PROJECT_NAME}-${bucket}`,
       Key: key,
       ContentType: contentType,
       ContentLength: contentLength,

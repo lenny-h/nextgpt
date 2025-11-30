@@ -9,6 +9,10 @@
     "searchPrompts": "Prompts suchen",
     "search": "Suche"
   },
+  "chat": {
+    "errorOccurred": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut!",
+    "waitForResponse": "Bitte warten Sie, bis die Antwort beendet ist!"
+  },
   "chatHeader": {
     "chatAdded": "Chat zu Favoriten hinzugefügt",
     "chatAddedError": "Fehler beim Hinzufügen des Chats zu den Favoriten",
@@ -16,6 +20,13 @@
     "chatRemovedError": "Fehler beim Entfernen des Chats aus den Favoriten",
     "addToFavourites": "Zu Favoriten hinzufügen",
     "toggleSidebar": "Seitenleiste umschalten"
+  },
+  "chatItem": {
+    "more": "Mehr",
+    "removeFromFavorites": "Aus Favoriten entfernen",
+    "addToFavourites": "Zu Favoriten hinzufügen",
+    "rename": "Umbenennen",
+    "delete": "Löschen"
   },
   "chatSearch": {
     "searchChats": "Chats suchen..."
@@ -38,18 +49,8 @@
     "authenticating": "Authentifizierung...",
     "failedToLoadPdf": "PDF konnte nicht geladen werden"
   },
-  "chatItem": {
-    "more": "Mehr",
-    "removeFromFavorites": "Aus Favoriten entfernen",
-    "addToFavourites": "Zu Favoriten hinzufügen",
-    "rename": "Umbenennen",
-    "delete": "Löschen"
-  },
   "loadButtonLists": {
     "selectCourseFirst": "Bitte wählen Sie zuerst einen Kurs aus"
-  },
-  "chat": {
-    "errorOccurred": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut!"
   },
   "navMain": {
     "newPracticeSession": "Neue Übungssession",
@@ -157,6 +158,7 @@
     "documentNotFound": "Dokument im Filter nicht gefunden"
   },
   "multimodal": {
+    "placeholder": "Fragen Sie etwas...",
     "dropFiles": "Dateien hier ablegen",
     "webSearch": "Websuche"
   },
