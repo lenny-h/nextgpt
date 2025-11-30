@@ -107,10 +107,6 @@ resource "aws_ecs_task_definition" "api" {
           value = data.terraform_remote_state.db_storage.outputs.db_instance_endpoint
         },
         {
-          name  = "DB_SSL"
-          value = "true"
-        },
-        {
           name  = "REDIS_URL"
           value = "redis://${data.terraform_remote_state.db_storage.outputs.redis_endpoint}"
         },
@@ -326,10 +322,6 @@ resource "aws_ecs_task_definition" "document_processor" {
           value = data.terraform_remote_state.db_storage.outputs.db_instance_endpoint
         },
         {
-          name  = "DB_SSL"
-          value = "true"
-        },
-        {
           name  = "USE_CLOUDFLARE_R2"
           value = tostring(var.use_cloudflare_r2)
         },
@@ -461,10 +453,6 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
         {
           name  = "DATABASE_HOST"
           value = data.terraform_remote_state.db_storage.outputs.db_instance_endpoint
-        },
-        {
-          name  = "DB_SSL"
-          value = "true"
         },
         {
           name  = "REDIS_URL"
