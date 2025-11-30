@@ -9,6 +9,10 @@
     "searchPrompts": "Search prompts",
     "search": "Search"
   },
+  "chat": {
+    "errorOccurred": "An error occurred, please try again!",
+    "waitForResponse": "Please wait for the model to finish its response!"
+  },
   "chatHeader": {
     "chatAdded": "Chat added to favourites",
     "chatAddedError": "Failed to add chat to favourites",
@@ -16,6 +20,14 @@
     "chatRemovedError": "Failed to remove chat from favourites",
     "addToFavourites": "Add to favourites",
     "toggleSidebar": "Toggle sidebar"
+  },
+  "chatItem": {
+    "practiceSession": "Practice Session",
+    "more": "More",
+    "removeFromFavorites": "Remove from Favorites",
+    "addToFavourites": "Add to favourites",
+    "rename": "Rename",
+    "delete": "Delete"
   },
   "chatSearch": {
     "searchChats": "Search chats..."
@@ -38,19 +50,8 @@
     "authenticating": "Authenticating...",
     "failedToLoadPdf": "Failed to load PDF"
   },
-  "chatItem": {
-    "practiceSession": "Practice Session",
-    "more": "More",
-    "removeFromFavorites": "Remove from Favorites",
-    "addToFavourites": "Add to favourites",
-    "rename": "Rename",
-    "delete": "Delete"
-  },
   "loadButtonLists": {
     "selectCourseFirst": "Please select a course first"
-  },
-  "chat": {
-    "errorOccurred": "An error occurred, please try again!"
   },
   "navMain": {
     "newPracticeSession": "New practice session",
@@ -158,6 +159,7 @@
     "documentNotFound": "Document not found in the filter"
   },
   "multimodal": {
+    "placeholder": "Ask a question...",
     "dropFiles": "Drop files here",
     "webSearch": "Web Search"
   },
