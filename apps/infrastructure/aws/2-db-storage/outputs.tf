@@ -96,6 +96,12 @@ output "db_password_secret_arn" {
   value       = aws_secretsmanager_secret.db_password.arn
 }
 
+# Configuration
+output "embedding_dimensions" {
+  description = "Vector embedding dimensions"
+  value       = var.embedding_dimensions
+}
+
 # ========================================
 # Centralized GitHub Variables + Setup
 # ========================================

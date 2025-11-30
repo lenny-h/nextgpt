@@ -42,6 +42,10 @@ resource "google_cloud_run_v2_job" "db_migrator" {
           name  = "USE_FIRECRAWL"
           value = tostring(var.use_firecrawl)
         }
+        env {
+          name  = "EMBEDDING_DIMENSIONS"
+          value = tostring(var.embedding_dimensions)
+        }
 
         # Sensitive secrets from Secret Manager
         env {

@@ -147,6 +147,10 @@ resource "aws_ecs_task_definition" "api" {
           value = var.embeddings_model
         },
         {
+          name  = "EMBEDDING_DIMENSIONS"
+          value = tostring(data.terraform_remote_state.db_storage.outputs.embedding_dimensions)
+        },
+        {
           name  = "LLM_MODELS"
           value = var.llm_models
         },

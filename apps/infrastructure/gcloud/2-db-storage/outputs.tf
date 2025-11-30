@@ -74,6 +74,12 @@ output "db_migrator_job_name" {
   value       = google_cloud_run_v2_job.db_migrator.name
 }
 
+# Configuration
+output "embedding_dimensions" {
+  description = "Vector embedding dimensions"
+  value       = var.embedding_dimensions
+}
+
 # CI/CD Service Account outputs
 output "ci_cd_sa_email" {
   description = "The email of the CI/CD service account"
