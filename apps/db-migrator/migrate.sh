@@ -20,11 +20,6 @@ EMBEDDING_MIGRATION="./src/drizzle/0001_tearful_firedrake.sql"
 if [ -f "$EMBEDDING_MIGRATION" ]; then
   echo "Configuring embedding dimensions in migration file..."
   
-  # Backup the original file if not already backed up
-  if [ ! -f "${EMBEDDING_MIGRATION}.original" ]; then
-    cp "$EMBEDDING_MIGRATION" "${EMBEDDING_MIGRATION}.original"
-  fi
-  
   # Replace vector(768) with the configured dimension
   # This handles the SQL migration file format: "embedding" vector(768) NOT NULL,
   sed -i.tmp "s/vector([0-9]\+)/vector($EMBEDDING_DIMENSIONS)/g" "$EMBEDDING_MIGRATION"
@@ -41,11 +36,8 @@ else
   
   # Backup the original file if it exists
   if [ -f "$FIRECRAWL_MIGRATION" ]; then
-    cp "$FIRECRAWL_MIGRATION" "${FIRECRAWL_MIGRATION}.backup"
-    
     # Create an empty file (but keep the file structure for drizzle-kit)
     echo "-- Firecrawl migration disabled (USE_FIRECRAWL=false)" > "$FIRECRAWL_MIGRATION"
-    echo "-- Original migration backed up to ${FIRECRAWL_MIGRATION}.backup" >> "$FIRECRAWL_MIGRATION"
   fi
 fi
 
