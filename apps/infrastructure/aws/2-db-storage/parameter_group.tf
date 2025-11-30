@@ -14,4 +14,11 @@ resource "aws_db_parameter_group" "postgres" {
     value        = "pg_cron"
     apply_method = "pending-reboot"
   }
+
+  # Disable SSL requirement since DB is in private VPC
+  parameter {
+    name         = "rds.force_ssl"
+    value        = "0"
+    apply_method = "pending-reboot"
+  }
 }
