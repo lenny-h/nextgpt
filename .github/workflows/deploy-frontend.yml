@@ -100,7 +100,7 @@ jobs:
 
             NEXT_PUBLIC_CSP_ENDPOINTS
 
-            LLM_MODELS
+            NEXT_PUBLIC_LLM_MODELS
             NEXT_PUBLIC_PDF_BBOX_DURATION_MS
 
   # Deploy Dashboard App to Cloudflare Workers
