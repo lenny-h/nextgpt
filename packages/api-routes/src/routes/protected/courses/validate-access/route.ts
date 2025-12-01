@@ -1,5 +1,6 @@
 import { checkUserCourseAccess } from "@workspace/api-routes/lib/db/queries/course-users.js";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { validateAccessSchema } from "./schema.js";
 
@@ -8,7 +9,7 @@ const app = new Hono().post(
   validator("json", async (value, c) => {
     const parsed = validateAccessSchema.safeParse(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),

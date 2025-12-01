@@ -16,7 +16,7 @@ const app = new Hono()
     validator("param", (value, c) => {
       const parsed = paramSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
@@ -44,7 +44,7 @@ const app = new Hono()
     validator("param", (value, c) => {
       const parsed = paramSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
@@ -54,9 +54,7 @@ const app = new Hono()
 
       const result = await db
         .delete(documents)
-        .where(
-          and(eq(documents.id, documentId), eq(documents.userId, user.id))
-        )
+        .where(and(eq(documents.id, documentId), eq(documents.userId, user.id)))
         .returning({ id: documents.id });
 
       if (result.length === 0) {

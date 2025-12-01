@@ -46,9 +46,9 @@ function parseChatModels(): ChatModel[] {
           reasoning: model.reasoning ?? false,
         }));
       }
-    } catch {
+    } catch (e) {
       console.warn(
-        "Failed to parse CHAT_MODELS environment variable, using defaults"
+        "Failed to parse LLM_MODELS environment variable, using defaults"
       );
     }
   }

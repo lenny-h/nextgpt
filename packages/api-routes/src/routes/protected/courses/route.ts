@@ -11,7 +11,7 @@ const app = new Hono().post(
   validator("json", async (value, c) => {
     const parsed = createCourseSchema.safeParse(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),

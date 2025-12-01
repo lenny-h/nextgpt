@@ -30,7 +30,7 @@ const app = new Hono()
     validator("query", (value, c) => {
       const parsed = querySchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
@@ -72,7 +72,7 @@ const app = new Hono()
     validator("json", async (value, c) => {
       const parsed = addModelFormSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
