@@ -106,7 +106,9 @@ const app = new Hono().post(
       taskId,
       processorUrl,
       endpoint:
-        fileType === "application/pdf" ? "/process-pdf" : "/process-document",
+        fileType === "application/pdf"
+          ? "/internal/process-pdf"
+          : "/internal/process-document",
       payload: {
         taskId,
         bucketId: bucketSizeInfo.bucketId,

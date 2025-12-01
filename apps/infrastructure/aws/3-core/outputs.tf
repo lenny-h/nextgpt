@@ -19,6 +19,11 @@ output "target_group_pdf_exporter_arn" {
   value       = aws_lb_target_group.pdf_exporter.arn
 }
 
+output "encryption_key_secret_arn" {
+  description = "Encryption key secret ARN (used for internal service authentication)"
+  value       = aws_secretsmanager_secret.encryption_key.arn
+}
+
 # SSL Certificate
 output "acm_certificate_arn" {
   description = "ACM certificate ARN"
@@ -36,10 +41,26 @@ output "dns_validation_records" {
   }
 }
 
-# ECS Services
-output "ecs_service_document_processor_name" {
-  description = "Document Processor ECS service name"
-  value       = aws_ecs_service.document_processor.name
+# EventBridge API Destinations
+output "api_destination_process_pdf_arn" {
+  description = "API Destination ARN for PDF processing"
+  value       = aws_cloudwatch_event_api_destination.process_pdf.arn
+}
+
+output "api_destination_process_document_arn" {
+  description = "API Destination ARN for document processing"
+  value       = aws_cloudwatch_event_api_destination.process_document.arn
+}
+
+# ECS Task Definitions (services created in layer 5)
+output "ecs_task_definition_document_processor_arn" {
+  description = "Document Processor task definition ARN"
+  value       = aws_ecs_task_definition.document_processor.arn
+}
+
+output "service_discovery_document_processor_arn" {
+  description = "Document Processor service discovery ARN"
+  value       = aws_service_discovery_service.document_processor.arn
 }
 
 output "ecs_task_definition_api_arn" {
