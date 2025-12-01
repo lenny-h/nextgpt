@@ -1,6 +1,6 @@
 "use client";
 
-import { chatModels } from "@workspace/api-routes/utils/models";
+import { chatModels } from "@/lib/models";
 import React, {
   createContext,
   type ReactNode,

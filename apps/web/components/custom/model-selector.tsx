@@ -1,7 +1,7 @@
 "use client";
 
 import { useChatModel } from "@/contexts/selected-chat-model";
-import { chatModels } from "@workspace/api-routes/utils/models";
+import { chatModels } from "@/lib/models";
 import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
