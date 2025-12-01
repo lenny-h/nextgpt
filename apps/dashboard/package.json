@@ -44,6 +44,6 @@
     "@workspace/typescript-config": "workspace:*",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "typescript": "^5.9.3",
-    "wrangler": "^4.50.0"
+    "wrangler": "^4.51.0"
   }
 }
