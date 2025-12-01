@@ -17,7 +17,7 @@ const app = new Hono()
     validator("param", (value, c) => {
       const parsed = paramSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
@@ -43,14 +43,14 @@ const app = new Hono()
     validator("param", (value, c) => {
       const parsed = paramSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
     validator("json", async (value, c) => {
       const parsed = chatsIsFavouriteSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),

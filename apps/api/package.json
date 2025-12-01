@@ -11,20 +11,20 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.1",
+    "@hono/node-server": "^1.19.6",
     "@workspace/api-routes": "workspace:*",
     "@workspace/server": "workspace:*",
     "drizzle-orm": "0.44.5",
-    "hono": "^4.9.6"
+    "hono": "^4.10.7"
   },
   "devDependencies": {
-    "@types/node": "^22.13.14",
-    "@vitest/coverage-v8": "^4.0.8",
+    "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.14",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "dotenv": "^17.2.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.14"
   }
 }

@@ -1,5 +1,6 @@
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { getSignedUrlSchema } from "./schema.js";
 
@@ -13,9 +14,9 @@ const app = new Hono().post(
         issue.path.includes("filename")
       );
       if (filenameError) {
-        return c.text("INVALID_FILENAME", 400);
+        throw new HTTPException(400, { message: "INVALID_FILENAME" });
       }
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),

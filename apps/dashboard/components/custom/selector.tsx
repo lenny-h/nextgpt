@@ -26,7 +26,7 @@ interface Item {
 
 interface GenericSelectorProps {
   items: Item[] | undefined;
-  selectedId: string | null;
+  selectedId: string | undefined;
   onSelect: (id: string) => void;
   isLoading?: boolean;
   error?: unknown;

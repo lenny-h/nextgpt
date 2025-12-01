@@ -35,7 +35,7 @@ export const Correction = memo(() => {
   const [handInUploads, setHandInUploads] = useState<{ [key: string]: Upload }>(
     {},
   );
-  const [promptId, setPromptId] = useState<string | null>(null);
+  const [promptId, setPromptId] = useState<string | undefined>(undefined);
   const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 

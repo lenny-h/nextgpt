@@ -4,6 +4,7 @@ import { db } from "@workspace/server/drizzle/db.js";
 import { chats } from "@workspace/server/drizzle/schema.js";
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import * as z from "zod";
 
@@ -19,9 +20,9 @@ const app = new Hono().get(
   validator("query", (value, c) => {
     const parsed = querySchema.safeParse(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
-    return parsed.data
+    return parsed.data;
   }),
   async (c) => {
     const { pageNumber, itemsPerPage } = c.req.valid("query");

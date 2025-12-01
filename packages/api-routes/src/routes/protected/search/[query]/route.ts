@@ -17,14 +17,14 @@ const app = new Hono().post(
   validator("param", (value, c) => {
     const parsed = paramSchema.safeParse(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),
   validator("json", async (value, c) => {
     const parsed = await searchPayloadSchema.safeParseAsync(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),

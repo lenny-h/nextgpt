@@ -3,6 +3,7 @@ import * as z from "zod";
 import { saveDocument } from "@workspace/api-routes/lib/db/queries/documents.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { documentsContentSchema } from "./schema.js";
 
@@ -13,14 +14,14 @@ const app = new Hono().patch(
   validator("param", (value, c) => {
     const parsed = paramSchema.safeParse(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),
   validator("json", async (value, c) => {
     const parsed = documentsContentSchema.safeParse(value);
     if (!parsed.success) {
-      return c.text("BAD_REQUEST", 400);
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
     return parsed.data;
   }),

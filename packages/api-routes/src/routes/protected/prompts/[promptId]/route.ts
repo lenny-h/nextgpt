@@ -6,6 +6,7 @@ import { db } from "@workspace/server/drizzle/db.js";
 import { prompts } from "@workspace/server/drizzle/schema.js";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { patchPromptSchema } from "./schema.js";
 
@@ -17,14 +18,14 @@ const app = new Hono()
     validator("param", (value, c) => {
       const parsed = paramSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
     validator("json", async (value, c) => {
       const parsed = patchPromptSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
@@ -46,7 +47,7 @@ const app = new Hono()
     validator("param", (value, c) => {
       const parsed = paramSchema.safeParse(value);
       if (!parsed.success) {
-        return c.text("BAD_REQUEST", 400);
+        throw new HTTPException(400, { message: "BAD_REQUEST" });
       }
       return parsed.data;
     }),
