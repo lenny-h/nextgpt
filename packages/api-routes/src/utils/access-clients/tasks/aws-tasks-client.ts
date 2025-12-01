@@ -50,17 +50,19 @@ export class AwsTasksClient implements ITasksClient {
     const schedulerClient = this.getSchedulerClient();
 
     const scheduleGroup = process.env.AWS_SCHEDULER_GROUP;
-    const targetArn = process.env.AWS_SCHEDULER_TARGET_ARN;
     const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN;
 
-    if (!targetArn || !roleArn) {
+    if (!roleArn) {
       throw new Error(
-        "AWS_SCHEDULER_TARGET_ARN and AWS_SCHEDULER_ROLE_ARN environment variables are required"
+        "AWS_SCHEDULER_ROLE_ARN environment variable is required"
       );
     }
 
     // Convert schedule time to ISO 8601 format
     const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`; // AWS requires no milliseconds
+
+    // Construct the full URL for the HTTP target
+    const targetUrl = `${processorUrl}${endpoint}`;
 
     const command = new CreateScheduleCommand({
       Name: taskId,
@@ -70,16 +72,18 @@ export class AwsTasksClient implements ITasksClient {
         Mode: FlexibleTimeWindowMode.OFF,
       },
       Target: {
-        Arn: targetArn,
+        // Use Universal Target ARN for HTTP endpoints
+        Arn: "arn:aws:scheduler:::aws-sdk:scheduler:invokeHttpEndpoint",
         RoleArn: roleArn,
         Input: JSON.stringify({
-          name: taskId,
-          url: `${processorUrl}${endpoint}`,
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+          HttpParameters: {
+            Method: "POST",
+            Url: targetUrl,
+            HeaderParameters: {
+              "Content-Type": "application/json",
+            },
+            Body: JSON.stringify(payload),
           },
-          body: Buffer.from(JSON.stringify(payload)).toString("base64"),
         }),
       },
       // Delete schedule after execution
