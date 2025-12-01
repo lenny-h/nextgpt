@@ -14,7 +14,7 @@
     "@hono/node-server": "^1.19.6",
     "@workspace/api-routes": "workspace:*",
     "@workspace/server": "workspace:*",
-    "drizzle-orm": "0.44.5",
+    "drizzle-orm": "0.44.7",
     "hono": "^4.10.7"
   },
   "devDependencies": {
