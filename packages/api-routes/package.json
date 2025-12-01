@@ -27,7 +27,7 @@
     "@mendable/firecrawl-js": "^4.4.1",
     "@workspace/server": "workspace:*",
     "ai": "^5.0.104",
-    "drizzle-orm": "^0.44.5",
+    "drizzle-orm": "^0.44.7",
     "hono": "^4.10.7",
     "papaparse": "^5.5.3",
     "redis": "^5.8.3",
