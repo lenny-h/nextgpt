@@ -81,8 +81,7 @@ def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[tuple[fl
 
     return page_index, bbox_tuple
 
-
-@router.post("/process-pdf")
+@router.post("/internal/process-pdf")
 async def process_pdf(event: DocumentUploadEvent):
     """Process a PDF from cloud storage to chunks with page numbers and bounding boxes."""
     logger.info(f"Received PDF processing request for '{event.name}' (task_id={event.taskId}, size={event.size} bytes)")

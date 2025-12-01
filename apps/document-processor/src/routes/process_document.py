@@ -33,8 +33,7 @@ router = APIRouter()
 # Configure logger
 logger = setup_logger(__name__)
 
-
-@router.post("/process-document")
+@router.post("/internal/process-document")
 async def process_document(event: DocumentUploadEvent):
     """Convert a non-PDF document from cloud storage to chunks."""
     logger.info(f"Received document processing request for '{event.name}' (task_id={event.taskId}, size={event.size} bytes)")

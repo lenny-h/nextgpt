@@ -15,6 +15,7 @@ const logger = createLogger("aws-tasks-client");
 
 /**
  * AWS EventBridge Scheduler implementation for task queuing
+ * Uses API Destinations for invoking HTTP endpoints
  * Supports delays up to 1 year and task deletion
  */
 export class AwsTasksClient implements ITasksClient {
@@ -42,10 +43,29 @@ export class AwsTasksClient implements ITasksClient {
     return this.client;
   }
 
+  private getApiDestinationArn(endpoint: string): string {
+    // Map endpoints to their corresponding API Destination ARNs
+    const apiDestinationArns: Record<string, string | undefined> = {
+      "/internal/process-pdf": process.env.AWS_API_DESTINATION_PROCESS_PDF_ARN,
+      "/internal/process-document":
+        process.env.AWS_API_DESTINATION_PROCESS_DOCUMENT_ARN,
+    };
+
+    const arn = apiDestinationArns[endpoint];
+    if (!arn) {
+      throw new Error(
+        `No API Destination ARN configured for endpoint: ${endpoint}. ` +
+          `Available endpoints: ${Object.keys(apiDestinationArns).join(", ")}`
+      );
+    }
+
+    return arn;
+  }
+
   async scheduleProcessingTask(
     params: ScheduleProcessingTaskParams
   ): Promise<void> {
-    const { taskId, processorUrl, endpoint, payload, scheduleTime } = params;
+    const { taskId, endpoint, payload, scheduleTime } = params;
 
     const schedulerClient = this.getSchedulerClient();
 
@@ -58,11 +78,11 @@ export class AwsTasksClient implements ITasksClient {
       );
     }
 
-    // Convert schedule time to ISO 8601 format
-    const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`; // AWS requires no milliseconds
+    // Get the API Destination ARN for this endpoint
+    const apiDestinationArn = this.getApiDestinationArn(endpoint);
 
-    // Construct the full URL for the HTTP target
-    const targetUrl = `${processorUrl}${endpoint}`;
+    // Convert schedule time to ISO 8601 format (AWS requires no milliseconds)
+    const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`;
 
     const command = new CreateScheduleCommand({
       Name: taskId,
@@ -72,25 +92,25 @@ export class AwsTasksClient implements ITasksClient {
         Mode: FlexibleTimeWindowMode.OFF,
       },
       Target: {
-        // Use Universal Target ARN for HTTP endpoints
-        Arn: "arn:aws:scheduler:::aws-sdk:scheduler:invokeHttpEndpoint",
+        Arn: apiDestinationArn,
         RoleArn: roleArn,
-        Input: JSON.stringify({
-          HttpParameters: {
-            Method: "POST",
-            Url: targetUrl,
-            HeaderParameters: {
-              "Content-Type": "application/json",
-            },
-            Body: JSON.stringify(payload),
-          },
-        }),
+        // The payload is sent as the request body to the API Destination
+        Input: JSON.stringify(payload),
+        // Retry configuration for transient failures
+        RetryPolicy: {
+          MaximumEventAgeInSeconds: 3600, // 1 hour
+          MaximumRetryAttempts: 3,
+        },
       },
       // Delete schedule after execution
       ActionAfterCompletion: "DELETE",
     });
 
     await schedulerClient.send(command);
+
+    logger.info(
+      `Scheduled processing task: ${taskId} for ${scheduleTime.toISOString()}`
+    );
   }
 
   async cancelTask(params: CancelTaskParams): Promise<void> {
@@ -106,6 +126,7 @@ export class AwsTasksClient implements ITasksClient {
 
     try {
       await schedulerClient.send(command);
+      logger.info(`Cancelled scheduled task: ${taskId}`);
     } catch (error: any) {
       if (error.name === "ResourceNotFoundException") {
         logger.warn(

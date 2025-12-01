@@ -135,6 +135,14 @@ resource "aws_ecs_task_definition" "api" {
           value = aws_iam_role.eventbridge_scheduler.arn
         },
         {
+          name  = "AWS_API_DESTINATION_PROCESS_PDF_ARN"
+          value = aws_cloudwatch_event_api_destination.process_pdf.arn
+        },
+        {
+          name  = "AWS_API_DESTINATION_PROCESS_DOCUMENT_ARN"
+          value = aws_cloudwatch_event_api_destination.process_document.arn
+        },
+        {
           name  = "EMBEDDINGS_MODEL"
           value = var.embeddings_model
         },
@@ -544,28 +552,5 @@ resource "aws_ecs_task_definition" "pdf_exporter" {
 
   tags = {
     Name = "${var.aws_project_name}-pdf-exporter-task"
-  }
-}
-
-# Document Processor ECS Service (Internal only - no load balancer)
-resource "aws_ecs_service" "document_processor" {
-  name            = "document-processor"
-  cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.document_processor.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = data.terraform_remote_state.db_storage.outputs.private_subnet_ids
-    security_groups  = [data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id]
-    assign_public_ip = false
-  }
-
-  service_registries {
-    registry_arn = aws_service_discovery_service.document_processor.arn
-  }
-
-  tags = {
-    Name = "${var.aws_project_name}-document-processor-service"
   }
 }
