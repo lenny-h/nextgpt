@@ -58,7 +58,7 @@ jobs:
       NEXT_PUBLIC_CSP_ENDPOINTS: ${{ vars.CSP_ENDPOINTS }}
 
       LLM_MODELS: ${{ vars.LLM_MODELS }}
-      NEXT_PUBLIC_PDF_BBOX_DURATION_MS: ${{ vars.NEXT_PUBLIC_PDF_BBOX_DURATION_MS }}
+      NEXT_PUBLIC_PDF_BBOX_DURATION_MS: ${{ vars.NEXT_PUBLIC_PDF_BBOX_DURATION_MS || '3000' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
