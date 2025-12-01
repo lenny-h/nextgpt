@@ -59,7 +59,7 @@ resource "aws_iam_role" "api_task" {
   }
 }
 
-# Policy for API to access S3, SQS, EventBridge Scheduler, and Bedrock
+# Policy for API to access EventBridge Scheduler and Bedrock
 resource "aws_iam_role_policy" "api_task" {
   name = "${var.aws_project_name}-api-task-policy"
   role = aws_iam_role.api_task.id
@@ -67,14 +67,6 @@ resource "aws_iam_role_policy" "api_task" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:SendMessage",
-          "sqs:GetQueueUrl"
-        ]
-        Resource = aws_sqs_queue.document_processing.arn
-      },
       {
         Effect = "Allow"
         Action = [
@@ -126,35 +118,6 @@ resource "aws_iam_role" "document_processor_task" {
   tags = {
     Name = "${var.aws_project_name}-document-processor-task-role"
   }
-}
-
-# Policy for Document Processor to access SQS and Bedrock
-resource "aws_iam_role_policy" "document_processor_task" {
-  name = "${var.aws_project_name}-document-processor-task-policy"
-  role = aws_iam_role.document_processor_task.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ]
-        Resource = aws_sqs_queue.document_processing.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "bedrock:InvokeModel",
-          "bedrock:InvokeModelWithResponseStream"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
 }
 
 # IAM Role for PDF Exporter Task

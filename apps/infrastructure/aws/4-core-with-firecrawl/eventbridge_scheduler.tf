@@ -27,7 +27,7 @@ resource "aws_iam_role" "eventbridge_scheduler" {
   }
 }
 
-# EventBridge Scheduler Policy to send messages to SQS
+# EventBridge Scheduler Policy to invoke HTTP endpoints
 resource "aws_iam_role_policy" "eventbridge_scheduler" {
   name = "${var.aws_project_name}-eventbridge-scheduler-policy"
   role = aws_iam_role.eventbridge_scheduler.id
@@ -38,9 +38,9 @@ resource "aws_iam_role_policy" "eventbridge_scheduler" {
       {
         Effect = "Allow"
         Action = [
-          "sqs:SendMessage"
+          "scheduler:InvokeHttpEndpoint"
         ]
-        Resource = aws_sqs_queue.document_processing.arn
+        Resource = "*"
       }
     ]
   })

@@ -52,11 +52,6 @@ output "ecs_task_definition_pdf_exporter_arn" {
   value       = aws_ecs_task_definition.pdf_exporter.arn
 }
 
-# SQS
-output "sqs_queue_url" {
-  description = "SQS queue URL for document processing"
-  value       = aws_sqs_queue.document_processing.url
-}
 
 output "api_task_role_arn" {
   description = "API task role ARN"

@@ -127,16 +127,8 @@ resource "aws_ecs_task_definition" "api" {
           value = var.aws_region
         },
         {
-          name  = "SQS_QUEUE_URL"
-          value = aws_sqs_queue.document_processing.url
-        },
-        {
           name  = "AWS_SCHEDULER_GROUP"
           value = aws_scheduler_schedule_group.tasks.name
-        },
-        {
-          name  = "AWS_SCHEDULER_TARGET_ARN"
-          value = aws_sqs_queue.document_processing.arn
         },
         {
           name  = "AWS_SCHEDULER_ROLE_ARN"
