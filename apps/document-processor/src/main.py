@@ -18,7 +18,7 @@ from routes.convert import router as convert_router
 from routes.process_document import router as document_router
 from routes.process_pdf import router as pdf_router
 
-from logger import setup_logger
+from logger import setup_logger, configure_library_logging
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -27,6 +27,9 @@ logger = setup_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifecycle - initialize and cleanup resources."""
+    # Configure logging for libraries (important for production to reduce noise)
+    configure_library_logging()
+
     # Startup: Initialize database connection pool
     logger.info("Initializing database connection pool...")
     pool = await get_connection_pool()
@@ -57,10 +60,10 @@ app.include_router(pdf_router, tags=["process-pdf"])
 
 if __name__ == "__main__":
     import uvicorn
-
+    
     port = int(os.getenv("PORT", "8080"))
     is_dev = os.getenv("ENVIRONMENT", "production") == "development"
-
+    
     logger.info(f"Starting Docling microservice on port {port} (Environment: {'development' if is_dev else 'production'})")
 
     uvicorn.run(

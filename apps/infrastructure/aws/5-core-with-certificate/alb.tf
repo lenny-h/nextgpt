@@ -15,7 +15,7 @@ resource "aws_lb_target_group" "document_processor" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    interval            = 30
+    interval            = 150
     matcher             = "200"
     path                = "/health"
     port                = "traffic-port"

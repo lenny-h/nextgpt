@@ -29,7 +29,7 @@
     "INVALID_FILENAME": "Ungültiger Dateiname. Dateinamen dürfen keine Sonderzeichen enthalten und müssen eine gültige Endung haben",
     "LOAD_MORE_ERROR": "Fehler beim Laden weiterer Elemente",
     "NO_RESULTS": "Keine Ergebnisse gefunden",
-    "ONLY_SCHEDULED_TASKS": "Es können nur Aufgaben, die noch nicht gestartet wurden, gelöscht werden",
+    "ONLY_SCHEDULED_OR_COMPLETED_TASKS": "Laufende Prozesse können nicht gelöscht werden",
     "PAGE_NOT_FOUND": "Die Seite konnte nicht gefunden werden",
     "PAYLOAD_TOO_LARGE": "Die Nutzlast Ihrer Anfrage ist zu groß",
     "PROMPT_LIMIT_REACHED": "Sie haben das Limit für benutzerdefinierte Prompts erreicht",

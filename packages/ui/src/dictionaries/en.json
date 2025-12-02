@@ -29,7 +29,7 @@
     "INVALID_FILENAME": "Filenames must not contain special characters and must have a valid extension",
     "LOAD_MORE_ERROR": "Failed to load more items",
     "NO_RESULTS": "No results found",
-    "ONLY_SCHEDULED_TASKS": "Only tasks that have not yet started can be deleted",
+    "ONLY_SCHEDULED_OR_COMPLETED_TASKS": "Processing tasks cannot be deleted",
     "PAGE_NOT_FOUND": "Page not found",
     "PAYLOAD_TOO_LARGE": "The payload of your request is too large",
     "PROMPT_LIMIT_REACHED": "You have reached the limit for custom prompts",

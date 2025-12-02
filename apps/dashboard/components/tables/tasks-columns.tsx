@@ -149,8 +149,10 @@ export const tasksColumns: ColumnDef<TaskTableColumns>[] = [
       const [deleteDialog, setDeleteDialog] = useState(false);
       const searchParams = useSearchParams();
       const courseId = searchParams.get("courseId");
+      const status = row.getValue("status");
 
-      if (row.getValue("status") !== "scheduled") {
+      // Only allow deletion of scheduled, finished, or failed tasks
+      if (status === "processing") {
         return <div className="flex h-8 items-center">No actions</div>;
       }
 

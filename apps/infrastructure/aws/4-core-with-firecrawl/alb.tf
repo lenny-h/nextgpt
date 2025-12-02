@@ -25,7 +25,7 @@ resource "aws_lb_target_group" "api" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    interval            = 30
+    interval            = 150
     matcher             = "200"
     path                = "/api/public/health"
     port                = "traffic-port"
@@ -52,7 +52,7 @@ resource "aws_lb_target_group" "pdf_exporter" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    interval            = 30
+    interval            = 150
     matcher             = "200"
     path                = "/pdf-exporter/public/health"
     port                = "traffic-port"

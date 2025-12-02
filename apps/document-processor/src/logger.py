@@ -51,3 +51,27 @@ def setup_logger(
         logger.addHandler(handler)
     
     return logger
+
+
+def configure_library_logging(level: Optional[int] = None) -> None:
+    """
+    Configure log levels for third-party libraries to reduce noise.
+    
+    Args:
+        level: Optional logging level (defaults to INFO in dev, WARNING in prod)
+    """
+    if level is None:
+        is_dev = os.getenv("ENVIRONMENT", "production") == "development"
+        level = logging.DEBUG if is_dev else logging.WARNING
+        
+    # List of libraries to configure
+    libraries = [
+        "docling",
+        "docling_core",
+        "RapidOCR",
+        "httpx"
+    ]
+    
+    for lib_name in libraries:
+        lib_logger = logging.getLogger(lib_name)
+        lib_logger.setLevel(level)
