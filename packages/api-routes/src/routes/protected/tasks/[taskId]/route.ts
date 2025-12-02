@@ -41,9 +41,18 @@ const app = new Hono().delete(
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
 
+    // For finished/failed tasks, just delete the DB entry
+    if (status === "finished" || status === "failed") {
+      await deleteTask({
+        taskId,
+      });
+      return c.json({ name });
+    }
+
+    // For scheduled tasks, also cancel the task and delete the file
     if (status !== "scheduled") {
       throw new HTTPException(400, {
-        message: "ONLY_SCHEDULED_TASKS",
+        message: "ONLY_SCHEDULED_OR_COMPLETED_TASKS",
       });
     }
 

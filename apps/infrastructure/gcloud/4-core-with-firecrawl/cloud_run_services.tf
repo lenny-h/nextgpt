@@ -576,13 +576,13 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
 
       resources {
         limits = {
-          cpu    = "1"
-          memory = "512Mi"
+          cpu    = "2"
+          memory = "2Gi"
         }
       }
     }
 
-    max_instance_request_concurrency = 30
+    max_instance_request_concurrency = 10
     timeout                          = "60s"
 
     scaling {
