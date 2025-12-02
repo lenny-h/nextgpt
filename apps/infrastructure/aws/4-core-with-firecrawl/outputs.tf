@@ -41,15 +41,15 @@ output "dns_validation_records" {
   }
 }
 
-# EventBridge API Destinations
-output "api_destination_process_pdf_arn" {
-  description = "API Destination ARN for PDF processing"
-  value       = aws_cloudwatch_event_api_destination.process_pdf.arn
+# EventBridge Event Bus
+output "eventbridge_event_bus_arn" {
+  description = "EventBridge Event Bus ARN for document processing"
+  value       = aws_cloudwatch_event_bus.document_processing.arn
 }
 
-output "api_destination_process_document_arn" {
-  description = "API Destination ARN for document processing"
-  value       = aws_cloudwatch_event_api_destination.process_document.arn
+output "eventbridge_event_bus_name" {
+  description = "EventBridge Event Bus name for document processing"
+  value       = aws_cloudwatch_event_bus.document_processing.name
 }
 
 # ECS Services
