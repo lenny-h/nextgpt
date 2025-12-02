@@ -403,7 +403,7 @@ resource "google_cloud_run_v2_service" "document_processor" {
       resources {
         limits = {
           cpu    = "4"
-          memory = "4Gi"
+          memory = "8Gi"
         }
       }
     }
@@ -587,7 +587,7 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
       resources {
         limits = {
           cpu    = "2"
-          memory = "2Gi"
+          memory = "4Gi"
         }
       }
     }

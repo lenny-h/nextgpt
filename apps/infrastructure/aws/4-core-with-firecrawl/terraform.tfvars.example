@@ -48,4 +48,4 @@ r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
 
 # AI Models
 embeddings_model = "amazon.titan-embed-text-v2:0"
-llm_models       = "[{\"name\":\"anthropic.claude-haiku-4-5-20251001-v1:0\",\"label\":\"Claude Haiku\",\"description\":\"Fast and efficient model\",\"images\":true,\"pdfs\":true,\"reasoning\":false},{\"name\":\"anthropic.claude-sonnet-4-20250514-v1:0\",\"label\":\"Claude Sonnet\",\"description\":\"Powerful model for complex tasks\",\"images\":true,\"pdfs\":true,\"reasoning\":false}]"
+llm_models       = "[{\"name\":\"us.amazon.nova-lite-v1:0\",\"label\":\"Claude Haiku\",\"description\":\"Fast and efficient model\",\"images\":true,\"pdfs\":true,\"reasoning\":false},{\"name\":\"us.amazon.nova-pro-v1:0\",\"label\":\"Claude Sonnet\",\"description\":\"Powerful model for complex tasks\",\"images\":true,\"pdfs\":true,\"reasoning\":false}]"

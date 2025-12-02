@@ -1,5 +1,5 @@
 import io
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Generator
 
 from fastapi import APIRouter, HTTPException
 from botocore.exceptions import ClientError
@@ -20,7 +20,6 @@ from utils.utils import create_embedded_chunk, handle_processing_error
 from models.requests import DocumentUploadEvent
 from models.responses import (
     PdfChunkData,
-    PdfChunkedConversionResponse,
     ProcessingResponse
 )
 
@@ -105,43 +104,56 @@ async def process_pdf(event: DocumentUploadEvent):
 
 
 async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
-    """Full PDF processing workflow with embeddings and database storage."""
+    """Full PDF processing workflow with embeddings and database storage.
+    
+    Processes chunks in batches of 30 to optimize memory usage.
+    Each batch is embedded and uploaded before moving to the next.
+    """
     task_id = event.taskId
     course_id, shortened_filename = event.name.split("/")
+
+    batch_size = 30
+    total_chunks_processed = 0
+    is_first_batch = True
 
     try:
         logger.info(f"Updating task status to 'processing' for task_id={task_id}")
         await update_status_to_processing(task_id)
 
         logger.info(f"Converting PDF to chunks: {event.name}")
-        chunks_response, page_count = await _convert_pdf_to_chunks(
+        chunk_generator, page_count = await _create_pdf_chunk_generator(
             "files-bucket", event.name, event.pipelineOptions
         )
 
-        if not chunks_response.chunks:
+        # Process chunks in batches of 30
+        batch: List[PdfChunkData] = []
+        for chunk in chunk_generator:
+            batch.append(chunk)
+            
+            if len(batch) >= batch_size:
+                await _process_and_upload_pdf_batch(
+                    batch, task_id, course_id, shortened_filename,
+                    int(event.size), event.pageNumberOffset, page_count,
+                    is_first_batch
+                )
+                total_chunks_processed += len(batch)
+                logger.info(f"Processed batch of {len(batch)} chunks (total: {total_chunks_processed})")
+                is_first_batch = False
+                batch = []  # Clear batch to free memory
+
+        # Process remaining chunks
+        if batch:
+            await _process_and_upload_pdf_batch(
+                batch, task_id, course_id, shortened_filename,
+                int(event.size), event.pageNumberOffset, page_count,
+                is_first_batch
+            )
+            total_chunks_processed += len(batch)
+            logger.info(f"Processed final batch of {len(batch)} chunks (total: {total_chunks_processed})")
+
+        if total_chunks_processed == 0:
             logger.warning(f"No content chunks generated from PDF: {event.name}")
             raise ValueError("No content chunks generated from PDF")
-
-        logger.info(f"Generated {len(chunks_response.chunks)} chunks from {page_count}-page PDF: {event.name}")
-
-        logger.info(f"Generating embeddings for {len(chunks_response.chunks)} chunks")
-        chunk_contents = [
-            c.contextualized_content for c in chunks_response.chunks]
-        embeddings_list = embed_content(chunk_contents)
-        logger.info(f"Successfully generated {len(embeddings_list)} embeddings")
-
-        embedded_chunks = [
-            create_embedded_chunk(chunk, embeddings_list[idx])
-            for idx, chunk in enumerate(chunks_response.chunks)
-        ]
-
-        logger.info(f"Uploading {len(embedded_chunks)} chunks to database (task_id={task_id})")
-        await upload_to_postgres_db(
-            task_id, course_id, shortened_filename,
-            int(event.size), embedded_chunks, event.pageNumberOffset,
-            page_count
-        )
-        logger.info(f"Successfully uploaded chunks to database (task_id={task_id})")
 
         logger.info(f"Updating task status to 'finished' for task_id={task_id}")
         await update_status_to_finished(task_id)
@@ -149,7 +161,7 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         return ProcessingResponse(
             success=True,
             message=f"Successfully processed PDF {shortened_filename}",
-            chunks_processed=len(embedded_chunks)
+            chunks_processed=total_chunks_processed
         )
 
     except Exception as error:
@@ -157,12 +169,73 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         raise error
 
 
-async def _convert_pdf_to_chunks(
+async def _process_and_upload_pdf_batch(
+    batch: List[PdfChunkData],
+    task_id: str,
+    course_id: str,
+    filename: str,
+    file_size: int,
+    page_number_offset: int,
+    page_count: int,
+    is_first_batch: bool
+) -> None:
+    """Embed and upload a batch of PDF chunks to the database."""
+    logger.debug(f"Generating embeddings for batch of {len(batch)} chunks")
+    chunk_contents = [c.contextualized_content for c in batch]
+    embeddings_list = embed_content(chunk_contents)
+
+    embedded_chunks = [
+        create_embedded_chunk(chunk, embeddings_list[idx])
+        for idx, chunk in enumerate(batch)
+    ]
+
+    logger.debug(f"Uploading batch of {len(embedded_chunks)} chunks to database")
+    await upload_to_postgres_db(
+        task_id, course_id, filename,
+        file_size, embedded_chunks, page_number_offset,
+        page_count, is_first_batch
+    )
+
+
+from typing import Generator
+
+
+def _generate_pdf_chunks(
+    result,
+    chunker: HybridChunker
+) -> Generator[PdfChunkData, None, None]:
+    """Generator that yields PDF chunks one at a time for memory efficiency."""
+    chunk_iter = chunker.chunk(dl_doc=result.document)
+
+    for idx, chunk in enumerate(chunk_iter):
+        contextualized_text = chunker.contextualize(chunk=chunk)
+
+        doc_chunk = DocChunk.model_validate(chunk)
+        page_index, bbox_tuple = _extract_chunk_metadata(doc_chunk)
+
+        logger.debug(f"Created chunk {idx}: {contextualized_text[:60]}... (length: {len(contextualized_text)} characters)")
+
+        if not contextualized_text.strip():
+            logger.debug(f"Skipping empty chunk at index {idx}")
+            continue
+
+        yield PdfChunkData(
+            contextualized_content=contextualized_text,
+            chunk_index=idx,
+            page_index=page_index,
+            bbox=bbox_tuple
+        )
+
+
+async def _create_pdf_chunk_generator(
     bucket: str,
     key: str,
     pipeline_options: Optional[object] = None
-) -> Tuple[PdfChunkedConversionResponse, int]:
-    """Convert PDF to chunks without full processing and return page count."""
+) -> Tuple[Generator[PdfChunkData, None, None], int]:
+    """Create a generator for PDF chunks and return page count.
+    
+    Returns a generator instead of a list to enable memory-efficient batch processing.
+    """
     logger.debug(f"Fetching PDF from storage: bucket={bucket}, key={key}")
     storage_client = get_storage_client()
     file_content = storage_client.get_object_bytes(bucket, key)
@@ -177,34 +250,7 @@ async def _convert_pdf_to_chunks(
     page_count = result.document.num_pages()
     logger.debug(f"PDF conversion completed ({page_count} pages)")
 
-    logger.debug(f"Initializing chunker and processing PDF")
+    logger.debug(f"Initializing chunker and creating chunk generator")
     chunker = HybridChunker()
-    chunk_iter = chunker.chunk(dl_doc=result.document)
 
-    chunks: List[PdfChunkData] = []
-    for idx, chunk in enumerate(chunk_iter):
-        contextualized_text = chunker.contextualize(chunk=chunk)
-
-        doc_chunk = DocChunk.model_validate(chunk)
-        page_index, bbox_tuple = _extract_chunk_metadata(doc_chunk)
-
-        logger.debug(f"Created chunk {idx}: {contextualized_text[:60]}... (length: {len(contextualized_text)} characters)")
-
-        if not contextualized_text.strip():
-            logger.debug(f"Skipping empty chunk at index {idx}")
-            continue
-
-        chunks.append(PdfChunkData(
-            contextualized_content=contextualized_text,
-            chunk_index=idx,
-            page_index=page_index,
-            bbox=bbox_tuple
-        ))
-
-    logger.debug(f"Created {len(chunks)} chunks from PDF")
-    return PdfChunkedConversionResponse(
-        chunks=chunks,
-        total_chunks=len(chunks),
-        success=True,
-        message=f"Successfully converted and chunked PDF {key}"
-    ), page_count
+    return _generate_pdf_chunks(result, chunker), page_count
