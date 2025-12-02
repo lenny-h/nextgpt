@@ -15,7 +15,8 @@ const logger = createLogger("aws-tasks-client");
 
 /**
  * AWS EventBridge Scheduler implementation for task queuing
- * Uses API Destinations for invoking HTTP endpoints
+ * Uses EventBridge Rules with API Destinations for invoking HTTP endpoints
+ * Scheduler puts events to a custom event bus, rules route to API Destinations
  * Supports delays up to 1 year and task deletion
  */
 export class AwsTasksClient implements ITasksClient {
@@ -43,23 +44,25 @@ export class AwsTasksClient implements ITasksClient {
     return this.client;
   }
 
-  private getApiDestinationArn(endpoint: string): string {
-    // Map endpoints to their corresponding API Destination ARNs
-    const apiDestinationArns: Record<string, string | undefined> = {
-      "/internal/process-pdf": process.env.AWS_API_DESTINATION_PROCESS_PDF_ARN,
-      "/internal/process-document":
-        process.env.AWS_API_DESTINATION_PROCESS_DOCUMENT_ARN,
+  /**
+   * Maps endpoint paths to EventBridge detail-type values
+   * These must match the event patterns in the EventBridge Rules
+   */
+  private getDetailType(endpoint: string): string {
+    const detailTypeMap: Record<string, string> = {
+      "/internal/process-pdf": "process-pdf",
+      "/internal/process-document": "process-document",
     };
 
-    const arn = apiDestinationArns[endpoint];
-    if (!arn) {
+    const detailType = detailTypeMap[endpoint];
+    if (!detailType) {
       throw new Error(
-        `No API Destination ARN configured for endpoint: ${endpoint}. ` +
-          `Available endpoints: ${Object.keys(apiDestinationArns).join(", ")}`
+        `No detail-type configured for endpoint: ${endpoint}. ` +
+          `Available endpoints: ${Object.keys(detailTypeMap).join(", ")}`
       );
     }
 
-    return arn;
+    return detailType;
   }
 
   async scheduleProcessingTask(
@@ -71,6 +74,7 @@ export class AwsTasksClient implements ITasksClient {
 
     const scheduleGroup = process.env.AWS_SCHEDULER_GROUP;
     const roleArn = process.env.AWS_SCHEDULER_ROLE_ARN;
+    const eventBusArn = process.env.AWS_EVENTBRIDGE_BUS_ARN;
 
     if (!roleArn) {
       throw new Error(
@@ -78,8 +82,14 @@ export class AwsTasksClient implements ITasksClient {
       );
     }
 
-    // Get the API Destination ARN for this endpoint
-    const apiDestinationArn = this.getApiDestinationArn(endpoint);
+    if (!eventBusArn) {
+      throw new Error(
+        "AWS_EVENTBRIDGE_BUS_ARN environment variable is required"
+      );
+    }
+
+    // Get the detail-type for this endpoint (used by EventBridge Rules to route)
+    const detailType = this.getDetailType(endpoint);
 
     // Convert schedule time to ISO 8601 format (AWS requires no milliseconds)
     const scheduleExpression = `at(${scheduleTime.toISOString().replace(/\.\d{3}Z$/, "")})`;
@@ -92,9 +102,15 @@ export class AwsTasksClient implements ITasksClient {
         Mode: FlexibleTimeWindowMode.OFF,
       },
       Target: {
-        Arn: apiDestinationArn,
+        // Target the EventBridge event bus
+        Arn: eventBusArn,
         RoleArn: roleArn,
-        // The payload is sent as the request body to the API Destination
+        // EventBridgeParameters for PutEvents
+        EventBridgeParameters: {
+          DetailType: detailType,
+          Source: "nextgpt.scheduler",
+        },
+        // The payload is sent as the event detail
         Input: JSON.stringify(payload),
         // Retry configuration for transient failures
         RetryPolicy: {
@@ -109,7 +125,7 @@ export class AwsTasksClient implements ITasksClient {
     await schedulerClient.send(command);
 
     logger.info(
-      `Scheduled processing task: ${taskId} for ${scheduleTime.toISOString()}`
+      `Scheduled processing task: ${taskId} for ${scheduleTime.toISOString()} (detail-type: ${detailType})`
     );
   }
 

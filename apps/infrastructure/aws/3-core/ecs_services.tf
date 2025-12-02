@@ -135,12 +135,8 @@ resource "aws_ecs_task_definition" "api" {
           value = aws_iam_role.eventbridge_scheduler.arn
         },
         {
-          name  = "AWS_API_DESTINATION_PROCESS_PDF_ARN"
-          value = aws_cloudwatch_event_api_destination.process_pdf.arn
-        },
-        {
-          name  = "AWS_API_DESTINATION_PROCESS_DOCUMENT_ARN"
-          value = aws_cloudwatch_event_api_destination.process_document.arn
+          name  = "AWS_EVENTBRIDGE_BUS_ARN"
+          value = aws_cloudwatch_event_bus.document_processing.arn
         },
         {
           name  = "EMBEDDINGS_MODEL"
