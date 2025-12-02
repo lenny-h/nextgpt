@@ -36,15 +36,21 @@ async def get_connection_pool() -> AsyncConnectionPool:
                     )
 
                 database_url = (
-                    f"postgresql://postgres:{database_password}@{database_host}/postgres"
+                    f"postgresql://postgres:{database_password}@{database_host}/postgres?connect_timeout=10"
                 )
 
                 # Create an async connection pool with min 2 and max 20 connections
+                # Set statement timeout to 60 seconds to prevent hanging queries
                 _connection_pool = AsyncConnectionPool(
                     conninfo=database_url,
+                    open=False,
                     min_size=2,
                     max_size=20,
-                    open=False
+                    max_idle=150,  # Close idle connections after 150 seconds
+                    timeout=30,  # Connection acquisition timeout
+                    kwargs={
+                        "options": "-c statement_timeout=30000"  # 30 second query timeout
+                    }
                 )
                 # Open the pool
                 await _connection_pool.open()
@@ -77,12 +83,13 @@ async def upload_to_postgres_db(
     processed_chunks: List[EmbeddedChunk],
     page_number_offset: int,
     page_count: Optional[int] = None,
+    is_first_batch: bool = True,
 ) -> None:
     """
     Upload processed document chunks to PostgreSQL database.
 
-    Creates file record and associated page/chunk records.
-    Performs atomic transaction - rolls back on error.
+    Creates file record (on first batch) and associated chunk records.
+    Supports incremental batch uploads for memory efficiency.
 
     Args:
         task_id: Unique task identifier (used as file ID)
@@ -90,10 +97,11 @@ async def upload_to_postgres_db(
         filename: Name of the file
         file_size: Size of the file in bytes
         processed_chunks: List of embedded chunks to store
+        page_number_offset: Offset for page numbering
         page_count: Optional total number of pages in the document (only available for PDFs)
+        is_first_batch: Whether this is the first batch (creates file record)
     """
     pool = await get_connection_pool()
-    inserted_file_id = None
 
     async with pool.connection() as conn:
         async with conn.cursor() as cursor:
@@ -110,73 +118,66 @@ async def upload_to_postgres_db(
 
                 course_name = course_result[0]
 
-                # Insert file record
-                await cursor.execute(
-                    """
-                    INSERT INTO files (id, course_id, name, size, page_count)
-                    VALUES (%s, %s, %s, %s, %s)
-                    """,
-                    (task_id, course_id, filename, file_size, page_count)
-                )
-                inserted_file_id = task_id
-
-                # Prepare chunks data for batch insert
-                CHUNK_SIZE = 100
-
-                for i in range(0, len(processed_chunks), CHUNK_SIZE):
-                    chunk_batch = processed_chunks[i:i + CHUNK_SIZE]
-
-                    chunks_to_insert = []
-                    for chunk_data in chunk_batch:
-                        # Convert bbox tuple to JSON-compatible list
-                        bbox_json = json.dumps(list(chunk_data.bbox)) if chunk_data.bbox else None
-
-                        row = (
-                            chunk_data.page_id,
-                            inserted_file_id,
-                            filename,
-                            course_id,
-                            course_name,
-                            chunk_data.embedding,
-                            chunk_data.content,
-                            chunk_data.page_index,
-                            max(0, chunk_data.page_index +
-                                1 - page_number_offset),
-                            bbox_json
-                        )
-                        chunks_to_insert.append(row)
-
-                    # Batch insert chunks using executemany
-                    await cursor.executemany(
+                # Insert file record only on first batch
+                if is_first_batch:
+                    await cursor.execute(
                         """
-                        INSERT INTO chunks
-                        (id, file_id, file_name, course_id, course_name, embedding, content,
-                         page_index, page_number, bbox)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        INSERT INTO files (id, course_id, name, size, page_count)
+                        VALUES (%s, %s, %s, %s, %s)
                         """,
-                        chunks_to_insert
+                        (task_id, course_id, filename, file_size, page_count)
                     )
 
+                # Prepare chunks data for batch insert
+                chunks_to_insert = []
+                for chunk_data in processed_chunks:
+                    # Convert bbox tuple to JSON-compatible list
+                    bbox_json = json.dumps(list(chunk_data.bbox)) if chunk_data.bbox else None
+
+                    row = (
+                        chunk_data.page_id,
+                        task_id,
+                        filename,
+                        course_id,
+                        course_name,
+                        chunk_data.embedding,
+                        chunk_data.content,
+                        chunk_data.page_index,
+                        max(0, chunk_data.page_index +
+                            1 - page_number_offset),
+                        bbox_json
+                    )
+                    chunks_to_insert.append(row)
+
+                # Batch insert chunks using executemany
+                await cursor.executemany(
+                    """
+                    INSERT INTO chunks
+                    (id, file_id, file_name, course_id, course_name, embedding, content,
+                        page_index, page_number, bbox)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    chunks_to_insert
+                )
                 await conn.commit()
 
             except Exception as e:
                 await conn.rollback()
 
-                # Cleanup on failure
-                if inserted_file_id:
-                    try:
-                        await cursor.execute(
-                            "DELETE FROM chunks WHERE file_id = %s",
-                            (inserted_file_id,)
-                        )
-                        await cursor.execute(
-                            "DELETE FROM files WHERE id = %s",
-                            (inserted_file_id,)
-                        )
-                        await conn.commit()
-                    except Exception as cleanup_error:
-                        print(
-                            f"Failed to cleanup after error: {cleanup_error}")
+                # Cleanup on failure - delete all chunks and file record
+                try:
+                    await cursor.execute(
+                        "DELETE FROM chunks WHERE file_id = %s",
+                        (task_id,)
+                    )
+                    await cursor.execute(
+                        "DELETE FROM files WHERE id = %s",
+                        (task_id,)
+                    )
+                    await conn.commit()
+                except Exception as cleanup_error:
+                    print(
+                        f"Failed to cleanup after error: {cleanup_error}")
 
                 raise e
 

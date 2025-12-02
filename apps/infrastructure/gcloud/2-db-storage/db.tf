@@ -63,6 +63,15 @@ resource "google_sql_database_instance" "postgres" {
       }
     }
 
+    # Disable pg_cron job execution logging
+    dynamic "database_flags" {
+      for_each = var.use_firecrawl ? [1] : []
+      content {
+        name  = "cron.log_run"
+        value = "off"
+      }
+    }
+
     database_flags {
       name  = "max_connections"
       value = "100"

@@ -21,4 +21,11 @@ resource "aws_db_parameter_group" "postgres" {
     value        = "0"
     apply_method = "pending-reboot"
   }
+
+  # Disable pg_cron job execution logging
+  parameter {
+    name         = "cron.log_run"
+    value        = "off"
+    apply_method = "pending-reboot"
+  }
 }
