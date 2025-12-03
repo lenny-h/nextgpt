@@ -114,7 +114,7 @@ export class ChatRequest {
       messageCount: messageCount ? Math.min(messageCount, 12) : 12,
     });
 
-    const messages = [...prevMessages, message];
+    const messages = [...prevMessages.reverse(), message];
 
     const validatedUIMessages = await validateUIMessages<MyUIMessage>({
       messages,

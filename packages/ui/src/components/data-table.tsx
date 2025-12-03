@@ -73,7 +73,7 @@ export function DataTable<T>({
   });
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-5xl">
       <div className="flex justify-between items-center py-4">
         <Input
           placeholder={`Filter by ${filterLabel}...`}

@@ -92,14 +92,11 @@ export class StandardChatHandler extends ChatHandler {
           orderedPrompts.forEach((content, index) => {
             finalPrompt += `### Instruction ${index + 1}\n${content}\n\n`;
           });
-
-          logger.info(
-            "Added custom prompts to system prompt. Final system prompt:\n\n",
-            finalPrompt
-          );
         }
       }
     }
+
+    logger.info("Final system prompt:\n\n", finalPrompt);
 
     return finalPrompt;
   }
