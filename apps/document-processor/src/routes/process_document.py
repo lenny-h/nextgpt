@@ -1,7 +1,13 @@
+"""
+Document Processing Module
+
+This module handles non-PDF document processing with chunk extraction,
+embeddings generation, and database storage.
+"""
+
 import io
 from typing import List, Generator
 
-from fastapi import APIRouter, HTTPException
 from botocore.exceptions import ClientError
 
 from docling_core.types.io import DocumentStream
@@ -27,35 +33,11 @@ from embeddings.embeddings_client import embed_content
 
 from logger import setup_logger
 
-router = APIRouter()
-
 # Configure logger
 logger = setup_logger(__name__)
 
-@router.post("/internal/process-document")
-async def process_document(event: DocumentUploadEvent):
-    """Convert a non-PDF document from cloud storage to chunks."""
-    logger.info(f"Received document processing request for '{event.name}' (task_id={event.taskId}, size={event.size} bytes)")
-    try:
-        result = await _convert_document(event)
-        logger.info(f"Successfully processed document '{event.name}' (task_id={event.taskId})")
-        return result
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "Unknown")
-        logger.error(f"Storage error processing document '{event.name}': {error_code} - {str(e)}")
-        if error_code == "NoSuchKey":
-            raise HTTPException(
-                status_code=404,
-                detail=f"File not found: {event.name}"
-            )
-        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
-    except Exception as e:
-        logger.error(f"Failed to process document '{event.name}' (task_id={event.taskId}): {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to convert document: {str(e)}")
 
-
-async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
+async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full document processing workflow with embeddings and database storage.
     
     Processes chunks in batches of 30 to optimize memory usage.
