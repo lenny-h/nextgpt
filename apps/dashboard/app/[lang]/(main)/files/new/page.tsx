@@ -1,9 +1,9 @@
 "use client";
 
 import { Dropzone } from "@/components/custom/dropzone";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import { Input } from "@workspace/ui/components/input";
 import {
   Command,
   CommandEmpty,
@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@workspace/ui/components/command";
 import { DatePicker } from "@workspace/ui/components/date-picker";
+import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import {
   Popover,
@@ -28,6 +29,7 @@ import { useState } from "react";
 
 export default function UploadFilesPage() {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const [value, setValue] = useState("");
   const [coursesPopoverOpen, setCoursesPopoverOpen] = useState(false);
@@ -80,7 +82,7 @@ export default function UploadFilesPage() {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
-          There was an error loading the courses. Please try again later.
+          {dashboardT.uploadFilesPage.errorLoading}
         </h1>
       </div>
     );
@@ -88,7 +90,9 @@ export default function UploadFilesPage() {
 
   return (
     <div className="flex w-full flex-col items-center space-y-6 px-8 py-2">
-      <h1 className="text-2xl font-semibold">Upload course content</h1>
+      <h1 className="text-2xl font-semibold">
+        {dashboardT.uploadFilesPage.title}
+      </h1>
       <Popover open={coursesPopoverOpen} onOpenChange={setCoursesPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -100,16 +104,21 @@ export default function UploadFilesPage() {
             <p className="flex-1 truncate text-left">
               {value
                 ? courses.find((c) => c.id === value)?.name
-                : "Select course..."}
+                : dashboardT.uploadFilesPage.selectCourse}
             </p>
             <ChevronsUpDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
-            <CommandInput placeholder="Search courses..." className="h-9" />
+            <CommandInput
+              placeholder={dashboardT.uploadFilesPage.searchCourses}
+              className="h-9"
+            />
             <CommandList>
-              <CommandEmpty>No course found</CommandEmpty>
+              <CommandEmpty>
+                {dashboardT.uploadFilesPage.noCourseFound}
+              </CommandEmpty>
               <CommandGroup>
                 {courses.map((c) => (
                   <CommandItem
@@ -146,11 +155,13 @@ export default function UploadFilesPage() {
       </Popover>
 
       <div className="flex flex-row items-center gap-4">
-        <h2 className="text-muted-foreground">Processing date (Optional):</h2>
+        <h2 className="text-muted-foreground">
+          {dashboardT.uploadFilesPage.processingDate}
+        </h2>
         <DatePicker
           date={processingDate}
           onSelect={setProcessingDate}
-          placeholder="Select a processing date"
+          placeholder={dashboardT.uploadFilesPage.selectProcessingDate}
           disabled={!value}
         />
       </div>
@@ -158,14 +169,10 @@ export default function UploadFilesPage() {
       <div className="w-full max-w-2xl space-y-4 rounded-md border border-dashed p-4 shadow-sm">
         <div className="space-y-2">
           <Label htmlFor="pageNumberOffset" className="text-lg font-semibold">
-            Page Number Offset (Optional)
+            {dashboardT.uploadFilesPage.pageNumberOffset}
           </Label>
           <p className="text-muted-foreground text-sm">
-            Specifies how many unnumbered pages are at the start of the
-            document. For example, if your document has a title page and the
-            page numbered "1" is the second page in the PDF, set this to 1. The
-            llm will use this offet to find the correct pages when asked about
-            specific page numbers.
+            {dashboardT.uploadFilesPage.pageNumberOffsetDescription}
           </p>
           <Input
             id="pageNumberOffset"
@@ -187,7 +194,7 @@ export default function UploadFilesPage() {
 
       <div className="w-full max-w-2xl space-y-4 rounded-md border border-dashed p-4 shadow-sm">
         <h2 className="text-lg font-semibold">
-          PDF Processing Options (PDFs only)
+          {dashboardT.uploadFilesPage.pdfProcessingOptions}
         </h2>
         <div className="grid gap-3">
           <div className="flex items-center space-x-2">
@@ -206,7 +213,7 @@ export default function UploadFilesPage() {
               htmlFor="do_ocr"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Enable OCR (Optical Character Recognition)
+              {dashboardT.uploadFilesPage.enableOcr}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
@@ -225,7 +232,7 @@ export default function UploadFilesPage() {
               htmlFor="do_code_enrichment"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Enable code enrichment
+              {dashboardT.uploadFilesPage.enableCodeEnrichment}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
@@ -244,7 +251,7 @@ export default function UploadFilesPage() {
               htmlFor="do_formula_enrichment"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Enable formula enrichment (extract LaTeX)
+              {dashboardT.uploadFilesPage.enableFormulaEnrichment}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
@@ -263,7 +270,7 @@ export default function UploadFilesPage() {
               htmlFor="do_picture_description"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Enable picture description
+              {dashboardT.uploadFilesPage.enablePictureDescription}
             </Label>
           </div>
         </div>

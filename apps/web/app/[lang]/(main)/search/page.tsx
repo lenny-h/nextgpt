@@ -5,6 +5,7 @@ import { Header } from "@/components/custom/toggle-sidebars-header";
 import { useCSResults } from "@/contexts/classic-search-results";
 import { useFilter } from "@/contexts/filter-context";
 import { useVSResults } from "@/contexts/semantic-search-results";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { stripFilter } from "@/lib/utils";
 import { type DocumentSource } from "@workspace/api-routes/types/document-source";
 import { Input } from "@workspace/ui/components/input";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 
 export default function SearchPage() {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const { filter } = useFilter();
   const [csResults, setCsResults] = useCSResults();
@@ -55,7 +57,7 @@ export default function SearchPage() {
     }
 
     if (filter.courses.length === 0) {
-      toast.error("Please select at least one course");
+      toast.error(webT.searchPage.selectAtLeastOneCourse);
       return;
     }
 
@@ -95,8 +97,8 @@ export default function SearchPage() {
   return (
     <div className="flex h-dvh flex-col">
       <Header showCourseSelector={true} />
-      <div className="flex flex-1 flex-col items-center space-y-4 overflow-y-auto px-3 pb-3 pt-8 md:space-y-6">
-        <h1 className="text-2xl font-semibold">Search</h1>
+      <div className="flex flex-1 flex-col items-center space-y-4 overflow-y-auto px-3 pt-8 pb-3 md:space-y-6">
+        <h1 className="text-2xl font-semibold">{webT.searchPage.title}</h1>
         <div className="flex w-full max-w-xl flex-col items-center gap-2 md:max-w-2xl md:flex-row-reverse">
           <Tabs
             defaultValue={searchMode}
@@ -106,30 +108,30 @@ export default function SearchPage() {
           >
             <TabsList className="grid w-[170px] grid-cols-2">
               <TabsTrigger value="keywords" className="cursor-pointer">
-                Keywords
+                {webT.searchPage.keywords}
               </TabsTrigger>
               <TabsTrigger value="semantic" className="cursor-pointer">
-                Semantic
+                {webT.searchPage.semantic}
               </TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="relative w-full md:flex-1">
             <Search
-              className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 transform"
+              className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2 transform"
               size={14}
             />
             <Input
               className="px-10 py-2"
-              placeholder="Search sources..."
+              placeholder={webT.searchPage.searchPlaceholder}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
               value={searchTerm}
             />
             {isLoading ? (
-              <Loader2 className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform animate-spin" />
+              <Loader2 className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 transform animate-spin" />
             ) : searchTerm.length > 0 ? (
               <X
-                className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform cursor-pointer"
+                className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 transform cursor-pointer"
                 size={14}
                 onClick={() => setSearchTerm("")}
               />

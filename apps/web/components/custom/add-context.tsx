@@ -4,6 +4,7 @@ import { useFilter } from "@/contexts/filter-context";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false);
+  const [addPromptFormOpen, setAddPromptFormOpen] = useState(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -80,7 +81,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          {addPromptDialogOpen ? (
+          {addPromptFormOpen ? (
             <>
               <DialogTitle>{webT.addContext.addPrompts}</DialogTitle>
               <DialogDescription>
@@ -88,15 +89,28 @@ export const AddContext = memo(({ type }: AddContextProps) => {
               </DialogDescription>
             </>
           ) : (
-            <DialogTitle>
-              {type === "files"
-                ? webT.addContext.searchFiles
-                : webT.addContext.searchDocuments}
-            </DialogTitle>
+            <div className="flex items-center justify-between pr-6">
+              <DialogTitle>
+                {type === "files"
+                  ? webT.addContext.searchFiles
+                  : type === "documents"
+                    ? webT.addContext.searchDocuments
+                    : webT.addContext.searchPrompts}
+              </DialogTitle>
+              {type === "prompts" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAddPromptFormOpen(true)}
+                >
+                  {webT.addContext.addPrompts}
+                </Button>
+              )}
+            </div>
           )}
         </DialogHeader>
-        {addPromptDialogOpen ? (
-          <AddPromptForm onClose={() => setAddPromptDialogOpen(false)} />
+        {addPromptFormOpen ? (
+          <AddPromptForm onClose={() => setAddPromptFormOpen(false)} />
         ) : (
           <>
             <SearchWithSelection

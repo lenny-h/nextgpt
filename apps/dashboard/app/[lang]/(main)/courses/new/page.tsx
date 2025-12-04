@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { Selector } from "@/components/custom/selector";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,6 +27,7 @@ import { createCourseFormSchema } from "./schema";
 
 export default function CreateCoursePage() {
   const { locale, sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -65,10 +67,9 @@ export default function CreateCoursePage() {
     });
 
     toast.promise(createCoursePromise, {
-      loading: "Creating course...",
-      success:
-        "Course created successfully 🎉\n Add course maintainers by clicking on the three dots",
-      error: (error) => `Error creating course: ${error.message}`,
+      loading: dashboardT.createCoursePage.creatingCourse,
+      success: dashboardT.createCoursePage.success,
+      error: dashboardT.createCoursePage.error,
     });
   }
 
@@ -84,7 +85,7 @@ export default function CreateCoursePage() {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-2xl font-semibold">
-          There was an error loading the buckets. Please try again later.
+          {dashboardT.createCoursePage.errorLoading}
         </h1>
       </div>
     );
@@ -97,14 +98,14 @@ export default function CreateCoursePage() {
         className="flex flex-col space-y-6 px-8 py-2"
       >
         <h1 className="w-full text-center text-2xl font-semibold">
-          Create a course
+          {dashboardT.createCoursePage.title}
         </h1>
         <FormField
           control={form.control}
           name="bucketId"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Bucket</FormLabel>
+              <FormLabel>{dashboardT.createCoursePage.bucketLabel}</FormLabel>
               <FormControl>
                 <Selector
                   items={buckets}
@@ -112,11 +113,13 @@ export default function CreateCoursePage() {
                   onSelect={(id) => form.setValue("bucketId", id)}
                   isLoading={bucketsLoading}
                   error={bucketsError}
-                  placeholder="Select bucket"
-                  searchPlaceholder="Search bucket..."
-                  emptyMessage="No bucket found"
-                  errorMessage="There was an error loading the buckets"
-                  noItemsMessage="No buckets available"
+                  placeholder={dashboardT.createCoursePage.selectBucket}
+                  searchPlaceholder={dashboardT.createCoursePage.searchBucket}
+                  emptyMessage={dashboardT.createCoursePage.noBucketFound}
+                  errorMessage={dashboardT.createCoursePage.errorLoadingBuckets}
+                  noItemsMessage={
+                    dashboardT.createCoursePage.noBucketsAvailable
+                  }
                 />
               </FormControl>
               <FormMessage />
@@ -128,11 +131,15 @@ export default function CreateCoursePage() {
           name="courseName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Course name</FormLabel>
+              <FormLabel>
+                {dashboardT.createCoursePage.courseNameLabel}
+              </FormLabel>
               <FormControl>
                 <Input
                   className="w-full max-w-80"
-                  placeholder="Analysis I"
+                  placeholder={
+                    dashboardT.createCoursePage.courseNamePlaceholder
+                  }
                   {...field}
                 />
               </FormControl>
@@ -145,12 +152,16 @@ export default function CreateCoursePage() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Course password (Optional)</FormLabel>
+              <FormLabel>
+                {dashboardT.createCoursePage.coursePasswordLabel}
+              </FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   className="w-full max-w-80"
-                  placeholder="Enter password for course access"
+                  placeholder={
+                    dashboardT.createCoursePage.coursePasswordPlaceholder
+                  }
                   {...field}
                 />
               </FormControl>
@@ -163,12 +174,16 @@ export default function CreateCoursePage() {
           name="courseDescription"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Course description (Optional)</FormLabel>
+              <FormLabel>
+                {dashboardT.createCoursePage.courseDescriptionLabel}
+              </FormLabel>
               <FormControl>
                 <Textarea
                   className="w-full max-w-2xl"
                   rows={5}
-                  placeholder="This course covers... It is a 5 ECTS course... and takes place in the Spring semester. It requires the following prerequisites..."
+                  placeholder={
+                    dashboardT.createCoursePage.courseDescriptionPlaceholder
+                  }
                   {...field}
                 />
               </FormControl>
@@ -179,9 +194,9 @@ export default function CreateCoursePage() {
 
         <SubmitButton
           isPending={form.formState.isSubmitting}
-          pendingText="Creating..."
+          pendingText={dashboardT.createCoursePage.creating}
         >
-          Create
+          {dashboardT.createCoursePage.create}
         </SubmitButton>
       </form>
     </Form>

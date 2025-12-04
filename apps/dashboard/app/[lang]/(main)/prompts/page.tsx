@@ -1,5 +1,6 @@
 "use client";
 
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { promptsColumns } from "@/components/tables/prompts-columns";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
@@ -20,6 +21,7 @@ import { useState } from "react";
 
 export default function PromptsPage() {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false);
 
@@ -36,7 +38,7 @@ export default function PromptsPage() {
   if (promptsLoading) {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
-        <h1 className="text-2xl font-semibold">Loading prompts...</h1>
+        <h1 className="text-2xl font-semibold">{dashboardT.prompts.loading}</h1>
         <Skeleton className="mx-auto h-96 w-full max-w-4xl" />
       </div>
     );
@@ -46,7 +48,7 @@ export default function PromptsPage() {
     return (
       <div className="flex h-3/5 flex-col items-center justify-center space-y-8 p-2">
         <h1 className="text-muted-foreground text-center text-xl font-medium">
-          Prompts could not be loaded. Please try again later.
+          {dashboardT.prompts.errorLoading}
         </h1>
       </div>
     );
@@ -58,19 +60,19 @@ export default function PromptsPage() {
         className="absolute right-4 top-4"
         onClick={() => setAddPromptDialogOpen(true)}
       >
-        Add prompt
+        {dashboardT.prompts.addPrompt}
       </Button>
       <Dialog open={addPromptDialogOpen} onOpenChange={setAddPromptDialogOpen}>
         <DialogTrigger asChild>
           <Button asChild className="absolute right-4 top-4">
-            Add prompt
+            {dashboardT.prompts.addPrompt}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Prompt</DialogTitle>
+            <DialogTitle>{dashboardT.prompts.addNewPrompt}</DialogTitle>
             <DialogDescription>
-              Specify how the AI should correct the hand-ins.
+              {dashboardT.prompts.addPromptDescription}
             </DialogDescription>
           </DialogHeader>
           <AddPromptForm onClose={() => setAddPromptDialogOpen(false)} />
@@ -79,7 +81,7 @@ export default function PromptsPage() {
 
       <div className="flex flex-col items-center space-y-6 p-4">
         <div className="flex items-center space-x-2">
-          <h1 className="text-2xl font-semibold">Prompts</h1>
+          <h1 className="text-2xl font-semibold">{dashboardT.prompts.title}</h1>
         </div>
         <DataTable
           columns={promptsColumns}
@@ -90,7 +92,7 @@ export default function PromptsPage() {
             content: true,
             delete: true,
           }}
-          filterLabel="prompt name"
+          filterLabel={dashboardT.prompts.filterLabel}
           filterColumn="name"
         />
       </div>

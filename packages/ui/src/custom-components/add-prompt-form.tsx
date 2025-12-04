@@ -14,7 +14,6 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { SubmitButton } from "@workspace/ui/custom-components/submit-button";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { memo } from "react";
 import { useForm } from "react-hook-form";
@@ -64,9 +63,9 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
     });
 
     toast.promise(createPromptPromise, {
-      loading: "Creating prompt...",
-      success: "Prompt created successfully 🎉",
-      error: (error) => `Error creating prompt: ${error.message}`,
+      loading: sharedT.addPromptForm.creating,
+      success: sharedT.addPromptForm.success,
+      error: sharedT.addPromptForm.errorSaving,
     });
   }
 
@@ -112,12 +111,7 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
           <Button type="button" variant="secondary" onClick={onClose}>
             {sharedT.addPromptForm.cancel}
           </Button>
-          <SubmitButton
-            isPending={form.formState.isSubmitting}
-            pendingText="Creating..."
-          >
-            {sharedT.addPromptForm.create}
-          </SubmitButton>
+          <Button type="submit">{sharedT.addPromptForm.create}</Button>
         </DialogFooter>
       </form>
     </Form>

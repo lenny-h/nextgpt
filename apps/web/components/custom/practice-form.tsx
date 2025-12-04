@@ -89,7 +89,7 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-scroll px-6 pb-3 pt-8">
+    <div className="flex-1 overflow-y-scroll px-6 pt-8 pb-3">
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center space-y-8">
         <div className="flex flex-col space-y-4 text-center">
           <h1 className="text-2xl font-semibold">{webT.practice.title}</h1>
@@ -151,7 +151,7 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
         <Form {...practiceForm}>
           <form
             onSubmit={practiceForm.handleSubmit(() => submitForm())}
-            className="w-full"
+            className="flex w-full flex-col space-y-6"
           >
             <div className="w-full rounded-md border p-4">
               <FormField
@@ -189,14 +189,12 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
                 )}
               />
             </div>
-            <div className="mt-6 flex w-full justify-center">
-              <SubmitButton
-                isPending={practiceForm.formState.isSubmitting}
-                pendingText={webT.practice.starting}
-              >
-                {webT.practice.start}
-              </SubmitButton>
-            </div>
+            <SubmitButton
+              isPending={practiceForm.formState.isSubmitting}
+              pendingText={webT.practice.starting}
+            >
+              {webT.practice.start}
+            </SubmitButton>
           </form>
         </Form>
       </div>

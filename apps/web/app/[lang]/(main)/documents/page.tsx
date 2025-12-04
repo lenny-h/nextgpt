@@ -2,6 +2,7 @@
 
 import { DocumentsList } from "@/components/custom/documents-list";
 import { Header } from "@/components/custom/toggle-sidebars-header";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Input } from "@workspace/ui/components/input";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
@@ -11,6 +12,7 @@ import { useEffect, useState } from "react";
 
 export default function DocumentsPage() {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const [documents, setDocuments] = useState<Omit<CustomDocument, "userId">[]>(
     [],
@@ -56,23 +58,23 @@ export default function DocumentsPage() {
   return (
     <div className="flex h-dvh flex-col">
       <Header showCourseSelector={false} />
-      <div className="flex flex-1 flex-col items-center space-y-4 overflow-y-auto px-3 pb-3 pt-8 md:space-y-6">
-        <h1 className="text-2xl font-semibold">Documents</h1>
+      <div className="flex flex-1 flex-col items-center space-y-4 overflow-y-auto px-3 pt-8 pb-3 md:space-y-6">
+        <h1 className="text-2xl font-semibold">{webT.documentsPage.title}</h1>
         <div className="relative w-full max-w-xl">
           <Search
-            className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 transform"
+            className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2 transform"
             size={14}
           />
           <Input
             className="px-10 py-2"
-            placeholder="Search documents..."
+            placeholder={webT.documentsPage.searchPlaceholder}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {isLoading ? (
-            <Loader2 className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform animate-spin" />
+            <Loader2 className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 transform animate-spin" />
           ) : searchTerm.length > 0 ? (
             <X
-              className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 transform cursor-pointer"
+              className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 transform cursor-pointer"
               size={14}
               onClick={() => setSearchTerm("")}
             />

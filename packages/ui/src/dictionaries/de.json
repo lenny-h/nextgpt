@@ -42,6 +42,27 @@
   "centralLoading": {
     "loading": "Lädt..."
   },
+  "deleteForm": {
+    "title": {
+      "document": "Dokument löschen",
+      "chat": "Chat löschen"
+    },
+    "description": {
+      "document": "Sind Sie sicher, dass Sie dieses Dokument löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Alle zugehörigen Daten werden dauerhaft gelöscht.",
+      "chat": "Sind Sie sicher, dass Sie diesen Chat löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Alle zugehörigen Daten werden dauerhaft gelöscht."
+    },
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht...",
+    "deleted": {
+      "document": "Dokument gelöscht!",
+      "chat": "Chat gelöscht!"
+    },
+    "error": {
+      "document": "Fehler beim Löschen des Dokuments. Bitte versuchen Sie es später erneut.",
+      "chat": "Fehler beim Löschen des Chats. Bitte versuchen Sie es später erneut."
+    }
+  },
   "feedbackForm": {
     "backToHome": "Zurück zur Startseite",
     "content": "Inhalt",
@@ -97,6 +118,28 @@
     "updating": "Profil wird aktualisiert...",
     "username": "Benutzername",
     "usernameTooltip": "Der Benutzername ist für andere Benutzer sichtbar. Dies ist erforderlich, damit sie Ihnen Einladungen senden können. Benutzernamen müssen eindeutig sein."
+  },
+  "renameForm": {
+    "title": {
+      "document": "Dokument umbenennen",
+      "chat": "Chat umbenennen"
+    },
+    "description": {
+      "document": "Geben Sie einen neuen Titel für Ihr Dokument ein",
+      "chat": "Geben Sie einen neuen Titel für Ihren Chat ein"
+    },
+    "newTitle": "Neuer Titel",
+    "placeholder": {
+      "document": "Dokumenttitel",
+      "chat": "Chat-Titel"
+    },
+    "cancel": "Abbrechen",
+    "rename": "Umbenennen",
+    "renaming": "Wird umbenannt...",
+    "error": {
+      "document": "Fehler beim Umbenennen des Dokuments. Bitte versuchen Sie es später erneut.",
+      "chat": "Fehler beim Umbenennen des Chats. Bitte versuchen Sie es später erneut."
+    }
   },
   "resetPassword": {
     "confirmPassword": "Passwort bestätigen",

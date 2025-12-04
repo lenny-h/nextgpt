@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@better-auth/cli": "1.4.3",
-    "@turbo/gen": "^2.6.1",
+    "@turbo/gen": "^2.6.2",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.5",
     "@workspace/eslint-config": "workspace:*",

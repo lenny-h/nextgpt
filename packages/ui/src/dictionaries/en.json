@@ -42,6 +42,27 @@
   "centralLoading": {
     "loading": "Loading..."
   },
+  "deleteForm": {
+    "title": {
+      "document": "Delete document",
+      "chat": "Delete chat"
+    },
+    "description": {
+      "document": "Are you sure you want to delete this document? This action cannot be undone. This will permanently delete the document and all associated data.",
+      "chat": "Are you sure you want to delete this chat? This action cannot be undone. This will permanently delete the chat and all associated data."
+    },
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleted": {
+      "document": "Document deleted!",
+      "chat": "Chat deleted!"
+    },
+    "error": {
+      "document": "Failed to delete document. Please try again later.",
+      "chat": "Failed to delete chat. Please try again later."
+    }
+  },
   "feedbackForm": {
     "backToHome": "Back to home",
     "content": "Content",
@@ -99,6 +120,28 @@
     "username": "Username",
     "usernamePlaceholder": "Hugo",
     "usernameTooltip": "The username is visible to other users. This is required so that they can send you invitations. Usernames must be unique."
+  },
+  "renameForm": {
+    "title": {
+      "document": "Rename document",
+      "chat": "Rename chat"
+    },
+    "description": {
+      "document": "Enter a new title for your document",
+      "chat": "Enter a new title for your chat"
+    },
+    "newTitle": "New Title",
+    "placeholder": {
+      "document": "Document title",
+      "chat": "Chat title"
+    },
+    "cancel": "Cancel",
+    "rename": "Rename",
+    "renaming": "Renaming...",
+    "error": {
+      "document": "Failed to rename document. Please try again later.",
+      "chat": "Failed to rename chat. Please try again later."
+    }
   },
   "resetPassword": {
     "confirmPassword": "Confirm password",

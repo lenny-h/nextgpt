@@ -22,7 +22,7 @@ The Docker Compose in this directory allows you to run all services locally for 
 - **Keycloak**: Identity and access management for testing SSO integration
 - **Firecrawl API**: Web scraping and crawling service (optional)
 - **Playwright Service**: Headless browser service for Firecrawl (optional)
-- **Document Processor**: Document processing service
+- **Document Processor**: Document processing job
 - **API**: Custom API service
 - **PDF Exporter**: PDF export service
 - **Web**: Main application service
@@ -67,7 +67,6 @@ The services are exposed on the following local ports:
 | Dashboard          | 3001       | 3000           |
 | API                | 3004       | 8080           |
 | PDF Exporter       | 3005       | 8080           |
-| Document Processor | 3006       | 8080           |
 | Firecrawl API      | 3007       | 8080           |
 | Playwright Service | 3008       | 3008           |
 
