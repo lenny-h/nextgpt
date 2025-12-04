@@ -41,17 +41,6 @@ output "dns_validation_records" {
   }
 }
 
-# EventBridge Event Bus
-output "eventbridge_event_bus_arn" {
-  description = "EventBridge Event Bus ARN for document processing"
-  value       = aws_cloudwatch_event_bus.document_processing.arn
-}
-
-output "eventbridge_event_bus_name" {
-  description = "EventBridge Event Bus name for document processing"
-  value       = aws_cloudwatch_event_bus.document_processing.name
-}
-
 # ECS Task Definitions (services created in layer 5)
 output "ecs_task_definition_document_processor_arn" {
   description = "Document Processor task definition ARN"

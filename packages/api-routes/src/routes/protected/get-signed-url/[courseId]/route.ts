@@ -5,6 +5,7 @@ import { isCourseMaintainer } from "@workspace/api-routes/lib/db/queries/course-
 import { getBucketSizeByCourseId } from "@workspace/api-routes/lib/db/queries/courses.js";
 import { addTask } from "@workspace/api-routes/lib/db/queries/tasks.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
+import type { JobType } from "@workspace/api-routes/utils/access-clients/interfaces/tasks-client.interface.js";
 import { getStorageClient } from "@workspace/api-routes/utils/access-clients/storage-client.js";
 import { getTasksClient } from "@workspace/api-routes/utils/access-clients/tasks-client.js";
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
@@ -77,13 +78,6 @@ const app = new Hono().post(
 
     await increaseBucketSize({ bucketId: bucketSizeInfo.bucketId, fileSize });
 
-    const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
-    if (!processorUrl) {
-      throw new HTTPException(500, {
-        message: "DOCUMENT_PROCESSOR_URL not configured",
-      });
-    }
-
     const taskId = generateUUID();
     const tasksClient = getTasksClient();
 
@@ -101,14 +95,14 @@ const app = new Hono().post(
 
     const extFilename = `${courseId}/${filename}`;
 
+    // Determine job type based on file type
+    const jobType: JobType =
+      fileType === "application/pdf" ? "process-pdf" : "process-document";
+
     // Schedule the processing task with cloud-agnostic interface
     await tasksClient.scheduleProcessingTask({
       taskId,
-      processorUrl,
-      endpoint:
-        fileType === "application/pdf"
-          ? "/internal/process-pdf"
-          : "/internal/process-document",
+      jobType,
       payload: {
         taskId,
         bucketId: bucketSizeInfo.bucketId,
@@ -121,7 +115,8 @@ const app = new Hono().post(
       scheduleTime,
     });
 
-    logger.debug("Processing task with pipeline options: ", {
+    logger.debug("Processing task scheduled with pipeline options: ", {
+      jobType,
       pdfPipelineOptions,
     });
 
