@@ -1,94 +1,7 @@
 {
-  "deleteDialog": {
-    "delete": "Delete",
-    "cancel": "Cancel",
-    "deleting": "Deleting...",
-    "deletedSuccessfully": "deleted successfully"
-  },
   "addMaintainers": {
     "adding": "Adding maintainers...",
     "success": "Maintainers invited successfully 🎉"
-  },
-  "maintainers": {
-    "loading": "Loading maintainers...",
-    "errorLoading": "Maintainers could not be loaded. Please try again later.",
-    "currentMaintainers": "Current Maintainers",
-    "addMaintainers": "Add maintainers",
-    "addBucketMaintainersDescription": "Maintainer can manage the bucket by adding courses and the corresponding course maintainers. There is a maximum of 10 maintainers per bucket.",
-    "addCourseMaintainersDescription": "Maintainer can manage the course by adding and deleting course content. They can also delete the course. There is a maximum of 20 maintainers by course.",
-    "removeMaintainers": "Remove maintainers",
-    "removeBucketMaintainersDescription": "Maintainers can only be removed by the bucket owner.",
-    "removeCourseMaintainersDescription": "Course maintainers can only be removed by bucket maintainers."
-  },
-  "courses": {
-    "loading": "Loading courses...",
-    "errorLoading": "Courses could not be loaded. Please try again later.",
-    "noCourses": "Looks like there are no courses yet",
-    "createCourse": "Create a course",
-    "title": "Courses",
-    "filterLabel": "course name"
-  },
-  "files": {
-    "upload": "Upload files",
-    "noCourses": "No courses available. Create one to see the corresponding files here.",
-    "selectCourse": "Please select a course to view its files",
-    "errorLoading": "Could not fetch the files of this course. Please try again later."
-  },
-  "correction": {
-    "title": "Corrections",
-    "solutionSheet": "Solution sheet",
-    "studentHandIns": "Student hand-ins",
-    "customPrompt": "Custom Prompt (Optional)",
-    "customPromptDescription": "Select a custom prompt to instruct the AI how to correct the submissions.",
-    "selectPrompt": "Select prompt",
-    "searchPrompts": "Search prompts...",
-    "noPromptFound": "No prompt found",
-    "failedLoadPrompts": "Failed to load prompts",
-    "noPromptsFound": "No prompts found",
-    "addPrompt": "Add Prompt",
-    "addNewPrompt": "Add New Prompt",
-    "addPromptDescription": "Specify how the AI should correct the hand-ins.",
-    "startCorrection": "Start Correction",
-    "filesNotCorrected": "The following files could not be corrected:",
-    "correctionSuccess": "Correction completed successfully. You can access the results under 'Documents'",
-    "correctionFailed": "Could not correct the hand-ins"
-  },
-  "correctionDropzone": {
-    "dropFiles": "Drop the files here ...",
-    "dragDrop": "Drag and drop .pdf files here, or click to select files",
-    "maxFiles": "Max {maxFiles} files with 15 MB each"
-  },
-  "buckets": {
-    "loading": "Loading buckets...",
-    "errorLoading": "There was an error loading the buckets. Please try again later.",
-    "noBuckets": "Looks like there are no buckets yet",
-    "createBucket": "Create a bucket",
-    "title": "Buckets",
-    "manageUsers": "Manage Users",
-    "delete": "Delete",
-    "addUsers": "Add users",
-    "addUsersDescription": "Users can be added manually or by uploading a CSV file with a single column that contains the usernames of the users you want to add.",
-    "selectBucket": "Select a bucket",
-    "deleteConfirmation": "Are you sure you want to delete this bucket? This action cannot be undone."
-  },
-  "autocomplete": {
-    "searchUsers": "Search users...",
-    "errorProfiles": "Could not get profiles"
-  },
-  "tasks": {
-    "loading": "Loading courses...",
-    "errorLoading": "Courses could not be loaded. Please try again later.",
-    "noCourses": "Looks like there are no courses yet",
-    "createCourse": "Create a course",
-    "selectCourse": "Please select a course to view its tasks",
-    "errorLoadingTasks": "Could not fetch the tasks of this course. Please try again later.",
-    "filterLabel": "task name"
-  },
-  "prompts": {
-    "manage": "Manage Prompts"
-  },
-  "models": {
-    "add": "Add models"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -127,5 +40,136 @@
     "userUnbannedSuccess": "User unbanned successfully",
     "userUnbannedError": "Failed to unban user",
     "expirationDateRequired": "Expiration date is required"
+  },
+  "autocomplete": {
+    "searchUsers": "Search users...",
+    "errorProfiles": "Could not get profiles"
+  },
+  "buckets": {
+    "loading": "Loading buckets...",
+    "errorLoading": "There was an error loading the buckets. Please try again later.",
+    "noBuckets": "Looks like there are no buckets yet",
+    "createBucket": "Create a bucket",
+    "title": "Buckets",
+    "manageUsers": "Manage Users",
+    "delete": "Delete",
+    "addUsers": "Add users",
+    "addUsersDescription": "Users can be added manually or by uploading a CSV file with a single column that contains the usernames of the users you want to add.",
+    "selectBucket": "Select a bucket",
+    "deleteConfirmation": "Are you sure you want to delete this bucket? This action cannot be undone."
+  },
+  "correction": {
+    "title": "Corrections",
+    "solutionSheet": "Solution sheet",
+    "studentHandIns": "Student hand-ins",
+    "customPrompt": "Custom Prompt (Optional)",
+    "customPromptDescription": "Select a custom prompt to instruct the AI how to correct the submissions.",
+    "selectPrompt": "Select prompt",
+    "searchPrompts": "Search prompts...",
+    "noPromptFound": "No prompt found",
+    "failedLoadPrompts": "Failed to load prompts",
+    "noPromptsFound": "No prompts found",
+    "addPrompt": "Add Prompt",
+    "addNewPrompt": "Add New Prompt",
+    "addPromptDescription": "Specify how the AI should correct the hand-ins.",
+    "startCorrection": "Start Correction",
+    "filesNotCorrected": "The following files could not be corrected:",
+    "correctionSuccess": "Correction completed successfully. You can access the results under 'Documents'",
+    "correctionFailed": "Could not correct the hand-ins"
+  },
+  "correctionDropzone": {
+    "dropFiles": "Drop the files here ...",
+    "dragDrop": "Drag and drop .pdf files here, or click to select files",
+    "maxFiles": "Max {maxFiles} files with 15 MB each"
+  },
+  "courses": {
+    "loading": "Loading courses...",
+    "errorLoading": "Courses could not be loaded. Please try again later.",
+    "noCourses": "Looks like there are no courses yet",
+    "createCourse": "Create a course",
+    "title": "Courses",
+    "filterLabel": "course name"
+  },
+  "deleteDialog": {
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "deletedSuccessfully": "deleted successfully"
+  },
+  "deleteDialogWithConfirmation": {
+    "title": {
+      "bucket": "Delete bucket",
+      "course": "Delete course"
+    },
+    "typeToConfirm": "Type '{resourceName}' to confirm",
+    "placeholder": {
+      "bucket": "Type in name of bucket",
+      "course": "Type in name of course"
+    },
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "success": {
+      "bucket": "Bucket {name} deleted successfully 🎉",
+      "course": "Course {name} deleted successfully 🎉"
+    },
+    "error": {
+      "bucket": "Error deleting bucket: {message}",
+      "course": "Error deleting course: {message}"
+    }
+  },
+  "files": {
+    "upload": "Upload files",
+    "noCourses": "No courses available. Create one to see the corresponding files here.",
+    "selectCourse": "Please select a course to view its files",
+    "errorLoading": "Could not fetch the files of this course. Please try again later."
+  },
+  "invitationsPage": {
+    "title": "Invitations",
+    "users": "Users",
+    "courses": "Courses",
+    "buckets": "Buckets"
+  },
+  "maintainers": {
+    "loading": "Loading maintainers...",
+    "errorLoading": "Maintainers could not be loaded. Please try again later.",
+    "currentMaintainers": "Current Maintainers",
+    "addMaintainers": "Add maintainers",
+    "addBucketMaintainersDescription": "Maintainer can manage the bucket by adding courses and the corresponding course maintainers. There is a maximum of 10 maintainers per bucket.",
+    "addCourseMaintainersDescription": "Maintainer can manage the course by adding and deleting course content. They can also delete the course. There is a maximum of 20 maintainers by course.",
+    "removeMaintainers": "Remove maintainers",
+    "removeBucketMaintainersDescription": "Maintainers can only be removed by the bucket owner.",
+    "removeCourseMaintainersDescription": "Course maintainers can only be removed by bucket maintainers."
+  },
+  "models": {
+    "add": "Add models"
+  },
+  "prompts": {
+    "manage": "Manage Prompts",
+    "title": "Prompts",
+    "loading": "Loading prompts...",
+    "errorLoading": "Prompts could not be loaded. Please try again later.",
+    "addPrompt": "Add prompt",
+    "addNewPrompt": "Add New Prompt",
+    "addPromptDescription": "Specify how the AI should correct the hand-ins.",
+    "filterLabel": "prompt name"
+  },
+  "renameDocumentForm": {
+    "newTitle": "New Title",
+    "placeholder": "Document Title",
+    "cancel": "Cancel",
+    "rename": "Rename",
+    "renaming": "Renaming...",
+    "success": "Document renamed!",
+    "error": "Failed to rename document. Please try again later."
+  },
+  "tasks": {
+    "loading": "Loading courses...",
+    "errorLoading": "Courses could not be loaded. Please try again later.",
+    "noCourses": "Looks like there are no courses yet",
+    "createCourse": "Create a course",
+    "selectCourse": "Please select a course to view its tasks",
+    "errorLoadingTasks": "Could not fetch the tasks of this course. Please try again later.",
+    "filterLabel": "task name"
   }
 }

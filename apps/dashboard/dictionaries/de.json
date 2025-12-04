@@ -1,94 +1,7 @@
 {
-  "deleteDialog": {
-    "delete": "Lösche",
-    "cancel": "Abbrechen",
-    "deleting": "Wird gelöscht...",
-    "deletedSuccessfully": "erfolgreich gelöscht"
-  },
   "addMaintainers": {
     "adding": "Maintainer werden hinzugefügt...",
     "success": "Maintainer erfolgreich eingeladen 🎉"
-  },
-  "maintainers": {
-    "loading": "Maintainer werden geladen...",
-    "errorLoading": "Maintainer konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-    "currentMaintainers": "Aktuelle Maintainer",
-    "addMaintainers": "Maintainer hinzufügen",
-    "addBucketMaintainersDescription": "Maintainer können den Bucket verwalten, indem sie Kurse und die entsprechenden Kurs-Maintainer hinzufügen. Es gibt maximal 10 Maintainer pro Bucket.",
-    "addCourseMaintainersDescription": "Maintainer können den Kurs verwalten, indem sie Kursinhalte hinzufügen und löschen. Sie können den Kurs auch löschen. Es gibt maximal 20 Maintainer pro Kurs.",
-    "removeMaintainers": "Maintainer entfernen",
-    "removeBucketMaintainersDescription": "Maintainer können nur vom Bucket-Besitzer entfernt werden.",
-    "removeCourseMaintainersDescription": "Kurs-Maintainer können nur von Bucket-Maintainern entfernt werden."
-  },
-  "courses": {
-    "loading": "Kurse werden geladen...",
-    "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-    "noCourses": "Es scheint, als ob es noch keine Kurse gibt",
-    "createCourse": "Kurs erstellen",
-    "title": "Kurse",
-    "filterLabel": "Kursname"
-  },
-  "files": {
-    "upload": "Dateien hochladen",
-    "noCourses": "Keine Kurse verfügbar. Erstellen Sie einen, um die entsprechenden Dateien hier zu sehen.",
-    "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Dateien anzuzeigen",
-    "errorLoading": "Die Dateien dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-  },
-  "correction": {
-    "title": "Korrekturen",
-    "solutionSheet": "Lösungsblatt",
-    "studentHandIns": "Studentenabgaben",
-    "customPrompt": "Benutzerdefinierter Prompt (Optional)",
-    "customPromptDescription": "Wählen Sie einen benutzerdefinierten Prompt, um die KI anzuweisen, wie die Abgaben korrigiert werden sollen.",
-    "selectPrompt": "Prompt auswählen",
-    "searchPrompts": "Prompts suchen...",
-    "noPromptFound": "Kein Prompt gefunden",
-    "failedLoadPrompts": "Fehler beim Laden der Prompts",
-    "noPromptsFound": "Keine Prompts gefunden",
-    "addPrompt": "Prompt hinzufügen",
-    "addNewPrompt": "Neuen Prompt hinzufügen",
-    "addPromptDescription": "Geben Sie an, wie die KI die Abgaben korrigieren soll.",
-    "startCorrection": "Korrektur starten",
-    "filesNotCorrected": "Die folgenden Dateien konnten nicht korrigiert werden:",
-    "correctionSuccess": "Korrektur erfolgreich abgeschlossen. Sie können die Ergebnisse unter 'Dokumente' abrufen",
-    "correctionFailed": "Abgaben konnten nicht korrigiert werden"
-  },
-  "correctionDropzone": {
-    "dropFiles": "Dateien hier ablegen ...",
-    "dragDrop": "Ziehen Sie .pdf-Dateien hierher oder klicken Sie, um Dateien auszuwählen",
-    "maxFiles": "Max {maxFiles} Dateien mit je 15 MB"
-  },
-  "buckets": {
-    "loading": "Buckets werden geladen...",
-    "errorLoading": "Beim Laden der Buckets ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-    "noBuckets": "Es scheint, als ob es noch keine Buckets gibt",
-    "createBucket": "Bucket erstellen",
-    "title": "Buckets",
-    "manageUsers": "Benutzer verwalten",
-    "delete": "Löschen",
-    "addUsers": "Benutzer hinzufügen",
-    "addUsersDescription": "Benutzer können manuell hinzugefügt oder durch Hochladen einer CSV-Datei mit einer Spalte, die die Benutzernamen der hinzuzufügenden Benutzer enthält, hinzugefügt werden.",
-    "selectBucket": "Bucket auswählen",
-    "deleteConfirmation": "Sind Sie sicher, dass Sie diesen Bucket löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
-  },
-  "autocomplete": {
-    "searchUsers": "Benutzer suchen...",
-    "errorProfiles": "Benutzer konnten nicht abgerufen werden"
-  },
-  "tasks": {
-    "loading": "Kurse werden geladen...",
-    "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-    "noCourses": "Es scheint, als ob es noch keine Aufgaben gibt",
-    "createCourse": "Kurs erstellen",
-    "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Aufgaben anzuzeigen",
-    "errorLoadingTasks": "Die Aufgaben dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-    "filterLabel": "Aufgabenname"
-  },
-  "prompts": {
-    "manage": "Prompts verwalten"
-  },
-  "models": {
-    "add": "Modelle hinzufügen"
   },
   "admin": {
     "title": "Admin-Dashboard",
@@ -127,5 +40,136 @@
     "userUnbannedSuccess": "Benutzer erfolgreich entsperrt",
     "userUnbannedError": "Benutzer konnte nicht entsperrt werden",
     "expirationDateRequired": "Ablaufdatum ist erforderlich"
+  },
+  "autocomplete": {
+    "searchUsers": "Benutzer suchen...",
+    "errorProfiles": "Benutzer konnten nicht abgerufen werden"
+  },
+  "buckets": {
+    "loading": "Buckets werden geladen...",
+    "errorLoading": "Beim Laden der Buckets ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "noBuckets": "Es scheint, als ob es noch keine Buckets gibt",
+    "createBucket": "Bucket erstellen",
+    "title": "Buckets",
+    "manageUsers": "Benutzer verwalten",
+    "delete": "Löschen",
+    "addUsers": "Benutzer hinzufügen",
+    "addUsersDescription": "Benutzer können manuell hinzugefügt oder durch Hochladen einer CSV-Datei mit einer Spalte, die die Benutzernamen der hinzuzufügenden Benutzer enthält, hinzugefügt werden.",
+    "selectBucket": "Bucket auswählen",
+    "deleteConfirmation": "Sind Sie sicher, dass Sie diesen Bucket löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+  },
+  "correction": {
+    "title": "Korrekturen",
+    "solutionSheet": "Lösungsblatt",
+    "studentHandIns": "Studentenabgaben",
+    "customPrompt": "Benutzerdefinierter Prompt (Optional)",
+    "customPromptDescription": "Wählen Sie einen benutzerdefinierten Prompt, um die KI anzuweisen, wie die Abgaben korrigiert werden sollen.",
+    "selectPrompt": "Prompt auswählen",
+    "searchPrompts": "Prompts suchen...",
+    "noPromptFound": "Kein Prompt gefunden",
+    "failedLoadPrompts": "Fehler beim Laden der Prompts",
+    "noPromptsFound": "Keine Prompts gefunden",
+    "addPrompt": "Prompt hinzufügen",
+    "addNewPrompt": "Neuen Prompt hinzufügen",
+    "addPromptDescription": "Geben Sie an, wie die KI die Abgaben korrigieren soll.",
+    "startCorrection": "Korrektur starten",
+    "filesNotCorrected": "Die folgenden Dateien konnten nicht korrigiert werden:",
+    "correctionSuccess": "Korrektur erfolgreich abgeschlossen. Sie können die Ergebnisse unter 'Dokumente' abrufen",
+    "correctionFailed": "Abgaben konnten nicht korrigiert werden"
+  },
+  "correctionDropzone": {
+    "dropFiles": "Dateien hier ablegen ...",
+    "dragDrop": "Ziehen Sie .pdf-Dateien hierher oder klicken Sie, um Dateien auszuwählen",
+    "maxFiles": "Max {maxFiles} Dateien mit je 15 MB"
+  },
+  "courses": {
+    "loading": "Kurse werden geladen...",
+    "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "noCourses": "Es scheint, als ob es noch keine Kurse gibt",
+    "createCourse": "Kurs erstellen",
+    "title": "Kurse",
+    "filterLabel": "Kursname"
+  },
+  "deleteDialog": {
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "deleting": "Wird gelöscht...",
+    "deletedSuccessfully": "erfolgreich gelöscht"
+  },
+  "deleteDialogWithConfirmation": {
+    "title": {
+      "bucket": "Bucket löschen",
+      "course": "Kurs löschen"
+    },
+    "typeToConfirm": "Geben Sie '{resourceName}' ein, um zu bestätigen",
+    "placeholder": {
+      "bucket": "Geben Sie den Namen des Buckets ein",
+      "course": "Geben Sie den Namen des Kurses ein"
+    },
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht...",
+    "success": {
+      "bucket": "Bucket {name} erfolgreich gelöscht 🎉",
+      "course": "Kurs {name} erfolgreich gelöscht 🎉"
+    },
+    "error": {
+      "bucket": "Fehler beim Löschen des Buckets: {message}",
+      "course": "Fehler beim Löschen des Kurses: {message}"
+    }
+  },
+  "files": {
+    "upload": "Dateien hochladen",
+    "noCourses": "Keine Kurse verfügbar. Erstellen Sie einen, um die entsprechenden Dateien hier zu sehen.",
+    "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Dateien anzuzeigen",
+    "errorLoading": "Die Dateien dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+  },
+  "invitationsPage": {
+    "title": "Einladungen",
+    "users": "Benutzer",
+    "courses": "Kurse",
+    "buckets": "Buckets"
+  },
+  "maintainers": {
+    "loading": "Maintainer werden geladen...",
+    "errorLoading": "Maintainer konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "currentMaintainers": "Aktuelle Maintainer",
+    "addMaintainers": "Maintainer hinzufügen",
+    "addBucketMaintainersDescription": "Maintainer können den Bucket verwalten, indem sie Kurse und die entsprechenden Kurs-Maintainer hinzufügen. Es gibt maximal 10 Maintainer pro Bucket.",
+    "addCourseMaintainersDescription": "Maintainer können den Kurs verwalten, indem sie Kursinhalte hinzufügen und löschen. Sie können den Kurs auch löschen. Es gibt maximal 20 Maintainer pro Kurs.",
+    "removeMaintainers": "Maintainer entfernen",
+    "removeBucketMaintainersDescription": "Maintainer können nur vom Bucket-Besitzer entfernt werden.",
+    "removeCourseMaintainersDescription": "Kurs-Maintainer können nur von Bucket-Maintainern entfernt werden."
+  },
+  "models": {
+    "add": "Modelle hinzufügen"
+  },
+  "prompts": {
+    "manage": "Prompts verwalten",
+    "title": "Prompts",
+    "loading": "Prompts werden geladen...",
+    "errorLoading": "Prompts konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "addPrompt": "Prompt hinzufügen",
+    "addNewPrompt": "Neuen Prompt hinzufügen",
+    "addPromptDescription": "Geben Sie an, wie die KI die Abgaben korrigieren soll.",
+    "filterLabel": "Prompt-Name"
+  },
+  "renameDocumentForm": {
+    "newTitle": "Neuer Titel",
+    "placeholder": "Dokumenttitel",
+    "cancel": "Abbrechen",
+    "rename": "Umbenennen",
+    "renaming": "Wird umbenannt...",
+    "success": "Dokument umbenannt!",
+    "error": "Fehler beim Umbenennen des Dokuments. Bitte versuchen Sie es später erneut."
+  },
+  "tasks": {
+    "loading": "Kurse werden geladen...",
+    "errorLoading": "Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "noCourses": "Es scheint, als ob es noch keine Aufgaben gibt",
+    "createCourse": "Kurs erstellen",
+    "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Aufgaben anzuzeigen",
+    "errorLoadingTasks": "Die Aufgaben dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "filterLabel": "Aufgabenname"
   }
 }

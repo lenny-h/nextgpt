@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { capitalizeFirstLetter } from "@workspace/ui/lib/utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { memo } from "react";
 import { toast } from "sonner";
 
@@ -25,15 +25,15 @@ export const DeleteForm = memo(
     onDelete,
     type,
   }: DeleteFormProps) => {
+    const { sharedT } = useSharedTranslations();
+
     return (
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete document</DialogTitle>
+            <DialogTitle>{sharedT.deleteForm.title[type]}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this document? This action cannot
-              be undone. This will permanently delete the {type} and all
-              associated data.
+              {sharedT.deleteForm.description[type]}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
@@ -42,20 +42,19 @@ export const DeleteForm = memo(
               variant="secondary"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {sharedT.deleteForm.cancel}
             </Button>
             <Button
               type="submit"
               onClick={() => {
                 toast.promise(onDelete(), {
-                  loading: "Deleting...",
-                  success: () => `${capitalizeFirstLetter(type)} deleted!`,
-                  error: () =>
-                    `Failed to delete ${type}. Please try again later.`,
+                  loading: sharedT.deleteForm.deleting,
+                  success: () => sharedT.deleteForm.deleted[type],
+                  error: () => sharedT.deleteForm.error[type],
                 });
               }}
             >
-              Delete
+              {sharedT.deleteForm.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

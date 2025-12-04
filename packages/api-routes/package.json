@@ -34,7 +34,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@turbo/gen": "^2.6.1",
+    "@turbo/gen": "^2.6.2",
     "@types/node": "^24.10.1",
     "@types/papaparse": "^5.3.16",
     "@workspace/eslint-config": "workspace:*",

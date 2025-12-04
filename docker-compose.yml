@@ -232,9 +232,6 @@ services:
       BASE_URL: http://localhost:3000
       ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
 
-      # Document processor
-      DOCUMENT_PROCESSOR_URL: http://document-processor:8080
-
       # Database and Redis
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_HOST: postgres:5432
@@ -374,45 +371,45 @@ services:
     networks:
       - database_network
 
-  # Web interface (Next.js)
-  web:
-    container_name: web
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3000
-        NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
-        NEXT_PUBLIC_API_URL: http://localhost:3004
-        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-        NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP}
-        NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${NEXT_PUBLIC_ENABLE_OAUTH_LOGIN}
-        NEXT_PUBLIC_ENABLE_SSO: ${NEXT_PUBLIC_ENABLE_SSO}
-        NEXT_PUBLIC_USE_FIRECRAWL: ${NEXT_PUBLIC_USE_FIRECRAWL}
-        NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
+  # # Web interface (Next.js)
+  # web:
+  #   container_name: web
+  #   build:
+  #     context: .
+  #     dockerfile: apps/web/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: http://localhost:3000
+  #       NEXT_PUBLIC_DASHBOARD_URL: http://localhost:3001
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  #       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP}
+  #       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${NEXT_PUBLIC_ENABLE_OAUTH_LOGIN}
+  #       NEXT_PUBLIC_ENABLE_SSO: ${NEXT_PUBLIC_ENABLE_SSO}
+  #       NEXT_PUBLIC_USE_FIRECRAWL: ${NEXT_PUBLIC_USE_FIRECRAWL}
+  #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
 
-  # Dashboard interface (Next.js)
-  dashboard:
-    container_name: dashboard
-    build:
-      context: .
-      dockerfile: apps/dashboard/Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3001
-        NEXT_PUBLIC_CHAT_URL: http://localhost:3000
-        NEXT_PUBLIC_API_URL: http://localhost:3004
-        NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
-        NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP}
-        NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${NEXT_PUBLIC_ENABLE_OAUTH_LOGIN}
-        NEXT_PUBLIC_ENABLE_SSO: ${NEXT_PUBLIC_ENABLE_SSO}
-        NEXT_PUBLIC_USE_FIRECRAWL: ${NEXT_PUBLIC_USE_FIRECRAWL}
-        NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
-    restart: unless-stopped
-    ports:
-      - "3001:3000"
+  # # Dashboard interface (Next.js)
+  # dashboard:
+  #   container_name: dashboard
+  #   build:
+  #     context: .
+  #     dockerfile: apps/dashboard/Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_BASE_URL: http://localhost:3001
+  #       NEXT_PUBLIC_CHAT_URL: http://localhost:3000
+  #       NEXT_PUBLIC_API_URL: http://localhost:3004
+  #       NEXT_PUBLIC_PDF_EXPORTER_URL: http://localhost:3005
+  #       NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP: ${NEXT_PUBLIC_ENABLE_EMAIL_SIGNUP}
+  #       NEXT_PUBLIC_ENABLE_OAUTH_LOGIN: ${NEXT_PUBLIC_ENABLE_OAUTH_LOGIN}
+  #       NEXT_PUBLIC_ENABLE_SSO: ${NEXT_PUBLIC_ENABLE_SSO}
+  #       NEXT_PUBLIC_USE_FIRECRAWL: ${NEXT_PUBLIC_USE_FIRECRAWL}
+  #       NEXT_PUBLIC_CSP_ENDPOINTS: ${NEXT_PUBLIC_CSP_ENDPOINTS}
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
 
   # Firecrawl
   firecrawl-api:

@@ -32,12 +32,56 @@
   "chatSearch": {
     "searchChats": "Search chats..."
   },
-  "practiceHeader": {
-    "hidePreviousQuestions": "Hide previous questions",
-    "showPreviousQuestions": "Show previous questions",
-    "hideTextArea": "Hide text area",
-    "showTextArea": "Show text area",
-    "toggleSidebar": "Toggle sidebar"
+  "codeBlock": {
+    "copy": "Copy",
+    "edit": "Edit",
+    "loading": "Loading code block..."
+  },
+  "courseKeyDialog": {
+    "courseAccessRequired": "Course Access Required",
+    "enterAccessKey": "Please enter the access key for \"{courseName}\" to continue.",
+    "courseKey": "Course Key",
+    "enterCourseAccessKey": "Enter course access key",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "requestingAccess": "Requesting course access...",
+    "accessGranted": "Course access granted!",
+    "failedToRequestAccess": "Failed to request course access"
+  },
+  "courseSelector": {
+    "coursesSelected": "{count} courses selected",
+    "searchCourses": "Search courses"
+  },
+  "documentsList": {
+    "errorLoadingDocuments": "Error loading documents",
+    "noResultsFound": "No results found",
+    "previewUnavailable": "Preview unavailable"
+  },
+  "editorHeader": {
+    "diffView": "Diff view",
+    "accept": "Accept",
+    "deny": "Deny",
+    "markdown": "Markdown",
+    "latex": "Latex",
+    "save": "Save",
+    "saving": "Saving...",
+    "noContentToSave": "No content to save",
+    "failedToSave": "Failed to save document",
+    "setTitle": "Set title",
+    "saveDescription": "Saving this file will overwrite files with the same title. After saving, the document will be accessible under 'Documents'",
+    "generatingPdf": "Generating PDF...",
+    "downloadedAs": "Downloaded as {filename}",
+    "failedToGeneratePdf": "Failed to generate PDF",
+    "untitledDocument": "Untitled document"
+  },
+  "fileSelector": {
+    "searchFiles": "Search files",
+    "filesSelected": "{count} files selected"
+  },
+  "filterableList": {
+    "errorLoading": "Error loading {type}",
+    "noResultsFound": "No results found",
+    "maxItemsError": "You can only select up to {maxItems} items"
   },
   "introduction": {
     "temporaryChatActivated": "Temporary chat activated 💪🏽",
@@ -45,23 +89,26 @@
     "welcomeToNextGPT": "Welcome to NextGPT 🚀",
     "selectCourseResources": "Select the course resources you want to discuss and start chatting!"
   },
-  "pdfViewer": {
-    "noPdfSelected": "No PDF selected",
-    "authenticating": "Authenticating...",
-    "failedToLoadPdf": "Failed to load PDF"
-  },
   "loadButtonLists": {
     "selectCourseFirst": "Please select a course first"
   },
-  "navMain": {
-    "newPracticeSession": "New practice session",
-    "newChat": "New chat",
-    "temporaryChat": "Temporary chat",
-    "chatLabel": "Chat",
-    "practiceLabel": "Practice",
-    "searchLabel": "Search",
-    "documentsLabel": "Documents",
-    "dashboardLabel": "Dashboard"
+  "messageActions": {
+    "copy": "Copy message",
+    "readAloud": "Read aloud",
+    "stopReading": "Stop reading",
+    "retry": "Retry",
+    "like": "Like",
+    "dislike": "Dislike",
+    "editor": "Editor",
+    "copiedToClipboard": "Copied to clipboard!",
+    "retryFailed": "Failed to process retry operation. Please try again.",
+    "failedRead": "Failed to read message",
+    "editMessage": "Edit message"
+  },
+  "multimodal": {
+    "placeholder": "Ask a question...",
+    "dropFiles": "Drop files here",
+    "webSearch": "Web Search"
   },
   "navHistory": {
     "more": "More",
@@ -86,82 +133,15 @@
     "errorLoadingConversations": "There was an error loading your conversations. Please try again.",
     "noConversationsYet": "Your conversations will appear here once you start chatting!"
   },
-  "editorHeader": {
-    "diffView": "Diff view",
-    "accept": "Accept",
-    "deny": "Deny",
-    "markdown": "Markdown",
-    "latex": "Latex",
-    "save": "Save",
-    "saving": "Saving...",
-    "noContentToSave": "No content to save",
-    "failedToSave": "Failed to save document",
-    "setTitle": "Set title",
-    "saveDescription": "Saving this file will overwrite files with the same title. After saving, the document will be accessible under 'Documents'",
-    "generatingPdf": "Generating PDF...",
-    "downloadedAs": "Downloaded as {filename}",
-    "failedToGeneratePdf": "Failed to generate PDF",
-    "untitledDocument": "Untitled document"
-  },
-  "courseSelector": {
-    "coursesSelected": "{count} courses selected",
-    "searchCourses": "Search courses"
-  },
-  "codeBlock": {
-    "copy": "Copy",
-    "edit": "Edit",
-    "loading": "Loading code block..."
-  },
-  "courseKeyDialog": {
-    "courseAccessRequired": "Course Access Required",
-    "enterAccessKey": "Please enter the access key for \"{courseName}\" to continue.",
-    "courseKey": "Course Key",
-    "enterCourseAccessKey": "Enter course access key",
-    "cancel": "Cancel",
-    "submit": "Submit",
-    "requestingAccess": "Requesting course access...",
-    "accessGranted": "Course access granted!",
-    "failedToRequestAccess": "Failed to request course access"
-  },
-  "documentsList": {
-    "errorLoadingDocuments": "Error loading documents",
-    "noResultsFound": "No results found",
-    "previewUnavailable": "Preview unavailable"
-  },
-  "fileSelector": {
-    "searchFiles": "Search files",
-    "filesSelected": "{count} files selected"
-  },
-  "filterableList": {
-    "errorLoading": "Error loading {type}",
-    "noResultsFound": "No results found",
-    "maxItemsError": "You can only select up to {maxItems} items"
-  },
-  "reasoningButton": {
-    "reasoning": "Reasoning",
-    "reasonedForAFewSeconds": "Reasoned for a few seconds"
-  },
-  "messageActions": {
-    "copy": "Copy message",
-    "readAloud": "Read aloud",
-    "stopReading": "Stop reading",
-    "retry": "Retry",
-    "like": "Like",
-    "dislike": "Dislike",
-    "editor": "Editor",
-    "copiedToClipboard": "Copied to clipboard!",
-    "retryFailed": "Failed to process retry operation. Please try again.",
-    "failedRead": "Failed to read message",
-    "editMessage": "Edit message"
-  },
-  "validation": {
-    "selectBucket": "Please select a bucket before submitting your question",
-    "documentNotFound": "Document not found in the filter"
-  },
-  "multimodal": {
-    "placeholder": "Ask a question...",
-    "dropFiles": "Drop files here",
-    "webSearch": "Web Search"
+  "navMain": {
+    "newPracticeSession": "New practice session",
+    "newChat": "New chat",
+    "temporaryChat": "Temporary chat",
+    "chatLabel": "Chat",
+    "practiceLabel": "Practice",
+    "searchLabel": "Search",
+    "documentsLabel": "Documents",
+    "dashboardLabel": "Dashboard"
   },
   "pageRange": {
     "invalid": "Enter page ranges like: 1,3-5,7 and ensure pages are between 1 and {pageCount}",
@@ -170,6 +150,11 @@
     "onlyForPdf": "Page range selection is only available for PDF files.",
     "set": "Set"
   },
+  "pdfViewer": {
+    "noPdfSelected": "No PDF selected",
+    "authenticating": "Authenticating...",
+    "failedToLoadPdf": "Failed to load PDF"
+  },
   "practice": {
     "title": "Let's practice! 🚀",
     "description": "Select the files whose content you want to practice. You can also practice specific page ranges of PDF files by adding them below.",
@@ -177,6 +162,17 @@
     "starting": "Starting...",
     "newQuestion": "New question",
     "studyMode": "Study Mode"
+  },
+  "practiceHeader": {
+    "hidePreviousQuestions": "Hide previous questions",
+    "showPreviousQuestions": "Show previous questions",
+    "hideTextArea": "Hide text area",
+    "showTextArea": "Show text area",
+    "toggleSidebar": "Toggle sidebar"
+  },
+  "reasoningButton": {
+    "reasoning": "Reasoning",
+    "reasonedForAFewSeconds": "Reasoned for a few seconds"
   },
   "tools": {
     "processingDocumentSearch": "Processing document search request...",
@@ -192,5 +188,9 @@
     "processingWebSearch": "Processing web search request...",
     "searchingWeb": "Searching web with:",
     "webSources": "Web Sources"
+  },
+  "validation": {
+    "selectBucket": "Please select a bucket before submitting your question",
+    "documentNotFound": "Document not found in the filter"
   }
 }

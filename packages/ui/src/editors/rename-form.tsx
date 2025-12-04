@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
-import { capitalizeFirstLetter } from "@workspace/ui/lib/utils";
+import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,6 +49,8 @@ export const RenameForm = memo(
     defaultTitle,
     type,
   }: RenameDocumentFormProps) => {
+    const { sharedT } = useSharedTranslations();
+
     const form = useForm<RenameFormData>({
       resolver: zodResolver(renameFormSchema),
       defaultValues: {
@@ -64,9 +66,9 @@ export const RenameForm = memo(
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Rename {type}</DialogTitle>
+            <DialogTitle>{sharedT.renameForm.title[type]}</DialogTitle>
             <DialogDescription>
-              Enter a new title for your {type}
+              {sharedT.renameForm.description[type]}
             </DialogDescription>
           </DialogHeader>
 
@@ -74,11 +76,11 @@ export const RenameForm = memo(
             <form
               onSubmit={form.handleSubmit((values) => {
                 toast.promise(onSubmit(values), {
-                  loading: "Renaming...",
+                  loading: sharedT.renameForm.renaming,
                   success: () => handleSuccess(values),
                   error: (error) => {
                     console.error(error);
-                    return `Failed to rename ${type}. Please try again later.`;
+                    return sharedT.renameForm.error[type];
                   },
                 });
               })}
@@ -89,10 +91,10 @@ export const RenameForm = memo(
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Title</FormLabel>
+                      <FormLabel>{sharedT.renameForm.newTitle}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder={`${capitalizeFirstLetter(type)} title`}
+                          placeholder={sharedT.renameForm.placeholder[type]}
                           {...field}
                         />
                       </FormControl>
@@ -107,9 +109,9 @@ export const RenameForm = memo(
                   variant="secondary"
                   onClick={() => setRenameDialogOpen(false)}
                 >
-                  Cancel
+                  {sharedT.renameForm.cancel}
                 </Button>
-                <Button type="submit">Rename</Button>
+                <Button type="submit">{sharedT.renameForm.rename}</Button>
               </DialogFooter>
             </form>
           </Form>

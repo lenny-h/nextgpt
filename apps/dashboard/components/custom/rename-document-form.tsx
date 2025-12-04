@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
@@ -37,6 +38,7 @@ interface RenameDocumentFormProps {
 export const RenameDocumentForm = memo(
   ({ onClose, editorContent, setEditorContent }: RenameDocumentFormProps) => {
     const { sharedT } = useSharedTranslations();
+    const { dashboardT } = useDashboardTranslations();
 
     const queryClient = useQueryClient();
 
@@ -77,7 +79,7 @@ export const RenameDocumentForm = memo(
         <form
           onSubmit={form.handleSubmit((values) => {
             toast.promise(onSubmit(values), {
-              loading: "Renaming...",
+              loading: dashboardT.renameDocumentForm.renaming,
               success: () => {
                 setEditorContent({
                   ...editorContent,
@@ -105,11 +107,11 @@ export const RenameDocumentForm = memo(
                   },
                 );
 
-                return "Document renamed!";
+                return dashboardT.renameDocumentForm.success;
               },
               error: (error) => {
                 console.error(error);
-                return "Failed to rename document. Please try again later.";
+                return dashboardT.renameDocumentForm.error;
               },
             });
           })}
@@ -120,9 +122,14 @@ export const RenameDocumentForm = memo(
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Title</FormLabel>
+                  <FormLabel>
+                    {dashboardT.renameDocumentForm.newTitle}
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Document Title" {...field} />
+                    <Input
+                      placeholder={dashboardT.renameDocumentForm.placeholder}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,9 +138,11 @@ export const RenameDocumentForm = memo(
           </div>
           <DialogFooter className="mt-4">
             <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
+              {dashboardT.renameDocumentForm.cancel}
             </Button>
-            <Button type="submit">Rename</Button>
+            <Button type="submit">
+              {dashboardT.renameDocumentForm.rename}
+            </Button>
           </DialogFooter>
         </form>
       </Form>

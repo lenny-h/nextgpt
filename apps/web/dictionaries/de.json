@@ -31,12 +31,56 @@
   "chatSearch": {
     "searchChats": "Chats suchen..."
   },
-  "practiceHeader": {
-    "hidePreviousQuestions": "Vorherige Fragen ausblenden",
-    "showPreviousQuestions": "Vorherige Fragen anzeigen",
-    "hideTextArea": "Textbereich ausblenden",
-    "showTextArea": "Textbereich anzeigen",
-    "toggleSidebar": "Seitenleiste umschalten"
+  "codeBlock": {
+    "copy": "Kopieren",
+    "edit": "Bearbeiten",
+    "loading": "Code-Block wird geladen..."
+  },
+  "courseKeyDialog": {
+    "courseAccessRequired": "Kurszugang erforderlich",
+    "enterAccessKey": "Bitte geben Sie den Zugangsschlüssel für \"{courseName}\" ein, um fortzufahren.",
+    "courseKey": "Kursschlüssel",
+    "enterCourseAccessKey": "Kursschlüssel eingeben",
+    "cancel": "Abbrechen",
+    "submit": "Einreichen",
+    "requestingAccess": "Kurszugang wird angefordert...",
+    "accessGranted": "Kurszugang gewährt!",
+    "failedToRequestAccess": "Fehler beim Anfordern des Kurszugangs"
+  },
+  "courseSelector": {
+    "coursesSelected": "{count} Kurse ausgewählt",
+    "searchCourses": "Kurse suchen"
+  },
+  "documentsList": {
+    "errorLoadingDocuments": "Fehler beim Laden der Dokumente",
+    "noResultsFound": "Keine Ergebnisse gefunden",
+    "previewUnavailable": "Vorschau nicht verfügbar"
+  },
+  "editorHeader": {
+    "diffView": "Diff-Ansicht",
+    "accept": "Akzeptieren",
+    "deny": "Ablehnen",
+    "markdown": "Markdown",
+    "latex": "Latex",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "noContentToSave": "Kein Inhalt zum Speichern",
+    "failedToSave": "Fehler beim Speichern des Dokuments",
+    "setTitle": "Titel festlegen",
+    "saveDescription": "Wenn Sie diese Datei speichern, werden Dateien mit demselben Titel überschrieben. Nach dem Speichern ist das Dokument unter 'Dokumente' zugänglich",
+    "generatingPdf": "PDF wird erstellt...",
+    "downloadedAs": "Heruntergeladen als {filename}",
+    "failedToGeneratePdf": "Fehler beim Erstellen des PDFs",
+    "untitledDocument": "Unbenanntes Dokument"
+  },
+  "fileSelector": {
+    "searchFiles": "Dateien suchen",
+    "filesSelected": "{count} Dateien ausgewählt"
+  },
+  "filterableList": {
+    "errorLoading": "Fehler beim Laden von {type}",
+    "noResultsFound": "Keine Ergebnisse gefunden",
+    "maxItemsError": "Sie können nur bis zu {maxItems} Elemente auswählen"
   },
   "introduction": {
     "temporaryChatActivated": "Temporärer Chat aktiviert 💪🏽",
@@ -44,23 +88,26 @@
     "welcomeToNextGPT": "Willkommen bei NextGPT 🚀",
     "selectCourseResources": "Wählen Sie die Kursressourcen aus, die Sie besprechen möchten, und beginnen Sie zu chatten!"
   },
-  "pdfViewer": {
-    "noPdfSelected": "Kein PDF ausgewählt",
-    "authenticating": "Authentifizierung...",
-    "failedToLoadPdf": "PDF konnte nicht geladen werden"
-  },
   "loadButtonLists": {
     "selectCourseFirst": "Bitte wählen Sie zuerst einen Kurs aus"
   },
-  "navMain": {
-    "newPracticeSession": "Neue Übungssession",
-    "newChat": "Neuer Chat",
-    "temporaryChat": "Temporärer Chat",
-    "chatLabel": "Chat",
-    "practiceLabel": "Üben",
-    "searchLabel": "Suche",
-    "documentsLabel": "Dokumente",
-    "dashboardLabel": "Dashboard"
+  "messageActions": {
+    "copy": "Nachricht kopieren",
+    "readAloud": "Vorlesen",
+    "stopReading": "Vorlesen stoppen",
+    "retry": "Erneut versuchen",
+    "like": "Positiv",
+    "dislike": "Negativ",
+    "editor": "Editor",
+    "copiedToClipboard": "In die Zwischenablage kopiert!",
+    "retryFailed": "Wiederholungsaktion fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "failedRead": "Fehler beim Vorlesen der Nachricht",
+    "editMessage": "Nachricht bearbeiten"
+  },
+  "multimodal": {
+    "placeholder": "Fragen Sie etwas...",
+    "dropFiles": "Dateien hier ablegen",
+    "webSearch": "Websuche"
   },
   "navHistory": {
     "more": "Mehr",
@@ -85,82 +132,15 @@
     "errorLoadingConversations": "Beim Laden Ihrer Gespräche ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "noConversationsYet": "Ihre Gespräche werden hier angezeigt, sobald Sie mit dem Chatten beginnen!"
   },
-  "editorHeader": {
-    "diffView": "Diff-Ansicht",
-    "accept": "Akzeptieren",
-    "deny": "Ablehnen",
-    "markdown": "Markdown",
-    "latex": "Latex",
-    "save": "Speichern",
-    "saving": "Wird gespeichert...",
-    "noContentToSave": "Kein Inhalt zum Speichern",
-    "failedToSave": "Fehler beim Speichern des Dokuments",
-    "setTitle": "Titel festlegen",
-    "saveDescription": "Wenn Sie diese Datei speichern, werden Dateien mit demselben Titel überschrieben. Nach dem Speichern ist das Dokument unter 'Dokumente' zugänglich",
-    "generatingPdf": "PDF wird erstellt...",
-    "downloadedAs": "Heruntergeladen als {filename}",
-    "failedToGeneratePdf": "Fehler beim Erstellen des PDFs",
-    "untitledDocument": "Unbenanntes Dokument"
-  },
-  "courseSelector": {
-    "coursesSelected": "{count} Kurse ausgewählt",
-    "searchCourses": "Kurse suchen"
-  },
-  "codeBlock": {
-    "copy": "Kopieren",
-    "edit": "Bearbeiten",
-    "loading": "Code-Block wird geladen..."
-  },
-  "courseKeyDialog": {
-    "courseAccessRequired": "Kurszugang erforderlich",
-    "enterAccessKey": "Bitte geben Sie den Zugangsschlüssel für \"{courseName}\" ein, um fortzufahren.",
-    "courseKey": "Kursschlüssel",
-    "enterCourseAccessKey": "Kursschlüssel eingeben",
-    "cancel": "Abbrechen",
-    "submit": "Einreichen",
-    "requestingAccess": "Kurszugang wird angefordert...",
-    "accessGranted": "Kurszugang gewährt!",
-    "failedToRequestAccess": "Fehler beim Anfordern des Kurszugangs"
-  },
-  "documentsList": {
-    "errorLoadingDocuments": "Fehler beim Laden der Dokumente",
-    "noResultsFound": "Keine Ergebnisse gefunden",
-    "previewUnavailable": "Vorschau nicht verfügbar"
-  },
-  "fileSelector": {
-    "searchFiles": "Dateien suchen",
-    "filesSelected": "{count} Dateien ausgewählt"
-  },
-  "filterableList": {
-    "errorLoading": "Fehler beim Laden von {type}",
-    "noResultsFound": "Keine Ergebnisse gefunden",
-    "maxItemsError": "Sie können nur bis zu {maxItems} Elemente auswählen"
-  },
-  "reasoningButton": {
-    "reasoning": "Denken",
-    "reasonedForAFewSeconds": "Einige Sekunden lang überlegt"
-  },
-  "messageActions": {
-    "copy": "Nachricht kopieren",
-    "readAloud": "Vorlesen",
-    "stopReading": "Vorlesen stoppen",
-    "retry": "Erneut versuchen",
-    "like": "Positiv",
-    "dislike": "Negativ",
-    "editor": "Editor",
-    "copiedToClipboard": "In die Zwischenablage kopiert!",
-    "retryFailed": "Wiederholungsaktion fehlgeschlagen. Bitte versuchen Sie es erneut.",
-    "failedRead": "Fehler beim Vorlesen der Nachricht",
-    "editMessage": "Nachricht bearbeiten"
-  },
-  "validation": {
-    "selectBucket": "Bitte wählen Sie einen Bucket, bevor Sie Ihre Frage absenden",
-    "documentNotFound": "Dokument im Filter nicht gefunden"
-  },
-  "multimodal": {
-    "placeholder": "Fragen Sie etwas...",
-    "dropFiles": "Dateien hier ablegen",
-    "webSearch": "Websuche"
+  "navMain": {
+    "newPracticeSession": "Neue Übungssession",
+    "newChat": "Neuer Chat",
+    "temporaryChat": "Temporärer Chat",
+    "chatLabel": "Chat",
+    "practiceLabel": "Üben",
+    "searchLabel": "Suche",
+    "documentsLabel": "Dokumente",
+    "dashboardLabel": "Dashboard"
   },
   "pageRange": {
     "invalid": "Geben Sie Seitenbereiche wie: 1,3-5,7 ein und stellen Sie sicher, dass die Seiten zwischen 1 und {pageCount} liegen",
@@ -169,6 +149,11 @@
     "onlyForPdf": "Die Auswahl des Seitenbereichs ist nur für PDF-Dateien verfügbar.",
     "set": "Festlegen"
   },
+  "pdfViewer": {
+    "noPdfSelected": "Kein PDF ausgewählt",
+    "authenticating": "Authentifizierung...",
+    "failedToLoadPdf": "PDF konnte nicht geladen werden"
+  },
   "practice": {
     "title": "Lass uns üben! 🚀",
     "description": "Wählen Sie die Dateien aus, deren Inhalt Sie üben möchten. Sie können auch bestimmte Seitenbereiche von PDF-Dateien unten hinzufügen.",
@@ -176,6 +161,17 @@
     "starting": "Starte...",
     "newQuestion": "Neue Frage",
     "studyMode": "Lernmodus"
+  },
+  "practiceHeader": {
+    "hidePreviousQuestions": "Vorherige Fragen ausblenden",
+    "showPreviousQuestions": "Vorherige Fragen anzeigen",
+    "hideTextArea": "Textbereich ausblenden",
+    "showTextArea": "Textbereich anzeigen",
+    "toggleSidebar": "Seitenleiste umschalten"
+  },
+  "reasoningButton": {
+    "reasoning": "Denken",
+    "reasonedForAFewSeconds": "Einige Sekunden lang überlegt"
   },
   "tools": {
     "processingDocumentSearch": "Dokumentensuche wird verarbeitet...",
@@ -191,5 +187,9 @@
     "processingWebSearch": "Websuche wird verarbeitet...",
     "searchingWeb": "Web wird durchsucht mit:",
     "webSources": "Webquellen"
+  },
+  "validation": {
+    "selectBucket": "Bitte wählen Sie einen Bucket, bevor Sie Ihre Frage absenden",
+    "documentNotFound": "Dokument im Filter nicht gefunden"
   }
 }

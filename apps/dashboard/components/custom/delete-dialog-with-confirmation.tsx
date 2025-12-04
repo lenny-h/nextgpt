@@ -1,5 +1,6 @@
 "use client";
 
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -13,7 +14,6 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { type ErrorDictionary } from "@workspace/ui/lib/translation-utils";
-import { capitalizeFirstLetter } from "@workspace/ui/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -24,7 +24,7 @@ interface Props {
     queryClient: QueryClient,
     errorDictionary: ErrorDictionary,
   ) => Promise<{ name: string }>;
-  resourceType: string;
+  resourceType: "bucket" | "course";
   resourceName: string;
   description: string;
 }
@@ -38,6 +38,7 @@ export function DeleteDialogWithConfirmation({
   description,
 }: Props) {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");
@@ -46,17 +47,24 @@ export function DeleteDialogWithConfirmation({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete {resourceType}</DialogTitle>
+          <DialogTitle>
+            {dashboardT.deleteDialogWithConfirmation.title[resourceType]}
+          </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="w-full space-y-2">
           <p className="text-muted-foreground text-sm">
-            Type '{resourceName}'' to confirm
+            {dashboardT.deleteDialogWithConfirmation.typeToConfirm.replace(
+              "{resourceName}",
+              resourceName,
+            )}
           </p>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={`Type in name of ${resourceType}`}
+            placeholder={
+              dashboardT.deleteDialogWithConfirmation.placeholder[resourceType]
+            }
           />
         </div>
         <DialogFooter className="mt-4">
@@ -65,7 +73,7 @@ export function DeleteDialogWithConfirmation({
             variant="secondary"
             onClick={() => setOpen(false)}
           >
-            Cancel
+            {dashboardT.deleteDialogWithConfirmation.cancel}
           </Button>
           <Button
             type="submit"
@@ -73,17 +81,19 @@ export function DeleteDialogWithConfirmation({
             disabled={input !== resourceName}
             onClick={() => {
               toast.promise(deleteResource(queryClient, sharedT.apiCodes), {
-                loading: "Deleting...",
+                loading: dashboardT.deleteDialogWithConfirmation.deleting,
                 success: (result) =>
-                  `${capitalizeFirstLetter(
-                    resourceType,
-                  )} ${result.name} deleted successfully 🎉`,
+                  dashboardT.deleteDialogWithConfirmation.success[
+                    resourceType
+                  ].replace("{name}", result.name),
                 error: (error) =>
-                  `Error deleting ${resourceType}: ${error.message}`,
+                  dashboardT.deleteDialogWithConfirmation.error[
+                    resourceType
+                  ].replace("{message}", error.message),
               });
             }}
           >
-            Delete
+            {dashboardT.deleteDialogWithConfirmation.delete}
           </Button>
         </DialogFooter>
       </DialogContent>

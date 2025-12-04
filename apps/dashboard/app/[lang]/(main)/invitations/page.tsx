@@ -1,5 +1,6 @@
 "use client";
 
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { InvitationsTab } from "@/components/custom/invitations-tab";
 import {
   Tabs,
@@ -9,19 +10,23 @@ import {
 } from "@workspace/ui/components/tabs";
 
 export default function InvitationsPage() {
+  const { dashboardT } = useDashboardTranslations();
+
   return (
-    <div className="p-2 flex flex-col space-y-6 items-center">
-      <h1 className="text-2xl font-semibold">Invitations</h1>
-      <Tabs defaultValue="users" className="flex-1 w-full max-w-4xl">
-        <TabsList className="mx-auto grid grid-cols-3 w-[300px] translate-y-1">
+    <div className="flex flex-col items-center space-y-6 p-2">
+      <h1 className="text-2xl font-semibold">
+        {dashboardT.invitationsPage.title}
+      </h1>
+      <Tabs defaultValue="users" className="w-full max-w-4xl flex-1">
+        <TabsList className="mx-auto grid w-[300px] translate-y-1 grid-cols-3">
           <TabsTrigger value="users" className="cursor-pointer">
-            Users
+            {dashboardT.invitationsPage.users}
           </TabsTrigger>
           <TabsTrigger value="course_maintainers" className="cursor-pointer">
-            Courses
+            {dashboardT.invitationsPage.courses}
           </TabsTrigger>
           <TabsTrigger value="bucket_maintainers" className="cursor-pointer">
-            Buckets
+            {dashboardT.invitationsPage.buckets}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="users">
