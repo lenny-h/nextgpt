@@ -36,8 +36,8 @@ from typing import Optional
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 
 from models.requests import DocumentUploadEvent
-from routes.process_pdf import convert_pdf
-from routes.process_document import convert_document
+from processors.process_pdf import convert_pdf
+from processors.process_document import convert_document
 from logger import setup_logger, configure_library_logging
 
 logger = setup_logger(__name__)

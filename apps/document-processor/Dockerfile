@@ -9,6 +9,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
+    curl \
     # libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,6 +39,11 @@ RUN echo "Downloading essential models..." && \
     docling-tools models download -o "${DOCLING_ARTIFACTS_PATH}" ${MODELS_LIST} && \
     chown -R appuser:appuser ${DOCLING_ARTIFACTS_PATH} ${HF_HOME} && \
     chmod -R g=u ${DOCLING_ARTIFACTS_PATH} ${HF_HOME}
+
+# Pre-download RapidOCR font to enable fully offline operation
+RUN mkdir -p /usr/local/lib/python3.12/site-packages/rapidocr/models && \
+    curl -fsSL -o /usr/local/lib/python3.12/site-packages/rapidocr/models/FZYTK.TTF \
+    "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.4.0/resources/fonts/FZYTK.TTF"
 
 RUN chown -R appuser:appuser /usr/local/lib/python3.12/site-packages/rapidocr && \
     chmod -R u+w /usr/local/lib/python3.12/site-packages/rapidocr
