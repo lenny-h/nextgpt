@@ -89,7 +89,7 @@ export const AddContext = memo(({ type }: AddContextProps) => {
               </DialogDescription>
             </>
           ) : (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pr-6">
               <DialogTitle>
                 {type === "files"
                   ? webT.addContext.searchFiles

@@ -57,6 +57,10 @@
     "noResultsFound": "No results found",
     "previewUnavailable": "Preview unavailable"
   },
+  "documentsPage": {
+    "title": "Documents",
+    "searchPlaceholder": "Search documents..."
+  },
   "editorHeader": {
     "diffView": "Diff view",
     "accept": "Accept",
@@ -88,6 +92,11 @@
     "messagesNotSaved": "Your messages will not be saved!",
     "welcomeToNextGPT": "Welcome to NextGPT 🚀",
     "selectCourseResources": "Select the course resources you want to discuss and start chatting!"
+  },
+  "loadButton": {
+    "load": "Load",
+    "searchFiles": "Search files",
+    "searchDocuments": "Search documents"
   },
   "loadButtonLists": {
     "selectCourseFirst": "Please select a course first"
@@ -173,6 +182,13 @@
   "reasoningButton": {
     "reasoning": "Reasoning",
     "reasonedForAFewSeconds": "Reasoned for a few seconds"
+  },
+  "searchPage": {
+    "title": "Search",
+    "keywords": "Keywords",
+    "semantic": "Semantic",
+    "searchPlaceholder": "Search sources...",
+    "selectAtLeastOneCourse": "Please select at least one course"
   },
   "tools": {
     "processingDocumentSearch": "Processing document search request...",

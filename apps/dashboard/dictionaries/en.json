@@ -3,6 +3,32 @@
     "adding": "Adding maintainers...",
     "success": "Maintainers invited successfully 🎉"
   },
+  "addModelPage": {
+    "title": "Add a model",
+    "errorLoading": "There was an error loading the buckets. Please try again later.",
+    "bucketLabel": "Bucket",
+    "selectBucket": "Select bucket",
+    "searchBucket": "Search bucket...",
+    "noBucketFound": "No bucket found",
+    "errorLoadingBuckets": "There was an error loading the buckets",
+    "noBucketsAvailable": "No buckets available",
+    "modelLabel": "Model",
+    "selectModel": "Select model",
+    "searchModel": "Search model...",
+    "noModelFound": "No model found",
+    "errorLoadingModels": "There was an error loading the models",
+    "noModelsAvailable": "No models available",
+    "resourceName": "Resource Name",
+    "deploymentId": "Deployment ID",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "sk-xxxxxxxxxxxxxxxxxxxx",
+    "descriptionLabel": "Description (Optional)",
+    "creating": "Creating...",
+    "create": "Create",
+    "adding": "Adding model...",
+    "success": "Model added successfully 🎉",
+    "error": "Error adding model"
+  },
   "admin": {
     "title": "Admin Dashboard",
     "loading": "Loading users...",
@@ -90,6 +116,27 @@
     "title": "Courses",
     "filterLabel": "course name"
   },
+  "createCoursePage": {
+    "title": "Create a course",
+    "errorLoading": "There was an error loading the buckets. Please try again later.",
+    "bucketLabel": "Bucket",
+    "selectBucket": "Select bucket",
+    "searchBucket": "Search bucket...",
+    "noBucketFound": "No bucket found",
+    "errorLoadingBuckets": "There was an error loading the buckets",
+    "noBucketsAvailable": "No buckets available",
+    "courseNameLabel": "Course name",
+    "courseNamePlaceholder": "Analysis I",
+    "coursePasswordLabel": "Course password (Optional)",
+    "coursePasswordPlaceholder": "Enter password for course access",
+    "courseDescriptionLabel": "Course description (Optional)",
+    "courseDescriptionPlaceholder": "This course covers... It is a 5 ECTS course... and takes place in the Spring semester. It requires the following prerequisites...",
+    "creating": "Creating...",
+    "create": "Create",
+    "creatingCourse": "Creating course...",
+    "success": "Course created successfully 🎉\n Add course maintainers by clicking on the three dots",
+    "error": "Error creating course"
+  },
   "deleteDialog": {
     "delete": "Delete",
     "cancel": "Cancel",
@@ -117,6 +164,11 @@
       "bucket": "Error deleting bucket: {message}",
       "course": "Error deleting course: {message}"
     }
+  },
+  "documentsPage": {
+    "title": "Documents",
+    "searchPlaceholder": "Search documents...",
+    "failedToFetch": "Failed to fetch documents"
   },
   "files": {
     "upload": "Upload files",
@@ -171,5 +223,21 @@
     "selectCourse": "Please select a course to view its tasks",
     "errorLoadingTasks": "Could not fetch the tasks of this course. Please try again later.",
     "filterLabel": "task name"
+  },
+  "uploadFilesPage": {
+    "title": "Upload course content",
+    "errorLoading": "There was an error loading the courses. Please try again later.",
+    "selectCourse": "Select course...",
+    "searchCourses": "Search courses...",
+    "noCourseFound": "No course found",
+    "processingDate": "Processing date (Optional):",
+    "selectProcessingDate": "Select a processing date",
+    "pageNumberOffset": "Page Number Offset (Optional)",
+    "pageNumberOffsetDescription": "Specifies how many unnumbered pages are at the start of the document. For example, if your document has a title page and the page numbered \"1\" is the second page in the PDF, set this to 1. The llm will use this offet to find the correct pages when asked about specific page numbers.",
+    "pdfProcessingOptions": "PDF Processing Options (PDFs only)",
+    "enableOcr": "Enable OCR (Optical Character Recognition)",
+    "enableCodeEnrichment": "Enable code enrichment",
+    "enableFormulaEnrichment": "Enable formula enrichment (extract LaTeX)",
+    "enablePictureDescription": "Enable picture description"
   }
 }

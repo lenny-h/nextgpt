@@ -63,9 +63,9 @@ export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
     });
 
     toast.promise(createPromptPromise, {
-      loading: "Creating prompt...",
-      success: "Prompt created successfully 🎉",
-      error: (error) => `Error creating prompt: ${error.message}`,
+      loading: sharedT.addPromptForm.creating,
+      success: sharedT.addPromptForm.success,
+      error: sharedT.addPromptForm.errorSaving,
     });
   }
 

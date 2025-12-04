@@ -3,6 +3,32 @@
     "adding": "Maintainer werden hinzugefügt...",
     "success": "Maintainer erfolgreich eingeladen 🎉"
   },
+  "addModelPage": {
+    "title": "Modell hinzufügen",
+    "errorLoading": "Beim Laden der Buckets ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "bucketLabel": "Bucket",
+    "selectBucket": "Bucket auswählen",
+    "searchBucket": "Bucket suchen...",
+    "noBucketFound": "Kein Bucket gefunden",
+    "errorLoadingBuckets": "Beim Laden der Buckets ist ein Fehler aufgetreten",
+    "noBucketsAvailable": "Keine Buckets verfügbar",
+    "modelLabel": "Modell",
+    "selectModel": "Modell auswählen",
+    "searchModel": "Modell suchen...",
+    "noModelFound": "Kein Modell gefunden",
+    "errorLoadingModels": "Beim Laden der Modelle ist ein Fehler aufgetreten",
+    "noModelsAvailable": "Keine Modelle verfügbar",
+    "resourceName": "Ressourcenname",
+    "deploymentId": "Deployment-ID",
+    "apiKey": "API-Schlüssel",
+    "apiKeyPlaceholder": "sk-xxxxxxxxxxxxxxxxxxxx",
+    "descriptionLabel": "Beschreibung (Optional)",
+    "creating": "Wird erstellt...",
+    "create": "Erstellen",
+    "adding": "Modell wird hinzugefügt...",
+    "success": "Modell erfolgreich hinzugefügt 🎉",
+    "error": "Fehler beim Hinzufügen des Modells"
+  },
   "admin": {
     "title": "Admin-Dashboard",
     "loading": "Benutzer werden geladen...",
@@ -90,6 +116,27 @@
     "title": "Kurse",
     "filterLabel": "Kursname"
   },
+  "createCoursePage": {
+    "title": "Kurs erstellen",
+    "errorLoading": "Beim Laden der Buckets ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "bucketLabel": "Bucket",
+    "selectBucket": "Bucket auswählen",
+    "searchBucket": "Bucket suchen...",
+    "noBucketFound": "Kein Bucket gefunden",
+    "errorLoadingBuckets": "Beim Laden der Buckets ist ein Fehler aufgetreten",
+    "noBucketsAvailable": "Keine Buckets verfügbar",
+    "courseNameLabel": "Kursname",
+    "courseNamePlaceholder": "Analysis I",
+    "coursePasswordLabel": "Kurs-Passwort (Optional)",
+    "coursePasswordPlaceholder": "Passwort für Kurszugang eingeben",
+    "courseDescriptionLabel": "Kursbeschreibung (Optional)",
+    "courseDescriptionPlaceholder": "Dieser Kurs behandelt... Es ist ein 5-ECTS-Kurs... und findet im Frühjahrssemester statt. Folgende Voraussetzungen sind erforderlich...",
+    "creating": "Wird erstellt...",
+    "create": "Erstellen",
+    "creatingCourse": "Kurs wird erstellt...",
+    "success": "Kurs erfolgreich erstellt 🎉\n Fügen Sie Kurs-Maintainer hinzu, indem Sie auf die drei Punkte klicken",
+    "error": "Fehler beim Erstellen des Kurses"
+  },
   "deleteDialog": {
     "delete": "Löschen",
     "cancel": "Abbrechen",
@@ -117,6 +164,11 @@
       "bucket": "Fehler beim Löschen des Buckets: {message}",
       "course": "Fehler beim Löschen des Kurses: {message}"
     }
+  },
+  "documentsPage": {
+    "title": "Dokumente",
+    "searchPlaceholder": "Dokumente suchen...",
+    "failedToFetch": "Fehler beim Laden der Dokumente"
   },
   "files": {
     "upload": "Dateien hochladen",
@@ -171,5 +223,21 @@
     "selectCourse": "Bitte wählen Sie einen Kurs aus, um dessen Aufgaben anzuzeigen",
     "errorLoadingTasks": "Die Aufgaben dieses Kurses konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
     "filterLabel": "Aufgabenname"
+  },
+  "uploadFilesPage": {
+    "title": "Kursinhalt hochladen",
+    "errorLoading": "Beim Laden der Kurse ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "selectCourse": "Kurs auswählen...",
+    "searchCourses": "Kurse suchen...",
+    "noCourseFound": "Kein Kurs gefunden",
+    "processingDate": "Verarbeitungsdatum (Optional):",
+    "selectProcessingDate": "Verarbeitungsdatum auswählen",
+    "pageNumberOffset": "Seitennummer-Offset (Optional)",
+    "pageNumberOffsetDescription": "Gibt an, wie viele unnummerierte Seiten am Anfang des Dokuments stehen. Wenn Ihr Dokument beispielsweise eine Titelseite hat und die Seite mit der Nummer \"1\" die zweite Seite im PDF ist, setzen Sie dies auf 1. Das LLM verwendet diesen Offset, um die richtigen Seiten zu finden, wenn nach bestimmten Seitenzahlen gefragt wird.",
+    "pdfProcessingOptions": "PDF-Verarbeitungsoptionen (nur für PDFs)",
+    "enableOcr": "OCR aktivieren (Optische Zeichenerkennung)",
+    "enableCodeEnrichment": "Code-Anreicherung aktivieren",
+    "enableFormulaEnrichment": "Formel-Anreicherung aktivieren (LaTeX extrahieren)",
+    "enablePictureDescription": "Bildbeschreibung aktivieren"
   }
 }

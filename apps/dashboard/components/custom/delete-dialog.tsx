@@ -71,7 +71,7 @@ export function DeleteDialog({
               });
             }}
           >
-            Delete
+            {dashboardT.deleteDialog.delete}
           </Button>
         </DialogFooter>
       </DialogContent>

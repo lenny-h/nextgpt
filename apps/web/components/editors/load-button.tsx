@@ -1,6 +1,7 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -21,6 +22,7 @@ interface LoadButtonProps {
 
 export const LoadButton = memo(({ type }: LoadButtonProps) => {
   const { isLoading, isError, filter } = useFilter();
+  const { webT } = useWebTranslations();
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -38,7 +40,7 @@ export const LoadButton = memo(({ type }: LoadButtonProps) => {
   }, []);
 
   if (isLoading) {
-    return <Skeleton className="w-22 h-9 rounded-md" />;
+    return <Skeleton className="h-9 w-22 rounded-md" />;
   }
 
   if (isError || !filter.bucket.id) {
@@ -49,13 +51,17 @@ export const LoadButton = memo(({ type }: LoadButtonProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="px-2" variant="outline">
-          Load
+          {webT.loadButton.load}
           <KeyboardShortcut keys={["⌘", "o"]} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Search {type}</DialogTitle>
+          <DialogTitle>
+            {type === "files"
+              ? webT.loadButton.searchFiles
+              : webT.loadButton.searchDocuments}
+          </DialogTitle>
         </DialogHeader>
         <SearchWithSelection
           type={type}

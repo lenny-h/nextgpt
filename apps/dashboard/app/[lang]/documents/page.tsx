@@ -2,6 +2,7 @@
 
 import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { DocumentsList } from "@/components/custom/documents-list";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -29,6 +30,7 @@ const EditorWrapper = dynamic(() =>
 export default function DocumentsPage() {
   const { panelRef } = useRefs();
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const [documents, setDocuments] = useState<Omit<CustomDocument, "userId">[]>(
     [],
@@ -57,7 +59,7 @@ export default function DocumentsPage() {
 
       setDocuments(documents);
     } catch (error) {
-      toast.error("Failed to fetch documents");
+      toast.error(dashboardT.documentsPage.failedToFetch);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +87,9 @@ export default function DocumentsPage() {
       >
         <BreadcrumbHeader />
         <div className="flex flex-col items-center space-y-6 overflow-y-auto p-2">
-          <h1 className="text-2xl font-semibold">Documents</h1>
+          <h1 className="text-2xl font-semibold">
+            {dashboardT.documentsPage.title}
+          </h1>
           <div className="relative w-full max-w-md">
             <Search
               className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 transform"
@@ -93,7 +97,7 @@ export default function DocumentsPage() {
             />
             <Input
               className="px-10 py-2"
-              placeholder="Search documents..."
+              placeholder={dashboardT.documentsPage.searchPlaceholder}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {isLoading ? (
