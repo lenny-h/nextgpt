@@ -29,7 +29,7 @@ def create_embedded_chunk(
     )
 
 
-async def handle_processing_error(bucket: str, event: DocumentUploadEvent, error: Exception):
+def handle_processing_error(bucket: str, event: DocumentUploadEvent, error: Exception):
     """Handle errors during document/PDF processing with cleanup."""
     logger.error(f"Processing error for file '{event.name}' (task_id={event.taskId}): {error}", exc_info=True)
     
@@ -43,7 +43,7 @@ async def handle_processing_error(bucket: str, event: DocumentUploadEvent, error
 
     try:
         logger.info(f"Updating task status to failed for task_id={event.taskId}")
-        await update_status_to_failed(event.taskId, event.bucketId, str(error))
+        update_status_to_failed(event.taskId, event.bucketId, str(error))
         logger.info(f"Successfully updated task status to failed for task_id={event.taskId}")
     except Exception as e:
         logger.error(f"Failed to update task status to failed for task_id={event.taskId}: {e}", exc_info=True)

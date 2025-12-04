@@ -37,7 +37,7 @@ from logger import setup_logger
 logger = setup_logger(__name__)
 
 
-async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
+def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full document processing workflow with embeddings and database storage.
     
     Processes chunks in batches of 30 to optimize memory usage.
@@ -52,10 +52,10 @@ async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
 
     try:
         logger.info(f"Updating task status to 'processing' for task_id={task_id}")
-        await update_status_to_processing(task_id)
+        update_status_to_processing(task_id)
 
         logger.info(f"Converting document to chunks: {event.name}")
-        chunk_generator = await _create_document_chunk_generator("files-bucket", event.name)
+        chunk_generator = _create_document_chunk_generator("files-bucket", event.name)
 
         # Process chunks in batches of 30
         batch: List[DocumentChunkData] = []
@@ -63,7 +63,7 @@ async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
             batch.append(chunk)
             
             if len(batch) >= batch_size:
-                await _process_and_upload_document_batch(
+                _process_and_upload_document_batch(
                     batch, task_id, course_id, shortened_filename,
                     int(event.size), event.pageNumberOffset, is_first_batch
                 )
@@ -74,7 +74,7 @@ async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
 
         # Process remaining chunks
         if batch:
-            await _process_and_upload_document_batch(
+            _process_and_upload_document_batch(
                 batch, task_id, course_id, shortened_filename,
                 int(event.size), event.pageNumberOffset, is_first_batch
             )
@@ -86,7 +86,7 @@ async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
             raise ValueError("No content chunks generated from document")
 
         logger.info(f"Updating task status to 'finished' for task_id={task_id}")
-        await update_status_to_finished(task_id)
+        update_status_to_finished(task_id)
 
         return ProcessingResponse(
             success=True,
@@ -95,11 +95,11 @@ async def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        await handle_processing_error("files-bucket", event, error)
+        handle_processing_error("files-bucket", event, error)
         raise error
 
 
-async def _process_and_upload_document_batch(
+def _process_and_upload_document_batch(
     batch: List[DocumentChunkData],
     task_id: str,
     course_id: str,
@@ -119,7 +119,7 @@ async def _process_and_upload_document_batch(
     ]
 
     logger.debug(f"Uploading batch of {len(embedded_chunks)} chunks to database")
-    await upload_to_postgres_db(
+    upload_to_postgres_db(
         task_id, course_id, filename,
         file_size, embedded_chunks, page_number_offset,
         None, is_first_batch
@@ -151,7 +151,7 @@ def _generate_document_chunks(
         )
 
 
-async def _create_document_chunk_generator(
+def _create_document_chunk_generator(
     bucket: str,
     key: str
 ) -> Generator[DocumentChunkData, None, None]:

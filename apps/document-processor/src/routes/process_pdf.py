@@ -70,7 +70,7 @@ def _create_converter_with_options(pipeline_options: Optional[object]) -> Docume
     )
 
 
-async def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
+def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full PDF processing workflow with embeddings and database storage.
     
     Processes chunks in batches of 30 to optimize memory usage.
@@ -85,10 +85,10 @@ async def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
 
     try:
         logger.info(f"Updating task status to 'processing' for task_id={task_id}")
-        await update_status_to_processing(task_id)
+        update_status_to_processing(task_id)
 
         logger.info(f"Converting PDF to chunks: {event.name}")
-        chunk_generator, page_count = await _create_pdf_chunk_generator(
+        chunk_generator, page_count = _create_pdf_chunk_generator(
             "files-bucket", event.name, event.pipelineOptions
         )
 
@@ -98,7 +98,7 @@ async def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
             batch.append(chunk)
             
             if len(batch) >= batch_size:
-                await _process_and_upload_pdf_batch(
+                _process_and_upload_pdf_batch(
                     batch, task_id, course_id, shortened_filename,
                     int(event.size), event.pageNumberOffset, page_count,
                     is_first_batch
@@ -110,7 +110,7 @@ async def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
 
         # Process remaining chunks
         if batch:
-            await _process_and_upload_pdf_batch(
+            _process_and_upload_pdf_batch(
                 batch, task_id, course_id, shortened_filename,
                 int(event.size), event.pageNumberOffset, page_count,
                 is_first_batch
@@ -123,7 +123,7 @@ async def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
             raise ValueError("No content chunks generated from PDF")
 
         logger.info(f"Updating task status to 'finished' for task_id={task_id}")
-        await update_status_to_finished(task_id)
+        update_status_to_finished(task_id)
 
         return ProcessingResponse(
             success=True,
@@ -132,11 +132,11 @@ async def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        await handle_processing_error("files-bucket", event, error)
+        handle_processing_error("files-bucket", event, error)
         raise error
 
 
-async def _process_and_upload_pdf_batch(
+def _process_and_upload_pdf_batch(
     batch: List[PdfChunkData],
     task_id: str,
     course_id: str,
@@ -157,7 +157,7 @@ async def _process_and_upload_pdf_batch(
     ]
 
     logger.debug(f"Uploading batch of {len(embedded_chunks)} chunks to database")
-    await upload_to_postgres_db(
+    upload_to_postgres_db(
         task_id, course_id, filename,
         file_size, embedded_chunks, page_number_offset,
         page_count, is_first_batch
@@ -209,7 +209,7 @@ def _generate_pdf_chunks(
         )
 
 
-async def _create_pdf_chunk_generator(
+def _create_pdf_chunk_generator(
     bucket: str,
     key: str,
     pipeline_options: Optional[object] = None

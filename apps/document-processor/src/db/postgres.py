@@ -1,60 +1,46 @@
 """
 PostgreSQL database operations for storing processed documents and chunks
+
+Optimized for job-based execution - uses direct synchronous connections
+since each job runs as a single process and terminates after completion.
 """
 
 import os
 import json
-import asyncio
 from typing import List, Optional
+from contextlib import contextmanager
 
-from psycopg_pool import AsyncConnectionPool
-
-
-# Connection pool singleton for async database access
-_connection_pool: Optional[AsyncConnectionPool] = None
-_pool_lock = asyncio.Lock()
+import psycopg
 
 
-async def get_connection_pool() -> AsyncConnectionPool:
+def _get_connection_string() -> str:
+    """Build database connection string from environment variables."""
+    database_password = os.getenv("DATABASE_PASSWORD", "")
+    database_host = os.getenv("DATABASE_HOST", "")
+    if not database_password or not database_host:
+        raise ValueError(
+            "DATABASE_PASSWORD and DATABASE_HOST environment variables must be set"
+        )
+    return f"postgresql://postgres:{database_password}@{database_host}/postgres?connect_timeout=10"
+
+
+@contextmanager
+def get_connection():
     """
-    Get or create the async database connection pool singleton.
-    Async-safe using double-checked locking.
-
-    Returns:
-        AsyncConnectionPool: PostgreSQL async connection pool
+    Create a direct database connection for the current operation.
+    
+    For job-based execution, we use direct connections instead of a pool
+    since each job runs as a single process and terminates after completion.
+    This is more efficient than maintaining a pool for short-lived jobs.
     """
-    global _connection_pool
-    if _connection_pool is None:
-        async with _pool_lock:
-            # Double-check after acquiring lock
-            if _connection_pool is None:
-                database_password = os.getenv("DATABASE_PASSWORD", "")
-                database_host = os.getenv("DATABASE_HOST", "")
-                if not database_password or not database_host:
-                    raise ValueError(
-                        "DATABASE_PASSWORD and DATABASE_HOST environment variables must be set"
-                    )
-
-                database_url = (
-                    f"postgresql://postgres:{database_password}@{database_host}/postgres?connect_timeout=10"
-                )
-
-                # Create an async connection pool with min 2 and max 20 connections
-                # Set statement timeout to 60 seconds to prevent hanging queries
-                _connection_pool = AsyncConnectionPool(
-                    conninfo=database_url,
-                    open=False,
-                    min_size=2,
-                    max_size=20,
-                    max_idle=150,  # Close idle connections after 150 seconds
-                    timeout=30,  # Connection acquisition timeout
-                    kwargs={
-                        "options": "-c statement_timeout=30000"  # 30 second query timeout
-                    }
-                )
-                # Open the pool
-                await _connection_pool.open()
-    return _connection_pool
+    conn = psycopg.connect(
+        _get_connection_string(),
+        options="-c statement_timeout=60000"  # 60 second query timeout
+    )
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 class EmbeddedChunk:
@@ -75,7 +61,7 @@ class EmbeddedChunk:
         self.bbox = bbox
 
 
-async def upload_to_postgres_db(
+def upload_to_postgres_db(
     task_id: str,
     course_id: str,
     filename: str,
@@ -101,17 +87,15 @@ async def upload_to_postgres_db(
         page_count: Optional total number of pages in the document (only available for PDFs)
         is_first_batch: Whether this is the first batch (creates file record)
     """
-    pool = await get_connection_pool()
-
-    async with pool.connection() as conn:
-        async with conn.cursor() as cursor:
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
             try:
                 # Get course name
-                await cursor.execute(
+                cursor.execute(
                     "SELECT name FROM courses WHERE id = %s LIMIT 1",
                     (course_id,)
                 )
-                course_result = await cursor.fetchone()
+                course_result = cursor.fetchone()
 
                 if not course_result:
                     raise ValueError(f"Course not found: {course_id}")
@@ -120,7 +104,7 @@ async def upload_to_postgres_db(
 
                 # Insert file record only on first batch
                 if is_first_batch:
-                    await cursor.execute(
+                    cursor.execute(
                         """
                         INSERT INTO files (id, course_id, name, size, page_count)
                         VALUES (%s, %s, %s, %s, %s)
@@ -150,7 +134,7 @@ async def upload_to_postgres_db(
                     chunks_to_insert.append(row)
 
                 # Batch insert chunks using executemany
-                await cursor.executemany(
+                cursor.executemany(
                     """
                     INSERT INTO chunks
                     (id, file_id, file_name, course_id, course_name, embedding, content,
@@ -159,22 +143,22 @@ async def upload_to_postgres_db(
                     """,
                     chunks_to_insert
                 )
-                await conn.commit()
+                conn.commit()
 
             except Exception as e:
-                await conn.rollback()
+                conn.rollback()
 
                 # Cleanup on failure - delete all chunks and file record
                 try:
-                    await cursor.execute(
+                    cursor.execute(
                         "DELETE FROM chunks WHERE file_id = %s",
                         (task_id,)
                     )
-                    await cursor.execute(
+                    cursor.execute(
                         "DELETE FROM files WHERE id = %s",
                         (task_id,)
                     )
-                    await conn.commit()
+                    conn.commit()
                 except Exception as cleanup_error:
                     print(
                         f"Failed to cleanup after error: {cleanup_error}")
@@ -182,31 +166,29 @@ async def upload_to_postgres_db(
                 raise e
 
 
-async def update_status_to_processing(task_id: str) -> None:
+def update_status_to_processing(task_id: str) -> None:
     """Update task status to 'processing'"""
-    pool = await get_connection_pool()
-    async with pool.connection() as conn:
-        async with conn.cursor() as cursor:
-            await cursor.execute(
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
                 "UPDATE tasks SET status = 'processing' WHERE id = %s",
                 (task_id,)
             )
-            await conn.commit()
+            conn.commit()
 
 
-async def update_status_to_finished(task_id: str) -> None:
+def update_status_to_finished(task_id: str) -> None:
     """Update task status to 'finished'"""
-    pool = await get_connection_pool()
-    async with pool.connection() as conn:
-        async with conn.cursor() as cursor:
-            await cursor.execute(
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
                 "UPDATE tasks SET status = 'finished' WHERE id = %s",
                 (task_id,)
             )
-            await conn.commit()
+            conn.commit()
 
 
-async def update_status_to_failed(task_id: str, bucket_id: str, error_message: str = "") -> None:
+def update_status_to_failed(task_id: str, bucket_id: str, error_message: str = "") -> None:
     """
     Update task status to 'failed', set error message, and adjust bucket size.
     Performs atomic transaction.
@@ -216,18 +198,17 @@ async def update_status_to_failed(task_id: str, bucket_id: str, error_message: s
         bucket_id: Bucket identifier
         error_message: Error message to store (defaults to empty string)
     """
-    pool = await get_connection_pool()
-    async with pool.connection() as conn:
-        async with conn.cursor() as cursor:
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
             try:
                 # Update task status to failed and set error message
-                await cursor.execute(
+                cursor.execute(
                     "UPDATE tasks SET status = 'failed', error_message = %s WHERE id = %s",
                     (error_message, task_id)
                 )
 
                 # Update bucket size by subtracting the file size
-                await cursor.execute(
+                cursor.execute(
                     """
                     UPDATE buckets
                     SET size = size - (SELECT file_size FROM tasks WHERE id = %s)
@@ -236,7 +217,7 @@ async def update_status_to_failed(task_id: str, bucket_id: str, error_message: s
                     (task_id, bucket_id)
                 )
 
-                await conn.commit()
+                conn.commit()
             except Exception as e:
-                await conn.rollback()
+                conn.rollback()
                 raise e

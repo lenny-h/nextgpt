@@ -31,7 +31,6 @@ Optional for PDFs:
 
 import os
 import sys
-import asyncio
 from typing import Optional
 
 from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -39,7 +38,6 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 from models.requests import DocumentUploadEvent
 from routes.process_pdf import convert_pdf
 from routes.process_document import convert_document
-from db.postgres import get_connection_pool
 from logger import setup_logger, configure_library_logging
 
 logger = setup_logger(__name__)
@@ -106,7 +104,7 @@ def build_event_from_env() -> DocumentUploadEvent:
     )
 
 
-async def run_job():
+def run_job():
     """Main job runner entry point."""
     configure_library_logging()
     
@@ -117,27 +115,18 @@ async def run_job():
         sys.exit(1)
     
     try:
-        # Initialize database connection pool
-        logger.info("Initializing database connection pool...")
-        pool = await get_connection_pool()
-        logger.info("Database connection pool initialized")
-        
         # Build event from environment
         event = build_event_from_env()
         logger.info(f"Starting {job_type} job for task_id={event.taskId}, file={event.name}")
         
         # Run the appropriate processor
         if job_type == "process-pdf":
-            result = await convert_pdf(event)
+            result = convert_pdf(event)
         else:
-            result = await convert_document(event)
+            result = convert_document(event)
         
         logger.info(f"Job completed successfully: {result.message}")
         logger.info(f"Chunks processed: {result.chunks_processed}")
-        
-        # Cleanup
-        await pool.close()
-        logger.info("Database connection pool closed")
         
     except Exception as e:
         logger.error(f"Job failed with error: {str(e)}", exc_info=True)
@@ -145,4 +134,4 @@ async def run_job():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_job())
+    run_job()
