@@ -99,10 +99,6 @@ resource "aws_ecs_task_definition" "api" {
           value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
         },
         {
-          name  = "DOCUMENT_PROCESSOR_URL"
-          value = "http://document-processor.${var.aws_project_name}.local:8080"
-        },
-        {
           name  = "DATABASE_HOST"
           value = data.terraform_remote_state.db_storage.outputs.db_instance_endpoint
         },
@@ -135,8 +131,20 @@ resource "aws_ecs_task_definition" "api" {
           value = aws_iam_role.eventbridge_scheduler.arn
         },
         {
-          name  = "AWS_EVENTBRIDGE_BUS_ARN"
-          value = aws_cloudwatch_event_bus.document_processing.arn
+          name  = "AWS_ECS_CLUSTER_ARN"
+          value = data.terraform_remote_state.db_storage.outputs.ecs_cluster_arn
+        },
+        {
+          name  = "AWS_ECS_TASK_DEFINITION_ARN"
+          value = aws_ecs_task_definition.document_processor.arn
+        },
+        {
+          name  = "AWS_SUBNET_IDS"
+          value = join(",", data.terraform_remote_state.db_storage.outputs.private_subnet_ids)
+        },
+        {
+          name  = "AWS_SECURITY_GROUP_IDS"
+          value = data.terraform_remote_state.db_storage.outputs.security_group_ecs_tasks_id
         },
         {
           name  = "EMBEDDINGS_MODEL"
@@ -279,7 +287,7 @@ resource "aws_ecs_task_definition" "api" {
   }
 }
 
-# Document Processor Task Definition
+# Document Processor Task Definition (runs as a job, not a service)
 resource "aws_ecs_task_definition" "document_processor" {
   family                   = "${var.aws_project_name}-document-processor"
   network_mode             = "awsvpc"
@@ -297,10 +305,7 @@ resource "aws_ecs_task_definition" "document_processor" {
   container_definitions = jsonencode([{
     name  = "document-processor"
     image = "${data.terraform_remote_state.repository.outputs.ecr_repository_document_processor}:latest"
-    portMappings = [{
-      containerPort = 8080
-      protocol      = "tcp"
-    }]
+    # No port mappings - this runs as a job, not a service
     environment = concat(
       [
         {
@@ -330,10 +335,6 @@ resource "aws_ecs_task_definition" "document_processor" {
         {
           name  = "AWS_REGION"
           value = var.aws_region
-        },
-        {
-          name  = "EMBEDDINGS_MODEL"
-          value = var.embeddings_model
         }
       ],
       var.use_cloudflare_r2 ? [

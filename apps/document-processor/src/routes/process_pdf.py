@@ -1,7 +1,13 @@
+"""
+PDF Processing Module
+
+This module handles PDF document processing with chunk extraction,
+embeddings generation, and database storage.
+"""
+
 import io
 from typing import Optional, List, Tuple, Generator
 
-from fastapi import APIRouter, HTTPException
 from botocore.exceptions import ClientError
 
 from docling_core.types.io import DocumentStream
@@ -32,8 +38,6 @@ from db.postgres import (
 from embeddings.embeddings_client import embed_content
 
 from logger import setup_logger
-
-router = APIRouter()
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -66,44 +70,7 @@ def _create_converter_with_options(pipeline_options: Optional[object]) -> Docume
     )
 
 
-def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[tuple[float, float, float, float]]]:
-    """Extract page number and bounding box from chunk."""
-    page_index = doc_chunk.meta.doc_items[0].prov[0].page_no
-
-    bbox_obj = BoundingBox.enclosing_bbox(
-        [prov_item.bbox for item in doc_chunk.meta.doc_items for prov_item in item.prov]
-    )
-
-    bbox_tuple = None
-    if bbox_obj:
-        bbox_tuple = bbox_obj.as_tuple()
-
-    return page_index, bbox_tuple
-
-@router.post("/internal/process-pdf")
-async def process_pdf(event: DocumentUploadEvent):
-    """Process a PDF from cloud storage to chunks with page numbers and bounding boxes."""
-    logger.info(f"Received PDF processing request for '{event.name}' (task_id={event.taskId}, size={event.size} bytes)")
-    try:
-        result = await _convert_pdf(event)
-        logger.info(f"Successfully processed PDF '{event.name}' (task_id={event.taskId})")
-        return result
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "Unknown")
-        logger.error(f"Storage error processing PDF '{event.name}': {error_code} - {str(e)}")
-        if error_code == "NoSuchKey":
-            raise HTTPException(
-                status_code=404,
-                detail=f"File not found: {event.name}"
-            )
-        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
-    except Exception as e:
-        logger.error(f"Failed to process PDF '{event.name}' (task_id={event.taskId}): {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to convert PDF: {str(e)}")
-
-
-async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
+def convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full PDF processing workflow with embeddings and database storage.
     
     Processes chunks in batches of 30 to optimize memory usage.
@@ -118,10 +85,10 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
 
     try:
         logger.info(f"Updating task status to 'processing' for task_id={task_id}")
-        await update_status_to_processing(task_id)
+        update_status_to_processing(task_id)
 
         logger.info(f"Converting PDF to chunks: {event.name}")
-        chunk_generator, page_count = await _create_pdf_chunk_generator(
+        chunk_generator, page_count = _create_pdf_chunk_generator(
             "files-bucket", event.name, event.pipelineOptions
         )
 
@@ -131,7 +98,7 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
             batch.append(chunk)
             
             if len(batch) >= batch_size:
-                await _process_and_upload_pdf_batch(
+                _process_and_upload_pdf_batch(
                     batch, task_id, course_id, shortened_filename,
                     int(event.size), event.pageNumberOffset, page_count,
                     is_first_batch
@@ -143,7 +110,7 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
 
         # Process remaining chunks
         if batch:
-            await _process_and_upload_pdf_batch(
+            _process_and_upload_pdf_batch(
                 batch, task_id, course_id, shortened_filename,
                 int(event.size), event.pageNumberOffset, page_count,
                 is_first_batch
@@ -156,7 +123,7 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
             raise ValueError("No content chunks generated from PDF")
 
         logger.info(f"Updating task status to 'finished' for task_id={task_id}")
-        await update_status_to_finished(task_id)
+        update_status_to_finished(task_id)
 
         return ProcessingResponse(
             success=True,
@@ -165,11 +132,11 @@ async def _convert_pdf(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        await handle_processing_error("files-bucket", event, error)
+        handle_processing_error("files-bucket", event, error)
         raise error
 
 
-async def _process_and_upload_pdf_batch(
+def _process_and_upload_pdf_batch(
     batch: List[PdfChunkData],
     task_id: str,
     course_id: str,
@@ -190,7 +157,7 @@ async def _process_and_upload_pdf_batch(
     ]
 
     logger.debug(f"Uploading batch of {len(embedded_chunks)} chunks to database")
-    await upload_to_postgres_db(
+    upload_to_postgres_db(
         task_id, course_id, filename,
         file_size, embedded_chunks, page_number_offset,
         page_count, is_first_batch
@@ -198,6 +165,21 @@ async def _process_and_upload_pdf_batch(
 
 
 from typing import Generator
+
+
+def _extract_chunk_metadata(doc_chunk: DocChunk) -> tuple[int, Optional[tuple[float, float, float, float]]]:
+    """Extract page number and bounding box from chunk."""
+    page_index = doc_chunk.meta.doc_items[0].prov[0].page_no
+
+    bbox_obj = BoundingBox.enclosing_bbox(
+        [prov_item.bbox for item in doc_chunk.meta.doc_items for prov_item in item.prov]
+    )
+
+    bbox_tuple = None
+    if bbox_obj:
+        bbox_tuple = bbox_obj.as_tuple()
+
+    return page_index, bbox_tuple
 
 
 def _generate_pdf_chunks(
@@ -227,7 +209,7 @@ def _generate_pdf_chunks(
         )
 
 
-async def _create_pdf_chunk_generator(
+def _create_pdf_chunk_generator(
     bucket: str,
     key: str,
     pipeline_options: Optional[object] = None

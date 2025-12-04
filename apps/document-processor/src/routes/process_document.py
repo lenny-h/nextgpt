@@ -1,7 +1,13 @@
+"""
+Document Processing Module
+
+This module handles non-PDF document processing with chunk extraction,
+embeddings generation, and database storage.
+"""
+
 import io
 from typing import List, Generator
 
-from fastapi import APIRouter, HTTPException
 from botocore.exceptions import ClientError
 
 from docling_core.types.io import DocumentStream
@@ -27,35 +33,11 @@ from embeddings.embeddings_client import embed_content
 
 from logger import setup_logger
 
-router = APIRouter()
-
 # Configure logger
 logger = setup_logger(__name__)
 
-@router.post("/internal/process-document")
-async def process_document(event: DocumentUploadEvent):
-    """Convert a non-PDF document from cloud storage to chunks."""
-    logger.info(f"Received document processing request for '{event.name}' (task_id={event.taskId}, size={event.size} bytes)")
-    try:
-        result = await _convert_document(event)
-        logger.info(f"Successfully processed document '{event.name}' (task_id={event.taskId})")
-        return result
-    except ClientError as e:
-        error_code = e.response.get("Error", {}).get("Code", "Unknown")
-        logger.error(f"Storage error processing document '{event.name}': {error_code} - {str(e)}")
-        if error_code == "NoSuchKey":
-            raise HTTPException(
-                status_code=404,
-                detail=f"File not found: {event.name}"
-            )
-        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
-    except Exception as e:
-        logger.error(f"Failed to process document '{event.name}' (task_id={event.taskId}): {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to convert document: {str(e)}")
 
-
-async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
+def convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
     """Full document processing workflow with embeddings and database storage.
     
     Processes chunks in batches of 30 to optimize memory usage.
@@ -70,10 +52,10 @@ async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
 
     try:
         logger.info(f"Updating task status to 'processing' for task_id={task_id}")
-        await update_status_to_processing(task_id)
+        update_status_to_processing(task_id)
 
         logger.info(f"Converting document to chunks: {event.name}")
-        chunk_generator = await _create_document_chunk_generator("files-bucket", event.name)
+        chunk_generator = _create_document_chunk_generator("files-bucket", event.name)
 
         # Process chunks in batches of 30
         batch: List[DocumentChunkData] = []
@@ -81,7 +63,7 @@ async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
             batch.append(chunk)
             
             if len(batch) >= batch_size:
-                await _process_and_upload_document_batch(
+                _process_and_upload_document_batch(
                     batch, task_id, course_id, shortened_filename,
                     int(event.size), event.pageNumberOffset, is_first_batch
                 )
@@ -92,7 +74,7 @@ async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
 
         # Process remaining chunks
         if batch:
-            await _process_and_upload_document_batch(
+            _process_and_upload_document_batch(
                 batch, task_id, course_id, shortened_filename,
                 int(event.size), event.pageNumberOffset, is_first_batch
             )
@@ -104,7 +86,7 @@ async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
             raise ValueError("No content chunks generated from document")
 
         logger.info(f"Updating task status to 'finished' for task_id={task_id}")
-        await update_status_to_finished(task_id)
+        update_status_to_finished(task_id)
 
         return ProcessingResponse(
             success=True,
@@ -113,11 +95,11 @@ async def _convert_document(event: DocumentUploadEvent) -> ProcessingResponse:
         )
 
     except Exception as error:
-        await handle_processing_error("files-bucket", event, error)
+        handle_processing_error("files-bucket", event, error)
         raise error
 
 
-async def _process_and_upload_document_batch(
+def _process_and_upload_document_batch(
     batch: List[DocumentChunkData],
     task_id: str,
     course_id: str,
@@ -137,7 +119,7 @@ async def _process_and_upload_document_batch(
     ]
 
     logger.debug(f"Uploading batch of {len(embedded_chunks)} chunks to database")
-    await upload_to_postgres_db(
+    upload_to_postgres_db(
         task_id, course_id, filename,
         file_size, embedded_chunks, page_number_offset,
         None, is_first_batch
@@ -169,7 +151,7 @@ def _generate_document_chunks(
         )
 
 
-async def _create_document_chunk_generator(
+def _create_document_chunk_generator(
     bucket: str,
     key: str
 ) -> Generator[DocumentChunkData, None, None]:

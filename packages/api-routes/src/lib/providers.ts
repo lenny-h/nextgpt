@@ -1,5 +1,10 @@
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
-import { type JSONValue, type LanguageModel } from "ai";
+import {
+  extractReasoningMiddleware,
+  wrapLanguageModel,
+  type JSONValue,
+  type LanguageModel,
+} from "ai";
 import { chatModels } from "../utils/models.js";
 
 export interface Config {
@@ -54,8 +59,15 @@ export const getModel = async (
       credentialProvider: fromNodeProviderChain(),
     });
 
+    const bedrockModel = bedrock(chatModels[selectedChatModel].name);
+
     return {
-      model: bedrock(chatModels[selectedChatModel].name),
+      model: reasoningEnabled
+        ? wrapLanguageModel({
+            model: bedrockModel,
+            middleware: extractReasoningMiddleware({ tagName: "thinking" }),
+          })
+        : bedrockModel,
       providerOptions: {
         amazon_bedrock: {
           ...(reasoningEnabled

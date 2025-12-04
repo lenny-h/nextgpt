@@ -110,10 +110,6 @@ resource "google_cloud_run_v2_service" "api" {
         value = "https://app.${var.site_url},https://dashboard.${var.site_url}"
       }
       env {
-        name  = "DOCUMENT_PROCESSOR_URL"
-        value = google_cloud_run_v2_service.document_processor.uri
-      }
-      env {
         name  = "DATABASE_HOST"
         value = data.terraform_remote_state.db_storage.outputs.postgres_private_ip
       }
@@ -309,134 +305,6 @@ resource "google_cloud_run_v2_service" "api" {
   ]
 }
 
-# Document Processor Service
-resource "google_cloud_run_v2_service" "document_processor" {
-  name                = "document-processor"
-  project             = var.google_vertex_project
-  location            = var.google_vertex_location
-  deletion_protection = false
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
-
-  template {
-    service_account = google_service_account.document_processor_sa.email
-
-    containers {
-      image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/document-processor:latest"
-      ports {
-        container_port = 8080
-      }
-
-      # Non-sensitive environment variables
-      env {
-        name  = "ENVIRONMENT"
-        value = "production"
-      }
-      env {
-        name  = "API_URL"
-        value = "https://api.${var.site_url}"
-      }
-      env {
-        name  = "DATABASE_HOST"
-        value = data.terraform_remote_state.db_storage.outputs.postgres_private_ip
-      }
-      env {
-        name  = "USE_CLOUDFLARE_R2"
-        value = tostring(var.use_cloudflare_r2)
-      }
-      dynamic "env" {
-        for_each = var.use_cloudflare_r2 ? {
-          "R2_ENDPOINT" = var.r2_endpoint
-        } : {}
-        content {
-          name  = env.key
-          value = env.value
-        }
-      }
-      env {
-        name  = "CLOUD_PROVIDER"
-        value = "gcloud"
-      }
-      env {
-        name  = "GOOGLE_VERTEX_PROJECT"
-        value = var.google_vertex_project
-      }
-      env {
-        name  = "GOOGLE_VERTEX_LOCATION"
-        value = var.google_vertex_location
-      }
-
-      # Sensitive secrets from Secret Manager
-      env {
-        name = "DATABASE_PASSWORD"
-        value_source {
-          secret_key_ref {
-            secret  = data.terraform_remote_state.db_storage.outputs.db_password_secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "ENCRYPTION_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.encryption_key.secret_id
-            version = "latest"
-          }
-        }
-      }
-      dynamic "env" {
-        for_each = var.use_cloudflare_r2 ? {
-          "CLOUDFLARE_ACCESS_KEY_ID"     = google_secret_manager_secret.cloudflare_r2_access_key_id[0].secret_id
-          "CLOUDFLARE_SECRET_ACCESS_KEY" = google_secret_manager_secret.cloudflare_r2_secret_access_key[0].secret_id
-        } : {}
-        content {
-          name = env.key
-          value_source {
-            secret_key_ref {
-              secret  = env.value
-              version = "latest"
-            }
-          }
-        }
-      }
-
-      resources {
-        limits = {
-          cpu    = "4"
-          memory = "8Gi"
-        }
-      }
-    }
-
-    vpc_access {
-      network_interfaces {
-        network    = data.terraform_remote_state.db_storage.outputs.vpc_network_id
-        subnetwork = data.terraform_remote_state.db_storage.outputs.subnet_id
-      }
-    }
-
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 5
-    }
-
-    max_instance_request_concurrency = 30
-    timeout                          = "60s"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image,
-    ]
-  }
-
-  depends_on = [
-    google_project_service.run,
-    google_service_account.document_processor_sa,
-    google_secret_manager_secret_version.encryption_key
-  ]
-}
-
 # PDF Exporter Service
 resource "google_cloud_run_v2_service" "pdf_exporter" {
   name                = "pdf-exporter"
@@ -624,20 +492,4 @@ resource "google_cloud_run_v2_service" "pdf_exporter" {
     google_service_account.pdf_exporter_sa,
     google_secret_manager_secret_version.better_auth_secret
   ]
-}
-
-# Allow the document processor service account to be invoked by Cloud Tasks
-resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker_tasks" {
-  name     = google_cloud_run_v2_service.document_processor.name
-  location = google_cloud_run_v2_service.document_processor.location
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.cloud_tasks_sa.email}"
-}
-
-# Allow the document processor to be invoked by API service
-resource "google_cloud_run_v2_service_iam_member" "document_processor_invoker_api" {
-  name     = google_cloud_run_v2_service.document_processor.name
-  location = google_cloud_run_v2_service.document_processor.location
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.api_sa.email}"
 }

@@ -4,12 +4,16 @@
  */
 
 /**
- * Parameters for scheduling a processing task
+ * Job types for document processing
+ */
+export type JobType = "process-pdf" | "process-document";
+
+/**
+ * Parameters for scheduling a processing task/job
  */
 export interface ScheduleProcessingTaskParams {
   taskId: string;
-  processorUrl: string;
-  endpoint: string; // "/process-pdf" or "/process-document"
+  jobType: JobType;
   payload: Record<string, any>;
   scheduleTime: Date;
 }
@@ -23,7 +27,7 @@ export interface CancelTaskParams {
 
 export interface ITasksClient {
   /**
-   * Schedule a processing task with high-level abstraction
+   * Schedule a processing task/job with high-level abstraction
    * Each implementation handles cloud-provider-specific details internally
    */
   scheduleProcessingTask(params: ScheduleProcessingTaskParams): Promise<void>;

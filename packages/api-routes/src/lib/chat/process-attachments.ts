@@ -14,8 +14,8 @@ function getFileType(filename: string): string {
   if (filename.endsWith(".jpg") || filename.endsWith(".jpeg"))
     return "image/jpeg";
 
-  // For all other file types, we'll need to convert them
-  return "other";
+  // Other file types are not supported for direct attachment
+  return "unsupported";
 }
 
 function canDirectlyAttach(mediaType: string): boolean {
@@ -24,37 +24,6 @@ function canDirectlyAttach(mediaType: string): boolean {
     mediaType === "image/png" ||
     mediaType === "image/jpeg"
   );
-}
-
-async function convertToMarkdown(key: string): Promise<string> {
-  const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
-
-  logger.debug("Converting document to markdown", {
-    key,
-    processorUrl,
-  });
-
-  const response = await fetch(
-    `${processorUrl}/convert?key=${encodeURIComponent(key)}`,
-    {
-      method: "POST",
-    }
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Failed to convert document: ${response.status} ${errorText}`
-    );
-  }
-
-  const result = await response.json();
-
-  if (!result.success || !result.markdown) {
-    throw new Error("Document conversion failed");
-  }
-
-  return result.markdown;
 }
 
 export async function processAttachments(
@@ -76,53 +45,38 @@ export async function processAttachments(
       canDirectlyAttach: canDirectlyAttach(fileType),
     });
 
-    if (canDirectlyAttach(fileType)) {
-      // Download the file content from storage
-      logger.debug("Downloading file from storage", {
-        filename: attachment.filename,
-        bucket: "temporary-files-bucket",
-      });
-
-      const storageClient = getStorageClient();
-
-      const fileContent = await storageClient.downloadFile({
-        bucket: "temporary-files-bucket",
-        key: attachment.filename,
-      });
-
-      // Convert to data URL
-      const base64Data = fileContent.toString("base64");
-      const dataUrl = `data:${fileType};base64,${base64Data}`;
-
-      parts.push({
-        type: "file",
-        url: dataUrl,
-        mediaType: fileType,
-      });
-    } else {
-      // For other formats - convert to markdown via document-processor
-      logger.info("Converting file to markdown", {
+    if (!canDirectlyAttach(fileType)) {
+      logger.error("Unsupported file type for attachment", {
         filename: attachment.filename,
         fileType,
       });
-
-      try {
-        const markdown = await convertToMarkdown(attachment.filename);
-        parts.push({
-          type: "text",
-          text: "Parsed content of the uploaded attachment: " + markdown,
-        });
-      } catch (error) {
-        logger.error(
-          `Failed to process attachment ${attachment.filename}:`,
-          error
-        );
-
-        throw new Error(
-          "Failed to process attachment. Please ensure the file format is supported."
-        );
-      }
+      throw new Error(
+        `Unsupported file type: ${attachment.filename}. Only PDF, PNG, and JPEG files are supported.`
+      );
     }
+
+    // Download the file content from storage
+    logger.debug("Downloading file from storage", {
+      filename: attachment.filename,
+      bucket: "temporary-files-bucket",
+    });
+
+    const storageClient = getStorageClient();
+
+    const fileContent = await storageClient.downloadFile({
+      bucket: "temporary-files-bucket",
+      key: attachment.filename,
+    });
+
+    // Convert to data URL
+    const base64Data = fileContent.toString("base64");
+    const dataUrl = `data:${fileType};base64,${base64Data}`;
+
+    parts.push({
+      type: "file",
+      url: dataUrl,
+      mediaType: fileType,
+    });
   }
 
   return parts;

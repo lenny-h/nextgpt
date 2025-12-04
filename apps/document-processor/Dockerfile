@@ -47,7 +47,6 @@ COPY --chown=appuser:appuser apps/document-processor/src ./src
 
 USER appuser
 
-EXPOSE 8080
-
-# Run the FastAPI app
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run as a job - receives job parameters via environment variables
+# JOB_TYPE, TASK_ID, BUCKET_ID, FILE_NAME, FILE_SIZE, etc.
+CMD ["python", "-m", "job_runner"]

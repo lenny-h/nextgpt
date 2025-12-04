@@ -31,9 +31,9 @@ output "api_service_name" {
   value       = google_cloud_run_v2_service.api.name
 }
 
-output "document_processor_service_name" {
-  description = "The name of the Document Processor Cloud Run service"
-  value       = google_cloud_run_v2_service.document_processor.name
+output "document_processor_job_name" {
+  description = "The name of the Document Processor Cloud Run Job"
+  value       = google_cloud_run_v2_job.document_processor.name
 }
 
 output "pdf_exporter_service_name" {
