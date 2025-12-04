@@ -160,9 +160,9 @@ jobs:
             --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
             --services pdf-exporter
 
-  # Deploy Document Processor service
-  deploy-document-processor:
-    name: Deploy Document Processor Service
+  # Build Document Processor image (runs as a job, not a service)
+  build-document-processor:
+    name: Build Document Processor Image
     runs-on: ubuntu-latest
     needs: changes
     # if: needs.changes.outputs.document-processor == 'true'
@@ -200,16 +200,3 @@ jobs:
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             --push \
             .
-
-      - name: Force new deployment
-        run: |
-          aws ecs update-service \
-            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
-            --service document-processor \
-            --force-new-deployment
-
-      - name: Wait for service stability
-        run: |
-          aws ecs wait services-stable \
-            --cluster ${{ vars.AWS_PROJECT_NAME }}-cluster \
-            --services document-processor
