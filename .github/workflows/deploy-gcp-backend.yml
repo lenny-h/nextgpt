@@ -120,9 +120,9 @@ jobs:
             --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/pdf-exporter:${{ github.sha }} \
             --region=${{ vars.REGION }}
 
-  # Deploy Document Processor service
-  deploy-document-processor:
-    name: Deploy PDF Processor Service
+  # Build Document Processor image (runs as a Cloud Run job, not a service)
+  build-document-processor:
+    name: Build Document Processor Image
     runs-on: ubuntu-latest
     needs: changes
     # if: needs.changes.outputs.document-processor == 'true'
@@ -150,8 +150,8 @@ jobs:
           docker push $IMAGE_NAME
           docker push $IMAGE_LATEST
 
-      - name: Update Cloud Run service
+      - name: Update Cloud Run job
         run: |
-          gcloud run services update document-processor \
+          gcloud run jobs update document-processor \
             --image=${{ vars.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/app-artifact-repository/document-processor:${{ github.sha }} \
             --region=${{ vars.REGION }}
