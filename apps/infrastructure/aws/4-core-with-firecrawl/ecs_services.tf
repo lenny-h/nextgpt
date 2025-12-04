@@ -293,7 +293,7 @@ resource "aws_ecs_task_definition" "document_processor" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "4096"
-  memory                   = "6144"
+  memory                   = "8192"
   execution_role_arn       = data.terraform_remote_state.db_storage.outputs.ecs_task_execution_role_arn
   task_role_arn            = aws_iam_role.document_processor_task.arn
 
@@ -335,10 +335,6 @@ resource "aws_ecs_task_definition" "document_processor" {
         {
           name  = "AWS_REGION"
           value = var.aws_region
-        },
-        {
-          name  = "EMBEDDINGS_MODEL"
-          value = var.embeddings_model
         }
       ],
       var.use_cloudflare_r2 ? [

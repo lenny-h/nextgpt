@@ -53,10 +53,6 @@ resource "google_cloud_run_v2_job" "document_processor" {
           name  = "GOOGLE_VERTEX_LOCATION"
           value = var.google_vertex_location
         }
-        env {
-          name  = "EMBEDDINGS_MODEL"
-          value = var.embeddings_model
-        }
 
         # Sensitive secrets from Secret Manager
         env {
