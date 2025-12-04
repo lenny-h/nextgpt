@@ -8,8 +8,6 @@ embeddings generation, and database storage.
 import io
 from typing import Optional, List, Tuple, Generator
 
-from botocore.exceptions import ClientError
-
 from docling_core.types.io import DocumentStream
 from docling_core.transforms.chunker.hierarchical_chunker import DocChunk
 from docling_core.transforms.chunker.hybrid_chunker import HybridChunker

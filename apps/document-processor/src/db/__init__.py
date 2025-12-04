@@ -3,7 +3,7 @@ Database utilities for PostgreSQL operations
 """
 
 from .postgres import (
-    get_connection_pool,
+    get_connection,
     EmbeddedChunk,
     upload_to_postgres_db,
     update_status_to_processing,
@@ -12,7 +12,7 @@ from .postgres import (
 )
 
 __all__ = [
-    "get_connection_pool",
+    "get_connection",
     "EmbeddedChunk",
     "upload_to_postgres_db",
     "update_status_to_processing",
