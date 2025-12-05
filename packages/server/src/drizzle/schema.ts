@@ -322,7 +322,7 @@ export const files = pgTable(
       .references(() => courses.id),
     name: varchar("name", { length: 128 }).notNull(),
     size: integer("size").notNull(),
-    pagesCount: smallint("page_count"),
+    pageCount: smallint("page_count"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [unique().on(table.courseId, table.name)]

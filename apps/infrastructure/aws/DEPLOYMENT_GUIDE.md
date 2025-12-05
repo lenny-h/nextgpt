@@ -31,10 +31,10 @@ OR
 aws configure
 ```
 
-You'll need:
+Fore the second option, you'll need:
 
-- AWS Access Key ID
-- AWS Secret Access Key
+- AWS Access Key ID (obtained from IAM in AWS Console)
+- AWS Secret Access Key (obtained from IAM in AWS Console)
 - Default region (e.g., `us-east-1`)
 - Default output format (e.g., `json`)
 

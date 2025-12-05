@@ -14,6 +14,7 @@ import bucketsUsedRoute from "./buckets/used/route.js";
 import chatRoute from "./chat/route.js";
 import chatsByIdRoute from "./chats/[chatId]/route.js";
 import chatsFavourites from "./chats/favourites/route.js";
+import chatsForkRoute from "./chats/fork/[chatId]/route.js";
 import chatsIlike from "./chats/ilike/route.js";
 import chatsIsFavouriteRoute from "./chats/is-favourite/[chatId]/route.js";
 import chatsRoute from "./chats/route.js";
@@ -89,6 +90,7 @@ const protectedApiRouter = new Hono()
   // Chats
   .route("/chats", chatsRoute)
   .route("/chats/favourites", chatsFavourites)
+  .route("/chats/fork/:chatId", chatsForkRoute)
   .route("/chats/ilike", chatsIlike)
   .route("/chats/is-favourite/:chatId", chatsIsFavouriteRoute)
   .route("/chats/title/:chatId", chatsTitleRoute)

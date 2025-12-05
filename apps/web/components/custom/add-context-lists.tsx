@@ -15,7 +15,7 @@ interface Props {
 interface File extends ListItem {
   id: string;
   name: string;
-  pageCount: number;
+  pageCount?: number | null;
 }
 
 export const FilesList = memo(({ open, inputValue, max }: Props) => {

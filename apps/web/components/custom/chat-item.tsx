@@ -13,7 +13,14 @@ import {
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar-left";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
-import { MoreHorizontal, Pencil, Star, StarOff, Trash2 } from "lucide-react";
+import {
+  GitFork,
+  MoreHorizontal,
+  Pencil,
+  Star,
+  StarOff,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
 
@@ -22,6 +29,7 @@ interface PureChatItemProps {
   isActive: boolean;
   isFavorite: boolean;
   onFavorite: (chatId: string) => void;
+  onFork: (chatId: string) => void;
   onRename: (chat: Chat) => void;
   onDelete: (chatId: string) => void;
   isMobile: boolean;
@@ -33,12 +41,13 @@ const PureChatItem = ({
   isActive,
   isFavorite,
   onFavorite,
+  onFork,
   onRename,
   onDelete,
   isMobile,
   setOpenMobile,
 }: PureChatItemProps) => {
-  const { locale, sharedT } = useSharedTranslations();
+  const { locale } = useSharedTranslations();
   const { webT } = useWebTranslations();
 
   return (
@@ -87,6 +96,13 @@ const PureChatItem = ({
                 <span>{webT.chatItem.addToFavourites}</span>
               </>
             )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onSelect={() => onFork(chat.id)}
+          >
+            <GitFork />
+            <span>{webT.chatItem.fork}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

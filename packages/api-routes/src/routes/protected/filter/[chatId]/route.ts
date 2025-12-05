@@ -93,7 +93,7 @@ const app = new Hono().get(
               .select({
                 id: files.id,
                 name: files.name,
-                pageCount: files.pagesCount,
+                pageCount: files.pageCount,
               })
               .from(files)
               .where(

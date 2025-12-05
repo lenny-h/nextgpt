@@ -39,7 +39,7 @@ export const PageRangeForm = memo(
       return null;
     }
 
-    const pageCount = file.pageCount;
+    const pageCount = file.pageCount ?? null;
 
     const pageRangeSchema = z.object({
       pageRange: z
@@ -60,12 +60,14 @@ export const PageRangeForm = memo(
               if (/^\d+$/.test(token)) {
                 const n = Number(token);
                 if (Number.isNaN(n) || n < 1) return false;
-                if (pageCount && n > pageCount) return false;
+                // Only validate max page if pageCount is known
+                if (pageCount != null && n > pageCount) return false;
               } else if (/^\d+-\d+$/.test(token)) {
                 const [a, b] = token.split("-").map(Number);
                 if (Number.isNaN(a) || Number.isNaN(b) || a < 1 || b < a)
                   return false;
-                if (b > pageCount) return false;
+                // Only validate max page if pageCount is known
+                if (pageCount != null && b > pageCount) return false;
               } else {
                 return false;
               }
@@ -74,10 +76,13 @@ export const PageRangeForm = memo(
             return true;
           },
           {
-            message: webT.pageRange.invalid.replace(
-              "{pageCount}",
-              pageCount.toString(),
-            ),
+            message:
+              pageCount != null
+                ? webT.pageRange.invalid.replace(
+                    "{pageCount}",
+                    pageCount.toString(),
+                  )
+                : webT.pageRange.invalid.replace("{pageCount}", "?"),
           },
         ),
     });

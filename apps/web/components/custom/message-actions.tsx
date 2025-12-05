@@ -14,6 +14,7 @@ import { cn, resizeEditor } from "@workspace/ui/lib/utils";
 import type { ChatRequestOptions } from "ai";
 import {
   Copy,
+  GitFork,
   Pencil,
   RefreshCcw,
   ThumbsDown,
@@ -21,11 +22,13 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 
 interface MessageActionsProps {
+  chatId: string;
   content: string;
   role: string;
   isLoading: boolean;
@@ -40,6 +43,7 @@ interface MessageActionsProps {
 
 export const MessageActions = memo(
   ({
+    chatId,
     content,
     role,
     isLoading,
@@ -47,9 +51,10 @@ export const MessageActions = memo(
     messageId,
     previousMessageId,
   }: MessageActionsProps) => {
-    const { sharedT } = useSharedTranslations();
+    const { locale, sharedT } = useSharedTranslations();
     const { webT } = useWebTranslations();
 
+    const router = useRouter();
     const { panelRef, textEditorRef } = useRefs();
     const [, setEditorMode] = useEditor();
 
@@ -77,7 +82,7 @@ export const MessageActions = memo(
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = (e) => {
         setIsSpeaking(false);
-        
+
         console.error("SpeechSynthesis error:", e);
         if (e.error === "interrupted" || e.error === "canceled") return;
 
@@ -86,6 +91,27 @@ export const MessageActions = memo(
 
       window.speechSynthesis.speak(utterance);
     }, [content, isSpeaking, webT]);
+
+    const handleFork = useCallback(async () => {
+      toast.promise(
+        apiFetcher(
+          (client) =>
+            client["chats"]["fork"][":chatId"].$post({
+              param: { chatId },
+              json: { messageId },
+            }),
+          sharedT.apiCodes,
+        ),
+        {
+          loading: webT.navHistory.forkingChat,
+          success: (data) => {
+            router.push(`/${locale}/chat/${data.id}`);
+            return webT.navHistory.chatForked;
+          },
+          error: webT.navHistory.failedToForkChat,
+        },
+      );
+    }, [chatId, messageId, sharedT, webT, router, locale]);
 
     if (isLoading) return null;
     if (role === "user") return null;
@@ -120,7 +146,9 @@ export const MessageActions = memo(
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {isSpeaking ? webT.messageActions.stopReading : webT.messageActions.readAloud}
+              {isSpeaking
+                ? webT.messageActions.stopReading
+                : webT.messageActions.readAloud}
             </TooltipContent>
           </Tooltip>
 
@@ -154,6 +182,15 @@ export const MessageActions = memo(
               </Button>
             </TooltipTrigger>
             <TooltipContent>{webT.messageActions.retry}</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button className="size-4" variant="ghost" onClick={handleFork}>
+                <GitFork />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{webT.navHistory.forkFromHere}</TooltipContent>
           </Tooltip>
 
           <div className="flex flex-row items-center space-x-2">
@@ -206,7 +243,9 @@ export const MessageActions = memo(
             }}
           >
             <Pencil className="size-4" />
-            <span className="text-muted-foreground text-sm">{webT.messageActions.editor}</span>
+            <span className="text-muted-foreground text-sm">
+              {webT.messageActions.editor}
+            </span>
           </button>
         </div>
       </TooltipProvider>

@@ -11,7 +11,7 @@ export interface FrontendFilter {
   files: {
     id: string;
     name: string;
-    pageCount: number;
+    pageCount?: number | null;
     pageRange?: string;
   }[];
   documents: {
