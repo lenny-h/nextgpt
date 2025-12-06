@@ -3,7 +3,7 @@ resource "aws_ecs_service" "api" {
   name            = "api"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = data.terraform_remote_state.core.outputs.ecs_task_definition_api_arn
-  desired_count   = 1
+  desired_count   = 0
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -35,7 +35,7 @@ resource "aws_ecs_service" "pdf_exporter" {
   name            = "pdf-exporter"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = data.terraform_remote_state.core.outputs.ecs_task_definition_pdf_exporter_arn
-  desired_count   = 1
+  desired_count   = 0
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -59,5 +59,91 @@ resource "aws_ecs_service" "pdf_exporter" {
 
   tags = {
     Name = "${var.aws_project_name}-pdf-exporter-service"
+  }
+}
+
+# Autoscaling for API Service
+resource "aws_appautoscaling_target" "api" {
+  max_capacity       = 5
+  min_capacity       = 0
+  resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.api.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "api_cpu" {
+  name               = "${var.aws_project_name}-api-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.api.resource_id
+  scalable_dimension = aws_appautoscaling_target.api.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.api.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
+  }
+}
+
+resource "aws_appautoscaling_policy" "api_memory" {
+  name               = "${var.aws_project_name}-api-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.api.resource_id
+  scalable_dimension = aws_appautoscaling_target.api.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.api.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
+  }
+}
+
+# Autoscaling for PDF Exporter Service
+resource "aws_appautoscaling_target" "pdf_exporter" {
+  max_capacity       = 5
+  min_capacity       = 0
+  resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.pdf_exporter.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "pdf_exporter_cpu" {
+  name               = "${var.aws_project_name}-pdf-exporter-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.pdf_exporter.resource_id
+  scalable_dimension = aws_appautoscaling_target.pdf_exporter.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.pdf_exporter.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
+  }
+}
+
+resource "aws_appautoscaling_policy" "pdf_exporter_memory" {
+  name               = "${var.aws_project_name}-pdf-exporter-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.pdf_exporter.resource_id
+  scalable_dimension = aws_appautoscaling_target.pdf_exporter.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.pdf_exporter.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
   }
 }

@@ -19,6 +19,21 @@ output "target_group_pdf_exporter_arn" {
   value       = aws_lb_target_group.pdf_exporter.arn
 }
 
+output "alb_arn_suffix" {
+  description = "ALB ARN suffix for autoscaling"
+  value       = aws_lb.main.arn_suffix
+}
+
+output "target_group_api_arn_suffix" {
+  description = "API target group ARN suffix for autoscaling"
+  value       = aws_lb_target_group.api.arn_suffix
+}
+
+output "target_group_pdf_exporter_arn_suffix" {
+  description = "PDF Exporter target group ARN suffix for autoscaling"
+  value       = aws_lb_target_group.pdf_exporter.arn_suffix
+}
+
 output "encryption_key_secret_arn" {
   description = "Encryption key secret ARN (used for internal service authentication)"
   value       = aws_secretsmanager_secret.encryption_key.arn
