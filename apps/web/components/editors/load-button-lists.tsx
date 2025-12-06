@@ -35,7 +35,7 @@ export const FilesList = memo(({ open, setOpen, inputValue }: Props) => {
 
   const handleItemClick = (item: ListItem) => {
     const file = item as File;
-    openPdf(isMobile, panelRef, file.course_id, file.name);
+    openPdf(isMobile, panelRef, file.courseId, file.name);
     setOpen(false);
   };
 
