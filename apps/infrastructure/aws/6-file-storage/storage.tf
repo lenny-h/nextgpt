@@ -1,6 +1,7 @@
 # S3 Bucket for permanent files
 resource "aws_s3_bucket" "files" {
-  bucket = "${var.aws_project_name}-files-bucket"
+  bucket        = "${var.aws_project_name}-files-bucket"
+  force_destroy = true # You might want to remove this to prevent deletion if the bucket is not empty
 
   tags = {
     Name = "${var.aws_project_name}-files-bucket"
@@ -9,7 +10,8 @@ resource "aws_s3_bucket" "files" {
 
 # S3 Bucket for temporary files
 resource "aws_s3_bucket" "temporary_files" {
-  bucket = "${var.aws_project_name}-temporary-files-bucket"
+  bucket        = "${var.aws_project_name}-temporary-files-bucket"
+  force_destroy = true # You might want to remove this to prevent deletion if the bucket is not empty
 
   tags = {
     Name = "${var.aws_project_name}-temporary-files-bucket"

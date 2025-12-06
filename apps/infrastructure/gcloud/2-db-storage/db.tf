@@ -97,8 +97,9 @@ resource "google_sql_database_instance" "postgres" {
 
 # Create postgres user
 resource "google_sql_user" "postgres_user" {
-  name     = "postgres"
-  instance = google_sql_database_instance.postgres.name
-  password = var.database_password
-  project  = var.google_vertex_project
+  name            = "postgres"
+  instance        = google_sql_database_instance.postgres.name
+  password        = var.database_password
+  project         = var.google_vertex_project
+  deletion_policy = "ABANDON"
 }

@@ -15,27 +15,37 @@ Complete step-by-step guide for deploying your application on Google Cloud Platf
 
 ### Google Cloud Setup (this can also be done in the GCP Console)
 
-1. **Create a GCP Project**:
+1. "Configure gcloud CLI":
+
+Once you have a Google account and have installed the gcloud CLI, run:
+
+```bash
+gcloud init
+```
+
+2. **Create a GCP Project**:
 
 ```bash
 gcloud projects create your-project-id --name="Your Project Name"
 gcloud config set project your-project-id
 ```
 
-2. **Link Billing Account**:
+3. **Link Billing Account**:
 
 ```bash
 gcloud billing accounts list
 gcloud billing projects link your-project-id --billing-account=BILLING_ACCOUNT_ID
 ```
 
-3. **Set Default Region**:
+4. **Optional: Set up application default credentials**:
 
 ```bash
-gcloud config set compute/region us-central1
+gcloud auth application-default login
 ```
 
 ## Step-by-Step Deployment
+
+In some of the following steps, it may be useful to generate random secure strings. This can be done using e.g. `openssl rand -base64 32` (32 characters) on Linux/Mac or `[byte[]]$bytes = New-Object byte[] 16; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); ($bytes | ForEach-Object { $_.ToString("x2") }) -join ""` on Windows PowerShell.
 
 ### Step 1: Deploy Artifact Registry
 
@@ -98,9 +108,12 @@ PROJECT_ID="your-gcp-project-id"
 REGION="your-gcp-region"
 
 # Build and push all images
+# May need elevated permissions -> sudo for Linux/Mac and run as Administrator on Windows
+# On Windows, use the equivalent powershell script
 bash build_and_push_images.sh $PROJECT_ID $REGION
 
 # If NOT using Firecrawl:
+# On Windows, use the equivalent powershell script (with -SkipFirecrawl flag)
 bash build_and_push_images.sh $PROJECT_ID $REGION --skip-firecrawl
 ```
 

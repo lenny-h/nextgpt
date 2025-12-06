@@ -13,13 +13,9 @@ Complete step-by-step guide for deploying your application on Amazon Web Service
 - **GitHub**: For running github actions
 - **Cloudflare Account**: If using Cloudflare R2 for storage
 
-### AWS Setup
+### **Configure AWS CLI**:
 
-1. **Create an AWS Account** (if you don't have one):
-   - Visit [aws.amazon.com](https://aws.amazon.com)
-   - Follow the account creation process
-
-2. **Configure AWS CLI**:
+Given that you have an AWS account and installed the AWS CLI, you can configure it by running either:
 
 ```bash
 aws login
@@ -31,14 +27,14 @@ OR
 aws configure
 ```
 
-Fore the second option, you'll need:
+For the second option, you'll need:
 
 - AWS Access Key ID (obtained from IAM in AWS Console)
 - AWS Secret Access Key (obtained from IAM in AWS Console)
 - Default region (e.g., `us-east-1`)
 - Default output format (e.g., `json`)
 
-3. **Verify AWS CLI Configuration**:
+You can verify your configuration with:
 
 ```bash
 aws sts get-caller-identity
@@ -47,6 +43,8 @@ aws sts get-caller-identity
 This should return your AWS account ID and user information.
 
 ## Step-by-Step Deployment
+
+In some of the following steps, it may be useful to generate random secure strings. This can be done using e.g. `openssl rand -base64 32` (32 characters) on Linux/Mac or `[byte[]]$bytes = New-Object byte[] 16; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); ($bytes | ForEach-Object { $_.ToString("x2") }) -join ""` on Windows PowerShell.
 
 ### Step 1: Deploy ECR (Elastic Container Registry)
 
@@ -110,9 +108,12 @@ REGION="us-east-1"  # Your AWS region
 PROJECT_NAME="your-project-name"
 
 # Build and push all images
+# May need elevated permissions -> sudo for Linux/Mac and run as Administrator on Windows
+# On Windows, use the equivalent powershell script
 bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME
 
 # If NOT using Firecrawl:
+# On Windows, use the equivalent powershell script (with -SkipFirecrawl flag)
 bash build_and_push_images.sh $AWS_ACCOUNT_ID $REGION $PROJECT_NAME --skip-firecrawl
 ```
 
@@ -143,6 +144,9 @@ database_password = "your-secure-database-password"
 
 # Set to true if you plan to deploy 4-core-with-firecrawl, false for 3-core
 use_firecrawl = true
+
+# Embedding configuration
+embedding_dimensions = 512 # aws only allows certain values, e.g. 512 and 1024
 ```
 
 Deploy:
@@ -154,6 +158,12 @@ terraform apply
 ```
 
 **Wait for deployment** (approximately 15-20 minutes for RDS and ElastiCache provisioning).
+
+Follow the instructions in the terraform output:
+
+```bash
+terraform output setup_instructions
+```
 
 ### Step 4: Run Database Migrations
 
@@ -329,31 +339,10 @@ terraform apply
 
 **Wait for deployment** (5-10 minutes for ECS services and ALB).
 
-### Step 6: Configure DNS
-
-Get the ALB DNS name and certificate validation records:
+Follow the instructions in the terraform output:
 
 ```bash
-# Get ALB DNS name
-terraform output load_balancer_dns_name
-
-# Get certificate validation records
-terraform output dns_validation_records
-```
-
-**Add DNS records:**
-
-1. **Certificate Validation**: Add the CNAME records shown in `dns_validation_records` to your DNS provider
-2. **Application Domain**: Add a CNAME record pointing `api.yourdomain.com` to the ALB DNS name
-
-Example DNS records:
-
-```
-# Certificate validation (example)
-_abc123.yourdomain.com CNAME _xyz456.acm-validations.aws.
-
-# Application domain
-api.yourdomain.com CNAME your-alb-123456.us-east-1.elb.amazonaws.com
+terraform output setup_instructions
 ```
 
 **Wait for DNS propagation** (5-30 minutes):
@@ -368,53 +357,49 @@ aws acm describe-certificate --certificate-arn <cert-arn> --region $REGION
 
 The certificate status will change from `PENDING_VALIDATION` → `ISSUED` once DNS is verified.
 
-### Step 7: Configure GitHub Actions
+### Step 6: Deploy HTTPS Listener and Certificate Validation
 
-Configure GitHub Actions using the outputs from the terraform deployments.
-
-#### Part A: Infrastructure Variables (from Step 3 - db-storage)
-
-Get the GitHub variables:
+This step sets up the HTTPS listener and validates the SSL/TLS certificate for the Application Load Balancer.
 
 ```bash
-cd ../2-db-storage
-terraform output github_variables
+cd ../5-core-with-certificate
+
+cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars
 ```
 
-Add these to your GitHub repository:
+Required variables:
 
-1. Go to your GitHub repository → Settings → Secrets and variables → Actions → Variables
-2. Add the following **variables**:
-   - `AWS_PROJECT_NAME`: Your project name (e.g., `your-project-name`)
-   - `AWS_REGION`: Your AWS region (e.g., `us-east-1`)
-   - `AWS_ROLE_TO_ASSUME`: The IAM role ARN for GitHub Actions (from terraform output)
+```hcl
+# AWS Configuration
+aws_project_name = "your-project-name"
+aws_region       = "us-east-1"
+```
 
-#### Part B: Frontend Variables (from Step 5 - core)
+**IMPORTANT**: Update `providers.tf` if you deployed 4-core-with-firecrawl:
 
-Get the setup instructions:
+```hcl
+data "terraform_remote_state" "core" {
+  backend = "local"
+  config = {
+    path = "../4-core-with-firecrawl/terraform.tfstate"  # Update this
+  }
+}
+```
+
+Deploy:
 
 ```bash
-cd ../3-core  # or ../4-core-with-firecrawl
-terraform output setup_instructions
+terraform init
+terraform plan
+terraform apply
 ```
 
-Add these to your GitHub repository:
+**Note**: This step will wait until DNS validation is complete. Ensure you have added the CNAME records from Step 5 to your DNS provider. The `terraform apply` command may take several minutes while waiting for ACM certificate validation.
 
-1. Go to your GitHub repository → Settings → Secrets and variables → Actions → Variables
-2. Add the following **variables**:
-   - `SITE_URL`: Your site URL (e.g., `example.com`)
-   - `ENABLE_EMAIL_SIGNUP`: `true` or `false`
-   - `ENABLE_OAUTH_LOGIN`: `true` or `false`
-   - `ENABLE_SSO`: `true` or `false`
-   - `USE_FIRECRAWL`: `true` or `false` (depends on which core layer you deployed)
-   - `CSP_ENDPOINTS`: Content Security Policy endpoints (see terraform output for exact values)
-   - `PDF_BBOX_DURATION_MS`: PDF BBox duration in milliseconds
-   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID (for frontend deployment)
+#### Verify Deployment
 
-3. Go to Secrets tab and add the following **secret**:
-   - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token (for frontend deployment)
-
-### Step 8: Verify Core Services
+After the certificate is validated and the HTTPS listener is created, verify the services:
 
 ```bash
 # Check ECS services
@@ -442,7 +427,7 @@ aws logs tail /ecs/document-processor --follow --region $REGION
 aws logs tail /ecs/pdf-exporter --follow --region $REGION
 ```
 
-### Step 9: Deploy File Storage
+### Step 7: Deploy File Storage
 
 **Choose ONE option:**
 

@@ -48,7 +48,7 @@ r2_endpoint                  = "https://account-id.r2.cloudflarestorage.com"
 
 # AI Models
 embeddings_model = "amazon.titan-embed-text-v2:0"
-llm_models       = "[{\"name\":\"us.amazon.nova-lite-v1:0\",\"label\":\"Claude Haiku\",\"description\":\"Fast and efficient model\",\"images\":true,\"pdfs\":true,\"reasoning\":false},{\"name\":\"us.amazon.nova-pro-v1:0\",\"label\":\"Claude Sonnet\",\"description\":\"Powerful model for complex tasks\",\"images\":true,\"pdfs\":true,\"reasoning\":false}]"
+llm_models       = "[{\"name\":\"us.amazon.nova-lite-v1:0\",\"label\":\"Nova Lite\",\"description\":\"Fast and efficient model\",\"images\":true,\"pdfs\":true,\"reasoning\":false},{\"name\":\"us.amazon.nova-pro-v1:0\",\"label\":\"Nova Pro\",\"description\":\"Powerful model for complex tasks\",\"images\":true,\"pdfs\":true,\"reasoning\":false}]"
 
 # Use Firecrawl
 # Only set to true if you want to use HOSTED Firecrawl
