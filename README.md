@@ -2,6 +2,11 @@
 
 NextGPT is a platform designed to deploy a secure AI interface with integrated document and web search capabilities on one of the major cloud providers (Amazon Web Services, Google Cloud, and Microsoft Azure (not supported yet)). Its primary mission is to give enterprises more control and sovereignty over their data by allowing them to host their own AI infrastructure. This monorepo integrates a modern Next.js web application, a robust API, and a suite of specialized microservices for document processing, PDF generation, and web scraping (via Firecrawl). The architecture leverages PostgreSQL with `pgvector` for efficient vector embeddings, enabling powerful semantic search and Retrieval-Augmented Generation (RAG) capabilities.
 
+> [!WARNING]
+> There is currently a bug in firecrawl that can lead to a waterfall behaviour: https://github.com/firecrawl/firecrawl/issues/2350
+>
+> Until this issue is fixed, it is not recommended to use firecrawl
+
 ## Hosted on AWS
 
 Follow the instructions in the `apps/infrastructure/aws/DEPLOYMENT_GUIDE.md` file to deploy the application to AWS.
@@ -117,9 +122,15 @@ The `.env` file in the root directory contains all the necessary environment var
 
 ## Quick Start
 
-1. **Build Docker images required for Firecrawl** (if you want to use firecrawl):
+1. **Build required Docker images**:
 
-   a. **Build firecrawl-postgres** (PostgreSQL with pgvector and pg_cron extensions):
+   a. **Build document-processor** (for local document processing jobs):
+
+   ```bash
+   docker build -t mono-document-processor:latest -f apps/document-processor/Dockerfile .
+   ```
+
+   b. **Build firecrawl-postgres** (PostgreSQL with pgvector and pg_cron extensions):
 
    ```bash
    cd apps/postgres
@@ -127,7 +138,7 @@ The `.env` file in the root directory contains all the necessary environment var
    cd ../..
    ```
 
-   b. **Clone the official Firecrawl repository and build firecrawl-api and firecrawl-playwright**:
+   c. **Build Firecrawl images** (optional, if you want to use firecrawl):
 
    ```bash
    # Clone the official Firecrawl repository

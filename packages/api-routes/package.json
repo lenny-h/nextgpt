@@ -27,6 +27,7 @@
     "@mendable/firecrawl-js": "^4.4.1",
     "@workspace/server": "workspace:*",
     "ai": "^5.0.104",
+    "dockerode": "^4.0.9",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.10.7",
     "papaparse": "^5.5.3",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@turbo/gen": "^2.6.3",
+    "@types/dockerode": "^3.3.47",
     "@types/node": "^24.10.1",
     "@types/papaparse": "^5.3.16",
     "@workspace/eslint-config": "workspace:*",

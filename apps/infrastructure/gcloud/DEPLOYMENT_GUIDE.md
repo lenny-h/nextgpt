@@ -2,6 +2,11 @@
 
 Complete step-by-step guide for deploying your application on Google Cloud Platform.
 
+> [!WARNING]
+> There is currently a bug in firecrawl that can lead to a waterfall behaviour: https://github.com/firecrawl/firecrawl/issues/2350
+>
+> Until this issue is fixed, it is not recommended to use firecrawl
+
 ## Prerequisites
 
 ### Required Tools

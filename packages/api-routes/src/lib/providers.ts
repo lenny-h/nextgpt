@@ -62,12 +62,10 @@ export const getModel = async (
     const bedrockModel = bedrock(chatModels[selectedChatModel].name);
 
     return {
-      model: reasoningEnabled
-        ? wrapLanguageModel({
-            model: bedrockModel,
-            middleware: extractReasoningMiddleware({ tagName: "thinking" }),
-          })
-        : bedrockModel,
+      model: wrapLanguageModel({
+        model: bedrockModel,
+        middleware: extractReasoningMiddleware({ tagName: "thinking" }),
+      }),
       providerOptions: {
         amazon_bedrock: {
           ...(reasoningEnabled
