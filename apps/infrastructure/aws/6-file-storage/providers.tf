@@ -15,7 +15,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.22"
+      version = "~> 6.25"
     }
   }
   required_version = ">= 1.0"
@@ -36,7 +36,7 @@ data "terraform_remote_state" "core" {
   backend = "local"
 
   config = {
-    path = "../4-core-with-firecrawl/terraform.tfstate" # Update to ../3-core/terraform.tfstate if not using Firecrawl
+    path = "../3-core/terraform.tfstate" # Update to ../4-core-with-firecrawl/terraform.tfstate if using Firecrawl
   }
 }
 

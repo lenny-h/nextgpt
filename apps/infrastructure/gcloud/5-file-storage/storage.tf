@@ -6,9 +6,10 @@ resource "google_project_service" "storage" {
 
 # GCS bucket for permanent file storage
 resource "google_storage_bucket" "files_bucket" {
-  name     = "${var.google_vertex_project}-files-bucket"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
+  name          = "${var.google_vertex_project}-files-bucket"
+  location      = var.google_vertex_location
+  project       = var.google_vertex_project
+  force_destroy = true # You might want to remove this to prevent deletion if the bucket is not empty
 
   # Prevent public access
   public_access_prevention = "enforced"
@@ -35,15 +36,14 @@ resource "google_storage_bucket" "files_bucket" {
   }
 
   depends_on = [google_project_service.storage]
-
-  force_destroy = true
 }
 
 # GCS bucket for temporary file storage
 resource "google_storage_bucket" "temporary_files_bucket" {
-  name     = "${var.google_vertex_project}-temporary-files-bucket"
-  location = var.google_vertex_location
-  project  = var.google_vertex_project
+  name          = "${var.google_vertex_project}-temporary-files-bucket"
+  location      = var.google_vertex_location
+  project       = var.google_vertex_project
+  force_destroy = true # You might want to remove this to prevent deletion if the bucket is not empty
 
   # Prevent public access
   public_access_prevention = "enforced"
@@ -80,6 +80,4 @@ resource "google_storage_bucket" "temporary_files_bucket" {
   }
 
   depends_on = [google_project_service.storage]
-
-  force_destroy = true
 }

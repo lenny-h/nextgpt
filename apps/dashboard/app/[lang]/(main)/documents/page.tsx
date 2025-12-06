@@ -1,6 +1,5 @@
 "use client";
 
-import { BreadcrumbHeader } from "@/components/custom/breadcrumb-header";
 import { DocumentsList } from "@/components/custom/documents-list";
 import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
@@ -85,7 +84,6 @@ export default function DocumentsPage() {
         defaultSize={100}
         collapsible
       >
-        <BreadcrumbHeader />
         <div className="flex flex-col items-center space-y-6 overflow-y-auto p-2">
           <h1 className="text-2xl font-semibold">
             {dashboardT.documentsPage.title}
