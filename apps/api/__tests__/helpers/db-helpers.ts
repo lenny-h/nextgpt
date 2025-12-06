@@ -220,7 +220,7 @@ export async function createTestFile(
       courseId,
       name: "test-file",
       size: 1024,
-      pagesCount: 1,
+      pageCount: 1,
       ...overrides,
     })
     .returning({ id: files.id });

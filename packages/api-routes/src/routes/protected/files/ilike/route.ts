@@ -52,6 +52,7 @@ const app = new Hono().get(
         courseId: files.courseId,
         name: files.name,
         size: files.size,
+        pageCount: files.pageCount,
         createdAt: files.createdAt,
       })
       .from(files)

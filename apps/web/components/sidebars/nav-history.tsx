@@ -43,7 +43,7 @@ type GroupedChats = {
 };
 
 export const NavHistory = memo(() => {
-  const { sharedT } = useSharedTranslations();
+  const { locale, sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
 
   const queryClient = useQueryClient();
@@ -134,6 +134,17 @@ export const NavHistory = memo(() => {
     );
   };
 
+  const forkChat = async (chatId: string) => {
+    return await apiFetcher(
+      (client) =>
+        client["chats"]["fork"][":chatId"].$post({
+          param: { chatId },
+          json: {},
+        }),
+      sharedT.apiCodes,
+    );
+  };
+
   const handleAdd = async (chatId: string) => {
     toast.promise(updateChat(chatId, true), {
       loading: webT.navHistory.addingToFavorites,
@@ -183,6 +194,22 @@ export const NavHistory = memo(() => {
         return webT.navHistory.chatDeleted;
       },
       error: webT.navHistory.failedToDeleteChat,
+    });
+  };
+
+  const handleFork = async (chatId: string) => {
+    toast.promise(forkChat(chatId), {
+      loading: webT.navHistory.forkingChat,
+      success: (data) => {
+        // Invalidate the chats cache to show the new forked chat
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+
+        // Navigate to the new forked chat
+        router.push(`/${locale}/chat/${data.id}`);
+
+        return webT.navHistory.chatForked;
+      },
+      error: webT.navHistory.failedToForkChat,
     });
   };
 
@@ -315,6 +342,7 @@ export const NavHistory = memo(() => {
                 isActive={chat.id === id}
                 isFavorite={true}
                 onFavorite={handleRemove}
+                onFork={handleFork}
                 onRename={handleRename}
                 onDelete={handleRemove}
                 isMobile={isMobile}
@@ -375,6 +403,7 @@ export const NavHistory = memo(() => {
                             isActive={chat.id === id}
                             isFavorite={false}
                             onFavorite={handleAdd}
+                            onFork={handleFork}
                             onRename={handleRename}
                             onDelete={handleDelete}
                             isMobile={isMobile}
@@ -396,6 +425,7 @@ export const NavHistory = memo(() => {
                             isActive={chat.id === id}
                             isFavorite={false}
                             onFavorite={handleAdd}
+                            onFork={handleFork}
                             onRename={handleRename}
                             onDelete={handleDelete}
                             isMobile={isMobile}
@@ -417,6 +447,7 @@ export const NavHistory = memo(() => {
                             isActive={chat.id === id}
                             isFavorite={false}
                             onFavorite={handleAdd}
+                            onFork={handleFork}
                             onRename={handleRename}
                             onDelete={handleDelete}
                             isMobile={isMobile}
@@ -438,6 +469,7 @@ export const NavHistory = memo(() => {
                             isActive={chat.id === id}
                             isFavorite={false}
                             onFavorite={handleAdd}
+                            onFork={handleFork}
                             onRename={handleRename}
                             onDelete={handleDelete}
                             isMobile={isMobile}
@@ -459,6 +491,7 @@ export const NavHistory = memo(() => {
                             isActive={chat.id === id}
                             isFavorite={false}
                             onFavorite={handleAdd}
+                            onFork={handleFork}
                             onRename={handleRename}
                             onDelete={handleDelete}
                             isMobile={isMobile}

@@ -25,6 +25,7 @@
     "more": "Mehr",
     "removeFromFavorites": "Aus Favoriten entfernen",
     "addToFavourites": "Zu Favoriten hinzufügen",
+    "fork": "Chat verzweigen",
     "rename": "Umbenennen",
     "delete": "Löschen"
   },
@@ -137,6 +138,10 @@
     "deletingChat": "Chat wird gelöscht...",
     "chatDeleted": "Chat erfolgreich gelöscht",
     "failedToDeleteChat": "Fehler beim Löschen des Chats",
+    "forkingChat": "Chat wird verzweigt...",
+    "chatForked": "Chat erfolgreich verzweigt",
+    "failedToForkChat": "Fehler beim Verzweigen des Chats",
+    "forkFromHere": "Von hier verzweigen",
     "chatRenamed": "Chat umbenannt!",
     "errorLoadingConversations": "Beim Laden Ihrer Gespräche ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "noConversationsYet": "Ihre Gespräche werden hier angezeigt, sobald Sie mit dem Chatten beginnen!"

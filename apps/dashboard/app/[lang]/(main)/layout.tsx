@@ -7,6 +7,9 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar-left";
+import { AutocompleteProvider } from "@workspace/ui/contexts/autocomplete-context";
+import { EditorProvider } from "@workspace/ui/contexts/editor-context";
+import { RefsProvider } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { UserProvider } from "@workspace/ui/contexts/user-context";
 import { CentralLoadingScreen } from "@workspace/ui/custom-components/central-loading-screen";
@@ -52,13 +55,19 @@ export default function MainLayout({
 
   return (
     <UserProvider user={user as User}>
-      <SidebarProvider defaultOpen={defaultLeftOpen}>
-        <SidebarLeft />
-        <SidebarInset>
-          <BreadcrumbHeader />
-          {children}
-        </SidebarInset>
-      </SidebarProvider>
+      <RefsProvider>
+        <EditorProvider>
+          <AutocompleteProvider>
+            <SidebarProvider defaultOpen={defaultLeftOpen}>
+              <SidebarLeft />
+              <SidebarInset>
+                <BreadcrumbHeader />
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
+          </AutocompleteProvider>
+        </EditorProvider>
+      </RefsProvider>
     </UserProvider>
   );
 }

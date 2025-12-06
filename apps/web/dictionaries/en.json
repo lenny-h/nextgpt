@@ -26,6 +26,7 @@
     "more": "More",
     "removeFromFavorites": "Remove from Favorites",
     "addToFavourites": "Add to favourites",
+    "fork": "Fork chat",
     "rename": "Rename",
     "delete": "Delete"
   },
@@ -138,6 +139,10 @@
     "deletingChat": "Deleting chat...",
     "chatDeleted": "Chat deleted successfully",
     "failedToDeleteChat": "Failed to delete chat",
+    "forkingChat": "Forking chat...",
+    "chatForked": "Chat forked successfully",
+    "failedToForkChat": "Failed to fork chat",
+    "forkFromHere": "Fork from here",
     "chatRenamed": "Chat renamed!",
     "errorLoadingConversations": "There was an error loading your conversations. Please try again.",
     "noConversationsYet": "Your conversations will appear here once you start chatting!"
