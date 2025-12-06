@@ -18,7 +18,7 @@ import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
 import { ChatHeader } from "./chat-header";
@@ -86,6 +86,35 @@ export function Chat({
     }
   }, [chatId, initialMessages.length]);
 
+  // Memoize transport to ensure it's recreated when relevant values change
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/chat`,
+        credentials: "include",
+        prepareSendMessagesRequest({ messages }) {
+          return {
+            body: {
+              id: chatId,
+              message: messages[messages.length - 1],
+              modelIdx: selectedChatModel.id,
+              isTemp: isTemporary,
+              reasoning: selectedChatModel.reasoning && reasoningEnabled,
+              webSearch: webSearchEnabled,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            },
+          };
+        },
+      }),
+    [
+      chatId,
+      selectedChatModel,
+      isTemporary,
+      reasoningEnabled,
+      webSearchEnabled,
+    ],
+  );
+
   const { sendMessage, messages, setMessages, status, stop, regenerate } =
     useChat<MyUIMessage>({
       id: chatId,
@@ -112,23 +141,7 @@ export function Chat({
           setCodeDiffNext,
         }),
       onError: () => toast.error(webT.chat.errorOccurred),
-      transport: new DefaultChatTransport({
-        api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/chat`,
-        credentials: "include",
-        prepareSendMessagesRequest({ messages }) {
-          return {
-            body: {
-              id: chatId,
-              message: messages[messages.length - 1],
-              modelIdx: selectedChatModel.id,
-              isTemp: isTemporary,
-              reasoning: selectedChatModel.reasoning && reasoningEnabled,
-              webSearch: webSearchEnabled,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            },
-          };
-        },
-      }),
+      transport,
     });
 
   return (

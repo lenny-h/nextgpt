@@ -10,15 +10,13 @@ import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { cn, resizeEditor } from "@workspace/ui/lib/utils";
+import { resizeEditor } from "@workspace/ui/lib/utils";
 import type { ChatRequestOptions } from "ai";
 import {
   Copy,
   GitFork,
   Pencil,
   RefreshCcw,
-  ThumbsDown,
-  ThumbsUp,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -59,7 +57,7 @@ export const MessageActions = memo(
     const [, setEditorMode] = useEditor();
 
     const [, copyToClipboard] = useCopyToClipboard();
-    const [liked, setLiked] = useState<null | boolean>(null);
+
     const [isSpeaking, setIsSpeaking] = useState(false);
 
     const handleReadAloud = useCallback(() => {
@@ -193,60 +191,28 @@ export const MessageActions = memo(
             <TooltipContent>{webT.navHistory.forkFromHere}</TooltipContent>
           </Tooltip>
 
-          <div className="flex flex-row items-center space-x-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="cursor-pointer"
-                  onClick={() => setLiked(true)}
-                >
-                  <ThumbsUp
-                    className={cn(
-                      "size-4",
-                      liked && "fill-current text-green-500",
-                    )}
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{webT.messageActions.like}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="cursor-pointer"
-                  onClick={() => setLiked(false)}
-                >
-                  <ThumbsDown
-                    className={cn(
-                      "size-4",
-                      liked === false && "text-destructive fill-current",
-                    )}
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{webT.messageActions.dislike}</TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="size-4"
+                variant="ghost"
+                onClick={async () => {
+                  console.log(content);
 
-          <button
-            className="flex cursor-pointer space-x-1"
-            onClick={async () => {
-              console.log(content);
+                  setEditorMode("text");
+                  resizeEditor(panelRef, false);
 
-              setEditorMode("text");
-              resizeEditor(panelRef, false);
-
-              const { updateTextEditorWithDispatch } = await import(
-                "@workspace/ui/editors/text-editor"
-              );
-              updateTextEditorWithDispatch(textEditorRef, content);
-            }}
-          >
-            <Pencil className="size-4" />
-            <span className="text-muted-foreground text-sm">
-              {webT.messageActions.editor}
-            </span>
-          </button>
+                  const { updateTextEditorWithDispatch } = await import(
+                    "@workspace/ui/editors/text-editor"
+                  );
+                  updateTextEditorWithDispatch(textEditorRef, content);
+                }}
+              >
+                <Pencil />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{webT.messageActions.editor}</TooltipContent>
+          </Tooltip>
         </div>
       </TooltipProvider>
     );
