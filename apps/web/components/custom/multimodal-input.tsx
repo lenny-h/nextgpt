@@ -17,7 +17,6 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
-import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { useFileUpload } from "@/hooks/use-file-upload";
@@ -69,8 +68,6 @@ const PureMultimodalInput = ({
   const { webT } = useWebTranslations();
 
   const { filter } = useFilter();
-  const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
-    useChatModel();
   const [isTemporary] = useIsTemporary();
 
   const { uploadQueue, handleFileChange } = useFileUpload();
@@ -181,15 +178,15 @@ const PureMultimodalInput = ({
 
     textareaRef.current?.focus();
   }, [
-    input,
-    locale,
     filter,
+    locale,
     chatId,
-    selectedChatModel,
-    reasoningEnabled,
-    webSearchEnabled,
-    isTemporary,
+    input,
     attachments,
+    sendMessage,
+    setInput,
+    setLocalStorageInput,
+    handleDocumentClick,
   ]);
 
   return (
@@ -206,7 +203,9 @@ const PureMultimodalInput = ({
     >
       {isDragging && (
         <div className="border-primary/50 bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-2xl border-2 border-dashed">
-          <span className="text-muted-foreground text-sm">{webT.multimodal.dropFiles}</span>
+          <span className="text-muted-foreground text-sm">
+            {webT.multimodal.dropFiles}
+          </span>
         </div>
       )}
 
