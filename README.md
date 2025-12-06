@@ -1,14 +1,14 @@
 # NextGPT
 
-NextGPT is a platform designed to deploy a secure AI interface with integrated document and web search capabilities on one of the major cloud providers (Google Cloud, Azure (not supported yet), and AWS). Its primary mission is to give enterprises more control and sovereignty over their data by allowing them to host their own AI infrastructure. This monorepo integrates a modern Next.js web application, a robust API, and a suite of specialized microservices for document processing, PDF generation, and web scraping (via Firecrawl). The architecture leverages PostgreSQL with `pgvector` for efficient vector embeddings, enabling powerful semantic search and Retrieval-Augmented Generation (RAG) capabilities.
-
-## Hosted on Google Cloud
-
-Follow the instructions in the `apps/infrastructure/gcloud/DEPLOYMENT_GUIDE.md` file to deploy the application to Google Cloud.
+NextGPT is a platform designed to deploy a secure AI interface with integrated document and web search capabilities on one of the major cloud providers (Amazon Web Services, Google Cloud, and Microsoft Azure (not supported yet)). Its primary mission is to give enterprises more control and sovereignty over their data by allowing them to host their own AI infrastructure. This monorepo integrates a modern Next.js web application, a robust API, and a suite of specialized microservices for document processing, PDF generation, and web scraping (via Firecrawl). The architecture leverages PostgreSQL with `pgvector` for efficient vector embeddings, enabling powerful semantic search and Retrieval-Augmented Generation (RAG) capabilities.
 
 ## Hosted on AWS
 
 Follow the instructions in the `apps/infrastructure/aws/DEPLOYMENT_GUIDE.md` file to deploy the application to AWS.
+
+## Hosted on Google Cloud
+
+Follow the instructions in the `apps/infrastructure/gcloud/DEPLOYMENT_GUIDE.md` file to deploy the application to Google Cloud.
 
 ## Local Docker Setup
 
@@ -28,7 +28,7 @@ The Docker Compose in this directory allows you to run all services locally for 
 - **Web**: Main application service
 - **Dashboard**: Dashboard service
 
-API, PDF Exporter, Web, and Dashboard services can also be started using `pnpm run dev`, which provides hot-reloading for development and is thus recommended. The Document Processor needs to be run using Docker.
+API, PDF Exporter, Web, and Dashboard services can also be started using `pnpm run dev`, which provides hot-reloading for development and is thus recommended.
 
 ## Prerequisites
 
@@ -165,13 +165,7 @@ The `.env` file in the root directory contains all the necessary environment var
    docker-compose up -d firecrawl-api playwright-service
    ```
 
-6. **Start the Document Processor** (recommended to run in Docker):
-
-   ```bash
-   docker-compose up -d document-processor
-   ```
-
-7. **Start other services using pnpm** (recommended for hot-reloading):
+6. **Start other services using pnpm** (recommended for hot-reloading):
 
    ```bash
    pnpm run dev
@@ -183,13 +177,13 @@ The `.env` file in the root directory contains all the necessary environment var
    pnpm run dev --filter=web --filter=api
    ```
 
-8. **Check service health**:
+7. **Check service health**:
 
    ```bash
    docker-compose ps
    ```
 
-9. **View logs**:
+8. **View logs**:
    ```bash
    docker-compose logs -f postgres
    docker-compose logs -f redis
@@ -439,7 +433,6 @@ When running with `pnpm run dev`:
 **Use Docker for:**
 
 - PostgreSQL, Redis, MinIO, Keycloak (infrastructure)
-- Document Processor (Python service with complex dependencies)
 - Firecrawl services (if using web scraping)
 
 **Use pnpm dev for:**
@@ -546,10 +539,6 @@ You can adjust PostgreSQL settings in the `docker-compose.yml` file under the `p
    - Ensure both firecrawl-api and playwright-service are running
    - Check logs: `docker-compose logs firecrawl-api playwright-service`
    - Verify Firecrawl images are built
-
-8. **Document Processor connection issues**:
-   - Use `host.docker.internal` to connect to host machine from containers
-   - Ensure API is running and accessible at the configured URL
 
 ## Notes
 
