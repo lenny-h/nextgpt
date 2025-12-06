@@ -350,82 +350,82 @@ services:
   #   ports:
   #     - "3001:3000"
 
-  # Firecrawl
-  firecrawl-api:
-    image: firecrawl-api:latest
+  # # Firecrawl
+  # firecrawl-api:
+  #   image: firecrawl-api:latest
 
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
+  #   ulimits:
+  #     nofile:
+  #       soft: 65535
+  #       hard: 65535
   
-    environment:
-      HOST: "0.0.0.0"
-      PORT: 8080
-      EXTRACT_WORKER_PORT: 3004
-      WORKER_PORT: 3005
-      ENV: local
+  #   environment:
+  #     HOST: "0.0.0.0"
+  #     PORT: 8080
+  #     EXTRACT_WORKER_PORT: 3004
+  #     WORKER_PORT: 3005
+  #     ENV: local
 
-      REDIS_URL: redis://redis:6379
-      REDIS_RATE_LIMIT_URL: redis://redis:6379
-      PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
+  #     REDIS_URL: redis://redis:6379
+  #     REDIS_RATE_LIMIT_URL: redis://redis:6379
+  #     PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3008/scrape}
 
-      NUQ_DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
+  #     NUQ_DATABASE_URL: postgresql://postgres:${DATABASE_PASSWORD}@postgres:5432/postgres
 
-      USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
-      SUPABASE_URL: ${SUPABASE_URL}
-      SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
-      SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
-      SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
+  #     USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
+  #     SUPABASE_URL: ${SUPABASE_URL}
+  #     SUPABASE_ANON_TOKEN: ${SUPABASE_ANON_TOKEN}
+  #     SUPABASE_SERVICE_TOKEN: ${SUPABASE_SERVICE_TOKEN}
+  #     SELF_HOSTED_WEBHOOK_URL: ${SELF_HOSTED_WEBHOOK_URL}
 
-      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #     OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
 
-      MODEL_NAME: ${MODEL_NAME}
-      MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
+  #     MODEL_NAME: ${MODEL_NAME}
+  #     MODEL_EMBEDDING_NAME: ${MODEL_EMBEDDING_NAME}
+  #     OLLAMA_BASE_URL: ${OLLAMA_BASE_URL} 
 
-      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+  #     SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
 
-      # Use if you've set up authentication and want to test with a real API key
-      TEST_API_KEY: ${TEST_API_KEY}
+  #     # Use if you've set up authentication and want to test with a real API key
+  #     TEST_API_KEY: ${TEST_API_KEY}
 
-      # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
-      BULL_AUTH_KEY: ${BULL_AUTH_KEY}
+  #     # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
+  #     BULL_AUTH_KEY: ${BULL_AUTH_KEY}
 
-      POSTHOG_HOST: ${POSTHOG_HOST}
-      POSTHOG_API_KEY: ${POSTHOG_API_KEY}
+  #     POSTHOG_HOST: ${POSTHOG_HOST}
+  #     POSTHOG_API_KEY: ${POSTHOG_API_KEY}
 
-      SERPER_API_KEY: ${SERPER_API_KEY}
-      SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
-      LOGGING_LEVEL: ${LOGGING_LEVEL}
-      PROXY_SERVER: ${PROXY_SERVER}
-      PROXY_USERNAME: ${PROXY_USERNAME}
-      PROXY_PASSWORD: ${PROXY_PASSWORD}
-      SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
-      SEARXNG_ENGINES: ${SEARXNG_ENGINES}
-      SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
-    depends_on:
-      - redis
-      - playwright-service
-    ports:
-      - "3007:8080"
-    command: node dist/src/harness.js --start-docker
-    networks:
-      - database_network
+  #     SERPER_API_KEY: ${SERPER_API_KEY}
+  #     SEARCHAPI_API_KEY: ${SEARCHAPI_API_KEY}
+  #     LOGGING_LEVEL: ${LOGGING_LEVEL}
+  #     PROXY_SERVER: ${PROXY_SERVER}
+  #     PROXY_USERNAME: ${PROXY_USERNAME}
+  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
+  #     SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
+  #     SEARXNG_ENGINES: ${SEARXNG_ENGINES}
+  #     SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+  #   depends_on:
+  #     - redis
+  #     - playwright-service
+  #   ports:
+  #     - "3007:8080"
+  #   command: node dist/src/harness.js --start-docker
+  #   networks:
+  #     - database_network
     
-  playwright-service:
-    image: firecrawl-playwright:latest
-    environment:
-      PORT: 3008
-      PROXY_SERVER: ${PROXY_SERVER}
-      PROXY_USERNAME: ${PROXY_USERNAME}
-      PROXY_PASSWORD: ${PROXY_PASSWORD}
-      BLOCK_MEDIA: ${BLOCK_MEDIA}
-    ports:
-      - "3008:3008"
-    networks:
-      - database_network
+  # playwright-service:
+  #   image: firecrawl-playwright:latest
+  #   environment:
+  #     PORT: 3008
+  #     PROXY_SERVER: ${PROXY_SERVER}
+  #     PROXY_USERNAME: ${PROXY_USERNAME}
+  #     PROXY_PASSWORD: ${PROXY_PASSWORD}
+  #     BLOCK_MEDIA: ${BLOCK_MEDIA}
+  #   ports:
+  #     - "3008:3008"
+  #   networks:
+  #     - database_network
 
   # Keycloak for testing SSO integration
   # Set valid redirect URI in Keycloak to http://localhost:3004/api/auth/sso/callback/keycloak-test

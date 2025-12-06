@@ -1,3 +1,4 @@
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -8,7 +9,6 @@ import {
 import { useEditor } from "@workspace/ui/contexts/editor-context";
 import { useRefs } from "@workspace/ui/contexts/refs-context";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
-import { useWebTranslations } from "@/contexts/web-translations";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { resizeEditor } from "@workspace/ui/lib/utils";
 import type { ChatRequestOptions } from "ai";
@@ -116,7 +116,7 @@ export const MessageActions = memo(
 
     return (
       <TooltipProvider delayDuration={0}>
-        <div className="flex flex-row items-center space-x-4">
+        <div className="border-muted flex flex-row items-center space-x-4 rounded-lg border p-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
