@@ -186,7 +186,10 @@ export const EditorHeader = memo(() => {
         a.remove();
         window.URL.revokeObjectURL(url);
 
-        toast.success(webT.editorHeader.downloadedAs.replace('{filename}', filename), { id: toastId });
+        toast.success(
+          webT.editorHeader.downloadedAs.replace("{filename}", filename),
+          { id: toastId },
+        );
       } catch (error) {
         toast.error(webT.editorHeader.failedToGeneratePdf, { id: toastId });
       }
@@ -205,7 +208,9 @@ export const EditorHeader = memo(() => {
 
       {isDiff ? (
         <ButtonGroup>
-          <Button onClick={() => handleDiffAction(true)}>{webT.editorHeader.accept}</Button>
+          <Button onClick={() => handleDiffAction(true)}>
+            {webT.editorHeader.accept}
+          </Button>
           <Button variant="outline" onClick={() => handleDiffAction(false)}>
             {webT.editorHeader.deny}
           </Button>
@@ -258,7 +263,9 @@ export const EditorHeader = memo(() => {
 
           {!isDiff && <ModeSwitcher />}
 
-          {!isDiff && <LoadButton type="documents" />}
+          {!isDiff && (
+            <LoadButton type={editorMode === "pdf" ? "files" : "documents"} />
+          )}
 
           <ButtonGroup>
             {editorContent.id ? (

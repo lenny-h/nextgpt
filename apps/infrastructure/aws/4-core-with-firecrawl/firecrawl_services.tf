@@ -184,7 +184,7 @@ resource "aws_ecs_service" "firecrawl_api" {
   name            = "firecrawl-api"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = aws_ecs_task_definition.firecrawl_api.arn
-  desired_count   = 1
+  desired_count   = 0
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -209,7 +209,7 @@ resource "aws_ecs_service" "firecrawl_playwright" {
   name            = "firecrawl-playwright"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = aws_ecs_task_definition.firecrawl_playwright.arn
-  desired_count   = 1
+  desired_count   = 0
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -224,5 +224,91 @@ resource "aws_ecs_service" "firecrawl_playwright" {
 
   tags = {
     Name = "${var.aws_project_name}-firecrawl-playwright-service"
+  }
+}
+
+# Autoscaling for Firecrawl API Service
+resource "aws_appautoscaling_target" "firecrawl_api" {
+  max_capacity       = 5
+  min_capacity       = 0
+  resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.firecrawl_api.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "firecrawl_api_cpu" {
+  name               = "${var.aws_project_name}-firecrawl-api-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.firecrawl_api.resource_id
+  scalable_dimension = aws_appautoscaling_target.firecrawl_api.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.firecrawl_api.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
+  }
+}
+
+resource "aws_appautoscaling_policy" "firecrawl_api_memory" {
+  name               = "${var.aws_project_name}-firecrawl-api-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.firecrawl_api.resource_id
+  scalable_dimension = aws_appautoscaling_target.firecrawl_api.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.firecrawl_api.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
+  }
+}
+
+# Autoscaling for Firecrawl Playwright Service
+resource "aws_appautoscaling_target" "firecrawl_playwright" {
+  max_capacity       = 5
+  min_capacity       = 0
+  resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.firecrawl_playwright.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "firecrawl_playwright_cpu" {
+  name               = "${var.aws_project_name}-firecrawl-playwright-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.firecrawl_playwright.resource_id
+  scalable_dimension = aws_appautoscaling_target.firecrawl_playwright.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.firecrawl_playwright.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
+  }
+}
+
+resource "aws_appautoscaling_policy" "firecrawl_playwright_memory" {
+  name               = "${var.aws_project_name}-firecrawl-playwright-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.firecrawl_playwright.resource_id
+  scalable_dimension = aws_appautoscaling_target.firecrawl_playwright.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.firecrawl_playwright.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 85.0
+    scale_in_cooldown  = 200
+    scale_out_cooldown = 90
   }
 }
