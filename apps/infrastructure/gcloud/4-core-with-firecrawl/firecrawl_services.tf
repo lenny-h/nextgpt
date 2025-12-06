@@ -24,6 +24,10 @@ resource "google_cloud_run_v2_service" "firecrawl_api" {
         value = "0.0.0.0"
       }
       env {
+        name  = "PORT"
+        value = "8080"
+      }
+      env {
         name  = "EXTRACT_WORKER_PORT"
         value = "3004"
       }
@@ -151,6 +155,11 @@ resource "google_cloud_run_v2_service" "firecrawl_playwright" {
       image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/firecrawl-playwright:latest"
       ports {
         container_port = 8080
+      }
+
+      env {
+        name  = "PORT"
+        value = "8080"
       }
 
       resources {

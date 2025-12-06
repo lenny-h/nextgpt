@@ -49,6 +49,10 @@ resource "aws_ecs_task_definition" "firecrawl_api" {
         value = "0.0.0.0"
       },
       {
+        name  = "PORT"
+        value = "8080"
+      },
+      {
         name  = "EXTRACT_WORKER_PORT"
         value = "3004"
       },
@@ -147,6 +151,12 @@ resource "aws_ecs_task_definition" "firecrawl_playwright" {
       containerPort = 8080
       protocol      = "tcp"
     }]
+    environment = [
+      {
+        name  = "PORT"
+        value = "8080"
+      }
+    ]
     logConfiguration = {
       logDriver = "awslogs"
       options = {
