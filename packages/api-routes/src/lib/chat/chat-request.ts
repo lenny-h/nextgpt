@@ -82,8 +82,13 @@ export class ChatRequest {
     schema: z.ZodType<any>
   ): Promise<ChatRequest> {
     const payload = await c.req.json();
-    const validatedPayload = schema.parse(payload);
 
+    const parsed = schema.safeParse(payload);
+    if (!parsed.success) {
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
+    }
+
+    const validatedPayload = parsed.data;
     const user = c.get("user");
 
     const {

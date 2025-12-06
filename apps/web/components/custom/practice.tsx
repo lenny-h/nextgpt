@@ -94,14 +94,13 @@ export function Practice({
       transport: new DefaultChatTransport({
         api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/practice`,
         credentials: "include",
-        prepareSendMessagesRequest({ messages }) {
+        prepareSendMessagesRequest({ body, messages }) {
           return {
             body: {
               id: chatId,
               message: messages[messages.length - 1],
               messageCount: getMessageCountAfterLastStart(messages),
-              modelIdx: selectedChatModel.id,
-              isTemp: isTemporary,
+              ...body,
             },
           };
         },
@@ -145,24 +144,24 @@ export function Practice({
 
     window.history.replaceState({}, "", `/${locale}/practice/${chatId}`);
 
-    sendMessage({
-      id: generateUUID(),
-      role: "user",
-      parts: [{ type: "text", text: "START" }],
-      metadata: {
-        filter: stripFilter(filter, true),
-        isStartMessage: true,
+    sendMessage(
+      {
+        id: generateUUID(),
+        role: "user",
+        parts: [{ type: "text", text: "START" }],
+        metadata: {
+          filter: stripFilter(filter, true, studyMode),
+          isStartMessage: true,
+        },
       },
-    });
-  }, [
-    sendMessage,
-    locale,
-    filter,
-    chatId,
-    selectedChatModel,
-    isTemporary,
-    studyMode,
-  ]);
+      {
+        body: {
+          modelIdx: selectedChatModel.id,
+          isTemp: isTemporary,
+        },
+      },
+    );
+  }, [filter, locale, chatId, selectedChatModel, isTemporary, studyMode]);
 
   return (
     <>
