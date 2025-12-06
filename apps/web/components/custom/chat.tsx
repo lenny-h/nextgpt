@@ -2,8 +2,6 @@
 
 import { useDiff } from "@/contexts/diff-context";
 import { useFilter } from "@/contexts/filter-context";
-import { useChatModel } from "@/contexts/selected-chat-model";
-import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { processDataPart } from "@/lib/process-data-part";
 import { type FrontendFilter } from "@/types/filter";
@@ -18,7 +16,7 @@ import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { generateUUID } from "@workspace/ui/lib/utils";
 import { type DataUIPart, DefaultChatTransport } from "ai";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
 import { ChatHeader } from "./chat-header";
@@ -33,20 +31,16 @@ export function Chat({
   chatId: string;
   initialMessages: Array<MyUIMessage>;
 }) {
-  const { webT } = useWebTranslations();
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const queryClient = useQueryClient();
 
-  const [input, setInput] = useState("");
-
-  const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
-    useChatModel();
-  const [isTemporary] = useIsTemporary();
   const { setFilter } = useFilter();
-
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode, setEditorMode] = useEditor();
+
+  const [input, setInput] = useState("");
 
   const { textDiffPrev, setTextDiffNext, codeDiffPrev, setCodeDiffNext } =
     useDiff();
@@ -86,35 +80,6 @@ export function Chat({
     }
   }, [chatId, initialMessages.length]);
 
-  // Memoize transport to ensure it's recreated when relevant values change
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/chat`,
-        credentials: "include",
-        prepareSendMessagesRequest({ messages }) {
-          return {
-            body: {
-              id: chatId,
-              message: messages[messages.length - 1],
-              modelIdx: selectedChatModel.id,
-              isTemp: isTemporary,
-              reasoning: selectedChatModel.reasoning && reasoningEnabled,
-              webSearch: webSearchEnabled,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            },
-          };
-        },
-      }),
-    [
-      chatId,
-      selectedChatModel,
-      isTemporary,
-      reasoningEnabled,
-      webSearchEnabled,
-    ],
-  );
-
   const { sendMessage, messages, setMessages, status, stop, regenerate } =
     useChat<MyUIMessage>({
       id: chatId,
@@ -141,7 +106,20 @@ export function Chat({
           setCodeDiffNext,
         }),
       onError: () => toast.error(webT.chat.errorOccurred),
-      transport,
+      transport: new DefaultChatTransport({
+        api: `${process.env.NEXT_PUBLIC_API_URL}/api/protected/chat`,
+        credentials: "include",
+        prepareSendMessagesRequest({ body, messages }) {
+          return {
+            body: {
+              id: chatId,
+              message: messages[messages.length - 1],
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              ...body,
+            },
+          };
+        },
+      }),
     });
 
   return (

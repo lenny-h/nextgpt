@@ -17,7 +17,9 @@
 "use client";
 
 import { useFilter } from "@/contexts/filter-context";
+import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { stripFilter } from "@/lib/utils";
@@ -40,7 +42,6 @@ import { AttachmentPreview } from "./attachment-preview";
 import { ContextFiles } from "./context-files";
 import { Textarea } from "./text-area";
 import { TextAreaControl } from "./text-area-control";
-import { useWebTranslations } from "@/contexts/web-translations";
 
 interface MultimodalInputProps {
   sendMessage: (
@@ -68,6 +69,8 @@ const PureMultimodalInput = ({
   const { webT } = useWebTranslations();
 
   const { filter } = useFilter();
+  const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
+    useChatModel();
   const [isTemporary] = useIsTemporary();
 
   const { uploadQueue, handleFileChange } = useFileUpload();
@@ -162,15 +165,25 @@ const PureMultimodalInput = ({
       handleDocumentClick(document.id, document.title, document.kind);
     }
 
-    sendMessage({
-      id: generateUUID(),
-      role: "user",
-      parts: [{ type: "text", text: input }],
-      metadata: {
-        filter: stripFilter(filter, false),
-        attachments,
+    sendMessage(
+      {
+        id: generateUUID(),
+        role: "user",
+        parts: [{ type: "text", text: input }],
+        metadata: {
+          filter: stripFilter(filter, false),
+          attachments,
+        },
       },
-    });
+      {
+        body: {
+          modelIdx: selectedChatModel.id,
+          isTemp: isTemporary,
+          reasoning: selectedChatModel.reasoning && reasoningEnabled,
+          webSearch: webSearchEnabled,
+        },
+      },
+    );
 
     setInput("");
     setAttachments([]);
@@ -183,10 +196,10 @@ const PureMultimodalInput = ({
     chatId,
     input,
     attachments,
-    sendMessage,
-    setInput,
-    setLocalStorageInput,
-    handleDocumentClick,
+    selectedChatModel,
+    isTemporary,
+    reasoningEnabled,
+    webSearchEnabled,
   ]);
 
   return (

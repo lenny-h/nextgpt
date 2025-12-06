@@ -81,12 +81,14 @@ export function stripFilter(
 export function stripFilter(
   filter: FrontendFilter,
   includePageRanges: true,
+  studyMode: string,
 ): PracticeFilter;
 export function stripFilter(
   filter: FrontendFilter,
   includePageRanges: boolean,
+  studyMode?: string,
 ): Filter | PracticeFilter {
-  return {
+  const baseFilter = {
     ...filter,
     courses: filter.courses.map((c) => ({
       id: c.id,
@@ -98,4 +100,13 @@ export function stripFilter(
     documents: filter.documents.map((doc) => ({ id: doc.id })),
     prompts: filter.prompts.map((p) => ({ id: p.id })),
   };
+
+  if (includePageRanges && studyMode) {
+    return {
+      ...baseFilter,
+      studyMode,
+    } as PracticeFilter;
+  }
+
+  return baseFilter;
 }
