@@ -4,6 +4,12 @@ resource "google_project_service" "storage" {
   service = "storage.googleapis.com"
 }
 
+# Enable IAM Credentials API (needed for signing URLs)
+resource "google_project_service" "iamcredentials" {
+  project = var.google_vertex_project
+  service = "iamcredentials.googleapis.com"
+}
+
 # GCS bucket for permanent file storage
 resource "google_storage_bucket" "files_bucket" {
   name          = "${var.google_vertex_project}-files-bucket"

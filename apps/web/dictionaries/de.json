@@ -22,12 +22,14 @@
     "toggleSidebar": "Seitenleiste umschalten"
   },
   "chatItem": {
+    "practiceSession": "Übungssession",
     "more": "Mehr",
     "removeFromFavorites": "Aus Favoriten entfernen",
     "addToFavourites": "Zu Favoriten hinzufügen",
     "fork": "Chat verzweigen",
     "rename": "Umbenennen",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "defaultTitle": "Chat"
   },
   "chatSearch": {
     "searchChats": "Chats suchen..."
@@ -193,6 +195,23 @@
     "semantic": "Semantisch",
     "searchPlaceholder": "Quellen suchen...",
     "selectAtLeastOneCourse": "Bitte wählen Sie mindestens einen Kurs aus"
+  },
+  "studyModes": {
+    "facts": "Harte Fakten",
+    "concepts": "Verständnis von Konzepten testen",
+    "application": "Wissen auf Probleme anwenden",
+    "multipleChoice": "Multiple-Choice-Fragen"
+  },
+  "modelDescriptions": {
+    "gpt-4o": "Leistungsstarkes Modell mit schnellen Antwortzeiten",
+    "gpt-5": "Leistungsstarkes Modell, aber langsame Antwortzeiten"
+  },
+  "searchSelection": {
+    "chats": "Chats suchen...",
+    "courses": "Kurse suchen...",
+    "files": "Dateien suchen...",
+    "documents": "Dokumente suchen...",
+    "prompts": "Prompts suchen..."
   },
   "tools": {
     "processingDocumentSearch": "Dokumentensuche wird verarbeitet...",

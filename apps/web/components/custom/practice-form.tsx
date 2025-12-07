@@ -179,7 +179,9 @@ export const PracticeForm = memo(({ submitForm }: PracticeFormProps) => {
                                 : ""
                             }`}
                           >
-                            <span className="truncate">{mode.label}</span>
+                            <span className="truncate">
+                              {webT.studyModes[mode.id]}
+                            </span>
                           </Button>
                         ))}
                       </div>

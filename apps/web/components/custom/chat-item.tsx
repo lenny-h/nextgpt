@@ -61,7 +61,14 @@ const PureChatItem = ({
           }
           onClick={() => setOpenMobile(false)}
         >
-          <span>{chat.title || "Chat"}</span>
+          <span>
+            {chat.title?.startsWith("Practice Session")
+              ? chat.title.replace(
+                  "Practice Session",
+                  webT.chatItem.practiceSession,
+                )
+              : chat.title || webT.chatItem.defaultTitle}
+          </span>
         </Link>
       </SidebarMenuButton>
 

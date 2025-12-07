@@ -2,10 +2,10 @@ import { testClient } from "hono/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import app, { type ApiAppType } from "../../src/app.js";
 import {
-  TEST_USERS,
   getAuthHeaders,
   signInTestUser,
   TEST_USER_IDS,
+  TEST_USERS,
 } from "../helpers/auth-helpers.js";
 import { cleanupUserFeedback } from "../helpers/db-helpers.js";
 
@@ -62,15 +62,6 @@ describe("Protected API Routes - Feedback", () => {
 
       const data = await res.json();
       expect(data).toHaveProperty("message");
-
-      // We can't easily get the exact created date from the response or DB without a return value
-      // But we can try to clean up based on approximate time if needed, or just rely on the fact that
-      // feedback is less critical to clean up than other resources.
-      // However, for completeness, let's assume we want to clean it up.
-      // Since the API doesn't return the created record, we might need to query it.
-      // For now, let's skip explicit tracking since we don't have the ID or exact timestamp easily available
-      // and feedback is often append-only logs.
-      // If we really needed to, we could query the DB for the latest feedback for this user.
     });
 
     it("should validate input schema", async () => {
