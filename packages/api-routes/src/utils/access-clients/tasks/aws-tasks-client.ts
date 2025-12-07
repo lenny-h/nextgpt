@@ -160,7 +160,7 @@ export class AwsTasksClient implements ITasksClient {
         // Retry configuration for transient failures
         RetryPolicy: {
           MaximumEventAgeInSeconds: 3600, // 1 hour
-          MaximumRetryAttempts: 1,
+          MaximumRetryAttempts: 0,
         },
       },
       // Delete schedule after execution
