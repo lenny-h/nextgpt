@@ -1,3 +1,4 @@
+import { useWebTranslations } from "@/contexts/web-translations";
 import { useFilter } from "@/contexts/filter-context";
 import { type ArtifactKind } from "@workspace/api-routes/types/artifact-kind";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
@@ -20,6 +21,7 @@ interface File extends ListItem {
 
 export const FilesList = memo(({ open, inputValue, max }: Props) => {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const { filter, setFilter } = useFilter();
 
@@ -70,7 +72,7 @@ export const FilesList = memo(({ open, inputValue, max }: Props) => {
       }
       selectedItems={filter.files}
       onToggleItem={toggleFile}
-      disabledMessage="Please select a course first"
+      disabledMessage={webT.loadButtonLists.selectCourseFirst}
       enabled={filter.courses.length > 0}
       maxItems={max}
     />

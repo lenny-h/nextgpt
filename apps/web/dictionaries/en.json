@@ -28,7 +28,8 @@
     "addToFavourites": "Add to favourites",
     "fork": "Fork chat",
     "rename": "Rename",
-    "delete": "Delete"
+    "delete": "Delete",
+    "defaultTitle": "Chat"
   },
   "chatSearch": {
     "searchChats": "Search chats..."
@@ -194,6 +195,23 @@
     "semantic": "Semantic",
     "searchPlaceholder": "Search sources...",
     "selectAtLeastOneCourse": "Please select at least one course"
+  },
+  "studyModes": {
+    "facts": "Hard facts",
+    "concepts": "Test understanding of concepts",
+    "application": "Apply knowledge to problems",
+    "multipleChoice": "Multiple choice questions"
+  },
+  "modelDescriptions": {
+    "gpt-4o": "Powerful model with fast response times",
+    "gpt-5": "Powerful model, but slow response times"
+  },
+  "searchSelection": {
+    "chats": "Search for chats...",
+    "courses": "Search for courses...",
+    "files": "Search for files...",
+    "documents": "Search for documents...",
+    "prompts": "Search for prompts..."
   },
   "tools": {
     "processingDocumentSearch": "Processing document search request...",

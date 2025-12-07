@@ -41,7 +41,9 @@ export const SidebarLeft = memo(() => {
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">NextGPT</span>
-                <span className="truncate text-xs">Let's learn together!</span>
+                <span className="text-muted-foreground truncate text-xs">
+                  Your AI-powered workspace
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
