@@ -140,6 +140,10 @@ resource "google_cloud_run_v2_service" "api" {
         value = google_cloud_tasks_queue.document_processing_queue.name
       }
       env {
+        name  = "GOOGLE_DOCUMENT_PROCESSOR_JOB"
+        value = google_cloud_run_v2_job.document_processor.name
+      }
+      env {
         name  = "EMBEDDINGS_MODEL"
         value = var.embeddings_model
       }

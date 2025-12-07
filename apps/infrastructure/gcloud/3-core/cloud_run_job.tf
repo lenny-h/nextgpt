@@ -127,6 +127,6 @@ resource "google_cloud_run_v2_job_iam_member" "document_processor_invoker" {
   project  = var.google_vertex_project
   location = var.google_vertex_location
   name     = google_cloud_run_v2_job.document_processor.name
-  role     = "roles/run.developer"
+  role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.cloud_tasks_sa.email}"
 }
