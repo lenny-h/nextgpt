@@ -122,7 +122,7 @@ export class GoogleTasksClient implements ITasksClient {
         oidcToken: {
           serviceAccountEmail,
           // The audience should be the Cloud Run Admin API
-          audience: "https://run.googleapis.com",
+          audience: "https://run.googleapis.com/",
         },
       },
       scheduleTime: {
