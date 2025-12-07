@@ -34,3 +34,6 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+# Test data sql file
+/packages/server/src/drizzle/__tests__/seed-test-files-chunks.sql

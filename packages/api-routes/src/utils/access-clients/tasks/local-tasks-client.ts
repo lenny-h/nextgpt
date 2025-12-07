@@ -115,6 +115,7 @@ export class LocalTasksClient implements ITasksClient {
       "GOOGLE_VERTEX_LOCATION",
       "AWS_PROJECT_NAME",
       "AWS_REGION",
+      "SQL_LOG_FILE",
     ];
 
     for (const key of envVarsToPassThrough) {
@@ -130,6 +131,22 @@ export class LocalTasksClient implements ITasksClient {
     const imageName =
       process.env.DOCUMENT_PROCESSOR_IMAGE || "mono-document-processor:latest";
 
+    // Set up volume binds for SQL logging
+    const binds: string[] = [];
+    if (process.env.SQL_LOG_FILE && process.env.SQL_LOG_FILE_HOST_PATH) {
+      // SQL_LOG_FILE_HOST_PATH is the absolute host directory path (e.g., C:/path/to/mono/packages/server/src/drizzle/__tests__)
+      // SQL_LOG_FILE is the container file path (e.g., /app/packages/server/src/drizzle/__tests__/seed-test-files-chunks.sql)
+      const sqlLogDir = process.env.SQL_LOG_FILE.substring(
+        0,
+        process.env.SQL_LOG_FILE.lastIndexOf("/")
+      );
+
+      binds.push(`${process.env.SQL_LOG_FILE_HOST_PATH}:${sqlLogDir}`);
+      logger.debug(
+        `SQL logging enabled, mounting: ${process.env.SQL_LOG_FILE_HOST_PATH} -> ${sqlLogDir}`
+      );
+    }
+
     try {
       // Create and start the container
       const container = await this.docker.createContainer({
@@ -141,6 +158,8 @@ export class LocalTasksClient implements ITasksClient {
           NetworkMode: process.env.DOCKER_NETWORK || "mono_database_network",
           // Auto-remove container when it exits
           AutoRemove: true,
+          // Mount volumes if SQL logging is enabled
+          Binds: binds.length > 0 ? binds : undefined,
         },
       });
 

@@ -14,6 +14,7 @@
     "@hono/node-server": "^1.19.6",
     "@workspace/api-routes": "workspace:*",
     "@workspace/server": "workspace:*",
+    "ai": "^5.0.104",
     "drizzle-orm": "0.44.5",
     "hono": "^4.10.7"
   },
@@ -23,6 +24,7 @@
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "dotenv": "^17.2.2",
+    "msw": "^2.12.4",
     "tsx": "^4.20.5",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"

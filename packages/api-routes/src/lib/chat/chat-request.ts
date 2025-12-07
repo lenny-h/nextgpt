@@ -121,12 +121,22 @@ export class ChatRequest {
 
     const messages = [...prevMessages.reverse(), message];
 
-    const validatedUIMessages = await validateUIMessages<MyUIMessage>({
-      messages,
-      dataSchemas,
-      metadataSchema,
-      tools,
-    });
+    let validatedUIMessages: MyUIMessage[];
+    try {
+      validatedUIMessages = await validateUIMessages<MyUIMessage>({
+        messages,
+        dataSchemas,
+        metadataSchema,
+        tools,
+      });
+    } catch (error) {
+      logger.warn("Message validation failed", {
+        chatId: id,
+        userId: user.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw new HTTPException(400, { message: "BAD_REQUEST" });
+    }
 
     // Disallow file parts in chat messages
     // File parts should be handled as attachments, not inline in messages

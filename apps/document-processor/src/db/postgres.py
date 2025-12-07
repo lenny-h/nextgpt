@@ -7,10 +7,72 @@ since each job runs as a single process and terminates after completion.
 
 import os
 import json
+from pathlib import Path
 from typing import List, Optional
 from contextlib import contextmanager
-
 import psycopg
+
+from logger import setup_logger
+
+# Configure logger
+logger = setup_logger(__name__)
+
+
+def _log_sql_statement(query: str, params: tuple) -> None:
+    """
+    Log SQL statements to a file for test data generation.
+    Only logs when SQL_LOG_FILE environment variable is set.
+    """
+    log_file = os.getenv("SQL_LOG_FILE")
+    if not log_file:
+        return
+    
+    logger.debug(f"Logging SQL statement to {log_file}")
+    
+    try:
+        # Create parent directory if it doesn't exist
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Format the SQL statement with parameters
+        # For INSERT statements, we want to log them in a way that can be reused
+        if query.strip().upper().startswith("INSERT"):
+            # Write to file with proper SQL formatting
+            with open(log_path, "a", encoding="utf-8") as f:
+                # Convert query parameters to SQL-safe format
+                formatted_params = []
+                for param in params:
+                    if param is None:
+                        formatted_params.append("NULL")
+                    elif isinstance(param, str):
+                        # Escape single quotes and wrap in quotes
+                        escaped = param.replace("'", "''")
+                        formatted_params.append(f"'{escaped}'")
+                    elif isinstance(param, bool):
+                        formatted_params.append(str(param).upper())
+                    elif isinstance(param, (int, float)):
+                        formatted_params.append(str(param))
+                    elif isinstance(param, list):
+                        # Handle arrays (like embeddings) - convert to PostgreSQL array syntax
+                        if all(isinstance(x, (int, float)) for x in param):
+                            array_str = "[" + ",".join(str(x) for x in param) + "]"
+                            formatted_params.append(f"'{array_str}'")
+                        else:
+                            formatted_params.append(f"'{json.dumps(param)}'")
+                    else:
+                        # For other types (like JSON), use JSON representation
+                        formatted_params.append(f"'{json.dumps(param)}'")
+                
+                # Replace %s placeholders with actual values
+                formatted_query = query
+                for param in formatted_params:
+                    formatted_query = formatted_query.replace("%s", str(param), 1)
+                
+                f.write(f"{formatted_query};\n")
+            logger.debug("SQL statement logged successfully")
+    except Exception as e:
+        # Don't fail the main operation if logging fails
+        logger.error(f"Failed to log SQL statement: {e}")
 
 
 def _get_connection_string() -> str:
@@ -104,13 +166,13 @@ def upload_to_postgres_db(
 
                 # Insert file record only on first batch
                 if is_first_batch:
-                    cursor.execute(
-                        """
+                    file_query = """
                         INSERT INTO files (id, course_id, name, size, page_count)
                         VALUES (%s, %s, %s, %s, %s)
-                        """,
-                        (task_id, course_id, filename, file_size, page_count)
-                    )
+                        """
+                    file_params = (task_id, course_id, filename, file_size, page_count)
+                    _log_sql_statement(file_query, file_params)
+                    cursor.execute(file_query, file_params)
 
                 # Prepare chunks data for batch insert
                 chunks_to_insert = []
@@ -134,15 +196,18 @@ def upload_to_postgres_db(
                     chunks_to_insert.append(row)
 
                 # Batch insert chunks using executemany
-                cursor.executemany(
-                    """
+                chunk_query = """
                     INSERT INTO chunks
                     (id, file_id, file_name, course_id, course_name, embedding, content,
                         page_index, page_number, bbox)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    chunks_to_insert
-                )
+                    """
+                
+                # Log each chunk insert statement
+                for chunk_row in chunks_to_insert:
+                    _log_sql_statement(chunk_query, chunk_row)
+                
+                cursor.executemany(chunk_query, chunks_to_insert)
                 conn.commit()
 
             except Exception as e:

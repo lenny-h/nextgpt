@@ -186,6 +186,8 @@ services:
       USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
       USE_OPENAI_API: ${USE_OPENAI_API}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      SQL_LOG_FILE_HOST_PATH: ${SQL_LOG_FILE_HOST_PATH:-}
+      SQL_LOG_FILE: ${SQL_LOG_FILE:-}
 
       # Local MinIO configuration
       MINIO_ENDPOINT: http://minio:9000

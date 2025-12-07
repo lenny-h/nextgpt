@@ -1,6 +1,5 @@
 import { db } from "@workspace/server/drizzle/db.js";
 import {
-  account,
   bucketMaintainerInvitations,
   buckets,
   bucketUserRoles,
@@ -16,19 +15,12 @@ import {
   messages,
   models,
   prompts,
-  ssoProvider,
   tasks,
   toolCallDocuments,
-  user,
   userInvitations,
-  verification,
   type BucketType,
-  type TaskStatus,
-  type Role,
-  type UserRole,
-  type DocumentKind,
 } from "@workspace/server/drizzle/schema.js";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { TEST_USER_IDS } from "./auth-helpers.js";
 
 // ==========================================
