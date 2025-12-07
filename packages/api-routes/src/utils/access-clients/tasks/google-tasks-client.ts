@@ -9,6 +9,7 @@ import {
 const logger = createLogger("google-tasks-client");
 
 const CLOUD_RUN_ADMIN_API_URL = "https://run.googleapis.com/v2";
+const OAUTH_TOKEN_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
 
 /**
  * Google Cloud Tasks implementation for job-based processing
@@ -119,10 +120,9 @@ export class GoogleTasksClient implements ITasksClient {
           "Content-Type": "application/json",
         },
         body: Buffer.from(JSON.stringify(requestBody)).toString("base64"),
-        oidcToken: {
+        oauthToken: {
           serviceAccountEmail,
-          // The audience should be the Cloud Run Admin API
-          audience: "https://run.googleapis.com/",
+          scope: OAUTH_TOKEN_SCOPE,
         },
       },
       scheduleTime: {
