@@ -16,7 +16,7 @@ resource "google_cloud_tasks_queue" "document_processing_queue" {
   }
 
   retry_config {
-    max_attempts = 1
+    max_attempts = 2
   }
 
   depends_on = [google_project_service.cloud_tasks]

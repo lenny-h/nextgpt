@@ -11,6 +11,7 @@ resource "google_cloud_run_v2_job" "document_processor" {
   template {
     template {
       service_account = google_service_account.document_processor_sa.email
+      max_retries     = 0
 
       containers {
         image = "${var.google_vertex_location}-docker.pkg.dev/${var.google_vertex_project}/app-artifact-repository/document-processor:latest"
