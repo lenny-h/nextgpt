@@ -174,7 +174,7 @@ export class AwsTasksClient implements ITasksClient {
     );
   }
 
-  async cancelTask(params: CancelTaskParams): Promise<void> {
+  async cancelTask(params: CancelTaskParams): Promise<boolean> {
     const { taskId } = params;
 
     const schedulerClient = this.getSchedulerClient();
@@ -188,11 +188,13 @@ export class AwsTasksClient implements ITasksClient {
     try {
       await schedulerClient.send(command);
       logger.info(`Cancelled scheduled task: ${taskId}`);
+      return true;
     } catch (error: any) {
       if (error.name === "ResourceNotFoundException") {
         logger.warn(
           `Schedule not found: ${taskId}. It may have already been executed or deleted.`
         );
+        return false;
       } else {
         throw error;
       }

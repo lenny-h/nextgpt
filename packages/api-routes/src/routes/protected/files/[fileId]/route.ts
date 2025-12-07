@@ -45,13 +45,13 @@ const app = new Hono().delete(
       throw new HTTPException(403, { message: "FORBIDDEN" });
     }
 
-    const storageClient = getStorageClient();
-
     await db.delete(chunks).where(eq(chunks.fileId, fileId)); // Delete chunks from the database
     await deleteFile({
       bucketId,
       fileId,
     });
+
+    const storageClient = getStorageClient();
 
     await storageClient.deleteFile({
       bucket: "files-bucket",

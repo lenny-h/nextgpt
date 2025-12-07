@@ -140,7 +140,7 @@ export class GoogleTasksClient implements ITasksClient {
     );
   }
 
-  async cancelTask(params: CancelTaskParams): Promise<void> {
+  async cancelTask(params: CancelTaskParams): Promise<boolean> {
     const { taskId } = params;
 
     const projectId = process.env.GOOGLE_VERTEX_PROJECT;
@@ -163,12 +163,14 @@ export class GoogleTasksClient implements ITasksClient {
     try {
       await this.client.deleteTask({ name: fullTaskPath });
       logger.info(`Cancelled scheduled task: ${taskId}`);
+      return true;
     } catch (error: any) {
       if (error.code === 5) {
         // NOT_FOUND
         logger.warn(
           `Task not found: ${taskId}. It may have already been executed or deleted.`
         );
+        return false;
       } else {
         throw error;
       }

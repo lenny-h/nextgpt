@@ -59,18 +59,20 @@ const app = new Hono().delete(
     const tasksClient = getTasksClient();
 
     // Cancel the scheduled task using cloud-agnostic interface
-    await tasksClient.cancelTask({ taskId });
+    const taskCancelled = await tasksClient.cancelTask({ taskId });
 
     await deleteTask({
       taskId,
     });
 
-    const storageClient = getStorageClient();
+    if (taskCancelled) {
+      const storageClient = getStorageClient();
 
-    await storageClient.deleteFile({
-      bucket: "files-bucket",
-      key: `${courseId}/${name}`,
-    });
+      await storageClient.deleteFile({
+        bucket: "files-bucket",
+        key: `${courseId}/${name}`,
+      });
+    }
 
     return c.json({ name });
   }

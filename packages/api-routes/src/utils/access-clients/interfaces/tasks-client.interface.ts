@@ -36,5 +36,5 @@ export interface ITasksClient {
    * Cancel a scheduled task
    * Each implementation handles cloud-provider-specific task identification
    */
-  cancelTask(params: CancelTaskParams): Promise<void>;
+  cancelTask(params: CancelTaskParams): Promise<boolean>;
 }

@@ -180,16 +180,19 @@ export class LocalTasksClient implements ITasksClient {
     }
   }
 
-  async cancelTask(params: CancelTaskParams): Promise<void> {
+  async cancelTask(params: CancelTaskParams): Promise<boolean> {
     const { taskId } = params;
 
     logger.info(`Canceling task: ${taskId}`);
+
+    let found = false;
 
     // Cancel scheduled timeout
     if (this.scheduledTasks.has(taskId)) {
       clearTimeout(this.scheduledTasks.get(taskId));
       this.scheduledTasks.delete(taskId);
       logger.info(`Scheduled task canceled`);
+      found = true;
     }
 
     // Stop running container
@@ -208,14 +211,15 @@ export class LocalTasksClient implements ITasksClient {
         }
       }
       this.runningContainers.delete(taskId);
+      found = true;
     }
 
-    if (
-      !this.scheduledTasks.has(taskId) &&
-      !this.runningContainers.has(taskId)
-    ) {
+    if (!found) {
       logger.warn(`Task not found or already completed: ${taskId}`);
+      return false;
     }
+
+    return true;
   }
 
   /**
