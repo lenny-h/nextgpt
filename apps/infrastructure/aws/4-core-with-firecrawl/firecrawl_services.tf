@@ -230,7 +230,7 @@ resource "aws_ecs_service" "firecrawl_playwright" {
 # Autoscaling for Firecrawl API Service
 resource "aws_appautoscaling_target" "firecrawl_api" {
   max_capacity       = 5
-  min_capacity       = 0
+  min_capacity       = 1
   resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.firecrawl_api.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -273,7 +273,7 @@ resource "aws_appautoscaling_policy" "firecrawl_api_memory" {
 # Autoscaling for Firecrawl Playwright Service
 resource "aws_appautoscaling_target" "firecrawl_playwright" {
   max_capacity       = 5
-  min_capacity       = 0
+  min_capacity       = 1
   resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.firecrawl_playwright.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

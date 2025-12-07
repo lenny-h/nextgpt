@@ -65,7 +65,7 @@ resource "aws_ecs_service" "pdf_exporter" {
 # Autoscaling for API Service
 resource "aws_appautoscaling_target" "api" {
   max_capacity       = 5
-  min_capacity       = 0
+  min_capacity       = 1
   resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.api.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -108,7 +108,7 @@ resource "aws_appautoscaling_policy" "api_memory" {
 # Autoscaling for PDF Exporter Service
 resource "aws_appautoscaling_target" "pdf_exporter" {
   max_capacity       = 5
-  min_capacity       = 0
+  min_capacity       = 1
   resource_id        = "service/${data.terraform_remote_state.db_storage.outputs.ecs_cluster_name}/${aws_ecs_service.pdf_exporter.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

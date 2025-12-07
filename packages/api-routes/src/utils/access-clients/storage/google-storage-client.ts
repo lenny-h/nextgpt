@@ -1,4 +1,5 @@
 import { Storage } from "@google-cloud/storage";
+import { HTTPException } from "hono/http-exception";
 import { IStorageClient } from "../interfaces/storage-client.interface.js";
 
 /**
@@ -93,10 +94,17 @@ export class GoogleStorageClient implements IStorageClient {
     bucket: string;
     key: string;
   }): Promise<void> {
-    const storage = this.getStorageClient();
-    await storage
-      .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
-      .file(key)
-      .delete();
+    try {
+      const storage = this.getStorageClient();
+      await storage
+        .bucket(`${process.env.GOOGLE_VERTEX_PROJECT}-${bucket}`)
+        .file(key)
+        .delete();
+    } catch (error: any) {
+      if (error.code === 404) {
+        throw new HTTPException(404, { message: `File not found: ${key}` });
+      }
+      throw error;
+    }
   }
 }
