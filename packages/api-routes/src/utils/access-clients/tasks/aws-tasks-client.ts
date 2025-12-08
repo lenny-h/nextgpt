@@ -157,10 +157,10 @@ export class AwsTasksClient implements ITasksClient {
             },
           ],
         }),
-        // Retry configuration for transient failures
+        // Retry configuration for transient failures when invoking the ECS task
         RetryPolicy: {
           MaximumEventAgeInSeconds: 3600, // 1 hour
-          MaximumRetryAttempts: 0,
+          MaximumRetryAttempts: 1,
         },
       },
       // Delete schedule after execution
