@@ -22,7 +22,8 @@ export const searchDocumentsTool = ({
   storeFullContent: (id: string, content: SearchDocumentsOutput) => void;
 }): Tool =>
   tool({
-    description: "Retrieves document sources based on keywords and questions",
+    description:
+      "Retrieves document sources based on keywords and questions. Only use this if the user query requires specific document context.",
     inputSchema: z.object({
       keywords: z.array(z.string()),
       questions: z.array(z.string()),
@@ -41,6 +42,8 @@ export const searchDocumentsTool = ({
         if (questions.length > 0) {
           embedding = await retrieveEmbedding(questions.join(" "));
         }
+
+        logger.debug("Searching documents with filter: ", { filter });
 
         const docSources = await searchDocuments({
           filter,

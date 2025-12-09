@@ -41,6 +41,10 @@ export async function searchDocuments({
   chapter?: number;
   matchThreshold?: number;
 }): Promise<DocumentSource[]> {
+  if (filter.courses.length === 0) {
+    return [];
+  }
+
   const queries = [];
 
   if (embedding) {

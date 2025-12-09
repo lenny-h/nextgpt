@@ -57,8 +57,7 @@ export const createSearchWebTool = ({
   storeFullContent: (id: string, content: SearchWebOutput) => void;
 }) =>
   tool({
-    description:
-      "Search the web for relevant information based on a user query.",
+    description: "Retrieves web sources based on a search query.",
     inputSchema: z.object({
       searchTerms: z
         .string()

@@ -124,17 +124,20 @@ export class StandardChatHandler extends ChatHandler {
     };
 
     const tools: Record<string, Tool> = {
-      searchDocuments: searchDocumentsTool({
-        filter: this.request.filter,
-        retrieveContent: true, // Always retrieve content to pass as context to the model
-        storeFullContent,
-      }),
       createDocument: createDocumentTool({
         writer,
         chatId: this.request.id,
         userId: this.request.user.id,
       }),
     };
+
+    if (this.request.filter.courses.length > 0) {
+      tools.searchDocuments = searchDocumentsTool({
+        filter: this.request.filter,
+        retrieveContent: true, // Always retrieve content to pass as context to the model
+        storeFullContent,
+      });
+    }
 
     if (this.document) {
       tools.modifyDocument = modifyDocumentTool({

@@ -49,7 +49,7 @@ export async function searchChunksByVs({
         )
       );
     }
-  } else if (filter.courses.length > 0) {
+  } else {
     conditions.push(
       inArray(
         chunks.courseId,
@@ -139,7 +139,7 @@ export async function searchChunksByFts({
         )
       );
     }
-  } else if (filter.courses && filter.courses.length > 0) {
+  } else {
     conditions.push(
       inArray(
         chunks.courseId,
@@ -215,7 +215,7 @@ export async function retrieveChunksByPageNumber({
         )
       );
     }
-  } else if (filter.courses && filter.courses.length > 0) {
+  } else {
     conditions.push(
       inArray(
         chunks.courseId,
@@ -250,64 +250,92 @@ export async function retrieveRandomChunks({
   filter: PracticeFilter;
   retrieveContent?: boolean;
 }): Promise<DocumentSource[]> {
-  const fileIds = filter.files
-    .filter((file) => !file.pageRange)
-    .map((file) => file.id);
-  const fileObjects = filter.files.filter((file) => file.pageRange);
+  // Separate files with and without page ranges
+  const filesWithoutRange = filter.files.filter((file) => !file.pageRange);
+  const filesWithRange = filter.files.filter((file) => file.pageRange);
 
-  const randomPagesPromise =
-    fileIds.length > 0
-      ? db
-          .select({
-            id: chunks.id,
-            fileId: chunks.fileId,
-            fileName: chunks.fileName,
-            courseId: chunks.courseId,
-            courseName: chunks.courseName,
-            pageIndex: chunks.pageIndex,
-            bbox: chunks.bbox,
-            ...(retrieveContent ? { content: chunks.content } : {}),
-          })
-          .from(chunks)
-          .where(inArray(chunks.fileId, fileIds))
-          .orderBy(sql`random()`)
-          .limit(4)
-      : Promise.resolve([]);
+  const promises: Promise<any[]>[] = [];
 
-  const randomPageRangePagesPromises = fileObjects.map((fileObject) => {
-    const pageNumbers = parsePageRange(fileObject.pageRange!);
-    return db
-      .select({
-        id: chunks.id,
-        fileId: chunks.fileId,
-        fileName: chunks.fileName,
-        courseId: chunks.courseId,
-        courseName: chunks.courseName,
-        pageIndex: chunks.pageIndex,
-        bbox: chunks.bbox,
-        ...(retrieveContent ? { content: chunks.content } : {}),
-      })
-      .from(chunks)
-      .where(
-        and(
-          eq(chunks.fileId, fileObject.id),
-          inArray(chunks.pageNumber, pageNumbers)
+  // Query files without page ranges OR courses if no files specified
+  if (filesWithoutRange.length > 0) {
+    promises.push(
+      db
+        .select({
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
+          bbox: chunks.bbox,
+          ...(retrieveContent ? { content: chunks.content } : {}),
+        })
+        .from(chunks)
+        .where(
+          inArray(
+            chunks.fileId,
+            filesWithoutRange.map((f) => f.id)
+          )
         )
-      )
-      .orderBy(sql`random()`)
-      .limit(4);
+        .orderBy(sql`random()`)
+        .limit(4)
+    );
+  } else if (filter.files.length === 0 && filter.courses.length > 0) {
+    promises.push(
+      db
+        .select({
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
+          bbox: chunks.bbox,
+          ...(retrieveContent ? { content: chunks.content } : {}),
+        })
+        .from(chunks)
+        .where(
+          inArray(
+            chunks.courseId,
+            filter.courses.map((c) => c.id)
+          )
+        )
+        .orderBy(sql`random()`)
+        .limit(4)
+    );
+  }
+
+  // Query files with page ranges
+  filesWithRange.forEach((file) => {
+    const pageNumbers = parsePageRange(file.pageRange!);
+    promises.push(
+      db
+        .select({
+          id: chunks.id,
+          fileId: chunks.fileId,
+          fileName: chunks.fileName,
+          courseId: chunks.courseId,
+          courseName: chunks.courseName,
+          pageIndex: chunks.pageIndex,
+          bbox: chunks.bbox,
+          ...(retrieveContent ? { content: chunks.content } : {}),
+        })
+        .from(chunks)
+        .where(
+          and(
+            eq(chunks.fileId, file.id),
+            inArray(chunks.pageNumber, pageNumbers)
+          )
+        )
+        .orderBy(sql`random()`)
+        .limit(4)
+    );
   });
 
-  const [randomPages, ...randomPageRangePagesResults] = await Promise.all([
-    randomPagesPromise,
-    ...randomPageRangePagesPromises,
-  ]);
+  const results = await Promise.all(promises);
+  const allPages = results.flat();
 
-  const randomPageRangePages = randomPageRangePagesResults.flat();
-
-  const mapPage = (
-    page: (typeof randomPages)[number] | (typeof randomPageRangePages)[number]
-  ) => {
+  return allPages.map((page) => {
     const base = {
       id: page.id,
       fileId: page.fileId,
@@ -321,9 +349,7 @@ export async function retrieveRandomChunks({
       return { ...base, pageContent: page.content as string };
     }
     return base;
-  };
-
-  return [...randomPages.map(mapPage), ...randomPageRangePages.map(mapPage)];
+  });
 }
 
 export async function getFilePages({ fileId }: { fileId: string }) {

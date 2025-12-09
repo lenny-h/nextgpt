@@ -16,6 +16,9 @@ export const practiceFilterSchema = z
           id: uuidSchema,
         })
       )
+      .min(1, {
+        message: "You must select at least one course",
+      })
       .max(5, {
         message: "You can only select up to 5 courses",
       }),
