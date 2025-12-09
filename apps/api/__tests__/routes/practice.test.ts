@@ -8,7 +8,12 @@ import {
   getAuthHeaders,
   signInTestUser,
 } from "../helpers/auth-helpers.js";
-import { createTestBucket, deleteTestBucket } from "../helpers/db-helpers.js";
+import {
+  createTestBucket,
+  createTestCourse,
+  deleteTestBucket,
+  deleteTestCourse,
+} from "../helpers/db-helpers.js";
 import { generateTestUUID } from "../helpers/test-utils.js";
 
 // Mock the getModel function from providers
@@ -42,6 +47,7 @@ describe("Protected API Routes - Practice (Streaming)", () => {
   const client = testClient<ApiAppType>(app);
   let user1Cookie: string;
   let bucketId: string;
+  let courseId: string;
 
   beforeAll(async () => {
     user1Cookie = await signInTestUser(
@@ -50,9 +56,13 @@ describe("Protected API Routes - Practice (Streaming)", () => {
     );
 
     bucketId = await createTestBucket(TEST_USERS.USER1_VERIFIED.id);
+    courseId = await createTestCourse(TEST_USERS.USER1_VERIFIED.id, bucketId);
   });
 
   afterAll(async () => {
+    if (courseId) {
+      await deleteTestCourse(courseId);
+    }
     if (bucketId) {
       await deleteTestBucket(bucketId);
     }
@@ -75,7 +85,7 @@ describe("Protected API Routes - Practice (Streaming)", () => {
             metadata: {
               filter: {
                 bucket: { id: bucketId },
-                courses: [],
+                courses: [{ id: courseId }],
                 files: [],
                 studyMode: "multipleChoice",
               },
@@ -130,7 +140,7 @@ describe("Protected API Routes - Practice (Streaming)", () => {
             metadata: {
               filter: {
                 bucket: { id: bucketId },
-                courses: [],
+                courses: [{ id: courseId }],
                 files: [],
                 studyMode: "concepts",
               },
@@ -168,7 +178,7 @@ describe("Protected API Routes - Practice (Streaming)", () => {
             metadata: {
               filter: {
                 bucket: { id: bucketId },
-                courses: [],
+                courses: [{ id: courseId }],
                 files: [],
                 studyMode: "facts",
               },
@@ -206,7 +216,7 @@ describe("Protected API Routes - Practice (Streaming)", () => {
             metadata: {
               filter: {
                 bucket: { id: bucketId },
-                courses: [],
+                courses: [{ id: courseId }],
                 files: [],
                 studyMode: "concepts",
               },
