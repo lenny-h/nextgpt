@@ -65,6 +65,9 @@ export abstract class ChatHandler {
       await getChatById({ id: this.request.id });
     } catch (error) {
       const title = await this.generateChatTitle();
+
+      logger.debug("Generated chat title", { chatId: this.request.id, title });
+
       createdChat = await saveChat({
         id: this.request.id,
         userId: this.request.user.id,

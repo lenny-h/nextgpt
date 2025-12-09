@@ -106,6 +106,7 @@ export class StandardChatHandler extends ChatHandler {
 
     logger.debug("Generating chat title with model", {
       chatId: this.request.id,
+      message: this.request.lastMessage,
       model: config.model.toString(),
     });
 

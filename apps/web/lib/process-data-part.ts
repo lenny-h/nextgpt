@@ -54,6 +54,8 @@ export const processDataPart = async ({
 }) => {
   switch (dataPart.type) {
     case "data-chat":
+      console.log("Chat event received: ", dataPart);
+
       queryClient.invalidateQueries({ queryKey: ["chats"] });
       queryClient.invalidateQueries({ queryKey: ["chatTitle", chatId] });
       break;
