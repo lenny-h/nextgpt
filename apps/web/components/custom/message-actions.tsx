@@ -1,3 +1,5 @@
+import { useChatModel } from "@/contexts/selected-chat-model";
+import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -55,6 +57,10 @@ export const MessageActions = memo(
     const router = useRouter();
     const { panelRef, textEditorRef } = useRefs();
     const [, setEditorMode] = useEditor();
+
+    const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
+      useChatModel();
+    const [isTemporary] = useIsTemporary();
 
     const [, copyToClipboard] = useCopyToClipboard();
 
@@ -169,6 +175,13 @@ export const MessageActions = memo(
 
                     await regenerate({
                       messageId,
+                      body: {
+                        modelIdx: selectedChatModel.id,
+                        isTemp: isTemporary,
+                        reasoning:
+                          selectedChatModel.reasoning && reasoningEnabled,
+                        webSearch: webSearchEnabled,
+                      },
                     });
                   } catch (error) {
                     console.error("Error during retry:", error);

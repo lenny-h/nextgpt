@@ -114,15 +114,25 @@ const PureMultimodalInput = ({
     [input, setInput, setLocalStorageInput],
   );
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+
     setIsDragging(false);
   };
 
@@ -210,6 +220,7 @@ const PureMultimodalInput = ({
           ? "bg-foreground/85 text-background"
           : "bg-background text-foreground",
       )}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}

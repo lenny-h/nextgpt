@@ -25,7 +25,11 @@ export const getModel = async (
         openai: {
           parallelToolCalls: false,
           store: false,
-          ...(reasoningEnabled ? { reasoningSummary: "detailed" } : {}),
+          ...(reasoningEnabled
+            ? { reasoningEffort: "medium", reasoningSummary: "auto" }
+            : {
+                reasoningEffort: "none",
+              }),
         },
       },
     };

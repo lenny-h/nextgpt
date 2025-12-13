@@ -1,3 +1,5 @@
+import { useChatModel } from "@/contexts/selected-chat-model";
+import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -37,6 +39,10 @@ const PureMessageEditor = ({
   regenerate,
 }: MessageEditorProps) => {
   const { sharedT } = useSharedTranslations();
+
+  const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
+    useChatModel();
+  const [isTemporary] = useIsTemporary();
 
   const textParts = message.parts.filter((part) => part.type === "text");
   const fileParts = message.parts.filter((part) => part.type === "file");
@@ -81,6 +87,12 @@ const PureMessageEditor = ({
 
       await regenerate({
         messageId: message.id,
+        body: {
+          modelIdx: selectedChatModel.id,
+          isTemp: isTemporary,
+          reasoning: selectedChatModel.reasoning && reasoningEnabled,
+          webSearch: webSearchEnabled,
+        },
       });
     } catch (error) {
       setIsSubmitting(false);

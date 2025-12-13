@@ -85,6 +85,9 @@ export class ChatRequest {
 
     const parsed = schema.safeParse(payload);
     if (!parsed.success) {
+      logger.warn("ChatRequest payload validation failed", {
+        error: z.treeifyError(parsed.error),
+      });
       throw new HTTPException(400, { message: "BAD_REQUEST" });
     }
 

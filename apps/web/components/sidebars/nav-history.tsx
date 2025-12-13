@@ -344,7 +344,7 @@ export const NavHistory = memo(() => {
                 onFavorite={handleRemove}
                 onFork={handleFork}
                 onRename={handleRename}
-                onDelete={handleRemove}
+                onDelete={handleDelete}
                 isMobile={isMobile}
                 setOpenMobile={setOpenMobile}
               />
