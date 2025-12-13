@@ -29,7 +29,7 @@ resource "google_cloud_run_v2_service" "api" {
       # Non-sensitive environment variables
       env {
         name  = "NODE_ENV"
-        value = "production"
+        value = "development"
       }
       env {
         name  = "BETTER_AUTH_URL"
