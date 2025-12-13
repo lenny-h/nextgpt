@@ -1,6 +1,7 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
 import { useWebTranslations } from "@/contexts/web-translations";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -53,6 +54,8 @@ export const MessageActions = memo(
   }: MessageActionsProps) => {
     const { locale, sharedT } = useSharedTranslations();
     const { webT } = useWebTranslations();
+
+    const queryClient = useQueryClient();
 
     const router = useRouter();
     const { panelRef, textEditorRef } = useRefs();
@@ -109,6 +112,8 @@ export const MessageActions = memo(
         {
           loading: webT.navHistory.forkingChat,
           success: (data) => {
+            // Invalidate the chats cache to show the new forked chat
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
             router.push(`/${locale}/chat/${data.id}`);
             return webT.navHistory.chatForked;
           },

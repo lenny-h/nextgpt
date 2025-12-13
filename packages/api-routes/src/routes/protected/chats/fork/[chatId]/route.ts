@@ -7,7 +7,7 @@ import {
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { db } from "@workspace/server/drizzle/db.js";
 import { chats, messages } from "@workspace/server/drizzle/schema.js";
-import { and, desc, eq, lte } from "drizzle-orm";
+import { and, desc, eq, lte, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -55,19 +55,9 @@ const app = new Hono().post(
     // Get messages to copy (fetch only what we need using LIMIT)
     let messagesToCopy;
     if (messageId) {
-      // Get the timestamp of the specified message
-      const targetMessage = await db
-        .select({ createdAt: messages.createdAt })
-        .from(messages)
-        .where(eq(messages.id, messageId))
-        .limit(1);
-
-      if (targetMessage.length === 0) {
-        throw new HTTPException(404, { message: "MESSAGE_NOT_FOUND" });
-      }
-
       // Get the last MAX_FORKED_MESSAGES messages up to and including the target message
       // Order by DESC to get the most recent ones, then reverse for chronological order
+      // We use a subquery for the timestamp to avoid precision loss with Js Date
       const recentMessages = await db
         .select({
           role: messages.role,
@@ -78,7 +68,10 @@ const app = new Hono().post(
         .where(
           and(
             eq(messages.chatId, chatId),
-            lte(messages.createdAt, targetMessage[0].createdAt)
+            lte(
+              messages.createdAt,
+              sql`(select ${messages.createdAt} from ${messages} where ${messages.id} = ${messageId})`
+            )
           )
         )
         .orderBy(desc(messages.createdAt))
@@ -118,12 +111,14 @@ const app = new Hono().post(
 
     // Copy messages to new chat
     if (messagesToCopy.length > 0) {
+      const baseCreatedAt = new Date();
       await db.insert(messages).values(
-        messagesToCopy.map((msg) => ({
+        messagesToCopy.map((msg, index) => ({
           chatId: newChat.id,
           role: msg.role,
           parts: msg.parts,
           metadata: msg.metadata,
+          createdAt: new Date(baseCreatedAt.getTime() + index * 10), // Ensure order
         }))
       );
     }

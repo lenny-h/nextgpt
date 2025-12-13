@@ -203,10 +203,7 @@ export const NavHistory = memo(() => {
       success: (data) => {
         // Invalidate the chats cache to show the new forked chat
         queryClient.invalidateQueries({ queryKey: ["chats"] });
-
-        // Navigate to the new forked chat
         router.push(`/${locale}/chat/${data.id}`);
-
         return webT.navHistory.chatForked;
       },
       error: webT.navHistory.failedToForkChat,
