@@ -106,7 +106,7 @@ export const EditorFooter = memo(() => {
         <Button
           disabled={status !== "ready" || filter.files.length === 0}
           onClick={() => {
-            submitForm("START");
+            submitForm("Start");
           }}
           variant="outline"
         >

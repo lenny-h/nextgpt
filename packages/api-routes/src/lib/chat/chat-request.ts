@@ -184,12 +184,8 @@ export class ChatRequest {
       filterCourseIds: this.filter.courses.map((c) => c.id),
       filterFileIds: this.filter.files.map((f) => f.id),
       filterAttachments: this.attachments,
-      filterDocumentIds:
-        "documents" in this.filter
-          ? this.filter.documents.map((d) => d.id)
-          : [],
-      filterPromptIds:
-        "prompts" in this.filter ? this.filter.prompts.map((p) => p.id) : [],
+      filterDocumentIds: this.filter.documents.map((d) => d.id),
+      filterPromptIds: this.filter.prompts.map((p) => p.id),
     });
 
     if (!hasPermission) {

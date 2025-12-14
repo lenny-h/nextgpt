@@ -11,7 +11,6 @@ import {
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { type ToolOutput } from "../../types/tool-output.js";
-import { getPromptsByIds } from "../db/queries/prompts.js";
 import { STANDARD_SYSTEM_PROMPT } from "../prompts.js";
 import { getModel } from "../providers.js";
 import { createDocumentTool } from "../tools/create-document.js";
@@ -26,7 +25,7 @@ import { ChatRequest } from "./chat-request.js";
 const logger = createLogger("standard-chat-handler");
 
 export class StandardChatHandler extends ChatHandler {
-  private systemPrompt: string = STANDARD_SYSTEM_PROMPT;
+  private systemPrompt = STANDARD_SYSTEM_PROMPT;
   private document?: CustomDocument;
   private fullToolContent = new Map<string, ToolOutput>();
 
@@ -39,62 +38,7 @@ export class StandardChatHandler extends ChatHandler {
   }
 
   private async buildSystemPrompt(): Promise<string> {
-    let finalPrompt = this.systemPrompt;
-
-    // Add current date and time information
-    const currentDate = new Date();
-    const dateString = currentDate.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-    const timeString = currentDate.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZoneName: "short",
-    });
-
-    finalPrompt += `\n\n## Current Context\n\n`;
-    finalPrompt += `Today's date is ${dateString} at ${timeString}.\n`;
-
-    // Add user location if available
-    if (this.request.timezone) {
-      finalPrompt += `The user is in the timezone: ${this.request.timezone}.\n`;
-    }
-
-    // Check if the filter has prompts
-    if (
-      "prompts" in this.request.filter &&
-      this.request.filter.prompts.length > 0
-    ) {
-      const promptIds = this.request.filter.prompts.map((p) => p.id);
-
-      logger.debug("Fetching custom prompts", {
-        chatId: this.request.id,
-        promptCount: promptIds.length,
-      });
-
-      const userPrompts = await getPromptsByIds(promptIds);
-
-      if (userPrompts.length > 0) {
-        // Create a map to preserve the order from the filter
-        const promptMap = new Map(userPrompts.map((p) => [p.id, p.content]));
-
-        // Build the custom instructions section in the order provided by the user
-        const orderedPrompts = promptIds.map((id) => promptMap.get(id));
-
-        if (orderedPrompts.length > 0) {
-          finalPrompt += "\n\n## Custom Instructions\n\n";
-          finalPrompt +=
-            "The user has provided the following custom instructions. Please follow them carefully:\n\n";
-
-          orderedPrompts.forEach((content, index) => {
-            finalPrompt += `### Instruction ${index + 1}\n${content}\n\n`;
-          });
-        }
-      }
-    }
+    const finalPrompt = await this.buildBaseSystemPrompt(this.systemPrompt);
 
     logger.info("Final system prompt:\n\n", finalPrompt);
 

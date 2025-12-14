@@ -5,10 +5,7 @@ import { uuidSchema } from "./uuid-schema.js";
 export const practiceFilterSchema = z
   .object({
     bucket: z.object({
-      id: z.uuid({
-        version: "v4",
-        message: "Bucket ID must be a valid UUID",
-      }),
+      id: uuidSchema,
     }),
     courses: z
       .array(
@@ -16,9 +13,6 @@ export const practiceFilterSchema = z
           id: uuidSchema,
         })
       )
-      .min(1, {
-        message: "You must select at least one course",
-      })
       .max(5, {
         message: "You can only select up to 5 courses",
       }),
@@ -38,6 +32,20 @@ export const practiceFilterSchema = z
       .max(3, {
         message: "You can only select up to 3 files",
       }),
+    documents: z
+      .array(
+        z.object({
+          id: uuidSchema,
+        })
+      )
+      .max(1, {
+        message: "You can only select up to 1 document",
+      }),
+    prompts: z.array(
+      z.object({
+        id: uuidSchema,
+      })
+    ),
     studyMode: studyModeSchema,
   })
   .strict();

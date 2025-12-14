@@ -61,9 +61,7 @@ export function getMessagesAfterLastStart(messages: Array<MyUIMessage>) {
     : messages;
 }
 
-export async function getMessageCountAfterLastStart(
-  messages: Array<MyUIMessage>,
-) {
+export function getMessageCountAfterLastStart(messages: Array<MyUIMessage>) {
   const lastStartIndex = getLastStartIndex(messages);
 
   if (lastStartIndex !== undefined) {

@@ -79,9 +79,9 @@ describe("Protected API Routes - Practice (Streaming)", () => {
           message: {
             id: messageId,
             role: "user",
-            content: "START",
+            content: "Start",
             createdAt: new Date(),
-            parts: [{ type: "text", text: "START" }],
+            parts: [{ type: "text", text: "Start" }],
             metadata: {
               filter: {
                 bucket: { id: bucketId },
@@ -134,9 +134,9 @@ describe("Protected API Routes - Practice (Streaming)", () => {
           message: {
             id: messageId,
             role: "user",
-            content: "START",
+            content: "Start",
             createdAt: new Date(),
-            parts: [{ type: "text", text: "START" }],
+            parts: [{ type: "text", text: "Start" }],
             metadata: {
               filter: {
                 bucket: { id: bucketId },
@@ -172,9 +172,9 @@ describe("Protected API Routes - Practice (Streaming)", () => {
           message: {
             id: messageId,
             role: "user",
-            content: "START",
+            content: "Start",
             createdAt: new Date(),
-            parts: [{ type: "text", text: "START" }],
+            parts: [{ type: "text", text: "Start" }],
             metadata: {
               filter: {
                 bucket: { id: bucketId },
@@ -265,9 +265,9 @@ describe("Protected API Routes - Practice (Streaming)", () => {
           message: {
             id: messageId,
             role: "user",
-            content: "START",
+            content: "Start",
             createdAt: new Date(),
-            parts: [{ type: "text", text: "START" }],
+            parts: [{ type: "text", text: "Start" }],
             metadata: {
               filter: {
                 bucket: { id: bucketId },

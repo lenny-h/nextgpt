@@ -148,7 +148,7 @@ export function Practice({
       {
         id: generateUUID(),
         role: "user",
-        parts: [{ type: "text", text: "START" }],
+        parts: [{ type: "text", text: "Start" }],
         metadata: {
           filter: stripFilter(filter, true, studyMode),
           isStartMessage: true,

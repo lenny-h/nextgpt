@@ -12,6 +12,8 @@ import {
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { getChatById, saveChat } from "../db/queries/chats.js";
 import { saveMessages } from "../db/queries/messages.js";
+import { getPromptsByIds } from "../db/queries/prompts.js";
+import { getDocument } from "../db/queries/documents.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatRequest } from "./chat-request.js";
 import { integrateAttachmentsIntoMessages } from "./process-attachments.js";
@@ -92,12 +94,15 @@ export abstract class ChatHandler {
   }: {
     systemPrompt: string;
   }): Promise<StreamTextInput> {
-    const modifiedMessages = await integrateAttachmentsIntoMessages(
+    const messagesWithAttachments = await integrateAttachmentsIntoMessages(
       this.request.messages,
       this.request.attachments
     );
+    const messagesWithContext = await this.integrateDocumentsIntoMessages(
+      messagesWithAttachments
+    );
 
-    let modelMessages = convertToModelMessages(modifiedMessages);
+    let modelMessages = convertToModelMessages(messagesWithContext);
 
     return {
       model: this.config.modelId,
@@ -121,6 +126,118 @@ export abstract class ChatHandler {
       chatId: this.request.id,
       newMessages: messages,
     });
+  }
+
+  protected async buildBaseSystemPrompt(
+    initialSystemPrompt: string
+  ): Promise<string> {
+    let finalPrompt = initialSystemPrompt;
+
+    // Add current date and time information
+    const currentDate = new Date();
+    const dateString = currentDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    const timeString = currentDate.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+
+    finalPrompt += `\n\n## Current Context\n\n`;
+    finalPrompt += `Today's date is ${dateString} at ${timeString}.\n`;
+
+    // Add user location if available
+    if (this.request.timezone) {
+      finalPrompt += `The user is in the timezone: ${this.request.timezone}.\n`;
+    }
+
+    // Check if the filter has prompts
+    if (
+      "prompts" in this.request.filter &&
+      this.request.filter.prompts &&
+      this.request.filter.prompts.length > 0
+    ) {
+      const promptIds = this.request.filter.prompts.map((p) => p.id);
+
+      logger.debug("Fetching custom prompts", {
+        chatId: this.request.id,
+        promptCount: promptIds.length,
+      });
+
+      const userPrompts = await getPromptsByIds(promptIds);
+
+      if (userPrompts.length > 0) {
+        // Create a map to preserve the order from the filter
+        const promptMap = new Map(userPrompts.map((p) => [p.id, p.content]));
+
+        // Build the custom instructions section in the order provided by the user
+        const orderedPrompts = promptIds.map((id) => promptMap.get(id));
+
+        if (orderedPrompts.length > 0) {
+          finalPrompt += "\n\n## Custom Instructions\n\n";
+          finalPrompt +=
+            "The user has provided the following custom instructions. Please follow them carefully:\n\n";
+
+          orderedPrompts.forEach((content, index) => {
+            finalPrompt += `### Instruction ${index + 1}\n${content}\n\n`;
+          });
+        }
+      }
+    }
+
+    return finalPrompt;
+  }
+
+  protected async integrateDocumentsIntoMessages(
+    messages: MyUIMessage[]
+  ): Promise<MyUIMessage[]> {
+    if (messages.length === 0) return messages;
+
+    // Check if the filter has documents (max 1 document allowed)
+    if (this.request.filter.documents.length > 0) {
+      const documentId = this.request.filter.documents[0].id;
+
+      logger.debug("Fetching document for context", {
+        chatId: this.request.id,
+        documentId,
+      });
+
+      try {
+        const document = await getDocument({ id: documentId });
+
+        let contextText = `\n\n## Document Content\n\n`;
+        contextText += `Title: ${document.title}\n`;
+        contextText += `Content:\n${document.content}\n\n`;
+
+        const newParts = [
+          ...this.request.lastMessage.parts,
+          {
+            type: "text",
+            text: contextText,
+          } as const,
+        ];
+
+        return [
+          ...messages.slice(0, -1),
+          {
+            ...this.request.lastMessage,
+            parts: newParts,
+          },
+        ];
+      } catch (error) {
+        logger.warn("Failed to fetch document for context", {
+          chatId: this.request.id,
+          documentId,
+          error,
+        });
+      }
+    }
+
+    return messages;
   }
 
   // Abstract methods to be implemented by subclasses

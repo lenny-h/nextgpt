@@ -9,7 +9,7 @@ import {
 import { type PracticeFilter } from "../../schemas/practice-filter-schema.js";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { type ToolOutput } from "../../types/tool-output.js";
-import { PRACTICE_SYSTEM_PROMPT } from "../prompts.js";
+import { getPracticeSystemPrompt } from "../prompts.js";
 import { createMultipleChoiceTool } from "../tools/create-multiple-choice.js";
 import { retrieveRandomDocumentSourcesTool } from "../tools/retrieve-random-sources.js";
 import { searchDocumentsTool } from "../tools/search-documents.js";
@@ -20,7 +20,6 @@ import { ChatRequest } from "./chat-request.js";
 const logger = createLogger("practice-chat-handler");
 
 export class PracticeChatHandler extends ChatHandler {
-  private systemPrompt: string = PRACTICE_SYSTEM_PROMPT;
   private fullToolContent = new Map<string, ToolOutput>();
 
   constructor(request: ChatRequest, config: ChatConfig) {
@@ -33,6 +32,16 @@ export class PracticeChatHandler extends ChatHandler {
 
   protected async generateChatTitle(): Promise<string> {
     return `Practice session: ${(this.request.filter as PracticeFilter).studyMode}`;
+  }
+
+  private async buildSystemPrompt(): Promise<string> {
+    const studyMode = (this.request.filter as PracticeFilter).studyMode;
+    const baseSystemPrompt = getPracticeSystemPrompt(studyMode);
+    const finalPrompt = await this.buildBaseSystemPrompt(baseSystemPrompt);
+
+    logger.info("Final system prompt:\n\n", finalPrompt);
+
+    return finalPrompt;
   }
 
   protected retrieveToolSet(): Record<string, Tool> {
@@ -60,8 +69,9 @@ export class PracticeChatHandler extends ChatHandler {
   protected async executeChat(
     writer: UIMessageStreamWriter<MyUIMessage>
   ): Promise<void> {
+    const systemPrompt = await this.buildSystemPrompt();
     const streamConfig = await this.createStreamTextConfig({
-      systemPrompt: this.systemPrompt,
+      systemPrompt,
     });
 
     const result = streamText({
@@ -91,19 +101,21 @@ export class PracticeChatHandler extends ChatHandler {
         );
 
         if (this.request.lastMessage.metadata?.isStartMessage) {
+          const isMultipleChoice =
+            (this.request.filter as PracticeFilter).studyMode ===
+            "multipleChoice";
+
           return {
             activeTools:
               stepNumber === 0
                 ? ["retrieveRandomDocumentSources"]
-                : stepNumber === 1 &&
-                    (this.request.filter as PracticeFilter).studyMode ===
-                      "multipleChoice"
+                : stepNumber === 1 && isMultipleChoice
                   ? ["createMultipleChoice"]
-                  : ["searchDocuments"],
+                  : [],
             toolChoice:
               stepNumber === 0
-                ? { type: "tool", toolName: "searchDocuments" }
-                : stepNumber === 1
+                ? { type: "tool", toolName: "retrieveRandomDocumentSources" }
+                : stepNumber === 1 && isMultipleChoice
                   ? { type: "tool", toolName: "createMultipleChoice" }
                   : "none",
           };
