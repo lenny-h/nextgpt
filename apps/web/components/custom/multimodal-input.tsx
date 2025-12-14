@@ -256,7 +256,7 @@ const PureMultimodalInput = ({
         </div>
       )}
 
-      {!isPractice && <ContextFiles />}
+      <ContextFiles />
 
       <Textarea
         textareaRef={textareaRef}

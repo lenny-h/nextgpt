@@ -31,7 +31,7 @@ export class PracticeChatHandler extends ChatHandler {
   }
 
   protected async generateChatTitle(): Promise<string> {
-    return `Practice session: ${(this.request.filter as PracticeFilter).studyMode}`;
+    return `Practice Session: ${(this.request.filter as PracticeFilter).studyMode}`;
   }
 
   private async buildSystemPrompt(): Promise<string> {

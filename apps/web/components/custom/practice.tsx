@@ -193,7 +193,7 @@ export function Practice({
         {messages.length > 0 && (
           <Button
             disabled={status !== "ready" || filter.files.length === 0}
-            className="mx-auto mb-3 md:mb-4"
+            className="mx-auto my-3 md:my-4"
             onClick={() => {
               submitForm();
             }}
@@ -212,6 +212,7 @@ export function Practice({
               setInput={setInput}
               status={status}
               stop={stop}
+              isPractice
             />
           </form>
         )}
