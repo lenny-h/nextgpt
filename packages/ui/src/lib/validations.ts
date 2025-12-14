@@ -163,9 +163,9 @@ export const filenameSchema = z
   .max(64, {
     message: "Filename must be less than 64 characters.",
   })
-  .regex(/^[a-zA-Z0-9_-\s.]+$/, {
+  .regex(/^[a-zA-Z0-9_-\s.:]+$/, {
     message:
-      "Filename can only contain letters, numbers, underscores, hyphens, whitespaces and periods.",
+      "Filename can only contain letters, numbers, underscores, hyphens, whitespaces, periods and colons.",
   });
 
 export type Title = z.infer<typeof filenameSchema>;
