@@ -33,7 +33,6 @@ interface UserMessageProps {
       messageId?: string | undefined;
     } & ChatRequestOptions,
   ) => Promise<void>;
-  isPractice?: boolean;
 }
 
 function PureUserMessage({
@@ -41,14 +40,13 @@ function PureUserMessage({
   message,
   setMessages,
   regenerate,
-  isPractice,
 }: UserMessageProps) {
   const { webT } = useWebTranslations();
 
   const [_, copyToClipboard] = useCopyToClipboard();
   const [mode, setMode] = useState<"view" | "edit">("view");
 
-  if (isPractice && message.metadata?.isStartMessage) {
+  if (message.metadata?.isStartMessage) {
     return null;
   }
 
@@ -61,7 +59,7 @@ function PureUserMessage({
   return (
     <LazyMotion features={loadFeatures}>
       <m.article
-        className="mx-auto w-full max-w-[735px]"
+        className="mx-auto w-full max-w-183.75"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
@@ -133,7 +131,6 @@ function PureUserMessage({
 export const UserMessage = memo(PureUserMessage, (prevProps, nextProps) => {
   if (prevProps.chatId !== nextProps.chatId) return false;
   if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
-  if (prevProps.isPractice !== nextProps.isPractice) return false;
 
   return true;
 });

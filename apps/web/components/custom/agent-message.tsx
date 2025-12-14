@@ -75,7 +75,7 @@ const PureAgentMessage = ({
   return (
     <LazyMotion features={loadFeatures}>
       <m.article
-        className="mx-auto w-full max-w-[735px]"
+        className="mx-auto w-full max-w-183.75"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: { delay: 0.3 } }}
         data-role={message.role}
