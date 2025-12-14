@@ -41,11 +41,16 @@ function PureUserMessage({
   message,
   setMessages,
   regenerate,
+  isPractice,
 }: UserMessageProps) {
   const { webT } = useWebTranslations();
 
   const [_, copyToClipboard] = useCopyToClipboard();
   const [mode, setMode] = useState<"view" | "edit">("view");
+
+  if (isPractice && message.metadata?.isStartMessage) {
+    return null;
+  }
 
   // Extract text parts from the message
   const textParts = message.parts.filter((part) => part.type === "text");
@@ -105,7 +110,7 @@ function PureUserMessage({
                     {webT.messageActions.editMessage}
                   </TooltipContent>
                 </Tooltip>
-                <div className="bg-muted max-w-3/4 w-fit whitespace-pre-wrap rounded-2xl px-4 py-2">
+                <div className="bg-muted w-fit max-w-3/4 rounded-2xl px-4 py-2 whitespace-pre-wrap">
                   {textContent}
                 </div>
               </>

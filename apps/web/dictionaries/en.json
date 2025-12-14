@@ -161,6 +161,7 @@
   "pageRange": {
     "invalid": "Enter page ranges like: 1,3-5,7 and ensure pages are between 1 and {pageCount}",
     "placeholder": "e.g., 1,3-5,7",
+    "placeholderWithMax": "e.g., 1,3-5,7 (Max: {pageCount})",
     "pagesPrefix": "Pages:",
     "onlyForPdf": "Page range selection is only available for PDF files.",
     "set": "Set"

@@ -115,7 +115,14 @@ export const PageRangeForm = memo(
                 <FormItem className="flex-1">
                   <FormControl>
                     <Input
-                      placeholder={webT.pageRange.placeholder}
+                      placeholder={
+                        pageCount !== null
+                          ? webT.pageRange.placeholderWithMax.replace(
+                              "{pageCount}",
+                              pageCount.toString(),
+                            )
+                          : webT.pageRange.placeholder
+                      }
                       {...field}
                     />
                   </FormControl>
