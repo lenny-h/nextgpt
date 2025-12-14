@@ -556,6 +556,6 @@ You can adjust PostgreSQL settings in the `docker-compose.yml` file under the `p
 - This setup is intended for development and testing only
 - Make sure to update all default passwords and secrets before any shared usage
 - The `USE_LOCAL_TASKS_CLIENT` flag determines whether to use a local tasks client or a cloud-based tasks client. If using cloud-based, the corresponding infrastructure must be set up.
-- The `USE_LOCAL_FILE_STORAGE` flag determines whether to use MinIO (true) or cloud storage (false)
-- If using cloud storage, the `USE_CLOUDFLRARE_R2` flag determines whether Cloudflare R2 or the configured cloud storage is used
-- The `USE_OPENAI_API` flag determines whether to use OpenAI's API. If false, the api from the configured cloud provider is used.
+- The `USE_LOCAL_FILE_STORAGE` flag determines whether to use MinIO (true) or cloud storage (false).
+- If using cloud storage, the `USE_CLOUDFLRARE_R2` flag determines whether Cloudflare R2 or the storage solution of the configured cloud provider is used. In any case, the corresponding infrastructure must be set up.
+- The `USE_OPENAI_API` flag determines whether OpenAI's api or the llm endpoints of the configured cloud provider are used.

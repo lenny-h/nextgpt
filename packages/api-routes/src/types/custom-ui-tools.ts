@@ -43,6 +43,10 @@ export type MyUITools = {
       kind: ArtifactKind;
     };
   };
+  retrieveRandomDocumentSources: {
+    input: Record<string, never>;
+    output: { docSources: DocumentSource[] };
+  };
   createMultipleChoice: {
     input: {
       question: string;
