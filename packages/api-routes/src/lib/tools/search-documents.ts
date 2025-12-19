@@ -23,7 +23,7 @@ export const searchDocumentsTool = ({
 }): Tool =>
   tool({
     description:
-      "Retrieves document sources based on keywords and questions. Only use this if the user query requires specific document context.",
+      "Retrieves document sources based on keywords and questions. Only use this if the user query requires specific document context. If the user query does not include specific page numbers, leave the pageNumbers array empty. In your response, only refer to the documents that are relevant to the user's query.",
     inputSchema: z.object({
       keywords: z.array(z.string()),
       questions: z.array(z.string()),
