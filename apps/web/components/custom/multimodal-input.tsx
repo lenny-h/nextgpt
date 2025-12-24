@@ -23,7 +23,7 @@ import { useWebTranslations } from "@/contexts/web-translations";
 import { useDocumentHandler } from "@/hooks/use-document-handler";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { stripFilter } from "@/lib/utils";
-import { Attachment } from "@workspace/api-routes/schemas/attachment-schema";
+import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { cn, generateUUID } from "@workspace/ui/lib/utils";

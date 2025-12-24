@@ -1,4 +1,7 @@
-import { COMPLETION_SYSTEM_PROMPT } from "@workspace/api-routes/lib/prompts.js";
+import {
+  COMPLETION_SYSTEM_PROMPT,
+  WORD_COMPLETION_CHECK_PROMPT,
+} from "@workspace/api-routes/lib/prompts.js";
 import { getModel } from "@workspace/api-routes/lib/providers.js";
 import { completionModelIdx } from "@workspace/api-routes/utils/models.js";
 import { generateText } from "ai";
@@ -21,14 +24,35 @@ const app = new Hono().post(
 
     const config = await getModel(completionModelIdx);
 
-    const { text } = await generateText({
-      system: COMPLETION_SYSTEM_PROMPT,
-      model: config.model,
-      messages: [{ role: "user", content: context }],
-      maxOutputTokens: 64,
-    });
+    // Make two parallel requests: one for completion, one to check if last word is complete
+    const [completionResult, wordCheckResult] = await Promise.all([
+      generateText({
+        system: COMPLETION_SYSTEM_PROMPT,
+        model: config.model,
+        messages: [{ role: "user", content: context }],
+        maxOutputTokens: 64,
+      }),
+      generateText({
+        system: WORD_COMPLETION_CHECK_PROMPT,
+        model: config.model,
+        messages: [{ role: "user", content: context.slice(-64) }],
+        maxOutputTokens: 64,
+      }),
+    ]);
 
-    return c.json({ completion: text });
+    const completionText = completionResult.text;
+    const isComplete = wordCheckResult.text.toLowerCase().trim() === "complete";
+
+    // If context ends with a complete word (not whitespace) and doesn't already have trailing space,
+    // add a space before the completion
+    const needsLeadingSpace =
+      isComplete && !/\s$/.test(context) && !/^\s/.test(completionText);
+
+    const completion = needsLeadingSpace
+      ? ` ${completionText}`
+      : completionText;
+
+    return c.json({ completion });
   }
 );
 

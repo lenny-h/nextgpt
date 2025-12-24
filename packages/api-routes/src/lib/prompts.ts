@@ -5,7 +5,10 @@ export const STANDARD_SYSTEM_PROMPT: string = `Give concise and helpful response
   `;
 
 export const COMPLETION_SYSTEM_PROMPT: string =
-  "Use the context provided to predict the next 5 to 20 words. Your generation must not include the context itself, only the newly generated text that will be appended to the context. Make sure to append a whitespace character at the beginning if the context does not end with a whitespace character and you start with a new word.";
+  "You are an autocomplete assistant. Use the context provided to predict the next 5 to 20 words. Your generation must not include the context itself, only the newly generated text that will be appended to the context.";
+
+export const WORD_COMPLETION_CHECK_PROMPT: string =
+  "Analyze the provided text and determine if the last word is complete or incomplete. A word is considered incomplete if it appears to be cut off mid-word (e.g., 'hel' instead of 'hello', 'wor' instead of 'world'). Respond with ONLY 'complete' or 'incomplete', nothing else.";
 
 // Practice
 
