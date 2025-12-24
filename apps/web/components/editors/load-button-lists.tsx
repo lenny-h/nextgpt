@@ -9,7 +9,7 @@ import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
-import { FilterableList, ListItem } from "../custom/filterable-list";
+import { FilterableList, type ListItem } from "../custom/filterable-list";
 
 interface Props {
   open: boolean;

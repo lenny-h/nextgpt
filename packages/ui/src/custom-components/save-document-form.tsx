@@ -54,34 +54,36 @@ export const SaveDocumentForm = memo(
     });
 
     const onSubmit = async (values: TitleFormData) => {
-      let payload;
+      let content, payload;
       if (editorMode === "text" && textEditorRef.current) {
+        content = mathMarkdownSerializer.serialize(
+          textEditorRef.current.state.doc
+        );
         payload = {
           title: values.title,
-          content: mathMarkdownSerializer.serialize(
-            textEditorRef.current.state.doc
-          ),
+          content,
           kind: "text" as const,
         };
       } else if (editorMode === "code" && codeEditorRef.current) {
+        content = codeEditorRef.current.state.doc.toString();
         payload = {
           title: values.title,
-          content: codeEditorRef.current.state.doc.toString(),
+          content,
           kind: "code" as const,
         };
       } else {
         return;
       }
 
-      await apiFetcher(
+      const result = await apiFetcher(
         (client) => client.documents.$post({ json: payload }),
         sharedT.apiCodes
       );
 
       setEditorContent({
-        id: editorContent.id,
+        id: result.id,
         title: values.title,
-        content: editorContent.content,
+        content,
       });
       onClose();
 
@@ -99,10 +101,7 @@ export const SaveDocumentForm = memo(
             toast.promise(onSubmit(values), {
               loading: sharedT.saveDocumentForm.saving,
               success: sharedT.saveDocumentForm.saved,
-              error: (error) =>
-                error.message ||
-                sharedT.saveDocumentForm.error ||
-                "Failed to save document. Please try again later.",
+              error: (error) => error.message || sharedT.saveDocumentForm.error,
             });
           })}
         >

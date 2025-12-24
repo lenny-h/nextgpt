@@ -84,7 +84,7 @@ export function DatePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-[280px] justify-start text-left font-normal",
+            "w-70 justify-start text-left font-normal",
             !selectedDate && "text-muted-foreground"
           )}
           disabled={disabled}
@@ -108,7 +108,7 @@ export function DatePicker({
             }}
           />
           {selectedDate && (
-            <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
+            <div className="flex flex-col sm:flex-row sm:h-75 divide-y sm:divide-y-0 sm:divide-x">
               <div className="w-64 sm:w-auto overflow-x-scroll scrollbar-hidden">
                 <div className="flex sm:flex-col p-2">
                   {Array.from({ length: 24 }, (_, i) => i)

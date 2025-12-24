@@ -1,5 +1,6 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { useIsTemporary } from "@/contexts/temporary-chat-context";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { type MyUIMessage } from "@workspace/api-routes/types/custom-ui-message";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -39,6 +40,7 @@ const PureMessageEditor = ({
   regenerate,
 }: MessageEditorProps) => {
   const { sharedT } = useSharedTranslations();
+  const { webT } = useWebTranslations();
 
   const { selectedChatModel, reasoningEnabled, webSearchEnabled } =
     useChatModel();
@@ -98,7 +100,7 @@ const PureMessageEditor = ({
       setIsSubmitting(false);
       setMode("view");
 
-      toast.error("Failed to update message");
+      toast.error(webT.messageEditor.failedToUpdate);
     }
   };
 
@@ -116,7 +118,7 @@ const PureMessageEditor = ({
             <X />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Cancel</TooltipContent>
+        <TooltipContent>{webT.messageEditor.cancel}</TooltipContent>
       </Tooltip>
       <div className="border-primary flex w-3/4 space-x-2 rounded-xl border px-3 py-2">
         <TextareaAutosize

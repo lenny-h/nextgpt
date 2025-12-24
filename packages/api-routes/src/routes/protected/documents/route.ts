@@ -63,14 +63,16 @@ const app = new Hono()
       const { title, content, kind } = c.req.valid("json");
       const user = c.get("user");
 
-      await insertDocument({
+      const result = await insertDocument({
         userId: user.id,
         title,
         content,
         kind,
       });
 
-      return c.json({ message: "Document inserted" });
+      return c.json({
+        id: result[0].id,
+      });
     }
   );
 

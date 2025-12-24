@@ -21,7 +21,7 @@ export const ModelSelector = memo(() => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="min-w-0 flex-shrink rounded-lg">
+        <Button variant="ghost" className="min-w-0 shrink rounded-lg">
           <span className="truncate">{selectedChatModel.label}</span>
           <ChevronDownIcon
             className={cn(
@@ -31,7 +31,7 @@ export const ModelSelector = memo(() => {
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="top" className="min-w-[300px]">
+      <DropdownMenuContent align="start" side="top" className="min-w-75">
         {chatModels.map((chatModel) => {
           return (
             <DropdownMenuItem

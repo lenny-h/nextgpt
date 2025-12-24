@@ -63,6 +63,12 @@
     "title": "Documents",
     "searchPlaceholder": "Search documents..."
   },
+  "editorDropdownMenu": {
+    "delete": "Delete",
+    "rename": "Rename",
+    "new": "New",
+    "autocomplete": "Autocomplete"
+  },
   "editorHeader": {
     "diffView": "Diff view",
     "accept": "Accept",
@@ -115,6 +121,10 @@
     "retryFailed": "Failed to process retry operation. Please try again.",
     "failedRead": "Failed to read message",
     "editMessage": "Edit message"
+  },
+  "messageEditor": {
+    "cancel": "Cancel",
+    "failedToUpdate": "Failed to update message"
   },
   "multimodal": {
     "placeholder": "Ask a question...",

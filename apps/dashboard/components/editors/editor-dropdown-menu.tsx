@@ -1,3 +1,4 @@
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { useQueryClient } from "@tanstack/react-query";
 import { type CustomDocument } from "@workspace/server/drizzle/schema";
 import { Button } from "@workspace/ui/components/button";
@@ -18,8 +19,7 @@ import {
 } from "@workspace/ui/editors/rename-form";
 import { apiFetcher, removeFromInfiniteCache } from "@workspace/ui/lib/fetcher";
 import { FilePlus, MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { type RefObject, useState } from "react";
-import { type ImperativePanelHandle } from "react-resizable-panels";
+import { useState } from "react";
 
 interface EditorDropdownMenuProps {
   editorContent: {
@@ -32,15 +32,16 @@ interface EditorDropdownMenuProps {
     content: string;
     id?: string;
   }) => void;
-  panelRef: RefObject<ImperativePanelHandle | null>;
+  clearEditor: () => void;
 }
 
 export const EditorDropdownMenu = ({
   editorContent,
   setEditorContent,
-  panelRef,
+  clearEditor,
 }: EditorDropdownMenuProps) => {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const queryClient = useQueryClient();
 
@@ -72,7 +73,7 @@ export const EditorDropdownMenu = ({
     );
   };
 
-  const handleSuccess = (values: RenameFormData) => {
+  const handleRename = (values: RenameFormData) => {
     setEditorContent({
       ...editorContent,
       title: values.title,
@@ -112,11 +113,12 @@ export const EditorDropdownMenu = ({
       sharedT.apiCodes,
     );
 
-    panelRef.current?.collapse();
     setEditorContent({
+      id: undefined,
       title: "",
       content: "",
     });
+    clearEditor();
 
     setDeleteDialogOpen(false);
 
@@ -139,14 +141,14 @@ export const EditorDropdownMenu = ({
                 onClick={() => setDeleteDialogOpen(true)}
               >
                 <Trash2 className="mr-2 size-4" />
-                <span>Delete</span>
+                <span>{dashboardT.editorDropdownMenu.delete}</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => setRenameDialogOpen(true)}
               >
                 <Pencil className="mr-2 size-4" />
-                <span>Rename</span>
+                <span>{dashboardT.editorDropdownMenu.rename}</span>
               </DropdownMenuItem>
             </>
           )}
@@ -154,17 +156,19 @@ export const EditorDropdownMenu = ({
             className="cursor-pointer"
             onClick={() => {
               setEditorContent({
+                id: undefined,
                 title: "",
                 content: "",
               });
+              clearEditor();
             }}
           >
             <FilePlus className="mr-2 size-4" />
-            <span>New</span>
+            <span>{dashboardT.editorDropdownMenu.new}</span>
           </DropdownMenuItem>
           {editorMode === "text" && (
             <DropdownMenuItem className="flex cursor-pointer justify-between">
-              <span>Autocomplete</span>
+              <span>{dashboardT.editorDropdownMenu.autocomplete}</span>
               <Switch
                 className="cursor-pointer"
                 checked={
@@ -186,7 +190,7 @@ export const EditorDropdownMenu = ({
         renameDialogOpen={renameDialogOpen}
         setRenameDialogOpen={setRenameDialogOpen}
         onSubmit={onSubmit}
-        handleSuccess={handleSuccess}
+        handleSuccess={handleRename}
         defaultTitle={editorContent.title}
         type="document"
       />

@@ -194,7 +194,17 @@ export const EditorHeader = memo(() => {
         toast.error(webT.editorHeader.failedToGeneratePdf, { id: toastId });
       }
     }
-  }, [editorMode, textEditorRef, editorContent.title, webT]);
+  }, [editorMode, textEditorRef, editorContent.title]);
+
+  const clearEditor = useCallback(() => {
+    if (editorMode === "text") {
+      const { updateTextEditorWithDispatch } = require("@workspace/ui/editors/text-editor");
+      updateTextEditorWithDispatch(textEditorRef, "");
+    } else if (editorMode === "code") {
+      const { updateCodeEditorWithDispatch } = require("@workspace/ui/editors/utils");
+      updateCodeEditorWithDispatch(codeEditorRef, "");
+    }
+  }, [editorMode, textEditorRef, codeEditorRef]);
 
   return (
     <div className="bg-sidebar flex h-14 items-center gap-2 border-b px-3">
@@ -309,7 +319,7 @@ export const EditorHeader = memo(() => {
             <EditorDropdownMenu
               editorContent={editorContent}
               setEditorContent={setEditorContent}
-              panelRef={panelRef}
+              clearEditor={clearEditor}
             />
           </ButtonGroup>
         </>

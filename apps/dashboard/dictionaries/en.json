@@ -71,6 +71,26 @@
     "searchUsers": "Search users...",
     "errorProfiles": "Could not get profiles"
   },
+  "editorDropdownMenu": {
+    "delete": "Delete",
+    "rename": "Rename",
+    "new": "New",
+    "autocomplete": "Autocomplete"
+  },
+  "editorHeader": {
+    "markdown": "Markdown",
+    "latex": "Latex",
+    "save": "Save",
+    "saving": "Saving...",
+    "noContentToSave": "No content to save",
+    "failedToSave": "Failed to save document",
+    "setTitle": "Set title",
+    "saveDescription": "Saving this file will overwrite files with the same title. After saving, the document will be accessible under 'Documents'",
+    "generatingPdf": "Generating PDF...",
+    "downloadedAs": "Downloaded as {filename}",
+    "failedToGeneratePdf": "Failed to generate PDF",
+    "untitledDocument": "Untitled document"
+  },
   "buckets": {
     "loading": "Loading buckets...",
     "errorLoading": "There was an error loading the buckets. Please try again later.",

@@ -71,6 +71,26 @@
     "searchUsers": "Benutzer suchen...",
     "errorProfiles": "Benutzer konnten nicht abgerufen werden"
   },
+  "editorDropdownMenu": {
+    "delete": "Löschen",
+    "rename": "Umbenennen",
+    "new": "Neu",
+    "autocomplete": "Autovervollständigung"
+  },
+  "editorHeader": {
+    "markdown": "Markdown",
+    "latex": "Latex",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "noContentToSave": "Kein Inhalt zum Speichern",
+    "failedToSave": "Fehler beim Speichern des Dokuments",
+    "setTitle": "Titel festlegen",
+    "saveDescription": "Wenn Sie diese Datei speichern, werden Dateien mit demselben Titel überschrieben. Nach dem Speichern ist das Dokument unter 'Dokumente' zugänglich",
+    "generatingPdf": "PDF wird erstellt...",
+    "downloadedAs": "Heruntergeladen als {filename}",
+    "failedToGeneratePdf": "Fehler beim Erstellen des PDFs",
+    "untitledDocument": "Unbenanntes Dokument"
+  },
   "buckets": {
     "loading": "Buckets werden geladen...",
     "errorLoading": "Beim Laden der Buckets ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",

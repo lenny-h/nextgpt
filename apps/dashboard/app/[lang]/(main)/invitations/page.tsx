@@ -1,7 +1,7 @@
 "use client";
 
-import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { InvitationsTab } from "@/components/custom/invitations-tab";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import {
   Tabs,
   TabsContent,
@@ -18,7 +18,7 @@ export default function InvitationsPage() {
         {dashboardT.invitationsPage.title}
       </h1>
       <Tabs defaultValue="users" className="w-full max-w-4xl flex-1">
-        <TabsList className="mx-auto grid w-[300px] translate-y-1 grid-cols-3">
+        <TabsList className="mx-auto grid w-75 translate-y-1 grid-cols-3">
           <TabsTrigger value="users" className="cursor-pointer">
             {dashboardT.invitationsPage.users}
           </TabsTrigger>

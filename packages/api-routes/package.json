@@ -35,7 +35,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@turbo/gen": "^2.6.3",
+    "@turbo/gen": "^2.7.2",
     "@types/dockerode": "^3.3.47",
     "@types/node": "^24.10.1",
     "@types/papaparse": "^5.3.16",

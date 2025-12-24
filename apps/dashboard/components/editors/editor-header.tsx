@@ -1,4 +1,5 @@
 import { Button } from "@workspace/ui/components/button";
+import { useDashboardTranslations } from "@/contexts/dashboard-translations";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
 import {
   Dialog,
@@ -37,6 +38,7 @@ import { ModeSwitcher } from "./mode-switcher";
 
 export const EditorHeader = memo(() => {
   const { sharedT } = useSharedTranslations();
+  const { dashboardT } = useDashboardTranslations();
 
   const { panelRef, textEditorRef, codeEditorRef } = useRefs();
   const [editorMode] = useEditor();
@@ -78,7 +80,7 @@ export const EditorHeader = memo(() => {
           : codeEditorRef.current?.state.doc.toString();
 
       if (!content) {
-        toast.error("No content to save");
+        toast.error(dashboardT.editorHeader.noContentToSave);
         return;
       }
 
@@ -94,7 +96,7 @@ export const EditorHeader = memo(() => {
           sharedT.apiCodes,
         );
       } catch (error) {
-        toast.error("Failed to save document");
+        toast.error(dashboardT.editorHeader.failedToSave);
       } finally {
         setTimeout(() => setIsSaving(false), 600);
       }
@@ -139,7 +141,7 @@ export const EditorHeader = memo(() => {
 
   const handlePdfDownload = useCallback(async () => {
     if (editorMode === "text" && textEditorRef.current) {
-      const title = editorContent.title || "Untitled document";
+      const title = editorContent.title || dashboardT.editorHeader.untitledDocument;
       const filename = `${title.replace(/\s+/g, "_").toLowerCase()}.pdf`;
 
       const contentElement = document.createElement("div");
@@ -148,7 +150,7 @@ export const EditorHeader = memo(() => {
       ).serializeFragment(textEditorRef.current.state.doc.content);
       contentElement.appendChild(fragment);
 
-      const toastId = toast.loading("Generating PDF...");
+      const toastId = toast.loading(dashboardT.editorHeader.generatingPdf);
 
       try {
         const response = await fetch(
@@ -178,12 +180,25 @@ export const EditorHeader = memo(() => {
         a.remove();
         window.URL.revokeObjectURL(url);
 
-        toast.success(`Downloaded as ${filename}`, { id: toastId });
+        toast.success(
+          dashboardT.editorHeader.downloadedAs.replace("{filename}", filename),
+          { id: toastId },
+        );
       } catch (error) {
-        toast.error("Failed to generate PDF", { id: toastId });
+        toast.error(dashboardT.editorHeader.failedToGeneratePdf, { id: toastId });
       }
     }
   }, [editorMode, textEditorRef, editorContent.title]);
+
+  const clearEditor = useCallback(() => {
+    if (editorMode === "text") {
+      const { updateTextEditorWithDispatch } = require("@workspace/ui/editors/text-editor");
+      updateTextEditorWithDispatch(textEditorRef, "");
+    } else if (editorMode === "code") {
+      const { updateCodeEditorWithDispatch } = require("@workspace/ui/editors/utils");
+      updateCodeEditorWithDispatch(codeEditorRef, "");
+    }
+  }, [editorMode, textEditorRef, codeEditorRef]);
 
   return (
     <div className="bg-sidebar flex h-14 items-center gap-2 border-b px-3">
@@ -217,13 +232,13 @@ export const EditorHeader = memo(() => {
                   className="cursor-pointer"
                   onClick={() => handleCopy("markdown")}
                 >
-                  Markdown
+                  {dashboardT.editorHeader.markdown}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => handleCopy("latex")}
                 >
-                  Latex
+                  {dashboardT.editorHeader.latex}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -245,24 +260,22 @@ export const EditorHeader = memo(() => {
             onClick={() => saveDocument(editorContent.id)}
             variant="outline"
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? dashboardT.editorHeader.saving : dashboardT.editorHeader.save}
             <KeyboardShortcut keys={["⌘", "s"]} />
           </Button>
         ) : (
           <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
             <DialogTrigger asChild>
               <Button className="px-2" variant="outline">
-                Save
+                {dashboardT.editorHeader.save}
                 <KeyboardShortcut keys={["⌘", "s"]} />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Set title</DialogTitle>
+                <DialogTitle>{dashboardT.editorHeader.setTitle}</DialogTitle>
                 <DialogDescription>
-                  Saving this file will overwrite files with the same title.
-                  After saving, the document will be accessible under
-                  'Documents'
+                  {dashboardT.editorHeader.saveDescription}
                 </DialogDescription>
               </DialogHeader>
               <SaveDocumentForm
@@ -277,7 +290,7 @@ export const EditorHeader = memo(() => {
         <EditorDropdownMenu
           editorContent={editorContent}
           setEditorContent={setEditorContent}
-          panelRef={panelRef}
+          clearEditor={clearEditor}
         />
       </ButtonGroup>
     </div>

@@ -63,6 +63,12 @@
     "title": "Dokumente",
     "searchPlaceholder": "Dokumente suchen..."
   },
+  "editorDropdownMenu": {
+    "delete": "Löschen",
+    "rename": "Umbenennen",
+    "new": "Neu",
+    "autocomplete": "Autovervollständigung"
+  },
   "editorHeader": {
     "diffView": "Diff-Ansicht",
     "accept": "Akzeptieren",
@@ -115,6 +121,10 @@
     "retryFailed": "Wiederholungsaktion fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "failedRead": "Fehler beim Vorlesen der Nachricht",
     "editMessage": "Nachricht bearbeiten"
+  },
+  "messageEditor": {
+    "cancel": "Abbrechen",
+    "failedToUpdate": "Nachricht konnte nicht aktualisiert werden"
   },
   "multimodal": {
     "placeholder": "Fragen Sie etwas...",
