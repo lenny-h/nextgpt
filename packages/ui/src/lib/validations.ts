@@ -155,7 +155,7 @@ export const feedbackSchema = z.object({
 
 export type FeedbackFormData = z.infer<typeof feedbackSchema>;
 
-export const filenameSchema = z
+export const renameSchema = z
   .string()
   .min(3, {
     message: "Filename is required and must be at least 3 characters long.",
@@ -168,4 +168,4 @@ export const filenameSchema = z
       "Filename can only contain letters, numbers, underscores, hyphens, whitespaces, periods and colons.",
   });
 
-export type Title = z.infer<typeof filenameSchema>;
+export type Title = z.infer<typeof renameSchema>;

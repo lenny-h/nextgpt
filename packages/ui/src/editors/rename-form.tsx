@@ -23,10 +23,10 @@ import { useSharedTranslations } from "@workspace/ui/contexts/shared-translation
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { filenameSchema } from "../lib/validations";
+import { renameSchema } from "../lib/validations";
 
 const renameFormSchema = z.object({
-  title: filenameSchema,
+  title: renameSchema,
 });
 
 export type RenameFormData = z.infer<typeof renameFormSchema>;

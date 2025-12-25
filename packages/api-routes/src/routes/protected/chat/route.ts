@@ -6,7 +6,6 @@ import {
   getChatById,
   updateChatFavouriteStatus,
 } from "@workspace/api-routes/lib/db/queries/chats.js";
-import { booleanSchema } from "@workspace/api-routes/schemas/boolean-schema.js";
 import { uuidSchema } from "@workspace/api-routes/schemas/uuid-schema.js";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -15,7 +14,7 @@ import { validator } from "hono/validator";
 const patchQuerySchema = z
   .object({
     id: uuidSchema,
-    fav: booleanSchema,
+    fav: z.boolean(),
   })
   .strict();
 

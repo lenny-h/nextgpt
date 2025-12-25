@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const filenameSchema = z
+const filenameSchema = z
   .string()
   .min(3, {
     message: "Filename is required and must be at least 3 characters long.",

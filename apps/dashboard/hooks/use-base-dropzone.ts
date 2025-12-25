@@ -1,7 +1,7 @@
 import { type Upload } from "@/types/upload";
-import { filenameSchema } from "@workspace/api-routes/schemas/filename-schema";
 import { useSharedTranslations } from "@workspace/ui/contexts/shared-translations-context";
 import { generateUUID } from "@workspace/ui/lib/utils";
+import { renameSchema } from "@workspace/ui/lib/validations";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -37,7 +37,7 @@ export function useBaseDropzone({
         throw new Error("Filename must end with .pdf");
       }
       const nameWithoutExt = name.slice(0, -4);
-      filenameSchema.parse(nameWithoutExt);
+      renameSchema.parse(nameWithoutExt);
     } catch (error) {
       setUploads((prev) => ({
         ...prev,
@@ -61,7 +61,10 @@ export function useBaseDropzone({
     }));
 
     try {
-      const { signedUrl, extFilename, headers } = await getSignedUrl(file, name);
+      const { signedUrl, extFilename, headers } = await getSignedUrl(
+        file,
+        name,
+      );
       const renamedFile = new File([file], extFilename, { type: file.type });
 
       await new Promise((resolve, reject) => {

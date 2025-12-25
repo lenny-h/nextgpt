@@ -18,14 +18,14 @@ import { useSharedTranslations } from "@workspace/ui/contexts/shared-translation
 import { mathMarkdownSerializer } from "@workspace/ui/editors/prosemirror-math/utils/text-serializer";
 import { type EditorContent } from "@workspace/ui/editors/text-editor";
 import { apiFetcher } from "@workspace/ui/lib/fetcher";
-import { filenameSchema } from "@workspace/ui/lib/validations";
+import { renameSchema } from "@workspace/ui/lib/validations";
 import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useEditor } from "../contexts/editor-context";
 
 const titleFormSchema = z.object({
-  title: filenameSchema,
+  title: renameSchema,
 });
 
 type TitleFormData = z.infer<typeof titleFormSchema>;
