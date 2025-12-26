@@ -29,7 +29,7 @@ import { signUpFormSchema, type SignUpFormData } from "../lib/validations";
 import { SubmitButton } from "./submit-button";
 
 export const SignUp = memo(() => {
-  const { locale } = useSharedTranslations();
+  const { locale, sharedT } = useSharedTranslations();
   const router = useRouter();
 
   const form = useForm<SignUpFormData>({
@@ -62,9 +62,9 @@ export const SignUp = memo(() => {
     });
 
     toast.promise(signUpPromise, {
-      loading: "Signing up...",
-      success: "Successfully signed up. Please confirm your email.",
-      error: (error) => error.message || "Failed to sign up",
+      loading: sharedT.signUp.signingUp,
+      success: sharedT.signUp.success,
+      error: (error) => error.message || sharedT.signUp.error,
     });
   }
 
@@ -72,14 +72,14 @@ export const SignUp = memo(() => {
     <div className="flex w-full flex-col gap-6">
       <div className="grid gap-6">
         <div>
-          <h1 className="text-2xl font-medium">Sign up</h1>
+          <h1 className="text-2xl font-medium">{sharedT.signUp.title}</h1>
           <p className="text-sm">
-            Already have an account?{" "}
+            {sharedT.signUp.alreadyHaveAccount}{" "}
             <Link
               className="underline underline-offset-4"
               href={`/${locale}/sign-in`}
             >
-              Sign in
+              {sharedT.signUp.signInText}
             </Link>
           </p>
         </div>
@@ -94,7 +94,7 @@ export const SignUp = memo(() => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{sharedT.signIn.emailLabel}</FormLabel>
                     <FormControl>
                       <Input placeholder="m@example.com" {...field} />
                     </FormControl>
@@ -107,11 +107,11 @@ export const SignUp = memo(() => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{sharedT.signIn.passwordLabel}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Your password"
+                        placeholder={sharedT.signIn.passwordPlaceholder}
                         {...field}
                       />
                     </FormControl>
@@ -125,7 +125,9 @@ export const SignUp = memo(() => {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel htmlFor="name">Name</FormLabel>
+                      <FormLabel htmlFor="name">
+                        {sharedT.profileForm.name}
+                      </FormLabel>
                       <div className="hidden items-center space-x-1 md:flex">
                         <TooltipProvider>
                           <Tooltip>
@@ -133,16 +135,17 @@ export const SignUp = memo(() => {
                               <Info className="text-primary size-4" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              The name is only used to address you inside the
-                              app.
+                              {sharedT.profileForm.nameTooltip}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        <span className="text-primary text-sm">Private</span>
+                        <span className="text-primary text-sm">
+                          {sharedT.profileForm.privateLabel}
+                        </span>
                       </div>
                     </div>
                     <FormControl>
-                      <Input placeholder="Boss" {...field} />
+                      <Input placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +157,9 @@ export const SignUp = memo(() => {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel htmlFor="username">Username</FormLabel>
+                      <FormLabel htmlFor="username">
+                        {sharedT.profileForm.username}
+                      </FormLabel>
                       <div className="hidden items-center space-x-1 md:flex">
                         <TooltipProvider>
                           <Tooltip>
@@ -162,17 +167,17 @@ export const SignUp = memo(() => {
                               <Info className="text-primary size-4" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              The username is visible to other users. This is
-                              required so that they can send you invitations.
-                              Usernames must be unique.
+                              {sharedT.profileForm.usernameTooltip}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        <span className="text-primary text-sm">Public</span>
+                        <span className="text-primary text-sm">
+                          {sharedT.profileForm.publicLabel}
+                        </span>
                       </div>
                     </div>
                     <FormControl>
-                      <Input placeholder="Hugo" {...field} />
+                      <Input placeholder="johndoe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -190,7 +195,7 @@ export const SignUp = memo(() => {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>Let other people invite you</FormLabel>
+                      <FormLabel>{sharedT.profileForm.letInvite}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -198,9 +203,9 @@ export const SignUp = memo(() => {
               <SubmitButton
                 className="w-full"
                 isPending={form.formState.isSubmitting}
-                pendingText="Signing up..."
+                pendingText={sharedT.signUp.signingUp}
               >
-                Sign up
+                {sharedT.signUp.signUpButton}
               </SubmitButton>
             </div>
           </form>

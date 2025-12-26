@@ -9,7 +9,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.6",
+    "@hono/node-server": "^1.19.7",
     "@workspace/server": "workspace:*",
     "hono": "^4.10.7",
     "isomorphic-dompurify": "^2.32.0",

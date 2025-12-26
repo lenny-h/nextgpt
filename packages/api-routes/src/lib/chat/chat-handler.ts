@@ -11,9 +11,9 @@ import {
 } from "ai";
 import { type MyUIMessage } from "../../types/custom-ui-message.js";
 import { getChatById, saveChat } from "../db/queries/chats.js";
+import { getDocument } from "../db/queries/documents.js";
 import { saveMessages } from "../db/queries/messages.js";
 import { getPromptsByIds } from "../db/queries/prompts.js";
-import { getDocument } from "../db/queries/documents.js";
 import { ChatConfig } from "./chat-config.js";
 import { ChatRequest } from "./chat-request.js";
 import { integrateAttachmentsIntoMessages } from "./process-attachments.js";
@@ -102,7 +102,7 @@ export abstract class ChatHandler {
       messagesWithAttachments
     );
 
-    let modelMessages = convertToModelMessages(messagesWithContext);
+    let modelMessages = await convertToModelMessages(messagesWithContext);
 
     return {
       model: this.config.modelId,

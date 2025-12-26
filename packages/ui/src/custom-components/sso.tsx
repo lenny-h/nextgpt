@@ -57,9 +57,9 @@ export const SSO = memo(() => {
     );
 
     toast.promise(ssoLoginPromise, {
-      loading: "Redirecting to institution SSO...",
-      success: "Redirecting to institution SSO",
-      error: "Failed to redirect to institution SSO",
+      loading: sharedT.sso.redirectingToSSO,
+      success: sharedT.sso.redirectingToSSO,
+      error: sharedT.sso.redirectError,
     });
   }
 
@@ -72,9 +72,12 @@ export const SSO = memo(() => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Institution Email</FormLabel>
+                <FormLabel>{sharedT.sso.institutionEmailLabel}</FormLabel>
                 <FormControl>
-                  <Input placeholder="user@institution.edu" {...field} />
+                  <Input
+                    placeholder={sharedT.sso.institutionEmailPlaceholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -83,10 +86,10 @@ export const SSO = memo(() => {
           <SubmitButton
             className="w-full"
             isPending={form.formState.isSubmitting}
-            pendingText="Redirecting..."
+            pendingText={sharedT.signIn.redirecting}
           >
             <Key className="mr-2" />
-            {sharedT.socialLogins.loginWithInstitution}
+            {sharedT.sso.loginWithInstitution}
           </SubmitButton>
         </div>
       </form>

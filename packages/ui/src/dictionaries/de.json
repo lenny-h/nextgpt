@@ -173,6 +173,7 @@
     "passwordLabel": "Passwort",
     "passwordPlaceholder": "Ihr Passwort",
     "privacyPolicy": "Datenschutzbestimmungen",
+    "redirecting": "Weiterleitung...",
     "signInButton": "Anmelden",
     "signUpText": "Registrieren",
     "signingIn": "Anmeldung...",
@@ -186,7 +187,24 @@
       "success": "E-Mail erfolgreich verifiziert"
     }
   },
+  "signUp": {
+    "title": "Registrieren",
+    "alreadyHaveAccount": "Bereits ein Konto?",
+    "signInText": "Anmelden",
+    "signUpButton": "Registrieren",
+    "signingUp": "Registrierung...",
+    "success": "Erfolgreich registriert. Bitte bestätigen Sie Ihre E-Mail.",
+    "error": "Fehler bei der Registrierung"
+  },
   "socialLogins": {
-    "loginWithInstitution": "Mit Ihrer Institution anmelden"
+    "redirectingTo": "Weiterleitung zu {provider}...",
+    "redirectError": "Weiterleitung zu {provider} fehlgeschlagen"
+  },
+  "sso": {
+    "institutionEmailLabel": "Institutions-E-Mail",
+    "institutionEmailPlaceholder": "benutzer@institution.edu",
+    "loginWithInstitution": "Mit Ihrer Institution anmelden",
+    "redirectingToSSO": "Weiterleitung zu Institutions-SSO...",
+    "redirectError": "Weiterleitung zu Institutions-SSO fehlgeschlagen"
   }
 }

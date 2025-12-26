@@ -11,10 +11,10 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.6",
+    "@hono/node-server": "^1.19.7",
     "@workspace/api-routes": "workspace:*",
     "@workspace/server": "workspace:*",
-    "ai": "^5.0.113",
+    "ai": "^6.0.3",
     "drizzle-orm": "0.44.5",
     "hono": "^4.10.7"
   },

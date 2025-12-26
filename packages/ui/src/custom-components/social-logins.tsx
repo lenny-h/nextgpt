@@ -7,10 +7,12 @@ import {
 } from "@workspace/ui/components/icons";
 import { memo, useState } from "react";
 import { toast } from "sonner";
+import { useSharedTranslations } from "../contexts/shared-translations-context";
 import { client } from "../lib/auth-client";
 import { SubmitButton } from "./submit-button";
 
 export const SocialLogins = memo(() => {
+  const { sharedT } = useSharedTranslations();
   const [isPending, setIsPending] = useState(false);
 
   const handleGoogleLogin = () => {
@@ -27,9 +29,15 @@ export const SocialLogins = memo(() => {
     };
 
     toast.promise(googleLoginPromise, {
-      loading: "Redirecting to Google...",
-      success: "Redirecting to Google",
-      error: "Failed to redirect to Google",
+      loading: sharedT.socialLogins.redirectingTo.replace(
+        "{provider}",
+        "Google"
+      ),
+      success: sharedT.socialLogins.redirectingTo.replace(
+        "{provider}",
+        "Google"
+      ),
+      error: sharedT.socialLogins.redirectError.replace("{provider}", "Google"),
     });
   };
 
@@ -40,7 +48,7 @@ export const SocialLogins = memo(() => {
         className="border-primary w-full"
         onClick={handleGoogleLogin}
         isPending={isPending}
-        pendingText="Redirecting..."
+        pendingText={sharedT.signIn.redirecting}
       >
         <GoogleIcon />
         Google
@@ -49,7 +57,7 @@ export const SocialLogins = memo(() => {
         variant="outline"
         className="border-primary w-full"
         isPending={false}
-        pendingText="Redirecting..."
+        pendingText={sharedT.signIn.redirecting}
         disabled
       >
         <GitHubIcon />
@@ -59,7 +67,7 @@ export const SocialLogins = memo(() => {
         variant="outline"
         className="border-primary w-full"
         isPending={false}
-        pendingText="Redirecting..."
+        pendingText={sharedT.signIn.redirecting}
         disabled
       >
         <GitLabIcon />

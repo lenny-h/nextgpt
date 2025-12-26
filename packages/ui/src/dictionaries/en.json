@@ -110,7 +110,6 @@
     "letInvite": "Let other people invite you",
     "loading": "Loading...",
     "name": "Name",
-    "namePlaceholder": "Boss",
     "nameTooltip": "The name is only used to address you inside the app.",
     "privateLabel": "Private",
     "publicLabel": "Public",
@@ -118,7 +117,6 @@
     "update": "Update profile",
     "updating": "Updating profile...",
     "username": "Username",
-    "usernamePlaceholder": "Hugo",
     "usernameTooltip": "The username is visible to other users. This is required so that they can send you invitations. Usernames must be unique."
   },
   "renameForm": {
@@ -175,6 +173,7 @@
     "passwordLabel": "Password",
     "passwordPlaceholder": "Your password",
     "privacyPolicy": "Privacy Policy",
+    "redirecting": "Redirecting...",
     "signInButton": "Sign in",
     "signUpText": "Sign up",
     "signingIn": "Signing in...",
@@ -188,7 +187,24 @@
       "success": "Email verified successfully"
     }
   },
+  "signUp": {
+    "title": "Sign up",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInText": "Sign in",
+    "signUpButton": "Sign up",
+    "signingUp": "Signing up...",
+    "success": "Successfully signed up. Please confirm your email.",
+    "error": "Failed to sign up"
+  },
   "socialLogins": {
-    "loginWithInstitution": "Login With Your Institution"
+    "redirectingTo": "Redirecting to {provider}...",
+    "redirectError": "Failed to redirect to {provider}"
+  },
+  "sso": {
+    "institutionEmailLabel": "Institution Email",
+    "institutionEmailPlaceholder": "user@institution.edu",
+    "loginWithInstitution": "Login With Your Institution",
+    "redirectingToSSO": "Redirecting to institution SSO...",
+    "redirectError": "Failed to redirect to institution SSO"
   }
 }
