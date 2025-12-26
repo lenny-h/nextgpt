@@ -58,6 +58,7 @@
     "@workspace/typescript-config": "workspace:*",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.0.3",
     "vitest": "^4.0.14",
     "wrangler": "^4.54.0"
   }

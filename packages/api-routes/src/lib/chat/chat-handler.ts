@@ -57,9 +57,7 @@ export abstract class ChatHandler {
   }
 
   protected async handleChatCreation(): Promise<Chat | undefined> {
-    if (this.request.isTemporary) {
-      return undefined;
-    }
+    if (this.request.isTemporary) return undefined;
 
     let createdChat: Chat | undefined;
 
@@ -83,6 +81,7 @@ export abstract class ChatHandler {
 
   protected async saveUserMessage(): Promise<void> {
     logger.debug("Saving user message", { chatId: this.request.id });
+
     await saveMessages({
       chatId: this.request.id,
       newMessages: [this.request.lastMessage],
@@ -122,6 +121,7 @@ export abstract class ChatHandler {
       chatId: this.request.id,
       messages,
     });
+
     await saveMessages({
       chatId: this.request.id,
       newMessages: messages,

@@ -52,8 +52,10 @@ export const buildDocumentFromContent = (content: string) => {
       "<math-display>$1</math-display>"
     );
 
+  const processedWithDiff = processDiffMarkers(processedContent);
+
   const tempContainer = document.createElement("div");
-  tempContainer.innerHTML = processedContent;
+  tempContainer.innerHTML = processedWithDiff;
 
   return parser.parse(tempContainer);
 };

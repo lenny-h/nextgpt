@@ -15,36 +15,16 @@ const filenameSchema = z
 
 const extToMimes: Record<string, string[]> = {
   pdf: ["application/pdf"],
-  docx: [
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ],
-  xlsx: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
-  pptx: [
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ],
-  md: ["text/markdown", "text/x-markdown"],
-  markdown: ["text/markdown", "text/x-markdown"],
-  adoc: ["text/x-asciidoc", "text/asciidoc"],
-  asciidoc: ["text/x-asciidoc", "text/asciidoc"],
-  html: ["text/html"],
-  htm: ["text/html"],
-  xhtml: ["application/xhtml+xml"],
-  csv: ["text/csv", "application/csv"],
   png: ["image/png"],
   jpg: ["image/jpeg"],
   jpeg: ["image/jpeg"],
-  bmp: ["image/bmp"],
-  webp: ["image/webp"],
-  vtt: ["text/vtt", "text/x-webvtt"],
-  json: ["application/json"],
-  xml: ["application/xml", "text/xml"],
 };
+
+const allowedExtensions = new Set(Object.keys(extToMimes));
 
 export const allowedMimeTypes = Array.from(
   new Set(Object.values(extToMimes).flat())
 );
-
-const allowedExtensions = new Set(Object.keys(extToMimes));
 
 export const filenameWithExtensionSchema = z.string().refine(
   (value) => {

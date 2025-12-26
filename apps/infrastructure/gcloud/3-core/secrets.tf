@@ -82,6 +82,7 @@ resource "google_secret_manager_secret" "google_client_secret" {
   count     = var.enable_oauth_login ? 1 : 0
   project   = var.google_vertex_project
   secret_id = "google-client-secret"
+
   replication {
     auto {}
   }
