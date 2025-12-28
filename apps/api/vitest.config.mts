@@ -12,7 +12,6 @@ export default defineConfig({
         "../../packages/api-routes/src"
       ),
       "@workspace/server": path.resolve(__dirname, "../../packages/server/src"),
-      "@workspace/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
   },
   test: {

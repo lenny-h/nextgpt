@@ -24,7 +24,6 @@
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "dotenv": "^17.2.2",
-    "msw": "^2.12.4",
     "tsx": "^4.20.5",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"

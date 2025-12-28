@@ -45,7 +45,6 @@ type GroupedChats = {
 export const NavHistory = memo(() => {
   const { locale, sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
-
   const queryClient = useQueryClient();
 
   const { id } = useParams();

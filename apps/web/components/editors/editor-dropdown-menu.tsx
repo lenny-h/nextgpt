@@ -42,7 +42,6 @@ export const EditorDropdownMenu = ({
 }: EditorDropdownMenuProps) => {
   const { sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
-
   const queryClient = useQueryClient();
 
   const [editorMode] = useEditor();

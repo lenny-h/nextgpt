@@ -39,7 +39,6 @@ interface SaveDocumentFormProps {
 export const SaveDocumentForm = memo(
   ({ onClose, editorContent, setEditorContent }: SaveDocumentFormProps) => {
     const { sharedT } = useSharedTranslations();
-
     const queryClient = useQueryClient();
 
     const { textEditorRef, codeEditorRef } = useRefs();

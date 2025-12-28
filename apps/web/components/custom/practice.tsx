@@ -41,7 +41,6 @@ export function Practice({
 }) {
   const { locale, sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
-
   const queryClient = useQueryClient();
 
   const [input, setInput] = useState("");

@@ -143,7 +143,6 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
       header: "Accept",
       cell: ({ row }) => {
         const { sharedT } = useSharedTranslations();
-
         const queryClient = useQueryClient();
 
         const type = row.getValue("type") as
@@ -193,7 +192,6 @@ export const incomingInvitationsColumns: ColumnDef<IncomingInvitationsTableColum
       header: "Reject",
       cell: ({ row }) => {
         const { sharedT } = useSharedTranslations();
-
         const queryClient = useQueryClient();
 
         const type = row.getValue("type") as

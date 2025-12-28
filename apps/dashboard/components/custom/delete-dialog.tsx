@@ -36,7 +36,6 @@ export function DeleteDialog({
 }: Props) {
   const { sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
-
   const queryClient = useQueryClient();
 
   return (

@@ -1,6 +1,5 @@
 "use client";
 
-import { useWebTranslations } from "@/contexts/web-translations";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -36,7 +35,6 @@ export function InvitationsDialog({
   onOpenChange,
 }: InvitationsDialogProps) {
   const { sharedT } = useSharedTranslations();
-  const { webT } = useWebTranslations();
   const queryClient = useQueryClient();
 
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -168,7 +166,7 @@ export function InvitationsDialog({
                       disabled={!!processingId}
                     >
                       {processingId ===
-                        `reject-${invitation.origin}-${invitation.resourceId}` ? (
+                      `reject-${invitation.origin}-${invitation.resourceId}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <X className="mr-1 h-4 w-4" />
@@ -182,7 +180,7 @@ export function InvitationsDialog({
                       disabled={!!processingId}
                     >
                       {processingId ===
-                        `accept-${invitation.origin}-${invitation.resourceId}` ? (
+                      `accept-${invitation.origin}-${invitation.resourceId}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Check className="mr-1 h-4 w-4" />

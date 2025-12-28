@@ -32,7 +32,6 @@ import { SubmitButton } from "./submit-button";
 
 export const ProfileForm = memo(() => {
   const { locale, sharedT } = useSharedTranslations();
-
   const queryClient = useQueryClient();
   const router = useRouter();
 

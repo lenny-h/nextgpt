@@ -45,7 +45,7 @@ export function DeleteDialogWithConfirmation({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>
             {dashboardT.deleteDialogWithConfirmation.title[resourceType]}

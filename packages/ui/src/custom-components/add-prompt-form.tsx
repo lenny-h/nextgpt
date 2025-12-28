@@ -36,7 +36,6 @@ interface AddPromptFormProps {
 
 export const AddPromptForm = memo(({ onClose }: AddPromptFormProps) => {
   const { sharedT } = useSharedTranslations();
-
   const queryClient = useQueryClient();
 
   const form = useForm<PromptFormData>({

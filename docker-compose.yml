@@ -1,7 +1,3 @@
-# Docker Compose configuration for local development
-# Includes PostgreSQL with pgvector extension, Redis, and MinIO
-# See DOCKER_SETUP.md for detailed documentation
-
 name: mono
 
 services:

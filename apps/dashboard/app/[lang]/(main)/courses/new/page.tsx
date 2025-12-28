@@ -28,7 +28,6 @@ import { createCourseFormSchema } from "./schema";
 export default function CreateCoursePage() {
   const { locale, sharedT } = useSharedTranslations();
   const { dashboardT } = useDashboardTranslations();
-
   const queryClient = useQueryClient();
   const router = useRouter();
 

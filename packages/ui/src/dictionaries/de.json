@@ -180,7 +180,7 @@
     "success": "Erfolgreich angemeldet",
     "termsAnd": "und",
     "termsOfService": "Nutzungsbedingungen",
-    "termsPrefix": "Durch Klicken auf Weiter stimmen Sie unseren",
+    "termsPrefix": "Indem Sie fortfahren stimmen Sie unseren",
     "verifyEmail": {
       "error": "Fehler beim Verifizieren der E-Mail",
       "loading": "E-Mail wird verifiziert...",

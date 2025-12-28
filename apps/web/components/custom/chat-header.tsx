@@ -31,7 +31,6 @@ export const ChatHeader = memo(
   ({ chatId, isEmpty, isLoading, isNewChat = false }: ChatHeaderProps) => {
     const { sharedT } = useSharedTranslations();
     const { webT } = useWebTranslations();
-
     const queryClient = useQueryClient();
 
     const { panelRef } = useRefs();
@@ -163,4 +162,5 @@ export const ChatHeader = memo(
         </div>
       </header>
     );
-  });
+  },
+);

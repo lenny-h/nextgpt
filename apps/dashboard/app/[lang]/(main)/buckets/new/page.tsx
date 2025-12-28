@@ -30,7 +30,6 @@ import { CreateBucketFormData, createBucketFormSchema } from "./schema";
 
 export default function CreateBucketPage() {
   const { locale, sharedT } = useSharedTranslations();
-
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -102,7 +101,7 @@ export default function CreateBucketPage() {
           control={form.control}
           name="public"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormItem className="flex flex-row items-start space-y-0 space-x-3">
               <FormControl>
                 <Checkbox
                   id="public"
@@ -114,7 +113,7 @@ export default function CreateBucketPage() {
               <div className="space-y-1 leading-none">
                 <FormLabel
                   htmlFor="public"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Make bucket available to all authenticated users
                 </FormLabel>
@@ -133,7 +132,7 @@ export default function CreateBucketPage() {
               type="button"
               key={subscription.type}
               className={cn(
-                "border-3 flex size-full cursor-pointer flex-col items-start space-y-4 rounded-md p-3 shadow-lg",
+                "flex size-full cursor-pointer flex-col items-start space-y-4 rounded-md border-3 p-3 shadow-lg",
                 selectedType === index && "border-primary",
               )}
               onClick={() => setSelectedType(index)}

@@ -16,9 +16,7 @@ interface Props {
 
 export function RemoveBucketUsers({ bucketId }: Props) {
   const { sharedT } = useSharedTranslations();
-
   const queryClient = useQueryClient();
-
   const router = useRouter();
   const searchParams = useSearchParams();
 

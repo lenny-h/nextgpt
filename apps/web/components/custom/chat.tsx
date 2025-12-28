@@ -33,7 +33,6 @@ export function Chat({
 }) {
   const { sharedT } = useSharedTranslations();
   const { webT } = useWebTranslations();
-
   const queryClient = useQueryClient();
 
   const { setFilter } = useFilter();
