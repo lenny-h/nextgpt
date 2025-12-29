@@ -13,7 +13,7 @@ CREATE TYPE "public"."task_status" AS ENUM('scheduled', 'processing', 'failed', 
 CREATE TYPE "public"."user_role" AS ENUM('user', 'maintainer');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-	"account_id" uuid NOT NULL,
+	"account_id" text NOT NULL,
 	"provider_id" text NOT NULL,
 	"user_id" uuid NOT NULL,
 	"access_token" text,

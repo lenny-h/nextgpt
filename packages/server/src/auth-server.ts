@@ -72,7 +72,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url, token }, request) => {
       await sendPasswordResetEmail({
         to: user.email,
-        token,
+        url,
       });
     },
   },
@@ -82,7 +82,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url, token }, request) => {
       await sendVerificationEmail({
         to: user.email,
-        token,
+        url,
       });
     },
   },

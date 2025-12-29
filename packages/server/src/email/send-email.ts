@@ -21,13 +21,11 @@ export async function sendEmail({
 
 export async function sendVerificationEmail({
   to,
-  token,
+  url,
 }: {
   to: string;
-  token: string;
+  url: string;
 }) {
-  const url = `${process.env.BASE_URL}/sign-in?token=${token}`;
-
   const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -100,13 +98,11 @@ export async function sendVerificationEmail({
 
 export async function sendPasswordResetEmail({
   to,
-  token,
+  url,
 }: {
   to: string;
-  token: string;
+  url: string;
 }) {
-  const url = `${process.env.BASE_URL}/reset-password?token=${token}`;
-
   const html = `
     <!DOCTYPE html>
     <html lang="en">

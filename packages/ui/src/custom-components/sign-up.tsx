@@ -50,7 +50,7 @@ export const SignUp = memo(() => {
       password: values.password,
       username: values.username,
       isPublic: values.isPublic,
-      callbackURL: `/${locale}`,
+      callbackURL: `${window.location.origin}/${locale}`,
       fetchOptions: {
         onError: (ctx) => {
           throw new Error(ctx.error.message);

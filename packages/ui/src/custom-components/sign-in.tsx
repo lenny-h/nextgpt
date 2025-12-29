@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -40,33 +40,6 @@ export const SignIn = memo(() => {
     enableOAuthLogin,
     enableSSO,
   ].filter(Boolean).length;
-
-  useEffect(() => {
-    const token = searchParams.get("token");
-
-    if (token) {
-      const verifyEmail = async () => {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-email?token=${token}`
-        );
-
-        if (!response.ok) {
-          const error = await response.json();
-          console.error("Email verification failed:", error);
-          throw new Error("Failed to verify email");
-        }
-
-        // Remove token from URL
-        router.replace(`/${locale}/sign-in`);
-      };
-
-      toast.promise(verifyEmail(), {
-        loading: sharedT.signIn.verifyEmail.loading,
-        success: sharedT.signIn.verifyEmail.success,
-        error: sharedT.signIn.verifyEmail.error,
-      });
-    }
-  }, [searchParams]);
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInFormSchema),

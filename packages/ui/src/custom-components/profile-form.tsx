@@ -66,7 +66,7 @@ export const ProfileForm = memo(() => {
       sharedT.apiCodes
     ).then(() => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      router.push(`/${locale}/buckets`);
+      router.push(`/${locale}`);
     });
 
     toast.promise(updatePromise, {

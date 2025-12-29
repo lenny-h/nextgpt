@@ -12,7 +12,7 @@ import { client } from "../lib/auth-client";
 import { SubmitButton } from "./submit-button";
 
 export const SocialLogins = memo(() => {
-  const { sharedT } = useSharedTranslations();
+  const { locale, sharedT } = useSharedTranslations();
   const [isPending, setIsPending] = useState(false);
 
   const handleGoogleLogin = () => {
@@ -21,6 +21,7 @@ export const SocialLogins = memo(() => {
 
       const response = await client.signIn.social({
         provider: "google",
+        callbackURL: `${window.location.origin}/${locale}`,
       });
 
       setIsPending(false);
