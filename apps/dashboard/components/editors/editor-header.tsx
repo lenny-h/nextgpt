@@ -201,7 +201,7 @@ export const EditorHeader = memo(() => {
   }, [editorMode, textEditorRef, codeEditorRef]);
 
   return (
-    <div className="bg-sidebar flex h-14 items-center gap-2 border-b px-3">
+    <div className="bg-sidebar flex h-14 items-center gap-2 border-b px-3 overflow-x-auto">
       <Button variant="ghost" onClick={() => panelRef.current?.collapse()}>
         <X />
       </Button>

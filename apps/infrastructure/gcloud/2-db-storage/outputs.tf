@@ -106,8 +106,8 @@ output "setup_instructions" {
        - Add the following variables using the values below from this Terraform configuration:
          * PROJECT_ID = ${var.google_vertex_project}
          * REGION     = ${var.google_vertex_location}
-         * REGISTRY   = "${var.google_vertex_location}-docker.pkg.dev"
-         * REPOSITORY = "app-artifact-repository"
+         * REGISTRY   = ${var.google_vertex_location}-docker.pkg.dev
+         * REPOSITORY = app-artifact-repository
 
        Why: These variables allow workflows to target the correct GCP project/region and Artifact Registry repository when building, tagging, and pushing Docker images.
 
