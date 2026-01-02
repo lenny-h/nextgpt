@@ -106,12 +106,6 @@ export class PracticeChatHandler extends ChatHandler {
             "multipleChoice";
 
           return {
-            activeTools:
-              stepNumber === 0
-                ? ["retrieveRandomDocumentSources"]
-                : stepNumber === 1 && isMultipleChoice
-                  ? ["createMultipleChoice"]
-                  : [],
             toolChoice:
               stepNumber === 0
                 ? { type: "tool", toolName: "retrieveRandomDocumentSources" }

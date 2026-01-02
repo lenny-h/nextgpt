@@ -5,7 +5,7 @@
 # CloudWatch Log Groups for Firecrawl
 resource "aws_cloudwatch_log_group" "firecrawl_api" {
   name              = "/ecs/${var.aws_project_name}/firecrawl-api"
-  retention_in_days = 7
+  retention_in_days = 1
 
   tags = {
     Name = "${var.aws_project_name}-firecrawl-api-logs"
@@ -14,7 +14,7 @@ resource "aws_cloudwatch_log_group" "firecrawl_api" {
 
 resource "aws_cloudwatch_log_group" "firecrawl_playwright" {
   name              = "/ecs/${var.aws_project_name}/firecrawl-playwright"
-  retention_in_days = 7
+  retention_in_days = 1
 
   tags = {
     Name = "${var.aws_project_name}-firecrawl-playwright-logs"

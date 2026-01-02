@@ -4,7 +4,7 @@ resource "aws_ecs_cluster" "main" {
 
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
 
   tags = {
@@ -15,7 +15,7 @@ resource "aws_ecs_cluster" "main" {
 # CloudWatch Log Group for DB Migrator
 resource "aws_cloudwatch_log_group" "db_migrator" {
   name              = "/ecs/${var.aws_project_name}/db-migrator"
-  retention_in_days = 7
+  retention_in_days = 1
 
   tags = {
     Name = "${var.aws_project_name}-db-migrator-logs"

@@ -39,7 +39,8 @@ resource "aws_db_instance" "postgres" {
   skip_final_snapshot       = true
   final_snapshot_identifier = null
 
-  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+  # Disabled to reduce CloudWatch costs - enable only when debugging
+  # enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   tags = {
     Name = "${var.aws_project_name}-postgres"

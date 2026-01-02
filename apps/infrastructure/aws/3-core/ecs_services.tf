@@ -1,7 +1,7 @@
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "api" {
   name              = "/ecs/${var.aws_project_name}/api"
-  retention_in_days = 7
+  retention_in_days = 1
 
   tags = {
     Name = "${var.aws_project_name}-api-logs"
@@ -10,7 +10,7 @@ resource "aws_cloudwatch_log_group" "api" {
 
 resource "aws_cloudwatch_log_group" "document_processor" {
   name              = "/ecs/${var.aws_project_name}/document-processor"
-  retention_in_days = 7
+  retention_in_days = 1
 
   tags = {
     Name = "${var.aws_project_name}-document-processor-logs"
@@ -19,7 +19,7 @@ resource "aws_cloudwatch_log_group" "document_processor" {
 
 resource "aws_cloudwatch_log_group" "pdf_exporter" {
   name              = "/ecs/${var.aws_project_name}/pdf-exporter"
-  retention_in_days = 7
+  retention_in_days = 1
 
   tags = {
     Name = "${var.aws_project_name}-pdf-exporter-logs"
