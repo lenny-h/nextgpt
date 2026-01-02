@@ -3,9 +3,9 @@
 NextGPT is a platform designed to deploy a secure AI interface with integrated document and web search capabilities on one of the major cloud providers (Amazon Web Services, Google Cloud, and Microsoft Azure (not supported yet)). Its primary mission is to give enterprises more control and sovereignty over their data by allowing them to host their own AI infrastructure. This monorepo integrates a modern Next.js web application, a robust API, and a suite of specialized microservices for document processing, PDF generation, and web scraping (via Firecrawl). The architecture leverages PostgreSQL with `pgvector` for efficient vector embeddings, enabling powerful semantic search and Retrieval-Augmented Generation (RAG) capabilities.
 
 > [!WARNING]
-> There is currently a bug in firecrawl that can lead to a waterfall behaviour: https://github.com/firecrawl/firecrawl/issues/2350
+> There are currently several bugs in firecrawl, one of which leading to a waterfall behaviour: https://github.com/firecrawl/firecrawl/issues/2350
 >
-> Until this issue is fixed, it is not recommended to use firecrawl
+> Hence, using firecrawl in production is not recommended at the moment. Instead, it is advised to use the options described in the documentation of the Vercel AI SDK: https://ai-sdk.dev/cookbook/node/web-search-agent; if the application is hosted on Google Cloud, google search is recommended. For AWS, it is recommended to use one of the hosted alternatives.
 
 ## Hosted on AWS
 

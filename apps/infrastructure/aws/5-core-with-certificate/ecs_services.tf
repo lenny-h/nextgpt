@@ -3,7 +3,7 @@ resource "aws_ecs_service" "api" {
   name            = "api"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = data.terraform_remote_state.core.outputs.ecs_task_definition_api_arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -35,7 +35,7 @@ resource "aws_ecs_service" "pdf_exporter" {
   name            = "pdf-exporter"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = data.terraform_remote_state.core.outputs.ecs_task_definition_pdf_exporter_arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {

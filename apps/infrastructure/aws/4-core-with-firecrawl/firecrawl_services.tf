@@ -184,7 +184,7 @@ resource "aws_ecs_service" "firecrawl_api" {
   name            = "firecrawl-api"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = aws_ecs_task_definition.firecrawl_api.arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -209,7 +209,7 @@ resource "aws_ecs_service" "firecrawl_playwright" {
   name            = "firecrawl-playwright"
   cluster         = data.terraform_remote_state.db_storage.outputs.ecs_cluster_id
   task_definition = aws_ecs_task_definition.firecrawl_playwright.arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {

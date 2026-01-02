@@ -10,6 +10,7 @@ import { LazyMotion } from "motion/react";
 import dynamic from "next/dynamic";
 import { memo } from "react";
 import { CreateDocumentUI } from "../tools/create-document";
+import { CreateMultipleChoiceUI } from "../tools/create-multiple-choice";
 import { ModifyDocumentUI } from "../tools/modify-document";
 import { ScrapeUrlUI } from "../tools/scrape-url";
 import { RetrieveDocumentSourcesUI } from "../tools/search-documents";
@@ -51,7 +52,7 @@ const PureAgentMessage = ({
 }: AgentMessageProps) => {
   // Aggregate document sources
   const docSources = message.parts
-    .filter((part) => part.type === "tool-searchDocuments")
+    .filter((part) => part.type === "tool-searchDocuments" || part.type === "tool-retrieveRandomDocumentSources")
     .flatMap((part) => part.output?.docSources ?? []);
 
   // Aggregate web sources from searchWeb results
@@ -125,7 +126,7 @@ const PureAgentMessage = ({
                 }
 
                 // Render tool UI components
-                if (part.type === "tool-searchDocuments") {
+                if (part.type === "tool-searchDocuments" || part.type === "tool-retrieveRandomDocumentSources") {
                   return <RetrieveDocumentSourcesUI key={index} part={part} />;
                 }
                 if (part.type === "tool-searchWeb") {
@@ -139,6 +140,9 @@ const PureAgentMessage = ({
                 }
                 if (part.type === "tool-modifyDocument") {
                   return <ModifyDocumentUI key={index} part={part} />;
+                }
+                if (part.type === "tool-createMultipleChoice") {
+                  return <CreateMultipleChoiceUI key={index} part={part} />;
                 }
 
                 return null;

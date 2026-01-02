@@ -1,6 +1,7 @@
 import { generateUUID } from "@workspace/api-routes/utils/utils.js";
 import { createLogger } from "@workspace/server/logger.js";
 import {
+  hasToolCall,
   stepCountIs,
   streamText,
   type Tool,
@@ -50,13 +51,13 @@ export class PracticeChatHandler extends ChatHandler {
     };
 
     const tools: Record<string, Tool> = {
-      retrieveRandomDocumentSources: retrieveRandomDocumentSourcesTool({
-        filter: this.request.filter as PracticeFilter,
+      searchDocuments: searchDocumentsTool({
+        filter: this.request.filter,
         retrieveContent: true, // Always retrieve content to pass as context to the model
         storeFullContent,
       }),
-      searchDocuments: searchDocumentsTool({
-        filter: this.request.filter,
+      retrieveRandomDocumentSources: retrieveRandomDocumentSourcesTool({
+        filter: this.request.filter as PracticeFilter,
         retrieveContent: true, // Always retrieve content to pass as context to the model
         storeFullContent,
       }),
@@ -100,6 +101,11 @@ export class PracticeChatHandler extends ChatHandler {
           steps.map((s) => s.toolResults)
         );
 
+        logger.debug(
+          "IsStartMessage:",
+          this.request.lastMessage.metadata?.isStartMessage
+        );
+
         if (this.request.lastMessage.metadata?.isStartMessage) {
           const isMultipleChoice =
             (this.request.filter as PracticeFilter).studyMode ===
@@ -119,7 +125,7 @@ export class PracticeChatHandler extends ChatHandler {
           activeTools: ["searchDocuments"],
         };
       },
-      stopWhen: stepCountIs(3),
+      stopWhen: [stepCountIs(3), hasToolCall("createMultipleChoice")],
     });
 
     result.consumeStream(); // Consume the stream even if the client disconnects to avoid having unfinished responses

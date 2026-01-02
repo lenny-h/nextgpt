@@ -19,6 +19,7 @@ export const RetrieveDocumentSourcesUI = memo(
   }: {
     part: ToolUIPart<{
       searchDocuments: MyUITools["searchDocuments"];
+      retrieveRandomDocumentSources: MyUITools["retrieveRandomDocumentSources"];
     }>;
   }) => {
     console.log("RetrieveDocumentSourcesUI part:", part);
