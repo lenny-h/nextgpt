@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Modifications copyright (C) 2025 <NextGpt.ai Technologies>
+// Modifications copyright (C) 2025 <Lennart Horn>
 
 import { useEffect, useRef, type RefObject } from "react";
 
