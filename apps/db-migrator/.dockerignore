@@ -25,3 +25,6 @@ Dockerfile
 
 # Markdown files
 *.md
+
+# Documentation
+docs/

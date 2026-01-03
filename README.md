@@ -7,6 +7,20 @@ NextGPT is a platform designed to deploy a secure AI interface with integrated d
 >
 > Hence, using firecrawl in production is not recommended at the moment. Instead, it is advised to use the options described in the documentation of the Vercel AI SDK: https://ai-sdk.dev/cookbook/node/web-search-agent; if the application is hosted on Google Cloud, google search is recommended. For AWS, it is recommended to use one of the hosted alternatives.
 
+## Screenshots
+
+### Chat Interface
+
+Chat interface with AI-powered conversations, document search, and web search capabilities
+
+![Chat Interface](docs/images/chat-interface.png)
+
+### Dashboard
+
+Dashboard where maintainers can upload documents and configure permissions
+
+![Dashboard](docs/images/dashboard.png)
+
 ## Hosted on AWS
 
 Follow the instructions in the `apps/infrastructure/aws/DEPLOYMENT_GUIDE.md` file to deploy the application to AWS.

@@ -59,6 +59,7 @@ node_modules
 *.md
 **/*.md
 !README.md
+docs/
 
 # Docker files
 **/Dockerfile

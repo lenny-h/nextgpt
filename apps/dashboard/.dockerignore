@@ -27,6 +27,9 @@ vitest.config.*
 .vscode
 .idea
 
+# Documentation
+docs/
+
 # Docker files
 Dockerfile
 .dockerignore
