@@ -63,11 +63,12 @@ export const useFileUpload = () => {
     }
   };
 
-  const handleFileChange = async (
-    event: ChangeEvent<HTMLInputElement>,
+  const handleFilesUpload = async (
+    files: File[],
     setAttachments: (fn: (current: Attachment[]) => Attachment[]) => void,
   ) => {
-    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
     setUploadQueue(files.map((file) => file.name));
 
     try {
@@ -88,8 +89,17 @@ export const useFileUpload = () => {
     }
   };
 
+  const handleFileChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+    setAttachments: (fn: (current: Attachment[]) => Attachment[]) => void,
+  ) => {
+    const files = Array.from(event.target.files || []);
+    await handleFilesUpload(files, setAttachments);
+  };
+
   return {
     uploadQueue,
     handleFileChange,
+    handleFilesUpload,
   };
 };

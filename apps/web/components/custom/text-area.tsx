@@ -11,6 +11,7 @@ interface TextareaProps {
   setInput: (value: string) => void;
   isLoading: boolean;
   submitForm: () => void;
+  onPaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
 }
 
 export const Textarea: React.FC<TextareaProps> = ({
@@ -19,6 +20,7 @@ export const Textarea: React.FC<TextareaProps> = ({
   setInput,
   isLoading,
   submitForm,
+  onPaste,
 }) => {
   const { webT } = useWebTranslations();
   const [isTemporary] = useIsTemporary();
@@ -39,6 +41,7 @@ export const Textarea: React.FC<TextareaProps> = ({
           ? "placeholder:text-muted"
           : "placeholder:text-muted-foreground",
       )}
+      onPaste={onPaste}
       onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === "Enter" && !event.shiftKey) {
           event.preventDefault();

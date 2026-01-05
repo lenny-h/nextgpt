@@ -1,5 +1,10 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
 import { Button } from "@workspace/ui/components/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { Paperclip } from "lucide-react";
 import { memo, useRef, type ChangeEvent } from "react";
 
@@ -39,17 +44,22 @@ const PureAttachmentsButton = ({
         tabIndex={-1}
         type="file"
       />
-      <Button
-        className="rounded-xl"
-        disabled={isLoading}
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="ghost"
-      >
-        <Paperclip size={14} />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            className="rounded-xl"
+            disabled={isLoading}
+            onClick={(event) => {
+              event.preventDefault();
+              fileInputRef.current?.click();
+            }}
+            variant="ghost"
+          >
+            <Paperclip size={14} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Attach files</TooltipContent>
+      </Tooltip>
     </>
   );
 };

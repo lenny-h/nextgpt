@@ -73,7 +73,7 @@ const PureMultimodalInput = ({
     useChatModel();
   const [isTemporary] = useIsTemporary();
 
-  const { uploadQueue, handleFileChange } = useFileUpload();
+  const { uploadQueue, handleFileChange, handleFilesUpload } = useFileUpload();
   const { handleDocumentClick } = useDocumentHandler();
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     "input",
@@ -153,6 +153,45 @@ const PureMultimodalInput = ({
       handleFileChange(event, setAttachments);
     }
   };
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      const imageFiles: File[] = [];
+
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            // Generate a filename for pasted images
+            const extension = item.type.split("/")[1] || "png";
+            const timestamp = Date.now();
+            const namedFile = new File(
+              [file],
+              `pasted-image-${timestamp}.${extension}`,
+              { type: file.type },
+            );
+            imageFiles.push(namedFile);
+          }
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        handleFilesUpload(imageFiles, setAttachments);
+      }
+    },
+    [handleFilesUpload],
+  );
+
+  const handleScreenshotCapture = useCallback(
+    (file: File) => {
+      handleFilesUpload([file], setAttachments);
+    },
+    [handleFilesUpload],
+  );
 
   const submitForm = useCallback(() => {
     if (!filter.bucket.id) {
@@ -264,17 +303,19 @@ const PureMultimodalInput = ({
         setInput={setInput}
         isLoading={isLoading}
         submitForm={submitForm}
+        onPaste={handlePaste}
       />
       <TextAreaControl
         input={input}
+        uploadQueue={uploadQueue}
         onFileChange={(event: ChangeEvent<HTMLInputElement>) => {
           handleFileChange(event, setAttachments);
         }}
+        onScreenshotCapture={handleScreenshotCapture}
+        onVoiceInput={handleVoiceInput}
+        submitForm={submitForm}
         isLoading={isLoading}
         stop={stop}
-        submitForm={submitForm}
-        uploadQueue={uploadQueue}
-        onVoiceInput={handleVoiceInput}
       />
     </div>
   );
