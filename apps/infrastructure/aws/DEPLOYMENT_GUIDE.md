@@ -362,7 +362,46 @@ aws acm describe-certificate --certificate-arn <cert-arn> --region $REGION
 
 The certificate status will change from `PENDING_VALIDATION` → `ISSUED` once DNS is verified.
 
-### Step 6: Deploy HTTPS Listener and Certificate Validation
+### Step 6a: Configure Frontend Domains
+
+Before deploying the frontend applications via GitHub Actions, you need to update the domain configuration in the wrangler.jsonc files to match your own domain.
+
+```bash
+# Navigate to the web app wrangler config
+cd ../../web
+
+# Edit wrangler.jsonc and update the following fields:
+# - zone_name: "your-domain.com"  (replace nextgpt.cloud with your domain)
+# - pattern: "app.your-domain.com"  (replace app.nextgpt.cloud with your subdomain)
+```
+
+Update [apps/web/wrangler.jsonc](apps/web/wrangler.jsonc):
+
+```jsonc
+{
+  "route": {
+    "custom_domain": true,
+    "zone_name": "your-domain.com", // Replace with your domain
+    "pattern": "app.your-domain.com", // Replace with your subdomain
+  },
+}
+```
+
+Update [apps/dashboard/wrangler.jsonc](apps/dashboard/wrangler.jsonc):
+
+```jsonc
+{
+  "route": {
+    "custom_domain": true,
+    "zone_name": "your-domain.com", // Replace with your domain
+    "pattern": "dashboard.your-domain.com", // Replace with your subdomain
+  },
+}
+```
+
+**Important**: Make sure these domains match the `site_url` variable you configured in your Terraform files.
+
+### Step 6b: Deploy HTTPS Listener and Certificate Validation
 
 This step sets up the HTTPS listener and validates the SSL/TLS certificate for the Application Load Balancer.
 
@@ -432,7 +471,7 @@ aws logs tail /ecs/document-processor --follow --region $REGION
 aws logs tail /ecs/pdf-exporter --follow --region $REGION
 ```
 
-### Step 7: Deploy File Storage
+### Step 8: Deploy File Storage
 
 **Choose ONE option:**
 

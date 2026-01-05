@@ -35,7 +35,7 @@ gcloud projects create your-project-id --name="Your Project Name"
 gcloud config set project your-project-id
 ```
 
-3. **Link Billing Account**:
+3. **Optional: Link Billing Account**:
 
 ```bash
 gcloud billing accounts list
@@ -353,7 +353,46 @@ gcloud compute ssl-certificates list
 
 The SSL certificate status will change from `PROVISIONING` → `ACTIVE` once DNS is verified.
 
-### Step 6: Verify Core Services
+### Step 6: Configure Frontend Domains
+
+Before deploying the frontend applications via GitHub Actions, you need to update the domain configuration in the wrangler.jsonc files to match your own domain.
+
+```bash
+# Navigate to the web app wrangler config
+cd ../../web
+
+# Edit wrangler.jsonc and update the following fields:
+# - zone_name: "your-domain.com"  (replace nextgpt.cloud with your domain)
+# - pattern: "app.your-domain.com"  (replace app.nextgpt.cloud with your subdomain)
+```
+
+Update [apps/web/wrangler.jsonc](apps/web/wrangler.jsonc):
+
+```jsonc
+{
+  "route": {
+    "custom_domain": true,
+    "zone_name": "your-domain.com", // Replace with your domain
+    "pattern": "app.your-domain.com", // Replace with your subdomain
+  },
+}
+```
+
+Update [apps/dashboard/wrangler.jsonc](apps/dashboard/wrangler.jsonc):
+
+```jsonc
+{
+  "route": {
+    "custom_domain": true,
+    "zone_name": "your-domain.com", // Replace with your domain
+    "pattern": "dashboard.your-domain.com", // Replace with your subdomain
+  },
+}
+```
+
+**Important**: Make sure these domains match the `site_url` variable you configured in your Terraform files.
+
+### Step 7: Verify Core Services
 
 ```bash
 REGION="your-gcp-region"
@@ -369,7 +408,7 @@ curl https://api.yourdomain.com/pdf-exporter/public/health
 # Should return: {"status":"ok"}
 ```
 
-### Step 7: Deploy File Storage
+### Step 8: Deploy File Storage
 
 **Choose ONE option:**
 

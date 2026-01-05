@@ -46,7 +46,7 @@ export const AttachmentPreview: React.FC<PreviewAttachmentProps> = ({
           src={previewUrl}
           alt={filename}
           fill
-          className="rounded-lg object-cover"
+          className="rounded-lg object-contain"
           unoptimized
         />
       );
@@ -62,7 +62,7 @@ export const AttachmentPreview: React.FC<PreviewAttachmentProps> = ({
 
   return (
     <div className="relative flex flex-col gap-1">
-      <div className="bg-muted text-primary flex aspect-video h-24 w-16 flex-col items-center justify-center overflow-hidden rounded-lg">
+      <div className="bg-muted text-primary flex h-24 flex-col items-center justify-center overflow-hidden rounded-lg">
         {renderPreview()}
       </div>
       {!isUploading && onRemove && (
@@ -74,8 +74,8 @@ export const AttachmentPreview: React.FC<PreviewAttachmentProps> = ({
           <X className="h-4 w-4" />
         </button>
       )}
-      <div className="max-w-16 truncate text-xs">{displayedFilename}</div>
-      <div className="text-muted-foreground max-w-16 truncate text-[10px] uppercase">
+      <div className="truncate text-xs">{displayedFilename}</div>
+      <div className="text-muted-foreground truncate text-[10px] uppercase">
         {contentType?.toUpperCase()}
       </div>
     </div>

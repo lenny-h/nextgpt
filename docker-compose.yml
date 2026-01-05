@@ -87,231 +87,286 @@ services:
     networks:
       - database_network
 
-  # The services below need not be run in Docker
-  # It is better to run them using `pnpm run dev` due to hot-reloading
-
-  # Custom API Service
-  api:
-    container_name: api
-    user: root
+  # Document Processor Service
+  document-processor:
+    container_name: document-processor
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
+      dockerfile: apps/document-processor/Dockerfile
     restart: unless-stopped
-    ports:
-      - "3004:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # Required to spawn document processor containers
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/api/public/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      minio:
+        condition: service_healthy
     environment:
-      PORT: 8080
-      NODE_ENV: development
-
-      # ==============================
-      # Authentication configuration
-      # ==============================
-
-      # Better Auth configuration and Resend email service (for sending verification emails)
-      BETTER_AUTH_URL: http://localhost:3004
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
-      ADMIN_USER_IDS: ${ADMIN_USER_IDS}
-
-      ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
-      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
-
-      ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
-      # Google OAuth
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      # GitHub OAuth
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-      # Gitlab OAuth
-      GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
-      GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
-
-      # SSO Configuration
-      ENABLE_SSO: ${ENABLE_SSO}
-      SSO_DOMAIN: ${SSO_DOMAIN}
-      SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
-      SSO_CLIENT_ID: ${SSO_CLIENT_ID}
-      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
-      SSO_ISSUER: ${SSO_ISSUER}
-      SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
-      SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
-      SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
-      SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
-
-      RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
-      RESEND_API_KEY: ${RESEND_API_KEY}
-
-      # ==============================
-      # Application configuration
-      # ==============================
-  
-      BASE_URL: http://localhost:3000
-      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
-      API_URL: http://host.docker.internal:3004
-
-      # Database and Redis
+      PORT: 3006
+      ENVIRONMENT: development
+      
+      # API service URL for embeddings
+      API_URL: http://api:8080
+      
+      # Database configuration
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_HOST: postgres:5432
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      REDIS_URL: "redis://redis:6379"
-
-      USE_LOCAL_TASKS_CLIENT: ${USE_LOCAL_TASKS_CLIENT}
+      
+      # File storage configuration
       USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
       USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
-      USE_OPENAI_API: ${USE_OPENAI_API}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      SQL_LOG_FILE_HOST_PATH: ${SQL_LOG_FILE_HOST_PATH:-}
-      SQL_LOG_FILE: ${SQL_LOG_FILE:-}
-
+      
       # Local MinIO configuration
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_PUBLIC_ENDPOINT: http://localhost:9000 # Needed because browser cannot reach http://minio:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-
+      
       # Cloudflare R2 configuration
       R2_ENDPOINT: ${R2_ENDPOINT}
       CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
       CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
-
-      EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
-      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS}
-      LLM_MODELS: ${LLM_MODELS}
-
-      # ==============================
-      # Firecrawl configuration
-      # =============================
-
-      USE_FIRECRAWL: ${USE_FIRECRAWL}
-      FIRECRAWL_API_URL: http://firecrawl-api:8080
-      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}
-
-      # ==============================
+      
       # Cloud provider configuration
-      # =============================
-
       CLOUD_PROVIDER: ${CLOUD_PROVIDER}
-
+      
       # # Gcloud configuration
       # GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
       # GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
-      # GOOGLE_PROCESSING_QUEUE: document-processing-queue
-      # GOOGLE_DOCUMENT_PROCESSOR_JOB: ${GOOGLE_DOCUMENT_PROCESSOR_JOB}
-
-      # # Aws configuration
-      # AWS_REGION: ${AWS_REGION}
+      
+      # # AWS configuration
       # AWS_PROJECT_NAME: ${AWS_PROJECT_NAME}
-
+      # AWS_REGION: ${AWS_REGION}
       # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-
-      # SQS_QUEUE_URL: ${SQS_QUEUE_URL}
-
-      # AWS_SCHEDULER_GROUP: ${AWS_SCHEDULER_GROUP}
-      # AWS_SCHEDULER_TARGET_ARN: ${AWS_SCHEDULER_TARGET_ARN}
-      # AWS_SCHEDULER_ROLE_ARN: ${AWS_SCHEDULER_ROLE_ARN}
     networks:
       - database_network
 
-  # PDF Exporter Service
-  pdf-exporter:
-    container_name: pdf-exporter
-    build:
-      context: .
-      dockerfile: apps/pdf-exporter/Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3005:8080"
-    depends_on:
-      api:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--spider",
-          "http://localhost:8080/pdf-exporter/public/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    environment:
-      PORT: 8080
-      NODE_ENV: development
+  # The services below need not be run in Docker
+  # It is better to run them using `pnpm run dev` due to hot-reloading
+
+  # # Custom API Service
+  # api:
+  #   container_name: api
+  #   user: root
+  #   build:
+  #     context: .
+  #     dockerfile: apps/api/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3004:8080"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock # Required to spawn document processor containers
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--spider",
+  #         "http://localhost:8080/api/public/health",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     PORT: 8080
+  #     NODE_ENV: development
+
+  #     # ==============================
+  #     # Authentication configuration
+  #     # ==============================
+
+  #     # Better Auth configuration and Resend email service (for sending verification emails)
+  #     BETTER_AUTH_URL: http://localhost:3004
+  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+  #     ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
+  #     ADMIN_USER_IDS: ${ADMIN_USER_IDS}
+
+  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
+  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
+
+  #     ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
+  #     # Google OAuth
+  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  #     # GitHub OAuth
+  #     GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+  #     GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+  #     # Gitlab OAuth
+  #     GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
+  #     GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
+
+  #     # SSO Configuration
+  #     ENABLE_SSO: ${ENABLE_SSO}
+  #     SSO_DOMAIN: ${SSO_DOMAIN}
+  #     SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
+  #     SSO_CLIENT_ID: ${SSO_CLIENT_ID}
+  #     SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
+  #     SSO_ISSUER: ${SSO_ISSUER}
+  #     SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
+  #     SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
+  #     SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
+  #     SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
+
+  #     RESEND_SENDER_EMAIL: ${RESEND_SENDER_EMAIL}
+  #     RESEND_API_KEY: ${RESEND_API_KEY}
+
+  #     # ==============================
+  #     # Application configuration
+  #     # ==============================
   
-      # ==============================
-      # Authentication configuration
-      # ==============================
+  #     BASE_URL: http://localhost:3000
+  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  #     API_URL: http://host.docker.internal:3004
+
+  #     # Database and Redis
+  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+  #     DATABASE_HOST: postgres:5432
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  #     REDIS_URL: "redis://redis:6379"
+
+  #     USE_LOCAL_TASKS_CLIENT: ${USE_LOCAL_TASKS_CLIENT}
+  #     USE_LOCAL_FILE_STORAGE: ${USE_LOCAL_FILE_STORAGE}
+  #     USE_CLOUDFLARE_R2: ${USE_CLOUDFLARE_R2}
+  #     USE_OPENAI_API: ${USE_OPENAI_API}
+  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #     SQL_LOG_FILE_HOST_PATH: ${SQL_LOG_FILE_HOST_PATH:-}
+  #     SQL_LOG_FILE: ${SQL_LOG_FILE:-}
+
+  #     # Local MinIO configuration
+  #     MINIO_ENDPOINT: http://minio:9000
+  #     MINIO_PUBLIC_ENDPOINT: http://localhost:9000 # Needed because browser cannot reach http://minio:9000
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+  #     # Cloudflare R2 configuration
+  #     R2_ENDPOINT: ${R2_ENDPOINT}
+  #     CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID}
+  #     CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+
+  #     EMBEDDINGS_MODEL: ${EMBEDDINGS_MODEL}
+  #     EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS}
+  #     LLM_MODELS: ${LLM_MODELS}
+
+  #     # ==============================
+  #     # Firecrawl configuration
+  #     # =============================
+
+  #     USE_FIRECRAWL: ${USE_FIRECRAWL}
+  #     FIRECRAWL_API_URL: http://firecrawl-api:8080
+  #     FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY}
+
+  #     # ==============================
+  #     # Cloud provider configuration
+  #     # =============================
+
+  #     CLOUD_PROVIDER: ${CLOUD_PROVIDER}
+
+  #     # # Gcloud configuration
+  #     # GOOGLE_VERTEX_PROJECT: ${GOOGLE_VERTEX_PROJECT}
+  #     # GOOGLE_VERTEX_LOCATION: ${GOOGLE_VERTEX_LOCATION}
+  #     # GOOGLE_PROCESSING_QUEUE: document-processing-queue
+  #     # GOOGLE_DOCUMENT_PROCESSOR_JOB: ${GOOGLE_DOCUMENT_PROCESSOR_JOB}
+
+  #     # # Aws configuration
+  #     # AWS_REGION: ${AWS_REGION}
+  #     # AWS_PROJECT_NAME: ${AWS_PROJECT_NAME}
+
+  #     # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  #     # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+  #     # SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+
+  #     # AWS_SCHEDULER_GROUP: ${AWS_SCHEDULER_GROUP}
+  #     # AWS_SCHEDULER_TARGET_ARN: ${AWS_SCHEDULER_TARGET_ARN}
+  #     # AWS_SCHEDULER_ROLE_ARN: ${AWS_SCHEDULER_ROLE_ARN}
+  #   networks:
+  #     - database_network
+
+  # # PDF Exporter Service
+  # pdf-exporter:
+  #   container_name: pdf-exporter
+  #   build:
+  #     context: .
+  #     dockerfile: apps/pdf-exporter/Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3005:8080"
+  #   depends_on:
+  #     api:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--spider",
+  #         "http://localhost:8080/pdf-exporter/public/health",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   environment:
+  #     PORT: 8080
+  #     NODE_ENV: development
   
-      BETTER_AUTH_URL: http://localhost:3004
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
-      ADMIN_USER_IDS: ${ADMIN_USER_IDS}
+  #     # ==============================
+  #     # Authentication configuration
+  #     # ==============================
   
-      ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
-      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
+  #     BETTER_AUTH_URL: http://localhost:3004
+  #     BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+  #     ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS: ${ONLY_ALLOW_ADMIN_TO_CREATE_BUCKETS}
+  #     ADMIN_USER_IDS: ${ADMIN_USER_IDS}
   
-      ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
-      # Google OAuth
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      # GitHub OAuth
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-      # Gitlab OAuth
-      GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
-      GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
+  #     ENABLE_EMAIL_SIGNUP: ${ENABLE_EMAIL_SIGNUP}
+  #     ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS}
   
-      # SSO Configuration
-      ENABLE_SSO: ${ENABLE_SSO}
-      SSO_DOMAIN: ${SSO_DOMAIN}
-      SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
-      SSO_CLIENT_ID: ${SSO_CLIENT_ID}
-      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
-      SSO_ISSUER: ${SSO_ISSUER}
-      SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
-      SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
-      SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
-      SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
+  #     ENABLE_OAUTH_LOGIN: ${ENABLE_OAUTH_LOGIN}
+  #     # Google OAuth
+  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  #     # GitHub OAuth
+  #     GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+  #     GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+  #     # Gitlab OAuth
+  #     GITLAB_CLIENT_ID: ${GITLAB_CLIENT_ID}
+  #     GITLAB_CLIENT_SECRET: ${GITLAB_CLIENT_SECRET}
   
-      # ==============================
-      # Application configuration
-      # ==============================
+  #     # SSO Configuration
+  #     ENABLE_SSO: ${ENABLE_SSO}
+  #     SSO_DOMAIN: ${SSO_DOMAIN}
+  #     SSO_PROVIDER_ID: ${SSO_PROVIDER_ID}
+  #     SSO_CLIENT_ID: ${SSO_CLIENT_ID}
+  #     SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
+  #     SSO_ISSUER: ${SSO_ISSUER}
+  #     SSO_AUTHORIZATION_ENDPOINT: ${SSO_AUTHORIZATION_ENDPOINT}
+  #     SSO_DISCOVERY_ENDPOINT: ${SSO_DISCOVERY_ENDPOINT}
+  #     SSO_TOKEN_ENDPOINT: ${SSO_TOKEN_ENDPOINT}
+  #     SSO_JWKS_ENDPOINT: ${SSO_JWKS_ENDPOINT}
   
-      BASE_URL: http://localhost:3000
-      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  #     # ==============================
+  #     # Application configuration
+  #     # ==============================
   
-      # Database and Redis
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_HOST: postgres:5432
-      REDIS_URL: "redis://redis:6379"
-    networks:
-      - database_network
+  #     BASE_URL: http://localhost:3000
+  #     ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001"
+  
+  #     # Database and Redis
+  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+  #     DATABASE_HOST: postgres:5432
+  #     REDIS_URL: "redis://redis:6379"
+  #   networks:
+  #     - database_network
 
   # # Web interface (Next.js)
   # web:
