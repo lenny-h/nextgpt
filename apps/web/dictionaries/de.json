@@ -129,7 +129,13 @@
   "multimodal": {
     "placeholder": "Fragen Sie etwas...",
     "dropFiles": "Dateien hier ablegen",
-    "webSearch": "Websuche"
+    "webSearch": "Websuche",
+    "attachFiles": "Dateien anhängen",
+    "captureScreenshot": "Screenshot aufnehmen",
+    "voiceInput": "Spracheingabe",
+    "stopRecording": "Aufnahme stoppen",
+    "sendMessage": "Nachricht senden",
+    "stopGeneration": "Generierung stoppen"
   },
   "navHistory": {
     "more": "Mehr",

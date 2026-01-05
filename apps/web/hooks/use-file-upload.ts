@@ -50,9 +50,13 @@ export const useFileUpload = () => {
 
       checkResponse(uploadResponse, sharedT.apiCodes);
 
+      // Create a blob URL for preview
+      const previewUrl = URL.createObjectURL(file);
+
       return {
         filename: newFilename,
         contentType: file.type,
+        previewUrl,
       };
     } catch (error) {
       toast.error(

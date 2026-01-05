@@ -1,3 +1,4 @@
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -17,6 +18,7 @@ const PureMicrophoneButton = ({
   isLoading,
   onTranscript,
 }: MicrophoneButtonProps) => {
+  const { webT } = useWebTranslations();
   const [isRecording, setIsRecording] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -132,7 +134,9 @@ const PureMicrophoneButton = ({
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {isRecording ? "Stop recording" : "Voice input"}
+        {isRecording
+          ? webT.multimodal.stopRecording
+          : webT.multimodal.voiceInput}
       </TooltipContent>
     </Tooltip>
   );

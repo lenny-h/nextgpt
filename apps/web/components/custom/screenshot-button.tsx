@@ -1,5 +1,6 @@
 "use client";
 
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -18,6 +19,7 @@ const PureScreenshotButton = ({
   isLoading,
   onScreenshotCapture,
 }: ScreenshotButtonProps) => {
+  const { webT } = useWebTranslations();
   const [isCapturing, setIsCapturing] = useState(false);
 
   const captureScreenshot = useCallback(async () => {
@@ -103,7 +105,7 @@ const PureScreenshotButton = ({
           <Camera size={14} />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Capture screenshot</TooltipContent>
+      <TooltipContent>{webT.multimodal.captureScreenshot}</TooltipContent>
     </Tooltip>
   );
 };

@@ -15,7 +15,8 @@
 // Modifications copyright (C) 2025 <Lennart Horn>
 
 import { type Attachment } from "@workspace/api-routes/schemas/attachment-schema";
-import { FileImage, FileText, Loader, X } from "lucide-react";
+import { FileText, Loader, X } from "lucide-react";
+import Image from "next/image";
 
 interface PreviewAttachmentProps {
   attachment: Attachment;
@@ -28,31 +29,52 @@ export const AttachmentPreview: React.FC<PreviewAttachmentProps> = ({
   isUploading = false,
   onRemove,
 }) => {
-  const { filename, contentType } = attachment;
+  const { filename, contentType, previewUrl } = attachment;
+
+  const renderPreview = () => {
+    if (isUploading) {
+      return (
+        <div className="animate-spin">
+          <Loader />
+        </div>
+      );
+    }
+
+    if (previewUrl && contentType?.startsWith("image")) {
+      return (
+        <Image
+          src={previewUrl}
+          alt={filename}
+          fill
+          className="rounded-lg object-cover"
+          unoptimized
+        />
+      );
+    }
+
+    return <FileText />;
+  };
+
+  // show only the text after the first '/' in the displayed filename (or empty string if none)
+  const displayedFilename = filename.includes("/")
+    ? filename.substring(filename.indexOf("/") + 1)
+    : "";
 
   return (
     <div className="relative flex flex-col gap-1">
-      <div className="bg-muted text-primary flex aspect-video h-16 w-12 flex-col items-center justify-center rounded-lg">
-        {isUploading ? (
-          <div className="animate-spin">
-            <Loader />
-          </div>
-        ) : contentType && contentType.startsWith("image") ? (
-          <FileImage />
-        ) : (
-          <FileText />
-        )}
+      <div className="bg-muted text-primary flex aspect-video h-24 w-16 flex-col items-center justify-center overflow-hidden rounded-lg">
+        {renderPreview()}
       </div>
       {!isUploading && onRemove && (
         <button
           onClick={onRemove}
-          className="absolute cursor-pointer hover:text-red-500"
+          className="absolute -top-1 -right-1 cursor-pointer rounded-full bg-white/80 p-0.5 hover:text-red-500"
           aria-label="Remove attachment"
         >
           <X className="h-4 w-4" />
         </button>
       )}
-      <div className="max-w-16 truncate text-xs">{filename}</div>
+      <div className="max-w-16 truncate text-xs">{displayedFilename}</div>
       <div className="text-muted-foreground max-w-16 truncate text-[10px] uppercase">
         {contentType?.toUpperCase()}
       </div>

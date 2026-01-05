@@ -1,4 +1,5 @@
 import { useChatModel } from "@/contexts/selected-chat-model";
+import { useWebTranslations } from "@/contexts/web-translations";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tooltip,
@@ -17,8 +18,9 @@ const PureAttachmentsButton = ({
   isLoading,
   onFileChange,
 }: AttachmentButtonProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { webT } = useWebTranslations();
   const { selectedChatModel } = useChatModel();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getAcceptedFileTypes = () => {
     const types = [];
@@ -58,7 +60,7 @@ const PureAttachmentsButton = ({
             <Paperclip size={14} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Attach files</TooltipContent>
+        <TooltipContent>{webT.multimodal.attachFiles}</TooltipContent>
       </Tooltip>
     </>
   );

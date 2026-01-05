@@ -83,8 +83,25 @@ const PureMultimodalInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const attachmentsRef = useRef<Attachment[]>([]);
 
   const isLoading = status === "submitted" || status === "streaming";
+
+  // Keep ref in sync with state for cleanup on unmount
+  useEffect(() => {
+    attachmentsRef.current = attachments;
+  }, [attachments]);
+
+  // Cleanup blob URLs only on unmount
+  useEffect(() => {
+    return () => {
+      attachmentsRef.current.forEach((attachment) => {
+        if (attachment.previewUrl) {
+          URL.revokeObjectURL(attachment.previewUrl);
+        }
+      });
+    };
+  }, []);
 
   useEffect(() => {
     setLocalStorageInput(input);
@@ -99,7 +116,13 @@ const PureMultimodalInput = ({
   }, []);
 
   const handleRemoveAttachment = useCallback((index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => {
+      const removed = prev[index];
+      if (removed?.previewUrl) {
+        URL.revokeObjectURL(removed.previewUrl);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   }, []);
 
   const handleVoiceInput = useCallback(
@@ -159,28 +182,36 @@ const PureMultimodalInput = ({
       const items = e.clipboardData?.items;
       if (!items) return;
 
-      const imageFiles: File[] = [];
+      const files: File[] = [];
 
       for (const item of items) {
-        if (item.type.startsWith("image/")) {
+        if (item.type.startsWith("image/") || item.type === "application/pdf") {
           const file = item.getAsFile();
           if (file) {
-            // Generate a filename for pasted images
-            const extension = item.type.split("/")[1] || "png";
+            // Generate a filename for pasted files
+            const extension = item.type.split("/")[1];
+
+            if (!extension) continue;
+
+            const prefix =
+              item.type === "application/pdf"
+                ? "pasted-document"
+                : "pasted-image";
             const timestamp = Date.now();
+
             const namedFile = new File(
               [file],
-              `pasted-image-${timestamp}.${extension}`,
+              `${prefix}-${timestamp}.${extension}`,
               { type: file.type },
             );
-            imageFiles.push(namedFile);
+            files.push(namedFile);
           }
         }
       }
 
-      if (imageFiles.length > 0) {
+      if (files.length > 0) {
         e.preventDefault();
-        handleFilesUpload(imageFiles, setAttachments);
+        handleFilesUpload(files, setAttachments);
       }
     },
     [handleFilesUpload],
@@ -221,7 +252,10 @@ const PureMultimodalInput = ({
         parts: [{ type: "text", text: input }],
         metadata: {
           filter: stripFilter(filter, false),
-          attachments,
+          attachments: attachments.map(({ filename, contentType }) => ({
+            filename,
+            contentType,
+          })),
         },
       },
       {
@@ -235,6 +269,12 @@ const PureMultimodalInput = ({
     );
 
     setInput("");
+    // Cleanup blob URLs before clearing attachments
+    attachments.forEach((attachment) => {
+      if (attachment.previewUrl) {
+        URL.revokeObjectURL(attachment.previewUrl);
+      }
+    });
     setAttachments([]);
     setLocalStorageInput("");
 
