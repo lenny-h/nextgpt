@@ -144,7 +144,7 @@ export const FilterableList = memo(
 
     if (!enabled && disabledMessage) {
       return (
-        <div className="max-h-80 space-y-1 overflow-y-auto pr-1">
+        <div className="h-56 space-y-1 overflow-y-auto pr-1">
           <p className="text-muted-foreground py-8 text-center text-sm">
             {disabledMessage}
           </p>
@@ -154,7 +154,7 @@ export const FilterableList = memo(
 
     if (isPending) {
       return (
-        <div className="max-h-80 space-y-1 overflow-y-auto pr-1">
+        <div className="h-56 space-y-1 overflow-y-auto pr-1">
           {Array.from({ length: 5 }).map((_, index) => (
             <Skeleton
               key={index}
@@ -167,7 +167,7 @@ export const FilterableList = memo(
 
     if (error || !items || !itemsToDisplay) {
       return (
-        <div className="max-h-80 space-y-1 overflow-y-auto pr-1">
+        <div className="h-56 space-y-1 overflow-y-auto pr-1">
           <p className="text-muted-foreground py-8 text-center text-sm">
             {webT.filterableList.errorLoading.replace("{type}", queryKey[0])}
           </p>
