@@ -10,7 +10,7 @@
     "search": "Suche"
   },
   "chat": {
-    "errorOccurred": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut!",
+    "errorOccurred": "Ein Fehler ist aufgetreten, bitte versuchen Sie es später erneut!",
     "waitForResponse": "Bitte warten Sie, bis die Antwort beendet ist!"
   },
   "chatHeader": {

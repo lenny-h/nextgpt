@@ -171,11 +171,7 @@ export const DocumentsList = ({
           className="border-primary flex h-20 w-full cursor-pointer items-center space-x-2 rounded-md border p-2"
           onClick={async () => {
             toast.promise(
-              onClickDocument(
-                document.id,
-                document.title,
-                document.kind as "text" | "code",
-              ),
+              onClickDocument(document.id, document.title, document.kind),
               {
                 loading: "Loading document...",
                 success: "Document loaded successfully",
